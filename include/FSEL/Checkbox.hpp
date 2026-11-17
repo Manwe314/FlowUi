@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include <algorithm>
 #include <cstdint>
 #include <optional>
@@ -101,7 +103,7 @@ struct Checkbox {
 			return;
 		}
 
-		const auto& theme = context.uiManager.theme<FSELTheme>().checkboxTheme;
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().checkboxTheme;
 		context.uiManager.requestCursor(
 			context.params.cursor.value_or(theme.cursor),
 			context.params.cursorPriority.value_or(theme.cursorPriority));
@@ -136,7 +138,7 @@ struct Checkbox {
 	 * context Borrowed context valid for this callback only.
 	 */
 	static void buildElement(BuildContext& context) {
-		const auto& theme = context.uiManager.theme<FSELTheme>().checkboxTheme;
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().checkboxTheme;
 		const FSELCheckboxStateTheme appearance = resolveAppearance(context, theme);
 		const float size = std::max(context.params.size.value_or(theme.size), 1.0f);
 		const float iconSize = std::clamp(
@@ -180,7 +182,7 @@ struct Checkbox {
 
 		CLAY(context.clayID(), root) {
 			if (hasIcon) {
-				CLAY(context.clayID("icon"), iconDeclaration);
+				CLAY(FlowUi::ValueOrThrow(context.clayID("icon")), iconDeclaration);
 			}
 		}
 	}

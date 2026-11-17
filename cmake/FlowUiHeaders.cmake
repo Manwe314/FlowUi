@@ -82,6 +82,7 @@ set(FLOWUI_PUBLIC_HEADERS
 )
 
 set(FLOWUI_PRIVATE_SUPPORT_HEADERS
+    FlowUi/Private/ApiBoundary.hpp
     FlowUi/Private/ColorParsing.hpp
     FlowUi/Private/ErrorReporting.hpp
     FlowUi/Private/ErrorSupport.hpp

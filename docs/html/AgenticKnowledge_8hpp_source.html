@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,31 +107,42 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#pragma once</span></div>
-<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="preprocessor">#include &quot;FlowUi/Public/BuildConfig.hpp&quot;</span></div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#if FLOW_UI_AGENTIC_WORKFLOW</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &quot;devSystems/devAgenticWorkflow/AgenticTypes.hpp&quot;</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="keyword">namespace </span>FlowUi::devSystems::agentic {</div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="keyword">class </span>AgenticKnowledge {</div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>    <span class="keyword">explicit</span> AgenticKnowledge(std::filesystem::path pack_path,</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>                              std::filesystem::path source_root = {});</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    [[nodiscard]] <span class="keyword">const</span> std::filesystem::path&amp; pack_path() const noexcept;</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    [[nodiscard]] Result&lt;Json&gt; find(std::string_view intent, std::uint64_t maximum_bytes = 12000,</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>                                    std::uint32_t maximum_topics = 3) const noexcept;</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    [[nodiscard]] Result&lt;Json&gt; read(std::string_view topic_id,</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>                                    std::uint64_t maximum_bytes = 12000) const noexcept;</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    [[nodiscard]] Result&lt;Json&gt; validate() const noexcept;</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>private:</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    std::filesystem::path pack_path_;</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    std::filesystem::path source_root_;</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>};</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>} <span class="comment">// namespace FlowUi::devSystems::agentic</span></div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#endif </span><span class="comment">// FLOW_UI_AGENTIC_WORKFLOW</span></div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &quot;FlowUi/Public/BuildConfig.hpp&quot;</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#if FLOW_UI_AGENTIC_WORKFLOW</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &quot;devSystems/devAgenticWorkflow/AgenticTypes.hpp&quot;</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi_1_1devSystems_1_1agentic.html">FlowUi::devSystems::agentic</a> {</div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span></div>
+<div class="foldopen" id="foldopen00013" data-start="{" data-end="};">
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html">   13</a></span><span class="keyword">class </span><a class="code hl_function" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html#ad8ff8f20d5b53e95e156a9cd324d5c57">AgenticKnowledge</a> {</div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html#ad8ff8f20d5b53e95e156a9cd324d5c57">   19</a></span>    <span class="keyword">explicit</span> <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html#ad8ff8f20d5b53e95e156a9cd324d5c57">AgenticKnowledge</a>(std::filesystem::path <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html#a891351164e09268523839322d25e3f6e">pack_path</a>,</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>                              std::filesystem::path source_root = {});</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html#a891351164e09268523839322d25e3f6e">   22</a></span>    [[nodiscard]] <span class="keyword">const</span> std::filesystem::path&amp; <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html#a891351164e09268523839322d25e3f6e">pack_path</a>() const noexcept;</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html#a52837ed258226a83293f2e8a50e08c16">   27</a></span>    [[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1Result.html">Result</a>&lt;<a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1agentic_1_1Json.html">Json</a>&gt; <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html#a52837ed258226a83293f2e8a50e08c16">find</a>(std::string_view intent, std::uint64_t maximum_bytes = 12000,</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>                                    std::uint32_t maximum_topics = 3) const noexcept;</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html#ab5c23f0796486be280f9b9568f261399">   33</a></span>    [[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1Result.html">Result</a>&lt;<a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1agentic_1_1Json.html">Json</a>&gt; <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html#ab5c23f0796486be280f9b9568f261399">read</a>(std::string_view topic_id,</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>                                    std::uint64_t maximum_bytes = 12000) const noexcept;</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html#aeaa8acd59d2675d3f460b21a814e4c7f">   36</a></span>    [[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1Result.html">Result</a>&lt;<a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1agentic_1_1Json.html">Json</a>&gt; <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html#aeaa8acd59d2675d3f460b21a814e4c7f">validate</a>() const noexcept;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>private:</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    std::filesystem::path pack_path_;</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    std::filesystem::path source_root_;</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>};</div>
+</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>} <span class="comment">// namespace FlowUi::devSystems::agentic</span></div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="preprocessor">#endif </span><span class="comment">// FLOW_UI_AGENTIC_WORKFLOW</span></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html"><div class="ttname"><a href="classFlowUi_1_1Result.html">FlowUi::Result</a></div><div class="ttdef"><b>Definition</b> Result.hpp:77</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge_html_a52837ed258226a83293f2e8a50e08c16"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html#a52837ed258226a83293f2e8a50e08c16">FlowUi::devSystems::agentic::AgenticKnowledge::find</a></div><div class="ttdeci">Result&lt; Json &gt; find(std::string_view intent, std::uint64_t maximum_bytes=12000, std::uint32_t maximum_topics=3) const noexcept</div><div class="ttdoc">Return up to maximum_topics matching knowledge entries within maximum_bytes, or an explicit lookup er...</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge_html_a891351164e09268523839322d25e3f6e"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html#a891351164e09268523839322d25e3f6e">FlowUi::devSystems::agentic::AgenticKnowledge::pack_path</a></div><div class="ttdeci">const std::filesystem::path &amp; pack_path() const noexcept</div><div class="ttdoc">Borrow the configured knowledge pack root; valid while this object lives.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge_html_ab5c23f0796486be280f9b9568f261399"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html#ab5c23f0796486be280f9b9568f261399">FlowUi::devSystems::agentic::AgenticKnowledge::read</a></div><div class="ttdeci">Result&lt; Json &gt; read(std::string_view topic_id, std::uint64_t maximum_bytes=12000) const noexcept</div><div class="ttdoc">Read one declared knowledge topic under maximum_bytes; return an error for unknown or invalid content...</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge_html_ad8ff8f20d5b53e95e156a9cd324d5c57"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html#ad8ff8f20d5b53e95e156a9cd324d5c57">FlowUi::devSystems::agentic::AgenticKnowledge::AgenticKnowledge</a></div><div class="ttdeci">AgenticKnowledge(std::filesystem::path pack_path, std::filesystem::path source_root={})</div><div class="ttdoc">Retain knowledge pack and optional matching source roots; construction performs no lookup.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge_html_aeaa8acd59d2675d3f460b21a814e4c7f"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticKnowledge.html#aeaa8acd59d2675d3f460b21a814e4c7f">FlowUi::devSystems::agentic::AgenticKnowledge::validate</a></div><div class="ttdeci">Result&lt; Json &gt; validate() const noexcept</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html">FlowUi::devSystems::agentic</a></div><div class="ttdoc">Bounded capture, application-declared scenarios and owned evidence APIs. Available when FLOW_UI_AGENT...</div><div class="ttdef"><b>Definition</b> App.hpp:45</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1agentic_1_1Json_html"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1agentic_1_1Json.html">FlowUi::devSystems::agentic::Json</a></div><div class="ttdef"><b>Definition</b> AgenticJson.hpp:21</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

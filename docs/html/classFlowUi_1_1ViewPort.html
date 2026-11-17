@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,7 +107,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Offscreen render target that can be sampled by the FlowUi renderer.  
+<p>Offscreen render target that can be sampled by the <a class="el" href="namespaceFlowUi.html">FlowUi</a> renderer.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="ViewPortManager_8hpp_source.html">ViewPortManager.hpp</a>&gt;</code></p>
@@ -121,40 +121,38 @@ using&#160;</td><td class="memItemRight"><b>RenderCallback</b> = std::function&l
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a15370700951136db591e68a2da5a8f72" id="r_a15370700951136db591e68a2da5a8f72"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a15370700951136db591e68a2da5a8f72">getKey</a> () const noexcept</td></tr>
-<tr class="memdesc:a15370700951136db591e68a2da5a8f72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return this viewport's key.  <br /></td></tr>
+<tr class="memdesc:a15370700951136db591e68a2da5a8f72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow this viewport's registration key.  <br /></td></tr>
 <tr class="memitem:a5f2cac10eb5a33309f1900921530e5dc" id="r_a5f2cac10eb5a33309f1900921530e5dc"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a5f2cac10eb5a33309f1900921530e5dc">hasValidSize</a> () const noexcept</td></tr>
-<tr class="memdesc:a5f2cac10eb5a33309f1900921530e5dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether the viewport has a non-zero render size.  <br /></td></tr>
+<tr class="memdesc:a5f2cac10eb5a33309f1900921530e5dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test whether the current render target has nonzero width and height.  <br /></td></tr>
 <tr class="memitem:aa8a7d2c8e5f8b0c1f3a3e7cba0bc5ca8" id="r_aa8a7d2c8e5f8b0c1f3a3e7cba0bc5ca8"><td class="memItemLeft">VkExtent2D&#160;</td><td class="memItemRight"><a class="el" href="#aa8a7d2c8e5f8b0c1f3a3e7cba0bc5ca8">getSize</a> () const noexcept</td></tr>
-<tr class="memdesc:aa8a7d2c8e5f8b0c1f3a3e7cba0bc5ca8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the current render target size.  <br /></td></tr>
+<tr class="memdesc:aa8a7d2c8e5f8b0c1f3a3e7cba0bc5ca8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the current viewport render extent in framebuffer pixels.  <br /></td></tr>
 <tr class="memitem:a10f7c5d9f22a074f95691c59fc7dce0d" id="r_a10f7c5d9f22a074f95691c59fc7dce0d"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a>&#160;</td><td class="memItemRight"><a class="el" href="#a10f7c5d9f22a074f95691c59fc7dce0d">textureRef</a> () const noexcept</td></tr>
-<tr class="memdesc:a10f7c5d9f22a074f95691c59fc7dce0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a texture reference for this viewport.  <br /></td></tr>
-<tr class="memitem:a392c8372c68fd6562c4bc5f7ac4fc41f" id="r_a392c8372c68fd6562c4bc5f7ac4fc41f"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a392c8372c68fd6562c4bc5f7ac4fc41f">setRenderCallback</a> (<a class="el" href="#ad0d76433e868559926ec681a1b608864">RenderCallback</a> callback)</td></tr>
-<tr class="memdesc:a392c8372c68fd6562c4bc5f7ac4fc41f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the viewport render callback.  <br /></td></tr>
-<tr class="memitem:a8ac28ba477958a85dff2a9af682d1431" id="r_a8ac28ba477958a85dff2a9af682d1431"><td class="memTemplParams" colspan="2">template&lt;typename T, typename Fn&gt; </td></tr>
-<tr class="memitem:a8ac28ba477958a85dff2a9af682d1431 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a8ac28ba477958a85dff2a9af682d1431">setRenderCallback</a> (std::shared_ptr&lt; T &gt; userData, Fn &amp;&amp;callback)</td></tr>
-<tr class="memdesc:a8ac28ba477958a85dff2a9af682d1431"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the viewport render callback while retaining typed user data.  <br /></td></tr>
-<tr class="memitem:a41cbb5a21265263d5cb7bfab078b9b99" id="r_a41cbb5a21265263d5cb7bfab078b9b99"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a41cbb5a21265263d5cb7bfab078b9b99">clearRenderCallback</a> ()</td></tr>
-<tr class="memdesc:a41cbb5a21265263d5cb7bfab078b9b99"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear the viewport render callback.  <br /></td></tr>
+<tr class="memdesc:a10f7c5d9f22a074f95691c59fc7dce0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read this viewport's current frame-slot <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a>.  <br /></td></tr>
+<tr class="memitem:ac350084073d484cee769167e325e941e" id="r_ac350084073d484cee769167e325e941e"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#ac350084073d484cee769167e325e941e">setRenderCallback</a> (const <a class="el" href="#ad0d76433e868559926ec681a1b608864">RenderCallback</a> &amp;callback)</td></tr>
+<tr class="memdesc:ac350084073d484cee769167e325e941e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepare and publish an owned viewport render callback.  <br /></td></tr>
+<tr class="memitem:a839ab13c1db8988c546b5f393d4192dd" id="r_a839ab13c1db8988c546b5f393d4192dd"><td class="memTemplParams" colspan="2">template&lt;typename Callback&gt; </td></tr>
+<tr class="memitem:a839ab13c1db8988c546b5f393d4192dd template"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#a839ab13c1db8988c546b5f393d4192dd">setRenderCallback</a> (Callback &amp;&amp;callback)</td></tr>
+<tr class="memdesc:a839ab13c1db8988c546b5f393d4192dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepare and publish an owned viewport render callback.  <br /></td></tr>
+<tr class="memitem:aade9e30d0144281c37cdbc6d3b222eb7" id="r_aade9e30d0144281c37cdbc6d3b222eb7"><td class="memTemplParams" colspan="2">template&lt;typename T, typename Fn&gt; </td></tr>
+<tr class="memitem:aade9e30d0144281c37cdbc6d3b222eb7 template"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#aade9e30d0144281c37cdbc6d3b222eb7">setRenderCallback</a> (std::shared_ptr&lt; T &gt; userData, Fn &amp;&amp;callback)</td></tr>
+<tr class="memdesc:aade9e30d0144281c37cdbc6d3b222eb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepare and publish an owned viewport render callback.  <br /></td></tr>
+<tr class="memitem:a9c79f6b25e36df51503412ab662299f5" id="r_a9c79f6b25e36df51503412ab662299f5"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#a9c79f6b25e36df51503412ab662299f5">clearRenderCallback</a> ()</td></tr>
+<tr class="memdesc:a9c79f6b25e36df51503412ab662299f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear the installed viewport render callback.  <br /></td></tr>
 <tr class="memitem:a3c831bc9ef15c303e504f22569d7aca6" id="r_a3c831bc9ef15c303e504f22569d7aca6"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a3c831bc9ef15c303e504f22569d7aca6">hasRenderCallback</a> () const noexcept</td></tr>
-<tr class="memdesc:a3c831bc9ef15c303e504f22569d7aca6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether a render callback is set.  <br /></td></tr>
-<tr class="memitem:a5041209fac6a58554ebe927bc70d194d" id="r_a5041209fac6a58554ebe927bc70d194d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a5041209fac6a58554ebe927bc70d194d">setClearColor</a> (float r, float g, float b, float a)</td></tr>
-<tr class="memdesc:a5041209fac6a58554ebe927bc70d194d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set viewport clear color.  <br /></td></tr>
+<tr class="memdesc:a3c831bc9ef15c303e504f22569d7aca6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test whether this viewport has an installed callback.  <br /></td></tr>
+<tr class="memitem:a6f2e8630dd9d07d4fe17541da98f553b" id="r_a6f2e8630dd9d07d4fe17541da98f553b"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#a6f2e8630dd9d07d4fe17541da98f553b">setClearColor</a> (float r, float g, float b, float a)</td></tr>
+<tr class="memdesc:a6f2e8630dd9d07d4fe17541da98f553b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publish the RGBA viewport clear color.  <br /></td></tr>
 <tr class="memitem:aa05840783a71a827fcaf9168f9b9195c" id="r_aa05840783a71a827fcaf9168f9b9195c"><td class="memItemLeft">std::array&lt; float, 4 &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aa05840783a71a827fcaf9168f9b9195c">clearColor</a> () const noexcept</td></tr>
-<tr class="memdesc:aa05840783a71a827fcaf9168f9b9195c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return viewport clear color.  <br /></td></tr>
-<tr class="memitem:a39b1ba8923020766f15ee701575aa0ca" id="r_a39b1ba8923020766f15ee701575aa0ca"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a39b1ba8923020766f15ee701575aa0ca">setClearEveryFrame</a> (bool enabled)</td></tr>
-<tr class="memdesc:a39b1ba8923020766f15ee701575aa0ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set whether the viewport clears every frame.  <br /></td></tr>
+<tr class="memdesc:aa05840783a71a827fcaf9168f9b9195c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the viewport's RGBA clear color.  <br /></td></tr>
+<tr class="memitem:a83cfd1ad969a9d396e3848cdf4d01549" id="r_a83cfd1ad969a9d396e3848cdf4d01549"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#a83cfd1ad969a9d396e3848cdf4d01549">setClearEveryFrame</a> (bool enabled)</td></tr>
+<tr class="memdesc:a83cfd1ad969a9d396e3848cdf4d01549"><td class="mdescLeft">&#160;</td><td class="mdescRight">Choose whether every pass clears the viewport.  <br /></td></tr>
 <tr class="memitem:a1e3f7471d119305a5f7b3ae32f0c63ad" id="r_a1e3f7471d119305a5f7b3ae32f0c63ad"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a1e3f7471d119305a5f7b3ae32f0c63ad">clearEveryFrame</a> () const noexcept</td></tr>
-<tr class="memdesc:a1e3f7471d119305a5f7b3ae32f0c63ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether the viewport clears every frame.  <br /></td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a3d3b552bc02b863b6e152932f0954e16" id="r_a3d3b552bc02b863b6e152932f0954e16"><td class="memItemLeft"><a id="a3d3b552bc02b863b6e152932f0954e16" name="a3d3b552bc02b863b6e152932f0954e16"></a>
-class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
+<tr class="memdesc:a1e3f7471d119305a5f7b3ae32f0c63ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the viewport clear policy.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Offscreen render target that can be sampled by the FlowUi renderer. </p>
-<p><a class="el" href="classFlowUi_1_1ViewPort.html" title="Offscreen render target that can be sampled by the FlowUi renderer.">ViewPort</a> represents one application-defined render target managed by <a class="el" href="classFlowUi_1_1ViewPortManager.html" title="Creates, tracks, renders, and exposes offscreen viewports.">ViewPortManager</a>. The viewport owns no public Vulkan resources directly; FlowUi allocates per-frame images, command buffers, image views, and texture slots internally. UI code displays the viewport by using <a class="el" href="#a10f7c5d9f22a074f95691c59fc7dce0d" title="Return a texture reference for this viewport.">textureRef()</a> or, more commonly, <a class="el" href="classFlowUi_1_1ViewPortManager.html#aa24f7ce00d8a59ecd9a1bc4a4a92c921" title="Return the texture reference for a viewport key.">ViewPortManager::getTexture()</a> as Clay image data.</p>
-<p>A viewport render callback is invoked only for frames where the viewport texture is referenced by the UI. FlowUi begins and ends the secondary command buffer for the callback, creates the dynamic rendering pass around that secondary command buffer, handles image layout transitions, and makes the result available to the UI renderer as a sampled texture.</p>
+<div class="textblock"><p>Offscreen render target that can be sampled by the <a class="el" href="namespaceFlowUi.html">FlowUi</a> renderer. </p>
+<p><a class="el" href="classFlowUi_1_1ViewPort.html" title="Offscreen render target that can be sampled by the FlowUi renderer.">ViewPort</a> represents one application-defined render target managed by <a class="el" href="classFlowUi_1_1ViewPortManager.html" title="Creates, tracks, renders, and exposes offscreen viewports.">ViewPortManager</a>. The viewport owns no public Vulkan resources directly; <a class="el" href="namespaceFlowUi.html">FlowUi</a> allocates per-frame images, command buffers, image views, and texture slots internally. UI code displays the viewport by using <a class="el" href="#a10f7c5d9f22a074f95691c59fc7dce0d" title="Read this viewport&#39;s current frame-slot TextureRef.">textureRef()</a> or, more commonly, <a class="el" href="classFlowUi_1_1ViewPortManager.html#ad99e9430b7dc3394e7f870906ae8fbb3" title="Acquire the viewport texture reference for the current frame slot.">ViewPortManager::getTexture()</a> as Clay image data.</p>
+<p>A viewport render callback is invoked only for frames where the viewport texture is referenced by the UI. <a class="el" href="namespaceFlowUi.html">FlowUi</a> begins and ends the secondary command buffer for the callback, creates the dynamic rendering pass around that secondary command buffer, handles image layout transitions, and makes the result available to the UI renderer as a sampled texture.</p>
 <dl class="section warning"><dt>Warning</dt><dd>Vulkan handles exposed through <a class="el" href="structFlowUi_1_1ViewPortRenderContext.html" title="Per-frame context passed to a viewport render callback.">ViewPortRenderContext</a> and <a class="el" href="structFlowUi_1_1ViewPortVulkanInterop.html" title="Vulkan handles exposed to viewport render callbacks.">ViewPortVulkanInterop</a> are owned by <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">FlowUi::App</a>. Callback code may use them to record commands or create compatible resources, but must not destroy or take ownership of App-managed objects. </dd></dl>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="aa05840783a71a827fcaf9168f9b9195c" name="aa05840783a71a827fcaf9168f9b9195c"></a>
@@ -180,8 +178,9 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return viewport clear color. </p>
-<dl class="section return"><dt>Returns</dt><dd>RGBA clear color used by the viewport render pass. </dd></dl>
+<p>Read the viewport's RGBA clear color. </p>
+<p>This is a direct noexcept observation.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns a copied <span class="tt">std::array&lt;float, 4&gt;</span>; detached state returns zeros. </dd></dl>
 
 </div>
 </div>
@@ -208,35 +207,50 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return whether the viewport clears every frame. </p>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">true</td><td>The viewport pass clears before rendering each frame. </td></tr>
-    <tr><td class="paramname">false</td><td>The viewport pass loads previous contents after initialization. </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Read the viewport clear policy. </p>
+<p>false means previous initialized contents can be loaded.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns the stored policy; detached state returns true. </dd></dl>
 
 </div>
 </div>
-<a id="a41cbb5a21265263d5cb7bfab078b9b99" name="a41cbb5a21265263d5cb7bfab078b9b99"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a41cbb5a21265263d5cb7bfab078b9b99">&#9670;&#160;</a></span>clearRenderCallback()</h2>
+<a id="a9c79f6b25e36df51503412ab662299f5" name="a9c79f6b25e36df51503412ab662299f5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9c79f6b25e36df51503412ab662299f5">&#9670;&#160;</a></span>clearRenderCallback()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FlowUi::ViewPort::clearRenderCallback </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ViewPort::clearRenderCallback </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Clear the viewport render callback. </p>
-<p>After clearing, FlowUi still manages the viewport texture, but no custom draw commands are recorded for it.</p>
-<div class="fragment"></div><!-- fragment --> 
+<p>Clear the installed viewport render callback. </p>
+<p>The texture remains managed and may still be cleared; no custom drawing callback is invoked.</p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> reports detached/phase validation failure without replacing the existing callback. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">Application</td><td>callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = viewport.clearRenderCallback();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a15370700951136db591e68a2da5a8f72" name="a15370700951136db591e68a2da5a8f72"></a>
@@ -262,9 +276,10 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return this viewport's key. </p>
-<dl class="section return"><dt>Returns</dt><dd>Stable key used to create and look up the viewport.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Borrow this viewport's registration key. </p>
+<p>The view is invalid after removal or manager/window destruction.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns a view of the manager-owned key, or an empty view when detached. </dd></dl>
+
 </div>
 </div>
 <a id="aa8a7d2c8e5f8b0c1f3a3e7cba0bc5ca8" name="aa8a7d2c8e5f8b0c1f3a3e7cba0bc5ca8"></a>
@@ -290,10 +305,10 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return the current render target size. </p>
-<p><a class="el" href="classFlowUi_1_1ViewPortManager.html" title="Creates, tracks, renders, and exposes offscreen viewports.">ViewPortManager</a> derives this size from the largest UI image area that uses the viewport texture in the current frame, scaled to framebuffer pixels.</p>
-<dl class="section return"><dt>Returns</dt><dd>Current viewport extent in pixels. Width or height may be zero before the viewport has been referenced and sized.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Read the current viewport render extent in framebuffer pixels. </p>
+<p>The largest UI image area referencing this viewport drives resizing, with framebuffer scale and configured hysteresis.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns VkExtent2D; detached/unsized state may contain zero dimensions. </dd></dl>
+
 </div>
 </div>
 <a id="a3c831bc9ef15c303e504f22569d7aca6" name="a3c831bc9ef15c303e504f22569d7aca6"></a>
@@ -319,14 +334,9 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return whether a render callback is set. </p>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">true</td><td>A render callback is installed. </td></tr>
-    <tr><td class="paramname">false</td><td>No render callback is installed. </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Test whether this viewport has an installed callback. </p>
+<p>This is a direct noexcept observation.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns false when detached or no callback is installed. </dd></dl>
 
 </div>
 </div>
@@ -353,25 +363,23 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return whether the viewport has a non-zero render size. </p>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">true</td><td>The viewport currently has positive width and height. </td></tr>
-    <tr><td class="paramname">false</td><td>The viewport has not been sized yet or is currently empty.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Test whether the current render target has nonzero width and height. </p>
+<p>A newly created viewport normally starts at 1x1; later sizing follows UI image usage.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns false when detached or unsized. </dd></dl>
+
 </div>
 </div>
-<a id="a5041209fac6a58554ebe927bc70d194d" name="a5041209fac6a58554ebe927bc70d194d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5041209fac6a58554ebe927bc70d194d">&#9670;&#160;</a></span>setClearColor()</h2>
+<a id="a6f2e8630dd9d07d4fe17541da98f553b" name="a6f2e8630dd9d07d4fe17541da98f553b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6f2e8630dd9d07d4fe17541da98f553b">&#9670;&#160;</a></span>setClearColor()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FlowUi::ViewPort::setClearColor </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ViewPort::setClearColor </td>
           <td>(</td>
           <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>r</em></span>, </td>
         </tr>
@@ -391,76 +399,167 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
           <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>a</em></span>&#160;)</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Set viewport clear color. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">r</td><td>Red channel. </td></tr>
-    <tr><td class="paramname">g</td><td>Green channel. </td></tr>
-    <tr><td class="paramname">b</td><td>Blue channel. </td></tr>
-    <tr><td class="paramname">a</td><td>Alpha channel.</td></tr>
+<p>Publish the RGBA viewport clear color. </p>
+<p>The four float channels are stored as provided.</p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> reports detached/phase validation failures without changing the color. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">Application</td><td>callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.</td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"></div><!-- fragment --> 
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = viewport.setClearColor(0.02f, 0.02f, 0.03f, 1.0f);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a39b1ba8923020766f15ee701575aa0ca" name="a39b1ba8923020766f15ee701575aa0ca"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a39b1ba8923020766f15ee701575aa0ca">&#9670;&#160;</a></span>setClearEveryFrame()</h2>
+<a id="a83cfd1ad969a9d396e3848cdf4d01549" name="a83cfd1ad969a9d396e3848cdf4d01549"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a83cfd1ad969a9d396e3848cdf4d01549">&#9670;&#160;</a></span>setClearEveryFrame()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FlowUi::ViewPort::setClearEveryFrame </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ViewPort::setClearEveryFrame </td>
           <td>(</td>
           <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>enabled</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Set whether the viewport clears every frame. </p>
-<p>When disabled, FlowUi loads the existing image contents after the image has been initialized. This can be useful for persistent render targets.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">enabled</td><td>true to clear each frame, false to preserve previous contents when possible.</td></tr>
+<p>Choose whether every pass clears the viewport. </p>
+<p>false preserves image contents where available after the image's required initialization clear.</p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> reports detached/phase validation failures without changing the policy. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">Application</td><td>callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.</td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"></div><!-- fragment --> 
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = viewport.setClearEveryFrame(<span class="keyword">false</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a392c8372c68fd6562c4bc5f7ac4fc41f" name="a392c8372c68fd6562c4bc5f7ac4fc41f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a392c8372c68fd6562c4bc5f7ac4fc41f">&#9670;&#160;</a></span>setRenderCallback() <span class="overload">[1/2]</span></h2>
+<a id="a839ab13c1db8988c546b5f393d4192dd" name="a839ab13c1db8988c546b5f393d4192dd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a839ab13c1db8988c546b5f393d4192dd">&#9670;&#160;</a></span>setRenderCallback() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;typename Callback&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FlowUi::ViewPort::setRenderCallback </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ViewPort::setRenderCallback </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="#ad0d76433e868559926ec681a1b608864">RenderCallback</a></td>          <td class="paramname"><span class="paramname"><em>callback</em></span></td><td>)</td>
+          <td class="paramtype">Callback &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>callback</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Set the viewport render callback. </p>
-<p>The callback records viewport drawing commands into the secondary command buffer provided by <a class="el" href="structFlowUi_1_1ViewPortRenderContext.html" title="Per-frame context passed to a viewport render callback.">ViewPortRenderContext</a>. FlowUi begins and ends that command buffer; the callback should not call vkBeginCommandBuffer() or vkEndCommandBuffer().</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">callback</td><td>Callback invoked when the viewport is rendered. Passing an empty callback disables custom rendering.</td></tr>
+<p>Prepare and publish an owned viewport render callback. </p>
+<p><a class="el" href="namespaceFlowUi.html">FlowUi</a> begins/ends the provided secondary command buffer and owns the surrounding pass/transitions. Record commands only; do not begin/end/submit it or destroy App-owned handles. The generic overload constructs an owned std::function before publication. The shared_ptr overload retains its payload until the callback is replaced/cleared and rejects null payloads.</p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> reports detached/phase/configuration validation failures without replacing the previous callback. An empty <a class="el" href="#ad0d76433e868559926ec681a1b608864" title="Render callback invoked for a viewport pass.">RenderCallback</a> disables rendering. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">Application</td><td>callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section warning"><dt>Warning</dt><dd>The callback must not destroy App-owned Vulkan handles exposed by <a class="el" href="structFlowUi_1_1ViewPortRenderContext.html#a0ea853d8216ce342a3f901344743df39" title="Shared Vulkan interop handles, or nullptr if unavailable.">ViewPortRenderContext::vulkan</a>.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = viewport.setRenderCallback([](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a>&amp; context) {</div>
+<div class="line">    VkViewport dynamicViewport{};</div>
+<div class="line">    dynamicViewport.width = <span class="keyword">static_cast&lt;</span><span class="keywordtype">float</span><span class="keyword">&gt;</span>(context.<a class="code hl_variable" href="structFlowUi_1_1ViewPortRenderContext.html#ad2d72fbc27b6d6c9101b3e1d020b1b3b">extent</a>.width);</div>
+<div class="line">    dynamicViewport.height = <span class="keyword">static_cast&lt;</span><span class="keywordtype">float</span><span class="keyword">&gt;</span>(context.<a class="code hl_variable" href="structFlowUi_1_1ViewPortRenderContext.html#ad2d72fbc27b6d6c9101b3e1d020b1b3b">extent</a>.height);</div>
+<div class="line">    dynamicViewport.maxDepth = 1.0f;</div>
+<div class="line">    vkCmdSetViewport(context.<a class="code hl_variable" href="structFlowUi_1_1ViewPortRenderContext.html#a78359f529476829d7f7a84bf81778fd0">commandBuffer</a>, 0, 1, &amp;dynamicViewport);</div>
+<div class="line">});</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortRenderContext_html"><div class="ttname"><a href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a></div><div class="ttdoc">Per-frame context passed to a viewport render callback.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:64</div></div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortRenderContext_html_a78359f529476829d7f7a84bf81778fd0"><div class="ttname"><a href="structFlowUi_1_1ViewPortRenderContext.html#a78359f529476829d7f7a84bf81778fd0">FlowUi::ViewPortRenderContext::commandBuffer</a></div><div class="ttdeci">VkCommandBuffer commandBuffer</div><div class="ttdoc">Secondary command buffer for viewport rendering.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:71</div></div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortRenderContext_html_ad2d72fbc27b6d6c9101b3e1d020b1b3b"><div class="ttname"><a href="structFlowUi_1_1ViewPortRenderContext.html#ad2d72fbc27b6d6c9101b3e1d020b1b3b">FlowUi::ViewPortRenderContext::extent</a></div><div class="ttdeci">VkExtent2D extent</div><div class="ttdoc">Current viewport render target extent in pixels.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:74</div></div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a8ac28ba477958a85dff2a9af682d1431" name="a8ac28ba477958a85dff2a9af682d1431"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8ac28ba477958a85dff2a9af682d1431">&#9670;&#160;</a></span>setRenderCallback() <span class="overload">[2/2]</span></h2>
+<a id="ac350084073d484cee769167e325e941e" name="ac350084073d484cee769167e325e941e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac350084073d484cee769167e325e941e">&#9670;&#160;</a></span>setRenderCallback() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ViewPort::setRenderCallback </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="#ad0d76433e868559926ec681a1b608864">RenderCallback</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>callback</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Prepare and publish an owned viewport render callback. </p>
+<p><a class="el" href="namespaceFlowUi.html">FlowUi</a> begins/ends the provided secondary command buffer and owns the surrounding pass/transitions. Record commands only; do not begin/end/submit it or destroy App-owned handles. The generic overload constructs an owned std::function before publication. The shared_ptr overload retains its payload until the callback is replaced/cleared and rejects null payloads.</p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> reports detached/phase/configuration validation failures without replacing the previous callback. An empty <a class="el" href="#ad0d76433e868559926ec681a1b608864" title="Render callback invoked for a viewport pass.">RenderCallback</a> disables rendering. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">Application</td><td>callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="#ad0d76433e868559926ec681a1b608864">FlowUi::ViewPort::RenderCallback</a> callback = [](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a>&amp; context) {</div>
+<div class="line">    VkViewport dynamicViewport{};</div>
+<div class="line">    dynamicViewport.width = <span class="keyword">static_cast&lt;</span><span class="keywordtype">float</span><span class="keyword">&gt;</span>(context.extent.width);</div>
+<div class="line">    dynamicViewport.height = <span class="keyword">static_cast&lt;</span><span class="keywordtype">float</span><span class="keyword">&gt;</span>(context.extent.height);</div>
+<div class="line">    dynamicViewport.maxDepth = 1.0f;</div>
+<div class="line">    vkCmdSetViewport(context.commandBuffer, 0, 1, &amp;dynamicViewport);</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">auto</span> result = viewport.setRenderCallback(callback);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_ad0d76433e868559926ec681a1b608864"><div class="ttname"><a href="#ad0d76433e868559926ec681a1b608864">FlowUi::ViewPort::RenderCallback</a></div><div class="ttdeci">std::function&lt; void(const ViewPortRenderContext &amp;)&gt; RenderCallback</div><div class="ttdoc">Render callback invoked for a viewport pass.</div><div class="ttdef"><b>Definition</b> ViewPortManager.hpp:79</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="aade9e30d0144281c37cdbc6d3b222eb7" name="aade9e30d0144281c37cdbc6d3b222eb7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aade9e30d0144281c37cdbc6d3b222eb7">&#9670;&#160;</a></span>setRenderCallback() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -471,7 +570,7 @@ template&lt;typename T, typename Fn&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FlowUi::ViewPort::setRenderCallback </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ViewPort::setRenderCallback </td>
           <td>(</td>
           <td class="paramtype">std::shared_ptr&lt; T &gt;</td>          <td class="paramname"><span class="paramname"><em>userData</em></span>, </td>
         </tr>
@@ -483,34 +582,29 @@ template&lt;typename T, typename Fn&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Set the viewport render callback while retaining typed user data. </p>
-<p>This overload keeps userData alive for as long as the callback remains set and passes the referenced object to the callback after the render context.</p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">T</td><td>User data object type. </td></tr>
-    <tr><td class="paramname">Fn</td><td>Callable type invocable with (const <a class="el" href="structFlowUi_1_1ViewPortRenderContext.html" title="Per-frame context passed to a viewport render callback.">ViewPortRenderContext</a>&amp;, T&amp;). </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">userData</td><td>Shared payload retained by the callback. </td></tr>
-    <tr><td class="paramname">callback</td><td>Callable invoked for viewport rendering.</td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Prepare and publish an owned viewport render callback. </p>
+<p><a class="el" href="namespaceFlowUi.html">FlowUi</a> begins/ends the provided secondary command buffer and owns the surrounding pass/transitions. Record commands only; do not begin/end/submit it or destroy App-owned handles. The generic overload constructs an owned std::function before publication. The shared_ptr overload retains its payload until the callback is replaced/cleared and rejects null payloads.</p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> reports detached/phase/configuration validation failures without replacing the previous callback. An empty <a class="el" href="#ad0d76433e868559926ec681a1b608864" title="Render callback invoked for a viewport pass.">RenderCallback</a> disables rendering. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::runtime_error</td><td>if userData is null.</td></tr>
+    <tr><td class="paramname">Application</td><td>callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.</td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"></div><!-- fragment --> 
+<div class="fragment"><div class="line"><span class="keyword">auto</span> blendConstants = std::make_shared&lt;std::array&lt;float, 4&gt;&gt;(</div>
+<div class="line">    std::array&lt;float, 4&gt;{1.0f, 1.0f, 1.0f, 1.0f});</div>
+<div class="line"><span class="keyword">auto</span> result = viewport.setRenderCallback(std::move(blendConstants), [](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a>&amp; context, std::array&lt;float, 4&gt;&amp; constants) {</div>
+<div class="line">    vkCmdSetBlendConstants(context.<a class="code hl_variable" href="structFlowUi_1_1ViewPortRenderContext.html#a78359f529476829d7f7a84bf81778fd0">commandBuffer</a>, constants.data());</div>
+<div class="line">});</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a10f7c5d9f22a074f95691c59fc7dce0d" name="a10f7c5d9f22a074f95691c59fc7dce0d"></a>
@@ -536,10 +630,10 @@ template&lt;typename T, typename Fn&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Return a texture reference for this viewport. </p>
-<p>The returned <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> points at the viewport image for the currently active frame slot. For UI emission by key, <a class="el" href="classFlowUi_1_1ViewPortManager.html#aa24f7ce00d8a59ecd9a1bc4a4a92c921" title="Return the texture reference for a viewport key.">ViewPortManager::getTexture()</a> is usually more convenient.</p>
-<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> that can be stored in Clay image data.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Read this viewport's current frame-slot <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a>. </p>
+<p>Reacquire per frame and after resizing; <a class="el" href="classFlowUi_1_1ViewPortManager.html#ad99e9430b7dc3394e7f870906ae8fbb3" title="Acquire the viewport texture reference for the current frame slot.">ViewPortManager::getTexture()</a> is normally more convenient for keyed UI emission.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns an unavailable <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> when detached. </dd></dl>
+
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
@@ -558,7 +652,7 @@ template&lt;typename T, typename Fn&gt; </div>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1ViewPort.html">ViewPort</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1ViewPort.html">ViewPort</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

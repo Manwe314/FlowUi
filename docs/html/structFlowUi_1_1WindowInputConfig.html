@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,28 +107,20 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Configures low-level window input behavior.  
- <a href="#details">More...</a></p>
-
 <p><code>#include &lt;<a class="el" href="InputConfig_8hpp_source.html">InputConfig.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a6a75cb788a742f82bb95543a15c90dd9" id="r_a6a75cb788a742f82bb95543a15c90dd9"><td class="memItemLeft"><a id="a6a75cb788a742f82bb95543a15c90dd9" name="a6a75cb788a742f82bb95543a15c90dd9"></a>
-CursorMode&#160;</td><td class="memItemRight"><b>cursorMode</b> = CursorMode::Normal</td></tr>
+<a class="el" href="namespaceFlowUi.html#ab16c6b47535f12e71d87fde2f71bcdaa">CursorMode</a>&#160;</td><td class="memItemRight"><b>cursorMode</b> = <a class="el" href="namespaceFlowUi.html#ab16c6b47535f12e71d87fde2f71bcdaaa960b44c579bc2f6818d2daaf9e4c16f0">CursorMode::Normal</a></td></tr>
 <tr class="memdesc:a6a75cb788a742f82bb95543a15c90dd9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cursor visibility and capture mode applied to the window. <br /></td></tr>
 <tr class="memitem:a0a2ec170b498c78f7080fe14f6830fc4" id="r_a0a2ec170b498c78f7080fe14f6830fc4"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a0a2ec170b498c78f7080fe14f6830fc4">stickyKeys</a> = false</td></tr>
-<tr class="memdesc:a0a2ec170b498c78f7080fe14f6830fc4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Keep key press events available until they are polled.  <br /></td></tr>
 <tr class="memitem:a076f04ec508997b382370d748104bebc" id="r_a076f04ec508997b382370d748104bebc"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a076f04ec508997b382370d748104bebc">stickyMouseButtons</a> = false</td></tr>
-<tr class="memdesc:a076f04ec508997b382370d748104bebc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Keep mouse button press events available until they are polled.  <br /></td></tr>
 <tr class="memitem:a88a6f00d74fdd4aebf67459750e12016" id="r_a88a6f00d74fdd4aebf67459750e12016"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a88a6f00d74fdd4aebf67459750e12016">lockKeyMods</a> = false</td></tr>
-<tr class="memdesc:a88a6f00d74fdd4aebf67459750e12016"><td class="mdescLeft">&#160;</td><td class="mdescRight">Preserve lock-key modifier state in reported input events.  <br /></td></tr>
 <tr class="memitem:ab52aeb3022ade0cec09bf2d8d086386b" id="r_ab52aeb3022ade0cec09bf2d8d086386b"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ab52aeb3022ade0cec09bf2d8d086386b">rawMouseMotion</a> = false</td></tr>
-<tr class="memdesc:ab52aeb3022ade0cec09bf2d8d086386b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request unaccelerated mouse motion when the backend supports it.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Configures low-level window input behavior. </p>
-<p>These options are forwarded to the window backend during window creation and whenever the input configuration is updated at runtime. </p>
+<div class="textblock"><p>Window input modes applied at creation or by <a class="el" href="classFlowUi_1_1App.html#afbdb7a081165ce696fa34adfa4dc79bc" title="Apply window input configuration.">App::setWindowInputConfig()</a>. Backend support can limit raw motion and lock-key reporting. </p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a88a6f00d74fdd4aebf67459750e12016" name="a88a6f00d74fdd4aebf67459750e12016"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a88a6f00d74fdd4aebf67459750e12016">&#9670;&#160;</a></span>lockKeyMods</h2>
@@ -141,9 +133,7 @@ CursorMode&#160;</td><td class="memItemRight"><b>cursorMode</b> = CursorMode::No
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Preserve lock-key modifier state in reported input events. </p>
-<p>When supported by the backend, events include Caps Lock and Num Lock modifier bits while those locks are active. </p>
+<p>Include active Caps Lock and Num Lock modifier bits when supported by the backend. </p>
 
 </div>
 </div>
@@ -158,9 +148,7 @@ CursorMode&#160;</td><td class="memItemRight"><b>cursorMode</b> = CursorMode::No
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Request unaccelerated mouse motion when the backend supports it. </p>
-<p>Unsupported backends or platforms disable this option automatically. </p>
+<p>Request unaccelerated mouse motion where supported; cursor/backend mode may limit its effect. </p>
 
 </div>
 </div>
@@ -175,9 +163,7 @@ CursorMode&#160;</td><td class="memItemRight"><b>cursorMode</b> = CursorMode::No
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Keep key press events available until they are polled. </p>
-<p>Useful when the app wants to avoid missing short key presses between input polling points. </p>
+<p>Retain short key presses until polled, including presses released between polls. </p>
 
 </div>
 </div>
@@ -192,9 +178,7 @@ CursorMode&#160;</td><td class="memItemRight"><b>cursorMode</b> = CursorMode::No
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Keep mouse button press events available until they are polled. </p>
-<p>Useful when the app wants to avoid missing short mouse clicks between input polling points. </p>
+<p>Retain short mouse-button presses until polled, including clicks between polls. </p>
 
 </div>
 </div>
@@ -214,7 +198,7 @@ CursorMode&#160;</td><td class="memItemRight"><b>cursorMode</b> = CursorMode::No
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1WindowInputConfig.html">WindowInputConfig</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1WindowInputConfig.html">WindowInputConfig</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

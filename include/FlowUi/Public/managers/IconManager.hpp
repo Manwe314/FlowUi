@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Private/ApiBoundary.hpp"
+
 #include "FlowUi/Public/BuildConfig.hpp"
 
 #include <cstdint>
@@ -42,24 +44,14 @@ struct IconVariantEntry; struct IconAtlasPage; struct IconRetiredRegion; class I
  */
 
 /**
- * @brief Registers SVG icons and resolves them to atlas-backed texture references.
+ * @brief App-shared SVG registration and lazy frame-size rasterization.
  *
- * IconManager is available only when FlowUi is built with
- * FLOWUI_INCLUDE_ICON_MANAGER enabled. When enabled, it stores parsed SVG
- * documents by application-defined keys and returns TextureRef request handles
- * that FlowUi resolves into cached atlas variants at the size required by the
- * current frame.
- *
- * @code{.cpp}
- * FlowUi::IconManager& icons = app.icons();
- * (void)icons.registerFromFile("toolbar/save", "assets/icons/save.svg");
- *
- * FlowUi::TextureRef saveIcon = icons.textureRef("toolbar/save");
- * saveIcon.fitMode = FlowUi::TextureFitMode::Contain;
- * @endcode
- *
- * @see @ref md_docs_2tutorials_2images__icons__textures "Images, Icons, and Texture References"
- * @see @ref md_docs_2concepts_2managers "Managers"
+ * Recoverable operations return checked Result/Status values. A successful bool
+ * payload may be false; inspect the payload only after checking the Result.
+ * Obtain App-owned managers through the checked App getter and unwrap its
+ * reference_wrapper with result->get().
+ * Returned text, metadata, resource views, and pointers remain borrowed under
+ * each operation's documented invalidation rules.
  */
 struct IconManager {
 #if FLOW_UI_DEV_MODE
@@ -117,14 +109,95 @@ struct IconManager {
 	[[nodiscard]] std::size_t devIconCount() const noexcept;
 	/** @brief Return the number of currently published entries in this development catalogue. */
 	[[nodiscard]] std::size_t devAtlasCount() const noexcept;
-	/** @brief Visit borrowed catalogue entries synchronously; return false when a visitor stops early. */
-	bool visitDevIcons(void* userData, DevIconVisitor visitor) const;
-	/** @brief Visit borrowed catalogue entries synchronously; return false when a visitor stops early. */
-	bool visitDevAtlases(void* userData, DevAtlasVisitor visitor) const;
-	/** Materialize one exact raster at an explicit development-tool request. */
+	/**
+	 * @brief Observe development catalogue entries without invoking application operations.
+	 *
+	 * Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts materialized raster rows (unrasterized SVG rows are excluded); completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to FlowUiError. Earlier callback effects, including the counter, are not rolled back on failure. With icon support disabled, this hook succeeds with true and makes no callbacks.
+	 *
+	 * @return Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a detached manager or null visitor. A failed Result is an operational/callback error, not an incomplete-visit bool.
+	 *
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE
+	 * std::size_t count = 0;
+	 * auto result = manager.visitDevIcons(&count,
+	 *     [](void* target, const FlowUi::IconManager::DevIconView& icon) {
+	 *         auto& observedCount = *static_cast<std::size_t*>(target);
+	 *         if (static_cast<bool>(icon.texture)) {
+	 *             ++observedCount;
+	 *         }
+	 *         return true;
+	 *     });
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const bool completed = *result;
+	 * #endif
+	 * @endcode
+	 */
+	Result<bool> visitDevIcons(void* userData, DevIconVisitor visitor) const noexcept;
+	/**
+	 * @brief Observe development catalogue entries without invoking application operations.
+	 *
+	 * Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts allocated nonempty atlas pages; completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to FlowUiError. Earlier callback effects, including the counter, are not rolled back on failure. With icon support disabled, this hook succeeds with true and makes no callbacks.
+	 *
+	 * @return Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a detached manager or null visitor. A failed Result is an operational/callback error, not an incomplete-visit bool.
+	 *
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE
+	 * std::size_t count = 0;
+	 * auto result = manager.visitDevAtlases(&count,
+	 *     [](void* target, const FlowUi::IconManager::DevAtlasView& page) {
+	 *         auto& observedCount = *static_cast<std::size_t*>(target);
+	 *         if (page.width != 0 && page.height != 0) {
+	 *             ++observedCount;
+	 *         }
+	 *         return true;
+	 *     });
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const bool completed = *result;
+	 * #endif
+	 * @endcode
+	 */
+	Result<bool> visitDevAtlases(void* userData, DevAtlasVisitor visitor) const noexcept;
+	/**
+	 * @brief Materialize or reuse one exact development SVG raster.
+	 *
+	 * The key must name a registered SVG; width and height must be in [1, 512]. The example expects status/check to be registered. The returned DevIconView and texture identity are borrowed and invalidated by raster/document removal or manager destruction. newlyRasterized distinguishes a new cached raster from a reused one. No exception escapes. With icon support disabled, return UnsupportedBuildFeature.
+	 *
+	 * @return A checked raster view, or initialization, IconRasterInvalid, IconNotFound, publication, allocation, or storage failure.
+	 *
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE
+	 * auto result = icons.devRasterize("status/check", 32, 32);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const bool newlyRasterized = result->newlyRasterized;
+	 * const auto retained = result->texture;
+	 * #endif
+	 * @endcode
+	 */
 	[[nodiscard]] Result<DevIconView> devRasterize(std::string_view key, uint32_t width,
 												uint32_t height) noexcept;
-	/** Retire only the exact cached texture generation; the SVG registration remains. */
+	/**
+	 * @brief Retire only the exact development raster texture generation.
+	 *
+	 * The SVG registration remains. A removed raster can be regenerated by later UI usage or devRasterize(). Its previous borrowed texture identity must be discarded; backing allocations retire after their recorded uses. No exception escapes. With icon support disabled, return UnsupportedBuildFeature.
+	 *
+	 * @return Success contains true when a cached raster was removed or false when the texture did not match any cached raster; initialization/storage/allocation failures are errors.
+	 *
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE
+	 * auto result = icons.devRemoveRaster(raster);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto removed = *result;
+	 * #endif
+	 * @endcode
+	 */
 	[[nodiscard]] Result<bool> devRemoveRaster(TextureHandle texture) noexcept;
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
@@ -134,151 +207,225 @@ struct IconManager {
 	void setDevMemoryRecorder(devSystems::DevMemoryRecorder* recorder) noexcept { devMemoryRecorder_ = recorder; }
 #endif
 	/**
-	 * @brief Register an SVG document from source text.
+	 * @brief Parse and register SVG source for lazy rasterization.
 	 *
-	 * The key is the stable string name used later with contains(),
-	 * remove(), and textureRef(). The SVG source is parsed immediately; raster
-	 * variants are created lazily when the icon is rendered.
+	 * Source bytes are consumed/copied during registration; rasterization occurs later at rendered size and cached variants are reused.
 	 *
-	 * @param key string icon key.
-	 * @param svgSource Complete SVG document source text.
-	 * @return A result containing true when registered or false when the key
-	 * already exists. Invalid source, key, initialization, and storage failures
-	 * are returned as structured errors.
-	 * @throws std::bad_alloc if allocating SVG or registration data fails.
+	 * @return Success contains true for insertion or false when the key already exists; a duplicate preserves the original document. Invalid SVG is an error.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * constexpr std::string_view kCheckSvg = R"(
-	 * <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-	 *     <path d="M6.2 11.3 2.9 8l1.2-1.2 2.1 2.1 5.7-5.7L13.1 4z"/>
-	 * </svg>
-	 * )";
-	 *
-	 * const auto registered = app.icons().registerSvg("status/check", kCheckSvg);
-	 * if (!registered) {
-	 *     return; // Report registered.error() to the application.
+	 * constexpr std::string_view svgSource = R"svg(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M2 8l4 4 8-8" fill="none" stroke="#fff"/></svg>)svg";
+	 * auto result = manager.registerSvg("status/check", svgSource);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
 	 * }
+	 * const auto inserted = *result;
 	 * @endcode
 	 */
-	[[nodiscard]] Result<bool> registerSvg(std::string_view key, std::string_view svgSource);
-	/** @brief Register parsed SVG source under an app-shared resource key.
-	 * ResourceDomain::Icon is inferred when unspecified; incompatible explicit domains or scopes are rejected.
+	[[nodiscard]] Result<bool> registerSvg(std::string_view key, std::string_view svgSource) noexcept;
+	/**
+	 * @brief Parse and register SVG source for lazy rasterization.
+	 *
+	 * Source bytes are consumed/copied during registration; rasterization occurs later at rendered size and cached variants are reused. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.
+	 *
+	 * @return Success contains true for insertion or false when the key already exists; a duplicate preserves the original document. Invalid SVG is an error.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "status/check"};
+	 * constexpr std::string_view svgSource = R"svg(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M2 8l4 4 8-8" fill="none" stroke="#fff"/></svg>)svg";
+	 * auto result = manager.registerSvg(key, svgSource);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto inserted = *result;
+	 * @endcode
 	 */
-	[[nodiscard]] Result<bool> registerSvg(ResourceKey key, std::string_view svgSource);
+	[[nodiscard]] Result<bool> registerSvg(ResourceKey key, std::string_view svgSource) noexcept;
 
 	/**
-	 * @brief Register an SVG document from a file path.
+	 * @brief Read, parse, and register an SVG file from a UTF-8 path.
 	 *
-	 * The key is the stable string name used later with contains(),
-	 * remove(), and textureRef(). The file is parsed immediately; raster variants
-	 * are created lazily when the icon is rendered.
+	 * The file path and bytes are consumed synchronously. Registration does not rasterize the SVG.
 	 *
-	 * @param key string icon key.
-	 * @param filePath Path to an SVG file on disk.
-	 * @return A result containing true when registered or false when the key
-	 * already exists. Initialization, key, file, parse, and storage failures
-	 * are returned as structured errors.
-	 * @throws std::bad_alloc if allocating SVG or registration data fails.
+	 * @return Success contains true for insertion or false for an existing unchanged key. File/path/read/parse failures are errors.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * const auto registered = app.icons().registerFromFile(
-	 *     "toolbar/open",
-	 *     "assets/icons/open.svg");
-	 * if (!registered) {
-	 *     return; // Report registered.error() to the application.
+	 * auto result = manager.registerFromFile("status/check", "assets/icons/check.svg");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
 	 * }
+	 * const auto inserted = *result;
 	 * @endcode
 	 */
-	[[nodiscard]] Result<bool> registerFromFile(std::string_view key, std::string_view filePath);
-	/** @brief Register an SVG file under an app-shared resource key.
-	 * ResourceDomain::Icon is inferred when unspecified; incompatible explicit domains or scopes are rejected.
+	[[nodiscard]] Result<bool> registerFromFile(std::string_view key, std::string_view filePath) noexcept;
+	/**
+	 * @brief Read, parse, and register an SVG file from a UTF-8 path.
+	 *
+	 * The file path and bytes are consumed synchronously. Registration does not rasterize the SVG. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.
+	 *
+	 * @return Success contains true for insertion or false for an existing unchanged key. File/path/read/parse failures are errors.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "status/check"};
+	 * auto result = manager.registerFromFile(key, "assets/icons/check.svg");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto inserted = *result;
+	 * @endcode
 	 */
-	[[nodiscard]] Result<bool> registerFromFile(ResourceKey key, std::string_view filePath);
-	/** Load SVG source through a native filesystem path. */
-	[[nodiscard]] Result<bool> register_file(ResourceKey key, const std::filesystem::path& file_path);
-	/** Load SVG source through a native filesystem path under a string key. */
-	[[nodiscard]] Result<bool> register_file(std::string_view key, const std::filesystem::path& file_path) {
+	[[nodiscard]] Result<bool> registerFromFile(ResourceKey key, std::string_view filePath) noexcept;
+	/**
+	 * @brief Read and register an SVG from a native filesystem path.
+	 *
+	 * Use native filesystem paths where platform path encoding matters; rasterization remains lazy. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.
+	 *
+	 * @return Success contains true for insertion or false for an existing unchanged key. File/path/read/parse failures are errors.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "status/check"};
+	 * const std::filesystem::path assetPath{"assets/icons/check.svg"};
+	 * auto result = manager.register_file(key, assetPath);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto inserted = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<bool> register_file(ResourceKey key, const std::filesystem::path& file_path) noexcept;
+	/**
+	 * @brief Read and register an SVG from a native filesystem path.
+	 *
+	 * Use native filesystem paths where platform path encoding matters; rasterization remains lazy.
+	 *
+	 * @return Success contains true for insertion or false for an existing unchanged key. File/path/read/parse failures are errors.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const std::filesystem::path assetPath{"assets/icons/check.svg"};
+	 * auto result = manager.register_file("status/check", assetPath);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto inserted = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<bool> register_file(std::string_view key, const std::filesystem::path& file_path) noexcept {
 		return register_file(ResourceKey{.name = key}, file_path);
 	}
 
 	/**
-	 * @brief Remove a registered SVG document by key.
+	 * @brief Remove an SVG document and retire its cached raster generations.
 	 *
-	 * Removing an icon also removes its request texture id and cached atlas
-	 * variants. TextureRef values previously returned for the key should be
-	 * treated as invalid after removal.
+	 * Previously returned request/cached texture generations are invalid after removal. Reacquire after registration; actual GPU allocations retire when recorded uses finish.
 	 *
-	 * @param key Application-defined icon key to remove.
-	 * @return A result containing true when removed or false when the key is
-	 * absent. Initialization and storage failures are structured errors.
+	 * @return Success contains true if removed and false if absent.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * const auto removed = app.icons().remove("toolbar/open");
-	 * if (removed && *removed) {
-	 *     // The icon can be registered again under the same key.
+	 * auto result = manager.remove("status/check");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
 	 * }
+	 * const auto removed = *result;
 	 * @endcode
 	 */
-	[[nodiscard]] Result<bool> remove(std::string_view key);
-	/** @brief Remove an app-shared SVG registration and retire its cached raster generations.
-	 * ResourceDomain::Icon is inferred when unspecified; incompatible explicit domains or scopes are rejected.
+	[[nodiscard]] Result<bool> remove(std::string_view key) noexcept;
+	/**
+	 * @brief Remove an SVG document and retire its cached raster generations.
+	 *
+	 * Previously returned request/cached texture generations are invalid after removal. Reacquire after registration; actual GPU allocations retire when recorded uses finish. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.
+	 *
+	 * @return Success contains true if removed and false if absent.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "status/check"};
+	 * auto result = manager.remove(key);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto removed = *result;
+	 * @endcode
 	 */
-	[[nodiscard]] Result<bool> remove(ResourceKey key);
+	[[nodiscard]] Result<bool> remove(ResourceKey key) noexcept;
 
 	/**
-	 * @brief Return whether an SVG key is registered.
+	 * @brief Test whether an SVG key is registered.
 	 *
-	 * This lookup does not force rasterization or atlas allocation. Resource-key
-	 * normalization and lookup metadata may allocate.
+	 * This does not trigger rasterization.
 	 *
-	 * @param key Application-defined icon key to test.
-	 * @retval true key is registered.
-	 * @retval false key is not registered.
+	 * @return Success contains true for a registered document or false for absence.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * if (!app.icons().contains("toolbar/save")) {
-	 *     (void)app.icons().registerFromFile("toolbar/save", "assets/icons/save.svg");
+	 * auto result = manager.contains("status/check");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
 	 * }
+	 * const auto registered = *result;
 	 * @endcode
 	 */
-	[[nodiscard]] bool contains(std::string_view key) const;
-	/** @brief Test whether an app-shared SVG resource key is registered.
-	 * ResourceDomain::Icon is inferred when unspecified; incompatible explicit domains or scopes are rejected.
+	[[nodiscard]] Result<bool> contains(std::string_view key) const noexcept;
+	/**
+	 * @brief Test whether an SVG key is registered.
+	 *
+	 * This does not trigger rasterization. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.
+	 *
+	 * @return Success contains true for a registered document or false for absence.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "status/check"};
+	 * auto result = manager.contains(key);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto registered = *result;
+	 * @endcode
 	 */
-	[[nodiscard]] bool contains(ResourceKey key) const;
+	[[nodiscard]] Result<bool> contains(ResourceKey key) const noexcept;
 
 	/**
-	 * @brief Return a texture request reference for a registered icon key.
+	 * @brief Resolve an SVG key to a request TextureRef for UI rendering.
 	 *
-	 * The returned TextureRef is a request handle, not necessarily the final atlas
-	 * variant. During frame preparation, FlowUi inspects image commands using this
-	 * id, rasterizes the SVG at the requested draw size, caches it in an atlas
-	 * page, and rewrites the command to the cached atlas region.
+	 * This non-const query may publish a request texture; final size-dependent rasterization occurs during frame preparation. sourceKey is borrowed App-owned metadata. Do not overwrite manager-owned handle/UV fields. Reacquire after removal and keep borrowed metadata within the App lifetime.
 	 *
-	 * Application code may adjust TextureRef fields such as fitMode and
-	 * tintEnabled before passing it to image drawing code. Manager-owned id and
-	 * UV fields should be left unchanged.
-	 *
-	 * @param key Registered application-defined icon key.
-	 * @return TextureRef request handle for the icon.
-	 *
-	 * @throws FlowUiException if the manager or key is invalid, or if a missing
-	 * icon is requested with the FailRequest policy. Other missing-icon policies
-	 * return a fallback or skipped reference. Native atlas invariants are fatal.
+	 * @return Missing keys return IconNotFound under IconGenerationFailurePolicy::FailRequest. Other policies successfully return an unavailable reference requesting a fallback or omission, with a once-per-key diagnostic.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * FlowUi::TextureRef deleteIcon = app.icons().textureRef("toolbar/delete");
-	 * deleteIcon.fitMode = FlowUi::TextureFitMode::Contain;
-	 * deleteIcon.tintEnabled = true;
+	 * auto result = manager.textureRef("status/check");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto texture = *result;
 	 * @endcode
+	 */
+	[[nodiscard]] Result<TextureRef> textureRef(std::string_view key) noexcept;
+	/**
+	 * @brief Resolve an SVG key to a request TextureRef for UI rendering.
 	 *
-	 * @see @ref md_docs_2tutorials_2images__icons__textures "Images, Icons, and Texture References"
+	 * This non-const query may publish a request texture; final size-dependent rasterization occurs during frame preparation. sourceKey is borrowed App-owned metadata. Do not overwrite manager-owned handle/UV fields. Reacquire after removal and keep borrowed metadata within the App lifetime. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.
+	 *
+	 * @return Missing keys return IconNotFound under IconGenerationFailurePolicy::FailRequest. Other policies successfully return an unavailable reference requesting a fallback or omission, with a once-per-key diagnostic.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "status/check"};
+	 * auto result = manager.textureRef(key);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto texture = *result;
+	 * @endcode
 	 */
-	[[nodiscard]] TextureRef textureRef(std::string_view key);
-	/** @brief Resolve an app-shared SVG key to a borrowed request texture reference.
-	 * ResourceDomain::Icon is inferred when unspecified; incompatible explicit domains or scopes are rejected.
-	 */
-	[[nodiscard]] TextureRef textureRef(ResourceKey key);
+	[[nodiscard]] Result<TextureRef> textureRef(ResourceKey key) noexcept;
 
 private:
 	friend class App;
@@ -364,12 +511,14 @@ namespace detail::storage { class IStorageSystem; }
  */
 
 /**
- * @brief Stub IconManager used when FlowUi is built with icon support disabled.
+ * @brief App-shared SVG registration and lazy frame-size rasterization.
  *
- * This struct preserves the public type when FLOWUI_INCLUDE_ICON_MANAGER is
- * disabled. Result-returning registration/removal calls report UnsupportedBuildFeature;
- * contains() and textureRef() throw FlowUiException with that error. Development
- * visitors are empty and counts are zero.
+ * Recoverable operations return checked Result/Status values. A successful bool
+ * payload may be false; inspect the payload only after checking the Result.
+ * Obtain App-owned managers through the checked App getter and unwrap its
+ * reference_wrapper with result->get().
+ * Returned text, metadata, resource views, and pointers remain borrowed under
+ * each operation's documented invalidation rules.
  */
 struct IconManager {
 #if FLOW_UI_DEV_MODE
@@ -427,15 +576,96 @@ struct IconManager {
 	[[nodiscard]] std::size_t devIconCount() const noexcept { return 0; }
 	/** @brief Return the number of currently published entries in this development catalogue. */
 	[[nodiscard]] std::size_t devAtlasCount() const noexcept { return 0; }
-	/** @brief Visit borrowed catalogue entries synchronously; return false when a visitor stops early. */
-	bool visitDevIcons(void*, DevIconVisitor) const { return true; }
-	/** @brief Visit borrowed catalogue entries synchronously; return false when a visitor stops early. */
-	bool visitDevAtlases(void*, DevAtlasVisitor) const { return true; }
-	/** Report unavailable icon support for an explicit development raster request. */
+	/**
+	 * @brief Observe development catalogue entries without invoking application operations.
+	 *
+	 * Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts materialized raster rows (unrasterized SVG rows are excluded); completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to FlowUiError. Earlier callback effects, including the counter, are not rolled back on failure. With icon support disabled, this hook succeeds with true and makes no callbacks.
+	 *
+	 * @return Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a detached manager or null visitor. A failed Result is an operational/callback error, not an incomplete-visit bool.
+	 *
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE
+	 * std::size_t count = 0;
+	 * auto result = manager.visitDevIcons(&count,
+	 *     [](void* target, const FlowUi::IconManager::DevIconView& icon) {
+	 *         auto& observedCount = *static_cast<std::size_t*>(target);
+	 *         if (static_cast<bool>(icon.texture)) {
+	 *             ++observedCount;
+	 *         }
+	 *         return true;
+	 *     });
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const bool completed = *result;
+	 * #endif
+	 * @endcode
+	 */
+	Result<bool> visitDevIcons(void*, DevIconVisitor) const noexcept { return true; }
+	/**
+	 * @brief Observe development catalogue entries without invoking application operations.
+	 *
+	 * Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts allocated nonempty atlas pages; completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to FlowUiError. Earlier callback effects, including the counter, are not rolled back on failure. With icon support disabled, this hook succeeds with true and makes no callbacks.
+	 *
+	 * @return Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a detached manager or null visitor. A failed Result is an operational/callback error, not an incomplete-visit bool.
+	 *
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE
+	 * std::size_t count = 0;
+	 * auto result = manager.visitDevAtlases(&count,
+	 *     [](void* target, const FlowUi::IconManager::DevAtlasView& page) {
+	 *         auto& observedCount = *static_cast<std::size_t*>(target);
+	 *         if (page.width != 0 && page.height != 0) {
+	 *             ++observedCount;
+	 *         }
+	 *         return true;
+	 *     });
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const bool completed = *result;
+	 * #endif
+	 * @endcode
+	 */
+	Result<bool> visitDevAtlases(void*, DevAtlasVisitor) const noexcept { return true; }
+	/**
+	 * @brief Materialize or reuse one exact development SVG raster.
+	 *
+	 * The key must name a registered SVG; width and height must be in [1, 512]. The example expects status/check to be registered. The returned DevIconView and texture identity are borrowed and invalidated by raster/document removal or manager destruction. newlyRasterized distinguishes a new cached raster from a reused one. No exception escapes. With icon support disabled, return UnsupportedBuildFeature.
+	 *
+	 * @return A checked raster view, or initialization, IconRasterInvalid, IconNotFound, publication, allocation, or storage failure.
+	 *
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE
+	 * auto result = icons.devRasterize("status/check", 32, 32);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const bool newlyRasterized = result->newlyRasterized;
+	 * const auto retained = result->texture;
+	 * #endif
+	 * @endcode
+	 */
 	[[nodiscard]] Result<DevIconView> devRasterize(std::string_view, uint32_t, uint32_t) noexcept {
 		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconRasterize));
 	}
-	/** Report unavailable icon support for an explicit development raster removal. */
+	/**
+	 * @brief Retire only the exact development raster texture generation.
+	 *
+	 * The SVG registration remains. A removed raster can be regenerated by later UI usage or devRasterize(). Its previous borrowed texture identity must be discarded; backing allocations retire after their recorded uses. No exception escapes. With icon support disabled, return UnsupportedBuildFeature.
+	 *
+	 * @return Success contains true when a cached raster was removed or false when the texture did not match any cached raster; initialization/storage/allocation failures are errors.
+	 *
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE
+	 * auto result = icons.devRemoveRaster(raster);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto removed = *result;
+	 * #endif
+	 * @endcode
+	 */
 	[[nodiscard]] Result<bool> devRemoveRaster(TextureHandle) noexcept {
 		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconRemove));
 	}
@@ -447,121 +677,241 @@ struct IconManager {
 	void setDevMemoryRecorder(devSystems::DevMemoryRecorder*) noexcept {}
 #endif
 	/**
-	 * @brief Return UnsupportedBuildFeature because icon support is disabled.
+	 * @brief Report unavailable icon support for this overload.
 	 *
-	 * @param key Unused icon key.
-	 * @param svgSource Unused SVG source.
-	 * @return Structured unsupported-feature error.
+	 * Enable icon-manager support to use SVG registration, removal, or lookup. ResourceKey adapters in this build forward to the unsupported operation.
+	 *
+	 * @return Always returns UnsupportedBuildFeature when FLOWUI_INCLUDE_ICON_MANAGER is disabled.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * // Requires FLOWUI_INCLUDE_ICON_MANAGER enabled.
-	 * (void)app.icons().registerSvg("status/check", svgSource);
+	 * constexpr std::string_view svgSource = R"svg(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M2 8l4 4 8-8" fill="none" stroke="#fff"/></svg>)svg";
+	 * auto result = manager.registerSvg("status/check", svgSource);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto inserted = *result;
 	 * @endcode
 	 */
-	[[nodiscard]] Result<bool> registerSvg(std::string_view key, std::string_view svgSource) {
-		(void)key;
-		(void)svgSource;
+	[[nodiscard]] Result<bool> registerSvg(std::string_view, std::string_view) noexcept {
 		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconRegisterSource));
 	}
-	/** @brief Register parsed SVG source under an app-shared resource key.
-	 * ResourceDomain::Icon is inferred when unspecified; incompatible explicit domains or scopes are rejected.
+	/**
+	 * @brief Report unavailable icon support for this overload.
+	 *
+	 * Enable icon-manager support to use SVG registration, removal, or lookup. ResourceKey adapters in this build forward to the unsupported operation.
+	 *
+	 * @return Always returns UnsupportedBuildFeature when FLOWUI_INCLUDE_ICON_MANAGER is disabled.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "resource"};
+	 * constexpr std::string_view svgSource = R"svg(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M2 8l4 4 8-8" fill="none" stroke="#fff"/></svg>)svg";
+	 * auto result = manager.registerSvg(key, svgSource);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto inserted = *result;
+	 * @endcode
 	 */
-	[[nodiscard]] Result<bool> registerSvg(ResourceKey key, std::string_view svgSource) {
+	[[nodiscard]] Result<bool> registerSvg(ResourceKey key, std::string_view svgSource) noexcept {
 		return registerSvg(key.name, svgSource);
 	}
 
 	/**
-	 * @brief Return UnsupportedBuildFeature because icon support is disabled.
+	 * @brief Report unavailable icon support for this overload.
 	 *
-	 * @param key Unused icon key.
-	 * @param filePath Unused SVG file path.
-	 * @return Structured unsupported-feature error.
+	 * Enable icon-manager support to use SVG registration, removal, or lookup. ResourceKey adapters in this build forward to the unsupported operation.
+	 *
+	 * @return Always returns UnsupportedBuildFeature when FLOWUI_INCLUDE_ICON_MANAGER is disabled.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * // Requires FLOWUI_INCLUDE_ICON_MANAGER enabled.
-	 * (void)app.icons().registerFromFile("toolbar/open", "assets/icons/open.svg");
+	 * auto result = manager.registerFromFile("status/check", "assets/icons/check.svg");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto inserted = *result;
 	 * @endcode
 	 */
-	[[nodiscard]] Result<bool> registerFromFile(std::string_view key, std::string_view filePath) {
-		(void)key;
-		(void)filePath;
+	[[nodiscard]] Result<bool> registerFromFile(std::string_view, std::string_view) noexcept {
 		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconRegisterSource));
 	}
-	/** @brief Register an SVG file under an app-shared resource key.
-	 * ResourceDomain::Icon is inferred when unspecified; incompatible explicit domains or scopes are rejected.
+	/**
+	 * @brief Report unavailable icon support for this overload.
+	 *
+	 * Enable icon-manager support to use SVG registration, removal, or lookup. ResourceKey adapters in this build forward to the unsupported operation.
+	 *
+	 * @return Always returns UnsupportedBuildFeature when FLOWUI_INCLUDE_ICON_MANAGER is disabled.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "resource"};
+	 * auto result = manager.registerFromFile(key, "assets/icons/check.svg");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto inserted = *result;
+	 * @endcode
 	 */
-	[[nodiscard]] Result<bool> registerFromFile(ResourceKey key, std::string_view filePath) {
+	[[nodiscard]] Result<bool> registerFromFile(ResourceKey key, std::string_view filePath) noexcept {
 		return registerFromFile(key.name, filePath);
 	}
-	/** Report unavailable SVG support for a native file path. */
-	[[nodiscard]] Result<bool> register_file(ResourceKey key, const std::filesystem::path& file_path) {
-		return registerFromFile(key, path_to_utf8(file_path));
+	/**
+	 * @brief Report unavailable icon support for this overload.
+	 *
+	 * Enable icon-manager support to use SVG registration, removal, or lookup. ResourceKey adapters in this build forward to the unsupported operation.
+	 *
+	 * @return Always returns UnsupportedBuildFeature when FLOWUI_INCLUDE_ICON_MANAGER is disabled.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "resource"};
+	 * const std::filesystem::path assetPath{"assets/logo.png"};
+	 * auto result = manager.register_file(key, assetPath);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto inserted = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<bool> register_file(ResourceKey, const std::filesystem::path&) noexcept {
+		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconRegisterSource));
 	}
-	/** Report unavailable SVG support for a native file path under a string key. */
-	[[nodiscard]] Result<bool> register_file(std::string_view key, const std::filesystem::path& file_path) {
+	/**
+	 * @brief Report unavailable icon support for this overload.
+	 *
+	 * Enable icon-manager support to use SVG registration, removal, or lookup. ResourceKey adapters in this build forward to the unsupported operation.
+	 *
+	 * @return Always returns UnsupportedBuildFeature when FLOWUI_INCLUDE_ICON_MANAGER is disabled.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const std::filesystem::path assetPath{"assets/logo.png"};
+	 * auto result = manager.register_file("status/check", assetPath);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto inserted = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<bool> register_file(std::string_view key, const std::filesystem::path& file_path) noexcept {
 		return register_file(ResourceKey{.name = key}, file_path);
 	}
 
 	/**
-	 * @brief Return UnsupportedBuildFeature because icon support is disabled.
+	 * @brief Report unavailable icon support for this overload.
 	 *
-	 * @param key Unused icon key.
-	 * @return Structured unsupported-feature error.
+	 * Enable icon-manager support to use SVG registration, removal, or lookup. ResourceKey adapters in this build forward to the unsupported operation.
+	 *
+	 * @return Always returns UnsupportedBuildFeature when FLOWUI_INCLUDE_ICON_MANAGER is disabled.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * // Requires FLOWUI_INCLUDE_ICON_MANAGER enabled.
-	 * (void)app.icons().remove("toolbar/open");
+	 * auto result = manager.remove("status/check");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto removed = *result;
 	 * @endcode
 	 */
-	[[nodiscard]] Result<bool> remove(std::string_view key) {
-		(void)key;
+	[[nodiscard]] Result<bool> remove(std::string_view) noexcept {
 		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconRemove));
 	}
-	/** @brief Remove an app-shared SVG registration and retire its cached raster generations.
-	 * ResourceDomain::Icon is inferred when unspecified; incompatible explicit domains or scopes are rejected.
-	 */
-	[[nodiscard]] Result<bool> remove(ResourceKey key) { return remove(key.name); }
-
 	/**
-	 * @brief Throws because icon support is disabled.
+	 * @brief Report unavailable icon support for this overload.
 	 *
-	 * @param key Unused icon key.
-	 * @throws FlowUiException always.
+	 * Enable icon-manager support to use SVG registration, removal, or lookup. ResourceKey adapters in this build forward to the unsupported operation.
+	 *
+	 * @return Always returns UnsupportedBuildFeature when FLOWUI_INCLUDE_ICON_MANAGER is disabled.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * // Requires FLOWUI_INCLUDE_ICON_MANAGER enabled.
-	 * const bool hasIcon = app.icons().contains("toolbar/open");
-	 * (void)hasIcon;
+	 * const FlowUi::ResourceKey key{.name = "resource"};
+	 * auto result = manager.remove(key);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto removed = *result;
 	 * @endcode
 	 */
-	[[nodiscard]] bool contains(std::string_view key) const {
-		(void)key;
-		throw FlowUiException(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconLookup));
-	}
-	/** @brief Test whether an app-shared SVG resource key is registered.
-	 * ResourceDomain::Icon is inferred when unspecified; incompatible explicit domains or scopes are rejected.
-	 */
-	[[nodiscard]] bool contains(ResourceKey key) const { return contains(key.name); }
+	[[nodiscard]] Result<bool> remove(ResourceKey key) noexcept { return remove(key.name); }
 
 	/**
-	 * @brief Throws because icon support is disabled.
+	 * @brief Report unavailable icon support for this overload.
 	 *
-	 * @param key Unused icon key.
-	 * @throws FlowUiException always.
+	 * Enable icon-manager support to use SVG registration, removal, or lookup. ResourceKey adapters in this build forward to the unsupported operation.
+	 *
+	 * @return Always returns UnsupportedBuildFeature when FLOWUI_INCLUDE_ICON_MANAGER is disabled.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * // Requires FLOWUI_INCLUDE_ICON_MANAGER enabled.
-	 * FlowUi::TextureRef icon = app.icons().textureRef("toolbar/open");
+	 * auto result = manager.contains("status/check");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto registered = *result;
 	 * @endcode
 	 */
-	[[nodiscard]] TextureRef textureRef(std::string_view key) {
-		(void)key;
-		throw FlowUiException(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconLookup));
+	[[nodiscard]] Result<bool> contains(std::string_view) const noexcept {
+		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconLookup));
 	}
-	/** @brief Resolve an app-shared SVG key to a borrowed request texture reference.
-	 * ResourceDomain::Icon is inferred when unspecified; incompatible explicit domains or scopes are rejected.
+	/**
+	 * @brief Report unavailable icon support for this overload.
+	 *
+	 * Enable icon-manager support to use SVG registration, removal, or lookup. ResourceKey adapters in this build forward to the unsupported operation.
+	 *
+	 * @return Always returns UnsupportedBuildFeature when FLOWUI_INCLUDE_ICON_MANAGER is disabled.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "resource"};
+	 * auto result = manager.contains(key);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto registered = *result;
+	 * @endcode
 	 */
-	[[nodiscard]] TextureRef textureRef(ResourceKey key) { return textureRef(key.name); }
+	[[nodiscard]] Result<bool> contains(ResourceKey key) const noexcept { return contains(key.name); }
+
+	/**
+	 * @brief Report unavailable icon support for this overload.
+	 *
+	 * Enable icon-manager support to use SVG registration, removal, or lookup. ResourceKey adapters in this build forward to the unsupported operation.
+	 *
+	 * @return Always returns UnsupportedBuildFeature when FLOWUI_INCLUDE_ICON_MANAGER is disabled.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * auto result = manager.textureRef("status/check");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto texture = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<TextureRef> textureRef(std::string_view) noexcept {
+		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconLookup));
+	}
+	/**
+	 * @brief Report unavailable icon support for this overload.
+	 *
+	 * Enable icon-manager support to use SVG registration, removal, or lookup. ResourceKey adapters in this build forward to the unsupported operation.
+	 *
+	 * @return Always returns UnsupportedBuildFeature when FLOWUI_INCLUDE_ICON_MANAGER is disabled.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "resource"};
+	 * auto result = manager.textureRef(key);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto texture = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<TextureRef> textureRef(ResourceKey key) noexcept { return textureRef(key.name); }
 
 private:
 	friend class App;

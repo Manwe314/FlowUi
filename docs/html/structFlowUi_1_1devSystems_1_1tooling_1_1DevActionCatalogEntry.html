@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,33 +106,51 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevActionCatalogEntry Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Callable-free action observation safe for catalogue browsing.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevCatalogTypes_8hpp_source.html">DevCatalogTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:ad22e03693406cf69d6bdf6d1499ddab2" id="r_ad22e03693406cf69d6bdf6d1499ddab2"><td class="memItemLeft"><a id="ad22e03693406cf69d6bdf6d1499ddab2" name="ad22e03693406cf69d6bdf6d1499ddab2"></a>
 <a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a>&#160;</td><td class="memItemRight"><b>actionId</b> {}</td></tr>
+<tr class="memdesc:ad22e03693406cf69d6bdf6d1499ddab2"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> action identity; zero for a UI recipe. <br /></td></tr>
 <tr class="memitem:aded58b7f2f3aa7a0922e8b28769c3252" id="r_aded58b7f2f3aa7a0922e8b28769c3252"><td class="memItemLeft"><a id="aded58b7f2f3aa7a0922e8b28769c3252" name="aded58b7f2f3aa7a0922e8b28769c3252"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>stableId</b> = 0</td></tr>
+<tr class="memdesc:aded58b7f2f3aa7a0922e8b28769c3252"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> identity or UI recipe identity, according to kind. <br /></td></tr>
 <tr class="memitem:a657c07b8700cdef84daffe4865fa63a0" id="r_a657c07b8700cdef84daffe4865fa63a0"><td class="memItemLeft"><a id="a657c07b8700cdef84daffe4865fa63a0" name="a657c07b8700cdef84daffe4865fa63a0"></a>
 std::string_view&#160;</td><td class="memItemRight"><b>debugName</b> {}</td></tr>
+<tr class="memdesc:a657c07b8700cdef84daffe4865fa63a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed diagnostic action/recipe name. <br /></td></tr>
 <tr class="memitem:ae12ee85552908c50b69f17634552f654" id="r_ae12ee85552908c50b69f17634552f654"><td class="memItemLeft"><a id="ae12ee85552908c50b69f17634552f654" name="ae12ee85552908c50b69f17634552f654"></a>
-DevActionKind&#160;</td><td class="memItemRight"><b>kind</b> = DevActionKind::AppActionBinding</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a8f4001085ccd0c34afcc38a0b1d0befb">DevActionKind</a>&#160;</td><td class="memItemRight"><b>kind</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a8f4001085ccd0c34afcc38a0b1d0befba68d2f54cb570c023cd1a61c6edb0bb97">DevActionKind::AppActionBinding</a></td></tr>
+<tr class="memdesc:ae12ee85552908c50b69f17634552f654"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retained app binding or UI recipe. <br /></td></tr>
 <tr class="memitem:af23e0b299d545ef3cf31774aefb4a482" id="r_af23e0b299d545ef3cf31774aefb4a482"><td class="memItemLeft"><a id="af23e0b299d545ef3cf31774aefb4a482" name="af23e0b299d545ef3cf31774aefb4a482"></a>
 bool&#160;</td><td class="memItemRight"><b>isBound</b> = false</td></tr>
+<tr class="memdesc:af23e0b299d545ef3cf31774aefb4a482"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the app binding or recipe is currently registered. <br /></td></tr>
 <tr class="memitem:a12184fc15175742f915be84e354df0d6" id="r_a12184fc15175742f915be84e354df0d6"><td class="memItemLeft"><a id="a12184fc15175742f915be84e354df0d6" name="a12184fc15175742f915be84e354df0d6"></a>
 bool&#160;</td><td class="memItemRight"><b>isReconstructable</b> = false</td></tr>
+<tr class="memdesc:a12184fc15175742f915be84e354df0d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether tooling may create a call without borrowing runtime resources. <br /></td></tr>
 <tr class="memitem:a8923b3204a8367573b21fc77506fdee3" id="r_a8923b3204a8367573b21fc77506fdee3"><td class="memItemLeft"><a id="a8923b3204a8367573b21fc77506fdee3" name="a8923b3204a8367573b21fc77506fdee3"></a>
 std::uint8_t&#160;</td><td class="memItemRight"><b>availabilityFlags</b> = 0</td></tr>
+<tr class="memdesc:a8923b3204a8367573b21fc77506fdee3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Observed compact action availability flags. <br /></td></tr>
 <tr class="memitem:a72934f0abc25b2eb628df271dfa9d771" id="r_a72934f0abc25b2eb628df271dfa9d771"><td class="memItemLeft"><a id="a72934f0abc25b2eb628df271dfa9d771" name="a72934f0abc25b2eb628df271dfa9d771"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>callableTypeHash</b> = 0</td></tr>
+<tr class="memdesc:a72934f0abc25b2eb628df271dfa9d771"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process-local callable type fingerprint. <br /></td></tr>
 <tr class="memitem:afac675b46b92fd5db6725fc659c6feb5" id="r_afac675b46b92fd5db6725fc659c6feb5"><td class="memItemLeft"><a id="afac675b46b92fd5db6725fc659c6feb5" name="afac675b46b92fd5db6725fc659c6feb5"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>resultTypeHash</b> = 0</td></tr>
+<tr class="memdesc:afac675b46b92fd5db6725fc659c6feb5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process-local result type fingerprint; zero denotes void. <br /></td></tr>
 <tr class="memitem:a195442041c91bb8d88ccd7f376dadd91" id="r_a195442041c91bb8d88ccd7f376dadd91"><td class="memItemLeft"><a id="a195442041c91bb8d88ccd7f376dadd91" name="a195442041c91bb8d88ccd7f376dadd91"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>lifetimeInvocations</b> = 0</td></tr>
+<tr class="memdesc:a195442041c91bb8d88ccd7f376dadd91"><td class="mdescLeft">&#160;</td><td class="mdescRight">Observed invocation count for this binding. <br /></td></tr>
 <tr class="memitem:a5fcde8a2787382f6d51e869be5c281cd" id="r_a5fcde8a2787382f6d51e869be5c281cd"><td class="memItemLeft"><a id="a5fcde8a2787382f6d51e869be5c281cd" name="a5fcde8a2787382f6d51e869be5c281cd"></a>
 std::string_view&#160;</td><td class="memItemRight"><b>definitionSource</b> {}</td></tr>
+<tr class="memdesc:a5fcde8a2787382f6d51e869be5c281cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed source location text, when available. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Callable-free action observation safe for catalogue browsing. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/catalogue/<a class="el" href="DevCatalogTypes_8hpp_source.html">DevCatalogTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -148,7 +166,7 @@ std::string_view&#160;</td><td class="memItemRight"><b>definitionSource</b> {}</
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevActionCatalogEntry.html">DevActionCatalogEntry</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevActionCatalogEntry.html">DevActionCatalogEntry</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

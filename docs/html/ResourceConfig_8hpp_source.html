@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,20 +111,24 @@ $(function() {
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &lt;filesystem&gt;</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;vector&gt;</span></div>
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="keyword">namespace </span>FlowUi {</div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi.html">FlowUi</a> {</div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span></div>
-<div class="foldopen" id="foldopen00009" data-start="{" data-end="};">
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ResourceConfig.html">    9</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1ResourceConfig.html">ResourceConfig</a> {</div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>    std::vector&lt;std::filesystem::path&gt; roots;</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ResourceConfig.html#a17b8d2c105419fff3e0d2e5c20faa73b">   12</a></span>    std::filesystem::path <a class="code hl_variable" href="structFlowUi_1_1ResourceConfig.html#a17b8d2c105419fff3e0d2e5c20faa73b">executable_directory</a>;</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    <span class="keywordtype">bool</span> use_platform_defaults = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    <span class="keywordtype">bool</span> use_build_directory = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>};</div>
+<div class="foldopen" id="foldopen00012" data-start="{" data-end="};">
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ResourceConfig.html">   12</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1ResourceConfig.html">ResourceConfig</a> {</div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ResourceConfig.html#af3d04ad790c2d4eea3e3d320ad67de46">   14</a></span>    std::vector&lt;std::filesystem::path&gt; <a class="code hl_variable" href="structFlowUi_1_1ResourceConfig.html#af3d04ad790c2d4eea3e3d320ad67de46">roots</a>;</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ResourceConfig.html#a17b8d2c105419fff3e0d2e5c20faa73b">   16</a></span>    std::filesystem::path <a class="code hl_variable" href="structFlowUi_1_1ResourceConfig.html#a17b8d2c105419fff3e0d2e5c20faa73b">executable_directory</a>;</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ResourceConfig.html#af6d2b68fb3a4d03ee2a705d84d2aa84c">   18</a></span>    <span class="keywordtype">bool</span> <a class="code hl_variable" href="structFlowUi_1_1ResourceConfig.html#af6d2b68fb3a4d03ee2a705d84d2aa84c">use_platform_defaults</a> = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ResourceConfig.html#a24f87e43bf36876873d00ee639267a93">   20</a></span>    <span class="keywordtype">bool</span> <a class="code hl_variable" href="structFlowUi_1_1ResourceConfig.html#a24f87e43bf36876873d00ee639267a93">use_build_directory</a> = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>};</div>
 </div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span> </div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>} <span class="comment">// namespace FlowUi</span></div>
-<div class="ttc" id="astructFlowUi_1_1ResourceConfig_html"><div class="ttname"><a href="structFlowUi_1_1ResourceConfig.html">FlowUi::ResourceConfig</a></div><div class="ttdef"><b>Definition</b> ResourceConfig.hpp:9</div></div>
-<div class="ttc" id="astructFlowUi_1_1ResourceConfig_html_a17b8d2c105419fff3e0d2e5c20faa73b"><div class="ttname"><a href="structFlowUi_1_1ResourceConfig.html#a17b8d2c105419fff3e0d2e5c20faa73b">FlowUi::ResourceConfig::executable_directory</a></div><div class="ttdeci">std::filesystem::path executable_directory</div><div class="ttdef"><b>Definition</b> ResourceConfig.hpp:12</div></div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="ttc" id="anamespaceFlowUi_html"><div class="ttname"><a href="namespaceFlowUi.html">FlowUi</a></div><div class="ttdef"><b>Definition</b> App.hpp:29</div></div>
+<div class="ttc" id="astructFlowUi_1_1ResourceConfig_html"><div class="ttname"><a href="structFlowUi_1_1ResourceConfig.html">FlowUi::ResourceConfig</a></div><div class="ttdef"><b>Definition</b> ResourceConfig.hpp:12</div></div>
+<div class="ttc" id="astructFlowUi_1_1ResourceConfig_html_a17b8d2c105419fff3e0d2e5c20faa73b"><div class="ttname"><a href="structFlowUi_1_1ResourceConfig.html#a17b8d2c105419fff3e0d2e5c20faa73b">FlowUi::ResourceConfig::executable_directory</a></div><div class="ttdeci">std::filesystem::path executable_directory</div><div class="ttdef"><b>Definition</b> ResourceConfig.hpp:16</div></div>
+<div class="ttc" id="astructFlowUi_1_1ResourceConfig_html_a24f87e43bf36876873d00ee639267a93"><div class="ttname"><a href="structFlowUi_1_1ResourceConfig.html#a24f87e43bf36876873d00ee639267a93">FlowUi::ResourceConfig::use_build_directory</a></div><div class="ttdeci">bool use_build_directory</div><div class="ttdef"><b>Definition</b> ResourceConfig.hpp:20</div></div>
+<div class="ttc" id="astructFlowUi_1_1ResourceConfig_html_af3d04ad790c2d4eea3e3d320ad67de46"><div class="ttname"><a href="structFlowUi_1_1ResourceConfig.html#af3d04ad790c2d4eea3e3d320ad67de46">FlowUi::ResourceConfig::roots</a></div><div class="ttdeci">std::vector&lt; std::filesystem::path &gt; roots</div><div class="ttdef"><b>Definition</b> ResourceConfig.hpp:14</div></div>
+<div class="ttc" id="astructFlowUi_1_1ResourceConfig_html_af6d2b68fb3a4d03ee2a705d84d2aa84c"><div class="ttname"><a href="structFlowUi_1_1ResourceConfig.html#af6d2b68fb3a4d03ee2a705d84d2aa84c">FlowUi::ResourceConfig::use_platform_defaults</a></div><div class="ttdeci">bool use_platform_defaults</div><div class="ttdef"><b>Definition</b> ResourceConfig.hpp:18</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

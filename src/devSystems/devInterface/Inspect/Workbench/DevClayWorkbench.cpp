@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Inspect/Workbench/DevClayWorkbench.hpp"
 
 #if FLOW_UI_DEV_MODE && FLOW_UI_DEV_CAPTURE_CLAY
@@ -51,7 +52,7 @@ void DevClayWorkbench::buildElement(BuildContext& context) {
 	const tooling::DevClayNode* selectedClayNode = nullptr;
 
 	if (state && app && app->hasWindow(state->selectedWindowId)) {
-		snapshot = &app->ui(state->selectedWindowId).devTreeSnapshot();
+		snapshot = &FlowUi::ValueOrThrow(app->ui(state->selectedWindowId)).get().devTreeSnapshot();
 		if (snapshot && context.params.selectionKey != 0u) {
 			selectedClayNode = findClayNodeForWorkbench(*snapshot, context.params.selectionKey);
 		}
@@ -101,7 +102,7 @@ void DevClayWorkbench::buildElement(BuildContext& context) {
 			.width = Clay_BorderWidth{0, 0, 0, 1, 0},
 		};
 
-		CLAY(context.clayID("clay-wb-header"), headerBar) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("clay-wb-header")), headerBar) {
 			CLAY_TEXT(
 				context.uiManager.toClayString(nodeTitle),
 				CLAY_TEXT_CONFIG(headerTextStyle(interface_theme::kTextCanvas, 13)));
@@ -122,7 +123,7 @@ void DevClayWorkbench::buildElement(BuildContext& context) {
 		body.layout.childGap = kWorkbenchGap;
 		body.backgroundColor = interface_theme::kDepth0Keel;
 
-		CLAY(context.clayID("clay-wb-body"), body) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("clay-wb-body")), body) {
 			// Row 1 (Top Row): Left = ViewPort Preview, Right = Full Struct Dump
 			Clay_ElementDeclaration topRow{};
 			topRow.layout.sizing = {
@@ -132,7 +133,7 @@ void DevClayWorkbench::buildElement(BuildContext& context) {
 			topRow.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 			topRow.layout.childGap = kWorkbenchGap;
 
-			CLAY(context.clayID("top-row"), topRow) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("top-row")), topRow) {
 				// Top-Left: Reused ViewPort Element in a card container
 				Clay_ElementDeclaration previewCard{};
 				previewCard.layout.sizing = {
@@ -147,7 +148,7 @@ void DevClayWorkbench::buildElement(BuildContext& context) {
 				};
 				previewCard.clip = {.horizontal = true, .vertical = true};
 
-				CLAY(context.clayID("preview-card"), previewCard) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("preview-card")), previewCard) {
 					context.uiManager.createElement(kDevPreview, "clay-preview")
 						.setParameters(context.params.inspect)
 						.setDevInternalCapture(true)
@@ -160,7 +161,7 @@ void DevClayWorkbench::buildElement(BuildContext& context) {
 					.width = CLAY_SIZING_PERCENT(0.5f),
 					.height = CLAY_SIZING_PERCENT(1.0f),
 				};
-				CLAY(context.clayID("dump-card-wrapper"), dumpContainer) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("dump-card-wrapper")), dumpContainer) {
 					context.uiManager.createElement(kDevClayDataDump, "clay-data-dump")
 						.setParameters(DevClayDataDumpParameters{
 							.inspect = context.params.inspect,
@@ -179,7 +180,7 @@ void DevClayWorkbench::buildElement(BuildContext& context) {
 			};
 			bottomRow.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 
-			CLAY(context.clayID("bottom-row"), bottomRow) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("bottom-row")), bottomRow) {
 				context.uiManager.createElement(kDevClayCodeGenerator, "clay-code-gen")
 					.setParameters(DevClayCodeGeneratorParameters{
 						.inspect = context.params.inspect,

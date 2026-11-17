@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,28 +106,159 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::TimingQualitySnapshot Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevTimingTypes_8hpp_source.html">DevTimingTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a15a49c6936b6008dec6f55ce99fbf05e" id="r_a15a49c6936b6008dec6f55ce99fbf05e"><td class="memItemLeft"><a id="a15a49c6936b6008dec6f55ce99fbf05e" name="a15a49c6936b6008dec6f55ce99fbf05e"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>recordedZones</b> = 0u</td></tr>
-<tr class="memitem:ad390c0fd109b55cd61f67a6c35728dc6" id="r_ad390c0fd109b55cd61f67a6c35728dc6"><td class="memItemLeft"><a id="ad390c0fd109b55cd61f67a6c35728dc6" name="ad390c0fd109b55cd61f67a6c35728dc6"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>suppressedZones</b> = 0u</td></tr>
-<tr class="memitem:a5598f76adaf8f6363622bdbcf1479f22" id="r_a5598f76adaf8f6363622bdbcf1479f22"><td class="memItemLeft"><a id="a5598f76adaf8f6363622bdbcf1479f22" name="a5598f76adaf8f6363622bdbcf1479f22"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>droppedRecords</b> = 0u</td></tr>
-<tr class="memitem:a64fe92da6ee21f6111c595ea1d6e0fc3" id="r_a64fe92da6ee21f6111c595ea1d6e0fc3"><td class="memItemLeft"><a id="a64fe92da6ee21f6111c595ea1d6e0fc3" name="a64fe92da6ee21f6111c595ea1d6e0fc3"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>stackOverflows</b> = 0u</td></tr>
-<tr class="memitem:a0ff24d454457e47b9b30eaea2310f555" id="r_a0ff24d454457e47b9b30eaea2310f555"><td class="memItemLeft"><a id="a0ff24d454457e47b9b30eaea2310f555" name="a0ff24d454457e47b9b30eaea2310f555"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>misnestedZones</b> = 0u</td></tr>
-<tr class="memitem:a0d62a8817d81519d9d61840c490d5856" id="r_a0d62a8817d81519d9d61840c490d5856"><td class="memItemLeft"><a id="a0d62a8817d81519d9d61840c490d5856" name="a0d62a8817d81519d9d61840c490d5856"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>incompleteZones</b> = 0u</td></tr>
-<tr class="memitem:a6495719d18439951514f8acd56a10041" id="r_a6495719d18439951514f8acd56a10041"><td class="memItemLeft"><a id="a6495719d18439951514f8acd56a10041" name="a6495719d18439951514f8acd56a10041"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>clockAnomalies</b> = 0u</td></tr>
-<tr class="memitem:aea5b87e0635808f388d77848c8b63038" id="r_aea5b87e0635808f388d77848c8b63038"><td class="memItemLeft"><a id="aea5b87e0635808f388d77848c8b63038" name="aea5b87e0635808f388d77848c8b63038"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>descriptorCollisions</b> = 0u</td></tr>
-<tr class="memitem:a4964333e29bf26d36e603c2f5b970223" id="r_a4964333e29bf26d36e603c2f5b970223"><td class="memItemLeft"><a id="a4964333e29bf26d36e603c2f5b970223" name="a4964333e29bf26d36e603c2f5b970223"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>timingOverheadNs</b> = 0u</td></tr>
+<tr class="memitem:a15a49c6936b6008dec6f55ce99fbf05e" id="r_a15a49c6936b6008dec6f55ce99fbf05e"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a15a49c6936b6008dec6f55ce99fbf05e">recordedZones</a> = 0u</td></tr>
+<tr class="memitem:ad390c0fd109b55cd61f67a6c35728dc6" id="r_ad390c0fd109b55cd61f67a6c35728dc6"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ad390c0fd109b55cd61f67a6c35728dc6">suppressedZones</a> = 0u</td></tr>
+<tr class="memitem:a5598f76adaf8f6363622bdbcf1479f22" id="r_a5598f76adaf8f6363622bdbcf1479f22"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a5598f76adaf8f6363622bdbcf1479f22">droppedRecords</a> = 0u</td></tr>
+<tr class="memitem:a64fe92da6ee21f6111c595ea1d6e0fc3" id="r_a64fe92da6ee21f6111c595ea1d6e0fc3"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a64fe92da6ee21f6111c595ea1d6e0fc3">stackOverflows</a> = 0u</td></tr>
+<tr class="memitem:a0ff24d454457e47b9b30eaea2310f555" id="r_a0ff24d454457e47b9b30eaea2310f555"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a0ff24d454457e47b9b30eaea2310f555">misnestedZones</a> = 0u</td></tr>
+<tr class="memitem:a0d62a8817d81519d9d61840c490d5856" id="r_a0d62a8817d81519d9d61840c490d5856"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a0d62a8817d81519d9d61840c490d5856">incompleteZones</a> = 0u</td></tr>
+<tr class="memitem:a6495719d18439951514f8acd56a10041" id="r_a6495719d18439951514f8acd56a10041"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a6495719d18439951514f8acd56a10041">clockAnomalies</a> = 0u</td></tr>
+<tr class="memitem:aea5b87e0635808f388d77848c8b63038" id="r_aea5b87e0635808f388d77848c8b63038"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#aea5b87e0635808f388d77848c8b63038">descriptorCollisions</a> = 0u</td></tr>
+<tr class="memitem:a4964333e29bf26d36e603c2f5b970223" id="r_a4964333e29bf26d36e603c2f5b970223"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a4964333e29bf26d36e603c2f5b970223">timingOverheadNs</a> = 0u</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Cumulative CPU capture counters describing suppressed, lost and anomalous timing evidence. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a6495719d18439951514f8acd56a10041" name="a6495719d18439951514f8acd56a10041"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6495719d18439951514f8acd56a10041">&#9670;&#160;</a></span>clockAnomalies</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingQualitySnapshot::clockAnomalies = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of clock anomalies. </p>
+
+</div>
+</div>
+<a id="aea5b87e0635808f388d77848c8b63038" name="aea5b87e0635808f388d77848c8b63038"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea5b87e0635808f388d77848c8b63038">&#9670;&#160;</a></span>descriptorCollisions</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingQualitySnapshot::descriptorCollisions = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of descriptor collisions. </p>
+
+</div>
+</div>
+<a id="a5598f76adaf8f6363622bdbcf1479f22" name="a5598f76adaf8f6363622bdbcf1479f22"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5598f76adaf8f6363622bdbcf1479f22">&#9670;&#160;</a></span>droppedRecords</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingQualitySnapshot::droppedRecords = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of dropped records. </p>
+
+</div>
+</div>
+<a id="a0d62a8817d81519d9d61840c490d5856" name="a0d62a8817d81519d9d61840c490d5856"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d62a8817d81519d9d61840c490d5856">&#9670;&#160;</a></span>incompleteZones</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingQualitySnapshot::incompleteZones = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of incomplete zones. </p>
+
+</div>
+</div>
+<a id="a0ff24d454457e47b9b30eaea2310f555" name="a0ff24d454457e47b9b30eaea2310f555"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ff24d454457e47b9b30eaea2310f555">&#9670;&#160;</a></span>misnestedZones</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingQualitySnapshot::misnestedZones = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of misnested zones. </p>
+
+</div>
+</div>
+<a id="a15a49c6936b6008dec6f55ce99fbf05e" name="a15a49c6936b6008dec6f55ce99fbf05e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15a49c6936b6008dec6f55ce99fbf05e">&#9670;&#160;</a></span>recordedZones</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingQualitySnapshot::recordedZones = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of recorded zones. </p>
+
+</div>
+</div>
+<a id="a64fe92da6ee21f6111c595ea1d6e0fc3" name="a64fe92da6ee21f6111c595ea1d6e0fc3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a64fe92da6ee21f6111c595ea1d6e0fc3">&#9670;&#160;</a></span>stackOverflows</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingQualitySnapshot::stackOverflows = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of stack overflows. </p>
+
+</div>
+</div>
+<a id="ad390c0fd109b55cd61f67a6c35728dc6" name="ad390c0fd109b55cd61f67a6c35728dc6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad390c0fd109b55cd61f67a6c35728dc6">&#9670;&#160;</a></span>suppressedZones</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingQualitySnapshot::suppressedZones = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of suppressed zones. </p>
+
+</div>
+</div>
+<a id="a4964333e29bf26d36e603c2f5b970223" name="a4964333e29bf26d36e603c2f5b970223"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4964333e29bf26d36e603c2f5b970223">&#9670;&#160;</a></span>timingOverheadNs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingQualitySnapshot::timingOverheadNs = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Cumulative timing overhead in nanoseconds. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/timing/<a class="el" href="DevTimingTypes_8hpp_source.html">DevTimingTypes.hpp</a></li>
 </ul>
@@ -144,7 +275,7 @@ uint64_t&#160;</td><td class="memItemRight"><b>timingOverheadNs</b> = 0u</td></t
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1TimingQualitySnapshot.html">TimingQualitySnapshot</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1TimingQualitySnapshot.html">TimingQualitySnapshot</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

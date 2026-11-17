@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,30 +106,64 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::IconManager::DevIconView Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Borrowed SVG raster metadata; reacquire after icon cache mutation.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="IconManager_8hpp_source.html">IconManager.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a4def3708e4c0f13fded0915be6bd2212" id="r_a4def3708e4c0f13fded0915be6bd2212"><td class="memItemLeft"><a id="a4def3708e4c0f13fded0915be6bd2212" name="a4def3708e4c0f13fded0915be6bd2212"></a>
 std::string_view&#160;</td><td class="memItemRight"><b>key</b> {}</td></tr>
+<tr class="memdesc:a4def3708e4c0f13fded0915be6bd2212"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed application-defined SVG registration key. <br /></td></tr>
 <tr class="memitem:ab1874890eed646246b6738d637a8216a" id="r_ab1874890eed646246b6738d637a8216a"><td class="memItemLeft"><a id="ab1874890eed646246b6738d637a8216a" name="ab1874890eed646246b6738d637a8216a"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>targetWidth</b> = 0</td></tr>
+<tr class="memdesc:ab1874890eed646246b6738d637a8216a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cached raster width in pixels. <br /></td></tr>
 <tr class="memitem:a5cc7fb3919f14a270ee2e6c158048944" id="r_a5cc7fb3919f14a270ee2e6c158048944"><td class="memItemLeft"><a id="a5cc7fb3919f14a270ee2e6c158048944" name="a5cc7fb3919f14a270ee2e6c158048944"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>targetHeight</b> = 0</td></tr>
+<tr class="memdesc:a5cc7fb3919f14a270ee2e6c158048944"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cached raster height in pixels. <br /></td></tr>
 <tr class="memitem:a23a8ef033d6e177c061e0bb80c8da24c" id="r_a23a8ef033d6e177c061e0bb80c8da24c"><td class="memItemLeft"><a id="a23a8ef033d6e177c061e0bb80c8da24c" name="a23a8ef033d6e177c061e0bb80c8da24c"></a>
 <a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a>&#160;</td><td class="memItemRight"><b>texture</b> {}</td></tr>
+<tr class="memdesc:a23a8ef033d6e177c061e0bb80c8da24c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed generation-checked raster texture binding. <br /></td></tr>
 <tr class="memitem:a791e74765cdbe645fb4590c69239d2fd" id="r_a791e74765cdbe645fb4590c69239d2fd"><td class="memItemLeft"><a id="a791e74765cdbe645fb4590c69239d2fd" name="a791e74765cdbe645fb4590c69239d2fd"></a>
 float&#160;</td><td class="memItemRight"><b>uv0x</b> = 0.0f</td></tr>
-<tr class="memitem:a638a7bf091a4d4fdc6ae95362484da12" id="r_a638a7bf091a4d4fdc6ae95362484da12"><td class="memItemLeft"><a id="a638a7bf091a4d4fdc6ae95362484da12" name="a638a7bf091a4d4fdc6ae95362484da12"></a>
-float&#160;</td><td class="memItemRight"><b>uv0y</b> = 0.0f</td></tr>
+<tr class="memdesc:a791e74765cdbe645fb4590c69239d2fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Normalized left UV coordinate of the cached raster. <br /></td></tr>
+<tr class="memitem:a638a7bf091a4d4fdc6ae95362484da12" id="r_a638a7bf091a4d4fdc6ae95362484da12"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#a638a7bf091a4d4fdc6ae95362484da12">uv0y</a> = 0.0f</td></tr>
+<tr class="memdesc:a638a7bf091a4d4fdc6ae95362484da12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Normalized atlas UV bounds: uv0x/uv0y minimum, uv1x/uv1y maximum.  <br /></td></tr>
 <tr class="memitem:ad89712a2b4a1f80c874bdc0f68d1b222" id="r_ad89712a2b4a1f80c874bdc0f68d1b222"><td class="memItemLeft"><a id="ad89712a2b4a1f80c874bdc0f68d1b222" name="ad89712a2b4a1f80c874bdc0f68d1b222"></a>
 float&#160;</td><td class="memItemRight"><b>uv1x</b> = 1.0f</td></tr>
+<tr class="memdesc:ad89712a2b4a1f80c874bdc0f68d1b222"><td class="mdescLeft">&#160;</td><td class="mdescRight">Normalized right UV coordinate of the cached raster. <br /></td></tr>
 <tr class="memitem:a88665da44976f5a14d36f604792a2b89" id="r_a88665da44976f5a14d36f604792a2b89"><td class="memItemLeft"><a id="a88665da44976f5a14d36f604792a2b89" name="a88665da44976f5a14d36f604792a2b89"></a>
 float&#160;</td><td class="memItemRight"><b>uv1y</b> = 1.0f</td></tr>
+<tr class="memdesc:a88665da44976f5a14d36f604792a2b89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Normalized bottom UV coordinate of the cached raster. <br /></td></tr>
 <tr class="memitem:a97ad7a75c492ee8ff4ebe83f6976cd28" id="r_a97ad7a75c492ee8ff4ebe83f6976cd28"><td class="memItemLeft"><a id="a97ad7a75c492ee8ff4ebe83f6976cd28" name="a97ad7a75c492ee8ff4ebe83f6976cd28"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>atlasPage</b> = 0</td></tr>
+<tr class="memdesc:a97ad7a75c492ee8ff4ebe83f6976cd28"><td class="mdescLeft">&#160;</td><td class="mdescRight">Zero-based page containing the raster. <br /></td></tr>
 <tr class="memitem:a457e89667079e58b46955782c739082e" id="r_a457e89667079e58b46955782c739082e"><td class="memItemLeft"><a id="a457e89667079e58b46955782c739082e" name="a457e89667079e58b46955782c739082e"></a>
 bool&#160;</td><td class="memItemRight"><b>newlyRasterized</b> = false</td></tr>
+<tr class="memdesc:a457e89667079e58b46955782c739082e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether this explicit raster request generated a new cached variant. <br /></td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Borrowed SVG raster metadata; reacquire after icon cache mutation. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a638a7bf091a4d4fdc6ae95362484da12" name="a638a7bf091a4d4fdc6ae95362484da12"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a638a7bf091a4d4fdc6ae95362484da12">&#9670;&#160;</a></span>uv0y</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float FlowUi::IconManager::DevIconView::uv0y = 0.0f</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Normalized atlas UV bounds: uv0x/uv0y minimum, uv1x/uv1y maximum. </p>
+<p>Normalized top UV coordinate of the cached raster. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managers/<a class="el" href="IconManager_8hpp_source.html">IconManager.hpp</a></li>
 </ul>
@@ -146,7 +180,7 @@ bool&#160;</td><td class="memItemRight"><b>newlyRasterized</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1IconManager.html">IconManager</a></li><li class="navelem"><a href="structFlowUi_1_1IconManager_1_1DevIconView.html">DevIconView</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1IconManager.html">IconManager</a></li><li class="navelem"><a href="structFlowUi_1_1IconManager_1_1DevIconView.html">DevIconView</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

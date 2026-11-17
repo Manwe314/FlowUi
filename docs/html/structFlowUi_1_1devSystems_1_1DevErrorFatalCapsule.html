@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,60 +111,411 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a73e4e2da97d6cc56f26ac1f54988e721" id="r_a73e4e2da97d6cc56f26ac1f54988e721"><td class="memItemLeft"><a id="a73e4e2da97d6cc56f26ac1f54988e721" name="a73e4e2da97d6cc56f26ac1f54988e721"></a>
-std::array&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorFatalBreadcrumb.html">DevErrorFatalBreadcrumb</a>, kDevErrorFatalBreadcrumbCapacity &gt;&#160;</td><td class="memItemRight"><b>breadcrumbs</b> {}</td></tr>
-<tr class="memitem:a1f3ad17f9c3cb2a0bcee49143a64befc" id="r_a1f3ad17f9c3cb2a0bcee49143a64befc"><td class="memItemLeft"><a id="a1f3ad17f9c3cb2a0bcee49143a64befc" name="a1f3ad17f9c3cb2a0bcee49143a64befc"></a>
-std::array&lt; uintptr_t, kDevErrorFatalStackCapacity &gt;&#160;</td><td class="memItemRight"><b>stackFrames</b> {}</td></tr>
-<tr class="memitem:abeab85cbed79f39eb383c4c1ad6fc048" id="r_abeab85cbed79f39eb383c4c1ad6fc048"><td class="memItemLeft"><a id="abeab85cbed79f39eb383c4c1ad6fc048" name="abeab85cbed79f39eb383c4c1ad6fc048"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorEvidenceBlock.html">DevErrorEvidenceBlock</a>&#160;</td><td class="memItemRight"><b>evidence</b> {}</td></tr>
-<tr class="memitem:a6e69d1b44af580f95db54adbaa72c815" id="r_a6e69d1b44af580f95db54adbaa72c815"><td class="memItemLeft"><a id="a6e69d1b44af580f95db54adbaa72c815" name="a6e69d1b44af580f95db54adbaa72c815"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorFatalSafePointSummary.html">DevErrorFatalSafePointSummary</a>&#160;</td><td class="memItemRight"><b>safePoint</b> {}</td></tr>
-<tr class="memitem:a5ad003af1c29e7101bc3b219e0ef2ce1" id="r_a5ad003af1c29e7101bc3b219e0ef2ce1"><td class="memItemLeft"><a id="a5ad003af1c29e7101bc3b219e0ef2ce1" name="a5ad003af1c29e7101bc3b219e0ef2ce1"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorContext.html">DevErrorContext</a>&#160;</td><td class="memItemRight"><b>context</b> {}</td></tr>
-<tr class="memitem:aba91dc72f742ab137dd9db648f840b51" id="r_aba91dc72f742ab137dd9db648f840b51"><td class="memItemLeft"><a id="aba91dc72f742ab137dd9db648f840b51" name="aba91dc72f742ab137dd9db648f840b51"></a>
-<a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>&#160;</td><td class="memItemRight"><b>error</b> {}</td></tr>
-<tr class="memitem:a46766f8da5462be4b9090d1fd0871b85" id="r_a46766f8da5462be4b9090d1fd0871b85"><td class="memItemLeft"><a id="a46766f8da5462be4b9090d1fd0871b85" name="a46766f8da5462be4b9090d1fd0871b85"></a>
-DevErrorOccurrenceId&#160;</td><td class="memItemRight"><b>occurrence</b> = 0u</td></tr>
-<tr class="memitem:a742e94eac57f8c86d0b722d002f8f894" id="r_a742e94eac57f8c86d0b722d002f8f894"><td class="memItemLeft"><a id="a742e94eac57f8c86d0b722d002f8f894" name="a742e94eac57f8c86d0b722d002f8f894"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>timestampNs</b> = 0u</td></tr>
-<tr class="memitem:a15c812cac2299f2da7771b41e5d5ba33" id="r_a15c812cac2299f2da7771b41e5d5ba33"><td class="memItemLeft"><a id="a15c812cac2299f2da7771b41e5d5ba33" name="a15c812cac2299f2da7771b41e5d5ba33"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>sourceId</b> = 0u</td></tr>
-<tr class="memitem:accb4b60d4d78d2dcf7c5c31659d57d2f" id="r_accb4b60d4d78d2dcf7c5c31659d57d2f"><td class="memItemLeft"><a id="accb4b60d4d78d2dcf7c5c31659d57d2f" name="accb4b60d4d78d2dcf7c5c31659d57d2f"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>moduleIdentity</b> = 0u</td></tr>
-<tr class="memitem:a05eaedf750a2bb163853f35e5b042143" id="r_a05eaedf750a2bb163853f35e5b042143"><td class="memItemLeft"><a id="a05eaedf750a2bb163853f35e5b042143" name="a05eaedf750a2bb163853f35e5b042143"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>buildIdentity</b> = 0u</td></tr>
-<tr class="memitem:a9b1aaf5bb320c346a6358242590b6021" id="r_a9b1aaf5bb320c346a6358242590b6021"><td class="memItemLeft"><a id="a9b1aaf5bb320c346a6358242590b6021" name="a9b1aaf5bb320c346a6358242590b6021"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>layoutVersion</b> = kDevErrorFatalCapsuleLayoutVersion</td></tr>
-<tr class="memitem:af4e49cde6c98cf2e69ad158c20d44d26" id="r_af4e49cde6c98cf2e69ad158c20d44d26"><td class="memItemLeft"><a id="af4e49cde6c98cf2e69ad158c20d44d26" name="af4e49cde6c98cf2e69ad158c20d44d26"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>byteSize</b> = 0u</td></tr>
-<tr class="memitem:a9bdf00cebd337f26c66a01843d1154f7" id="r_a9bdf00cebd337f26c66a01843d1154f7"><td class="memItemLeft"><a id="a9bdf00cebd337f26c66a01843d1154f7" name="a9bdf00cebd337f26c66a01843d1154f7"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>threadTrack</b> = 0u</td></tr>
-<tr class="memitem:a5c8abf224e11dae6012eaa8838345f60" id="r_a5c8abf224e11dae6012eaa8838345f60"><td class="memItemLeft"><a id="a5c8abf224e11dae6012eaa8838345f60" name="a5c8abf224e11dae6012eaa8838345f60"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>nativeCategory</b> = 0u</td></tr>
-<tr class="memitem:a9b06a9b109e030a54b6c7d7c1483a8af" id="r_a9b06a9b109e030a54b6c7d7c1483a8af"><td class="memItemLeft"><a id="a9b06a9b109e030a54b6c7d7c1483a8af" name="a9b06a9b109e030a54b6c7d7c1483a8af"></a>
-ErrorResolution&#160;</td><td class="memItemRight"><b>resolution</b> = ErrorResolution::None</td></tr>
-<tr class="memitem:a6eb58870732e6951fc525c5f7a5a3243" id="r_a6eb58870732e6951fc525c5f7a5a3243"><td class="memItemLeft"><a id="a6eb58870732e6951fc525c5f7a5a3243" name="a6eb58870732e6951fc525c5f7a5a3243"></a>
-FatalInspectionCapability&#160;</td><td class="memItemRight"><b>productionInspection</b> = FatalInspectionCapability::None</td></tr>
-<tr class="memitem:a2a883b46160447424f06d20642ae0a2b" id="r_a2a883b46160447424f06d20642ae0a2b"><td class="memItemLeft"><a id="a2a883b46160447424f06d20642ae0a2b" name="a2a883b46160447424f06d20642ae0a2b"></a>
-DevErrorCaptureLevel&#160;</td><td class="memItemRight"><b>captureLevel</b> = DevErrorCaptureLevel::Disabled</td></tr>
-<tr class="memitem:a7ee289308a3392aa9659647bf68793c6" id="r_a7ee289308a3392aa9659647bf68793c6"><td class="memItemLeft"><a id="a7ee289308a3392aa9659647bf68793c6" name="a7ee289308a3392aa9659647bf68793c6"></a>
-DevErrorStackStatus&#160;</td><td class="memItemRight"><b>stackStatus</b> = DevErrorStackStatus::NotRequested</td></tr>
-<tr class="memitem:afe12b230e73cb960a5a92083bd7d5d9c" id="r_afe12b230e73cb960a5a92083bd7d5d9c"><td class="memItemLeft"><a id="afe12b230e73cb960a5a92083bd7d5d9c" name="afe12b230e73cb960a5a92083bd7d5d9c"></a>
-DevErrorRecordFlag&#160;</td><td class="memItemRight"><b>flags</b> = DevErrorRecordFlag::None</td></tr>
-<tr class="memitem:a11bec18d696ec74fc428bd051bb6aa25" id="r_a11bec18d696ec74fc428bd051bb6aa25"><td class="memItemLeft"><a id="a11bec18d696ec74fc428bd051bb6aa25" name="a11bec18d696ec74fc428bd051bb6aa25"></a>
-DevErrorFatalCapabilityInput&#160;</td><td class="memItemRight"><b>availableInputs</b> = DevErrorFatalCapabilityInput::None</td></tr>
-<tr class="memitem:a2e5d4a88d7a3b0b684afcea8c4559f61" id="r_a2e5d4a88d7a3b0b684afcea8c4559f61"><td class="memItemLeft"><a id="a2e5d4a88d7a3b0b684afcea8c4559f61" name="a2e5d4a88d7a3b0b684afcea8c4559f61"></a>
-uint16_t&#160;</td><td class="memItemRight"><b>stackFrameCount</b> = 0u</td></tr>
-<tr class="memitem:aeafea8c64812e75427bb4fb54e1f82df" id="r_aeafea8c64812e75427bb4fb54e1f82df"><td class="memItemLeft"><a id="aeafea8c64812e75427bb4fb54e1f82df" name="aeafea8c64812e75427bb4fb54e1f82df"></a>
-uint16_t&#160;</td><td class="memItemRight"><b>nativeTextLength</b> = 0u</td></tr>
-<tr class="memitem:add9cbf9ab7be0527f16a649b56c2fd39" id="r_add9cbf9ab7be0527f16a649b56c2fd39"><td class="memItemLeft"><a id="add9cbf9ab7be0527f16a649b56c2fd39" name="add9cbf9ab7be0527f16a649b56c2fd39"></a>
-std::array&lt; char, kDevErrorNativeTextCapacity &gt;&#160;</td><td class="memItemRight"><b>nativeText</b> {}</td></tr>
-<tr class="memitem:a377c8c0f085a415ecba9842bacbfb931" id="r_a377c8c0f085a415ecba9842bacbfb931"><td class="memItemLeft"><a id="a377c8c0f085a415ecba9842bacbfb931" name="a377c8c0f085a415ecba9842bacbfb931"></a>
-uint8_t&#160;</td><td class="memItemRight"><b>breadcrumbCount</b> = 0u</td></tr>
+<tr class="memitem:a73e4e2da97d6cc56f26ac1f54988e721" id="r_a73e4e2da97d6cc56f26ac1f54988e721"><td class="memItemLeft">std::array&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorFatalBreadcrumb.html">DevErrorFatalBreadcrumb</a>, <a class="el" href="namespaceFlowUi_1_1devSystems.html#ae6c59e1ed2cd7b004a0b4db3f14a9e5c">kDevErrorFatalBreadcrumbCapacity</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a73e4e2da97d6cc56f26ac1f54988e721">breadcrumbs</a> {}</td></tr>
+<tr class="memitem:a1f3ad17f9c3cb2a0bcee49143a64befc" id="r_a1f3ad17f9c3cb2a0bcee49143a64befc"><td class="memItemLeft">std::array&lt; uintptr_t, <a class="el" href="namespaceFlowUi_1_1devSystems.html#a4c1c9d0e3966dfd05dfdc181cfdd011d">kDevErrorFatalStackCapacity</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a1f3ad17f9c3cb2a0bcee49143a64befc">stackFrames</a> {}</td></tr>
+<tr class="memitem:abeab85cbed79f39eb383c4c1ad6fc048" id="r_abeab85cbed79f39eb383c4c1ad6fc048"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorEvidenceBlock.html">DevErrorEvidenceBlock</a>&#160;</td><td class="memItemRight"><a class="el" href="#abeab85cbed79f39eb383c4c1ad6fc048">evidence</a> {}</td></tr>
+<tr class="memitem:a6e69d1b44af580f95db54adbaa72c815" id="r_a6e69d1b44af580f95db54adbaa72c815"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorFatalSafePointSummary.html">DevErrorFatalSafePointSummary</a>&#160;</td><td class="memItemRight"><a class="el" href="#a6e69d1b44af580f95db54adbaa72c815">safePoint</a> {}</td></tr>
+<tr class="memitem:a5ad003af1c29e7101bc3b219e0ef2ce1" id="r_a5ad003af1c29e7101bc3b219e0ef2ce1"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorContext.html">DevErrorContext</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5ad003af1c29e7101bc3b219e0ef2ce1">context</a> {}</td></tr>
+<tr class="memitem:aba91dc72f742ab137dd9db648f840b51" id="r_aba91dc72f742ab137dd9db648f840b51"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>&#160;</td><td class="memItemRight"><a class="el" href="#aba91dc72f742ab137dd9db648f840b51">error</a> {}</td></tr>
+<tr class="memitem:a46766f8da5462be4b9090d1fd0871b85" id="r_a46766f8da5462be4b9090d1fd0871b85"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a46766f8da5462be4b9090d1fd0871b85">occurrence</a> = 0u</td></tr>
+<tr class="memitem:a742e94eac57f8c86d0b722d002f8f894" id="r_a742e94eac57f8c86d0b722d002f8f894"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a742e94eac57f8c86d0b722d002f8f894">timestampNs</a> = 0u</td></tr>
+<tr class="memitem:a15c812cac2299f2da7771b41e5d5ba33" id="r_a15c812cac2299f2da7771b41e5d5ba33"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a15c812cac2299f2da7771b41e5d5ba33">sourceId</a> = 0u</td></tr>
+<tr class="memitem:accb4b60d4d78d2dcf7c5c31659d57d2f" id="r_accb4b60d4d78d2dcf7c5c31659d57d2f"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#accb4b60d4d78d2dcf7c5c31659d57d2f">moduleIdentity</a> = 0u</td></tr>
+<tr class="memitem:a05eaedf750a2bb163853f35e5b042143" id="r_a05eaedf750a2bb163853f35e5b042143"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a05eaedf750a2bb163853f35e5b042143">buildIdentity</a> = 0u</td></tr>
+<tr class="memitem:a9b1aaf5bb320c346a6358242590b6021" id="r_a9b1aaf5bb320c346a6358242590b6021"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a9b1aaf5bb320c346a6358242590b6021">layoutVersion</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a850541c7df4af2c7cace0a8bf0679857">kDevErrorFatalCapsuleLayoutVersion</a></td></tr>
+<tr class="memitem:af4e49cde6c98cf2e69ad158c20d44d26" id="r_af4e49cde6c98cf2e69ad158c20d44d26"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#af4e49cde6c98cf2e69ad158c20d44d26">byteSize</a> = 0u</td></tr>
+<tr class="memitem:a9bdf00cebd337f26c66a01843d1154f7" id="r_a9bdf00cebd337f26c66a01843d1154f7"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a9bdf00cebd337f26c66a01843d1154f7">threadTrack</a> = 0u</td></tr>
+<tr class="memitem:a5c8abf224e11dae6012eaa8838345f60" id="r_a5c8abf224e11dae6012eaa8838345f60"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a5c8abf224e11dae6012eaa8838345f60">nativeCategory</a> = 0u</td></tr>
+<tr class="memitem:a9b06a9b109e030a54b6c7d7c1483a8af" id="r_a9b06a9b109e030a54b6c7d7c1483a8af"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a94bf9fd3426ebd61a302d6b843d06837">ErrorResolution</a>&#160;</td><td class="memItemRight"><a class="el" href="#a9b06a9b109e030a54b6c7d7c1483a8af">resolution</a> = <a class="el" href="namespaceFlowUi.html#a94bf9fd3426ebd61a302d6b843d06837a6adf97f83acf6453d4a6a4b1070f3754">ErrorResolution::None</a></td></tr>
+<tr class="memitem:a6eb58870732e6951fc525c5f7a5a3243" id="r_a6eb58870732e6951fc525c5f7a5a3243"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a1924bbf5661c4642b4f7c9a544169b47">FatalInspectionCapability</a>&#160;</td><td class="memItemRight"><a class="el" href="#a6eb58870732e6951fc525c5f7a5a3243">productionInspection</a> = <a class="el" href="namespaceFlowUi.html#a1924bbf5661c4642b4f7c9a544169b47a6adf97f83acf6453d4a6a4b1070f3754">FatalInspectionCapability::None</a></td></tr>
+<tr class="memitem:a2a883b46160447424f06d20642ae0a2b" id="r_a2a883b46160447424f06d20642ae0a2b"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a00e969af671d56a7247ae30e25438b27">DevErrorCaptureLevel</a>&#160;</td><td class="memItemRight"><a class="el" href="#a2a883b46160447424f06d20642ae0a2b">captureLevel</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a00e969af671d56a7247ae30e25438b27ab9f5c797ebbf55adccdd8539a65a0241">DevErrorCaptureLevel::Disabled</a></td></tr>
+<tr class="memitem:a7ee289308a3392aa9659647bf68793c6" id="r_a7ee289308a3392aa9659647bf68793c6"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ae3fc5636205b0c6938d2ff4dbee553a6">DevErrorStackStatus</a>&#160;</td><td class="memItemRight"><a class="el" href="#a7ee289308a3392aa9659647bf68793c6">stackStatus</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ae3fc5636205b0c6938d2ff4dbee553a6ac534a66e591207038fe31a2a9e0164b7">DevErrorStackStatus::NotRequested</a></td></tr>
+<tr class="memitem:afe12b230e73cb960a5a92083bd7d5d9c" id="r_afe12b230e73cb960a5a92083bd7d5d9c"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ac9db518d6de0f11929b6969157862fa1">DevErrorRecordFlag</a>&#160;</td><td class="memItemRight"><a class="el" href="#afe12b230e73cb960a5a92083bd7d5d9c">flags</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ac9db518d6de0f11929b6969157862fa1a6adf97f83acf6453d4a6a4b1070f3754">DevErrorRecordFlag::None</a></td></tr>
+<tr class="memitem:a11bec18d696ec74fc428bd051bb6aa25" id="r_a11bec18d696ec74fc428bd051bb6aa25"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad597b78df4ff05ea7ecd75aca77fb592">DevErrorFatalCapabilityInput</a>&#160;</td><td class="memItemRight"><a class="el" href="#a11bec18d696ec74fc428bd051bb6aa25">availableInputs</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ad597b78df4ff05ea7ecd75aca77fb592a6adf97f83acf6453d4a6a4b1070f3754">DevErrorFatalCapabilityInput::None</a></td></tr>
+<tr class="memitem:a2e5d4a88d7a3b0b684afcea8c4559f61" id="r_a2e5d4a88d7a3b0b684afcea8c4559f61"><td class="memItemLeft">uint16_t&#160;</td><td class="memItemRight"><a class="el" href="#a2e5d4a88d7a3b0b684afcea8c4559f61">stackFrameCount</a> = 0u</td></tr>
+<tr class="memitem:aeafea8c64812e75427bb4fb54e1f82df" id="r_aeafea8c64812e75427bb4fb54e1f82df"><td class="memItemLeft">uint16_t&#160;</td><td class="memItemRight"><a class="el" href="#aeafea8c64812e75427bb4fb54e1f82df">nativeTextLength</a> = 0u</td></tr>
+<tr class="memitem:add9cbf9ab7be0527f16a649b56c2fd39" id="r_add9cbf9ab7be0527f16a649b56c2fd39"><td class="memItemLeft">std::array&lt; char, <a class="el" href="namespaceFlowUi_1_1devSystems.html#a8aed0bfe511cb0db435e956fb423efc1">kDevErrorNativeTextCapacity</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#add9cbf9ab7be0527f16a649b56c2fd39">nativeText</a> {}</td></tr>
+<tr class="memitem:a377c8c0f085a415ecba9842bacbfb931" id="r_a377c8c0f085a415ecba9842bacbfb931"><td class="memItemLeft">uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#a377c8c0f085a415ecba9842bacbfb931">breadcrumbCount</a> = 0u</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Fixed, allocation-free evidence written before production termination. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a11bec18d696ec74fc428bd051bb6aa25" name="a11bec18d696ec74fc428bd051bb6aa25"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a11bec18d696ec74fc428bd051bb6aa25">&#9670;&#160;</a></span>availableInputs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad597b78df4ff05ea7ecd75aca77fb592">DevErrorFatalCapabilityInput</a> FlowUi::devSystems::DevErrorFatalCapsule::availableInputs = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ad597b78df4ff05ea7ecd75aca77fb592a6adf97f83acf6453d4a6a4b1070f3754">DevErrorFatalCapabilityInput::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Bitmask of evidence and runtime inputs admitted for fatal capture. </p>
+
+</div>
+</div>
+<a id="a377c8c0f085a415ecba9842bacbfb931" name="a377c8c0f085a415ecba9842bacbfb931"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a377c8c0f085a415ecba9842bacbfb931">&#9670;&#160;</a></span>breadcrumbCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t FlowUi::devSystems::DevErrorFatalCapsule::breadcrumbCount = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of valid entries in breadcrumbs. </p>
+
+</div>
+</div>
+<a id="a73e4e2da97d6cc56f26ac1f54988e721" name="a73e4e2da97d6cc56f26ac1f54988e721"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a73e4e2da97d6cc56f26ac1f54988e721">&#9670;&#160;</a></span>breadcrumbs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::array&lt;<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorFatalBreadcrumb.html">DevErrorFatalBreadcrumb</a>, <a class="el" href="namespaceFlowUi_1_1devSystems.html#ae6c59e1ed2cd7b004a0b4db3f14a9e5c">kDevErrorFatalBreadcrumbCapacity</a>&gt; FlowUi::devSystems::DevErrorFatalCapsule::breadcrumbs {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned bounded breadcrumb evidence; only breadcrumbCount entries are valid for fatal capsules. </p>
+
+</div>
+</div>
+<a id="a05eaedf750a2bb163853f35e5b042143" name="a05eaedf750a2bb163853f35e5b042143"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a05eaedf750a2bb163853f35e5b042143">&#9670;&#160;</a></span>buildIdentity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorFatalCapsule::buildIdentity = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Build identity needed to interpret captured program counters. </p>
+
+</div>
+</div>
+<a id="af4e49cde6c98cf2e69ad158c20d44d26" name="af4e49cde6c98cf2e69ad158c20d44d26"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af4e49cde6c98cf2e69ad158c20d44d26">&#9670;&#160;</a></span>byteSize</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::DevErrorFatalCapsule::byteSize = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Size of the fatal capsule representation in bytes. </p>
+
+</div>
+</div>
+<a id="a2a883b46160447424f06d20642ae0a2b" name="a2a883b46160447424f06d20642ae0a2b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a883b46160447424f06d20642ae0a2b">&#9670;&#160;</a></span>captureLevel</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a00e969af671d56a7247ae30e25438b27">DevErrorCaptureLevel</a> FlowUi::devSystems::DevErrorFatalCapsule::captureLevel = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a00e969af671d56a7247ae30e25438b27ab9f5c797ebbf55adccdd8539a65a0241">DevErrorCaptureLevel::Disabled</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Effective diagnostic capture detail level. </p>
+
+</div>
+</div>
+<a id="a5ad003af1c29e7101bc3b219e0ef2ce1" name="a5ad003af1c29e7101bc3b219e0ef2ce1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ad003af1c29e7101bc3b219e0ef2ce1">&#9670;&#160;</a></span>context</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorContext.html">DevErrorContext</a> FlowUi::devSystems::DevErrorFatalCapsule::context {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Producer context copied when this evidence was captured. </p>
+
+</div>
+</div>
+<a id="aba91dc72f742ab137dd9db648f840b51" name="aba91dc72f742ab137dd9db648f840b51"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba91dc72f742ab137dd9db648f840b51">&#9670;&#160;</a></span>error</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> FlowUi::devSystems::DevErrorFatalCapsule::error {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Production error contract and compact payload captured for this occurrence. </p>
+
+</div>
+</div>
+<a id="abeab85cbed79f39eb383c4c1ad6fc048" name="abeab85cbed79f39eb383c4c1ad6fc048"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abeab85cbed79f39eb383c4c1ad6fc048">&#9670;&#160;</a></span>evidence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorEvidenceBlock.html">DevErrorEvidenceBlock</a> FlowUi::devSystems::DevErrorFatalCapsule::evidence {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Bounded numeric evidence supporting this record or advice result. </p>
+
+</div>
+</div>
+<a id="afe12b230e73cb960a5a92083bd7d5d9c" name="afe12b230e73cb960a5a92083bd7d5d9c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe12b230e73cb960a5a92083bd7d5d9c">&#9670;&#160;</a></span>flags</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ac9db518d6de0f11929b6969157862fa1">DevErrorRecordFlag</a> FlowUi::devSystems::DevErrorFatalCapsule::flags = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ac9db518d6de0f11929b6969157862fa1a6adf97f83acf6453d4a6a4b1070f3754">DevErrorRecordFlag::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Bitmask of completion, provenance and capture-quality conditions. </p>
+
+</div>
+</div>
+<a id="a9b1aaf5bb320c346a6358242590b6021" name="a9b1aaf5bb320c346a6358242590b6021"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9b1aaf5bb320c346a6358242590b6021">&#9670;&#160;</a></span>layoutVersion</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::DevErrorFatalCapsule::layoutVersion = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a850541c7df4af2c7cace0a8bf0679857">kDevErrorFatalCapsuleLayoutVersion</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Version of the fixed fatal capsule layout. </p>
+
+</div>
+</div>
+<a id="accb4b60d4d78d2dcf7c5c31659d57d2f" name="accb4b60d4d78d2dcf7c5c31659d57d2f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#accb4b60d4d78d2dcf7c5c31659d57d2f">&#9670;&#160;</a></span>moduleIdentity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorFatalCapsule::moduleIdentity = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Module identity needed to interpret captured program counters. </p>
+
+</div>
+</div>
+<a id="a5c8abf224e11dae6012eaa8838345f60" name="a5c8abf224e11dae6012eaa8838345f60"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5c8abf224e11dae6012eaa8838345f60">&#9670;&#160;</a></span>nativeCategory</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::DevErrorFatalCapsule::nativeCategory = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Native backend category associated with native error evidence. </p>
+
+</div>
+</div>
+<a id="add9cbf9ab7be0527f16a649b56c2fd39" name="add9cbf9ab7be0527f16a649b56c2fd39"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add9cbf9ab7be0527f16a649b56c2fd39">&#9670;&#160;</a></span>nativeText</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::array&lt;char, <a class="el" href="namespaceFlowUi_1_1devSystems.html#a8aed0bfe511cb0db435e956fb423efc1">kDevErrorNativeTextCapacity</a>&gt; FlowUi::devSystems::DevErrorFatalCapsule::nativeText {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned bounded native diagnostic bytes; nativeTextLength gives the valid prefix. </p>
+
+</div>
+</div>
+<a id="aeafea8c64812e75427bb4fb54e1f82df" name="aeafea8c64812e75427bb4fb54e1f82df"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeafea8c64812e75427bb4fb54e1f82df">&#9670;&#160;</a></span>nativeTextLength</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint16_t FlowUi::devSystems::DevErrorFatalCapsule::nativeTextLength = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of valid bytes in nativeText. </p>
+
+</div>
+</div>
+<a id="a46766f8da5462be4b9090d1fd0871b85" name="a46766f8da5462be4b9090d1fd0871b85"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a46766f8da5462be4b9090d1fd0871b85">&#9670;&#160;</a></span>occurrence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a> FlowUi::devSystems::DevErrorFatalCapsule::occurrence = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Diagnostic occurrence identity; zero means no explicit occurrence. </p>
+
+</div>
+</div>
+<a id="a6eb58870732e6951fc525c5f7a5a3243" name="a6eb58870732e6951fc525c5f7a5a3243"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6eb58870732e6951fc525c5f7a5a3243">&#9670;&#160;</a></span>productionInspection</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a1924bbf5661c4642b4f7c9a544169b47">FatalInspectionCapability</a> FlowUi::devSystems::DevErrorFatalCapsule::productionInspection = <a class="el" href="namespaceFlowUi.html#a1924bbf5661c4642b4f7c9a544169b47a6adf97f83acf6453d4a6a4b1070f3754">FatalInspectionCapability::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Production inspection capabilities reported at the fatal boundary. </p>
+
+</div>
+</div>
+<a id="a9b06a9b109e030a54b6c7d7c1483a8af" name="a9b06a9b109e030a54b6c7d7c1483a8af"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9b06a9b109e030a54b6c7d7c1483a8af">&#9670;&#160;</a></span>resolution</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a94bf9fd3426ebd61a302d6b843d06837">ErrorResolution</a> FlowUi::devSystems::DevErrorFatalCapsule::resolution = <a class="el" href="namespaceFlowUi.html#a94bf9fd3426ebd61a302d6b843d06837a6adf97f83acf6453d4a6a4b1070f3754">ErrorResolution::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Resolution applied or reported for the error contract. </p>
+
+</div>
+</div>
+<a id="a6e69d1b44af580f95db54adbaa72c815" name="a6e69d1b44af580f95db54adbaa72c815"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6e69d1b44af580f95db54adbaa72c815">&#9670;&#160;</a></span>safePoint</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorFatalSafePointSummary.html">DevErrorFatalSafePointSummary</a> FlowUi::devSystems::DevErrorFatalCapsule::safePoint {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Most recently published summary safe to inspect without live subsystem access. </p>
+
+</div>
+</div>
+<a id="a15c812cac2299f2da7771b41e5d5ba33" name="a15c812cac2299f2da7771b41e5d5ba33"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15c812cac2299f2da7771b41e5d5ba33">&#9670;&#160;</a></span>sourceId</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorFatalCapsule::sourceId = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Registered diagnostic source identity; zero means unavailable. </p>
+
+</div>
+</div>
+<a id="a2e5d4a88d7a3b0b684afcea8c4559f61" name="a2e5d4a88d7a3b0b684afcea8c4559f61"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e5d4a88d7a3b0b684afcea8c4559f61">&#9670;&#160;</a></span>stackFrameCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint16_t FlowUi::devSystems::DevErrorFatalCapsule::stackFrameCount = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of valid entries in stackFrames. </p>
+
+</div>
+</div>
+<a id="a1f3ad17f9c3cb2a0bcee49143a64befc" name="a1f3ad17f9c3cb2a0bcee49143a64befc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1f3ad17f9c3cb2a0bcee49143a64befc">&#9670;&#160;</a></span>stackFrames</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::array&lt;uintptr_t, <a class="el" href="namespaceFlowUi_1_1devSystems.html#a4c1c9d0e3966dfd05dfdc181cfdd011d">kDevErrorFatalStackCapacity</a>&gt; FlowUi::devSystems::DevErrorFatalCapsule::stackFrames {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Fixed-capacity raw program counter storage; only stackFrameCount entries are valid. </p>
+
+</div>
+</div>
+<a id="a7ee289308a3392aa9659647bf68793c6" name="a7ee289308a3392aa9659647bf68793c6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7ee289308a3392aa9659647bf68793c6">&#9670;&#160;</a></span>stackStatus</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ae3fc5636205b0c6938d2ff4dbee553a6">DevErrorStackStatus</a> FlowUi::devSystems::DevErrorFatalCapsule::stackStatus = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ae3fc5636205b0c6938d2ff4dbee553a6ac534a66e591207038fe31a2a9e0164b7">DevErrorStackStatus::NotRequested</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Availability and truncation state of the fatal raw stack. </p>
+
+</div>
+</div>
+<a id="a9bdf00cebd337f26c66a01843d1154f7" name="a9bdf00cebd337f26c66a01843d1154f7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9bdf00cebd337f26c66a01843d1154f7">&#9670;&#160;</a></span>threadTrack</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::DevErrorFatalCapsule::threadTrack = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Producer thread track identity associated with the evidence. </p>
+
+</div>
+</div>
+<a id="a742e94eac57f8c86d0b722d002f8f894" name="a742e94eac57f8c86d0b722d002f8f894"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a742e94eac57f8c86d0b722d002f8f894">&#9670;&#160;</a></span>timestampNs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorFatalCapsule::timestampNs = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Timestamp in the monotonic capture clock, in nanoseconds. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/errors/<a class="el" href="DevErrorTypes_8hpp_source.html">DevErrorTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -180,7 +531,7 @@ uint8_t&#160;</td><td class="memItemRight"><b>breadcrumbCount</b> = 0u</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorFatalCapsule.html">DevErrorFatalCapsule</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorFatalCapsule.html">DevErrorFatalCapsule</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

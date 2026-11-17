@@ -11,12 +11,12 @@ void translatedPointerActivatesButton() {
 	FlowUi::AppConfig configuration{};
 	configuration.window = {.width = 320, .height = 200, .title = "FlowUi translator integration"};
 	configuration.vk.enableValidation = false;
-	auto application = FlowUi::makeApplication(configuration);
+	auto application = ::FlowUi::test::requireValue(FlowUi::makeApplication(configuration));
 	std::uint64_t activations = 0;
 	for (std::size_t tick = 0; tick < 14; ++tick) {
 		FLOWUI_CHECK(application.pollEvents());
 		FLOWUI_CHECK(application.beginFrame(application.mainWindowId()));
-		auto& ui = application.ui();
+		auto& ui = ::FlowUi::test::requireValue(application.ui()).get();
 		FlowUi::FSEL::ButtonParameters parameters{};
 		parameters.sizing = {.width = CLAY_SIZING_FIXED(100), .height = CLAY_SIZING_FIXED(60)};
 		parameters.onActivate = FlowUi::ActionCall{
@@ -30,7 +30,7 @@ void translatedPointerActivatesButton() {
 		FLOWUI_CHECK(application.drawFrame());
 	}
 	FLOWUI_CHECK(activations == 1);
-	FLOWUI_CHECK(!application.ui().getCurrentFrameInput().mouseDown[0]);
+	FLOWUI_CHECK(!::FlowUi::test::requireValue(application.ui()).get().getCurrentFrameInput().mouseDown[0]);
 }
 } // namespace
 

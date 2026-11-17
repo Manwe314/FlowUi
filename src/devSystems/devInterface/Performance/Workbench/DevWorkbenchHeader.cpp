@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevWorkbenchHeader.hpp"
 #include "FlowUi/Public/input/Key.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
@@ -58,7 +59,7 @@ void DevWorkbenchHeader::buildElement(BuildContext& context) {
 		auto policy_row = timeline_ui::row(22);
 		policy_row.clip.horizontal = true;
 		policy_row.clip.scrollInputDisabled = true;
-		CLAY(context.clayID("recorded-cpu-policy"), policy_row) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("recorded-cpu-policy")), policy_row) {
 			std::string label = "Recorded CPU: ";
 			if (state.snapshot.has_recording_policy) {
 				label += recording_level_name(state.snapshot.minimum_recorded_cpu_level);
@@ -76,7 +77,7 @@ void DevWorkbenchHeader::buildElement(BuildContext& context) {
 		}
 		auto controls = timeline_ui::row(32);
 		controls.clip.horizontal = true;
-		CLAY(context.clayID("controls"), controls) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("controls")), controls) {
 			timeline_ui::button(context, 2, "Previous frame", {{}, TimelineAction::Previous},
 								interface_icons::kPreviousKey);
 			timeline_ui::button(context, 3, "Next frame", {{}, TimelineAction::Next},
@@ -109,12 +110,12 @@ void DevWorkbenchHeader::buildElement(BuildContext& context) {
 		}
 		auto minimap_parameters = context.params;
 		minimap_parameters.canvas_clip = context.clayID();
-		timeline_viewport(context.uiManager, context.clayID("minimap"), minimap_parameters,
+		timeline_viewport(context.uiManager, FlowUi::ValueOrThrow(context.clayID("minimap")), minimap_parameters,
 						  TimelineSurfaceKind::Minimap);
 		const auto& frames = state.snapshot.frames;
 		auto breadcrumbs = timeline_ui::row(26);
 		breadcrumbs.clip.horizontal = true;
-		CLAY(context.clayID("breadcrumbs"), breadcrumbs) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("breadcrumbs")), breadcrumbs) {
 			timeline_ui::button(
 				context, 30,
 				frames.empty()

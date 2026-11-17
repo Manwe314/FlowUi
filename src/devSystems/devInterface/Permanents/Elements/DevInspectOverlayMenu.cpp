@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevInspectOverlayMenu.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/Button.hpp"
@@ -114,7 +115,7 @@ void separator(DevInspectOverlayMenu::BuildContext& context, uint64_t index) {
 	Clay_ElementDeclaration line{};
 	line.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(1)};
 	line.backgroundColor = interface_theme::kBorderPrimary;
-	CLAY(context.clayID(Keyed("separator", index)), line);
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("separator", index))), line);
 }
 
 [[nodiscard]] std::string target_label(App& app, tooling::DevInspectTarget target,
@@ -124,7 +125,7 @@ void separator(DevInspectOverlayMenu::BuildContext& context, uint64_t index) {
 	if (target.kind == tooling::DevInspectTargetKind::Clay) {
 #if FLOW_UI_DEV_CAPTURE_CLAY
 		if (app.hasWindow(target.window)) {
-			const auto& snapshot = app.ui(target.window).devTreeSnapshot();
+			const auto& snapshot = FlowUi::ValueOrThrow(app.ui(target.window)).get().devTreeSnapshot();
 			const auto resolved = tooling::resolve_inspect_target(target, snapshot);
 			if (resolved.isValid() && resolved.clayNodeIndex < snapshot.clay.nodes.size()) {
 				const auto& node = snapshot.clay.nodes[resolved.clayNodeIndex];
@@ -146,7 +147,7 @@ void separator(DevInspectOverlayMenu::BuildContext& context, uint64_t index) {
 		return label;
 	}
 	if (app.hasWindow(target.window)) {
-		const auto& snapshot = app.ui(target.window).devTreeSnapshot();
+		const auto& snapshot = FlowUi::ValueOrThrow(app.ui(target.window)).get().devTreeSnapshot();
 		const auto resolved = tooling::resolve_inspect_target(target, snapshot);
 		if (resolved.isValid() && resolved.flowNodeIndex < snapshot.flow.nodes.size()) {
 			const auto& node = snapshot.flow.nodes[resolved.flowNodeIndex];
@@ -169,10 +170,10 @@ void DevInspectOverlayMenu::buildElement(BuildContext& context) {
 	if (!context.params.app)
 		return;
 	auto& app = *context.params.app;
-	auto& controller = app.devTooling().inspect_interaction();
+	auto& controller = FlowUi::ValueOrThrow(app.devTooling()).get().inspect_interaction();
 	auto& state = context.state();
-	auto& actions = app.actions().uiActions();
-	const auto popup_id = context.childID("popup");
+	auto& actions = FlowUi::ValueOrThrow(app.actions()).get().uiActions();
+	const auto popup_id = FlowUi::ValueOrThrow(context.childID("popup"));
 	const bool popup_dismissed = context.uiManager.popups().consumeDismissed(popup_id);
 	if (popup_dismissed)
 		state.open = false;
@@ -257,7 +258,7 @@ void DevInspectOverlayMenu::buildElement(BuildContext& context) {
 	popup.cornerRadius = CLAY_CORNER_RADIUS(3);
 	popup.floating = frame.floating;
 	CLAY(context.uiManager.toClayEID(popup_id), popup) {
-		const auto scroll_id = context.clayID("popup-scroll");
+		const auto scroll_id = FlowUi::ValueOrThrow(context.clayID("popup-scroll"));
 		const auto scroll = Clay_GetScrollContainerData(scroll_id);
 		Clay_ElementDeclaration viewport{};
 		viewport.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
@@ -299,7 +300,7 @@ void DevInspectOverlayMenu::buildElement(BuildContext& context) {
 				row.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(26)};
 				row.layout.childGap = 8;
 				row.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
-				CLAY(context.clayID(Keyed("surface-row", index)), row) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("surface-row", index))), row) {
 					FSEL::CheckboxParameters checkbox{};
 					checkbox.isChecked = checked;
 					checkbox.onToggle = action;
@@ -335,7 +336,7 @@ void DevInspectOverlayMenu::buildElement(BuildContext& context) {
 			domain_row.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(28)};
 			domain_row.layout.childGap = 4;
 			domain_row.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
-			CLAY(context.clayID(pick_domain_row_id), domain_row) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(pick_domain_row_id)), domain_row) {
 				const bool flow_active =
 					controller.pick_domain() == tooling::DevInspectPickDomain::Flow;
 				const bool clay_active =
@@ -380,24 +381,24 @@ void DevInspectOverlayMenu::buildElement(BuildContext& context) {
 
 DevInspectOverlayMenuResources::DevInspectOverlayMenuResources([[maybe_unused]] App& app) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
-	IconManager& icons = app.icons();
+	IconManager& icons = FlowUi::ValueOrThrow(app.icons()).get();
 	interface_icons::registerDevInterfaceIcons(icons);
-	if (icons.contains(interface_icons::kClearKey))
-		clear_icon = icons.textureRef(interface_icons::kClearKey);
-	if (icons.contains(interface_icons::kInspectKey))
-		pick_icon = icons.textureRef(interface_icons::kInspectKey);
-	if (icons.contains(interface_icons::kTreeExpandedKey)) {
-		dropdown_icon = icons.textureRef(interface_icons::kTreeExpandedKey);
+	if (FlowUi::ValueOrThrow(icons.contains(interface_icons::kClearKey)))
+		clear_icon = FlowUi::ValueOrThrow(icons.textureRef(interface_icons::kClearKey));
+	if (FlowUi::ValueOrThrow(icons.contains(interface_icons::kInspectKey)))
+		pick_icon = FlowUi::ValueOrThrow(icons.textureRef(interface_icons::kInspectKey));
+	if (FlowUi::ValueOrThrow(icons.contains(interface_icons::kTreeExpandedKey))) {
+		dropdown_icon = FlowUi::ValueOrThrow(icons.textureRef(interface_icons::kTreeExpandedKey));
 	}
 	constexpr std::string_view checked_key = "flowui/dev-interface/overlay/checked";
-	if (!icons.contains(checked_key)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(checked_key))) {
 		const auto registered = icons.registerSvg(
 			checked_key,
 			R"svg(<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="m3 8 3 3 7-7" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>)svg");
 		if (!registered)
 			return;
 	}
-	checked_icon = icons.textureRef(checked_key);
+	checked_icon = FlowUi::ValueOrThrow(icons.textureRef(checked_key));
 #endif
 }
 

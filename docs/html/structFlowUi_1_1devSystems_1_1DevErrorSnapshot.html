@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,24 +106,127 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevErrorSnapshot Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevErrorTypes_8hpp_source.html">DevErrorTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:ac4a2a3764fc080db77ba035804226d2d" id="r_ac4a2a3764fc080db77ba035804226d2d"><td class="memItemLeft"><a id="ac4a2a3764fc080db77ba035804226d2d" name="ac4a2a3764fc080db77ba035804226d2d"></a>
-DevErrorOccurrenceId&#160;</td><td class="memItemRight"><b>occurrence</b> = 0u</td></tr>
-<tr class="memitem:a256b1e4b337343e25d51599d70dbe660" id="r_a256b1e4b337343e25d51599d70dbe660"><td class="memItemLeft"><a id="a256b1e4b337343e25d51599d70dbe660" name="a256b1e4b337343e25d51599d70dbe660"></a>
-DevErrorSnapshotSourceId&#160;</td><td class="memItemRight"><b>source</b> = 0u</td></tr>
-<tr class="memitem:a829174fd69700c3f5b694dc0389be1ec" id="r_a829174fd69700c3f5b694dc0389be1ec"><td class="memItemLeft"><a id="a829174fd69700c3f5b694dc0389be1ec" name="a829174fd69700c3f5b694dc0389be1ec"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>expectedRevision</b> = 0u</td></tr>
-<tr class="memitem:a8109dc677f727ae333a57a5dab601bfd" id="r_a8109dc677f727ae333a57a5dab601bfd"><td class="memItemLeft"><a id="a8109dc677f727ae333a57a5dab601bfd" name="a8109dc677f727ae333a57a5dab601bfd"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>capturedRevision</b> = 0u</td></tr>
-<tr class="memitem:a4a8c17b40b03600b8704259833772ea2" id="r_a4a8c17b40b03600b8704259833772ea2"><td class="memItemLeft"><a id="a4a8c17b40b03600b8704259833772ea2" name="a4a8c17b40b03600b8704259833772ea2"></a>
-DevErrorSnapshotOutcome&#160;</td><td class="memItemRight"><b>outcome</b> = DevErrorSnapshotOutcome::Unavailable</td></tr>
-<tr class="memitem:a03cdac545116d191f1e800d019f93317" id="r_a03cdac545116d191f1e800d019f93317"><td class="memItemLeft"><a id="a03cdac545116d191f1e800d019f93317" name="a03cdac545116d191f1e800d019f93317"></a>
-uint8_t&#160;</td><td class="memItemRight"><b>valueCount</b> = 0u</td></tr>
-<tr class="memitem:ac32ddff13d45b411279d485ba090dc69" id="r_ac32ddff13d45b411279d485ba090dc69"><td class="memItemLeft"><a id="ac32ddff13d45b411279d485ba090dc69" name="ac32ddff13d45b411279d485ba090dc69"></a>
-std::array&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorEvidenceValue.html">DevErrorEvidenceValue</a>, kDevErrorSnapshotValueCapacity &gt;&#160;</td><td class="memItemRight"><b>values</b> {}</td></tr>
+<tr class="memitem:ac4a2a3764fc080db77ba035804226d2d" id="r_ac4a2a3764fc080db77ba035804226d2d"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a>&#160;</td><td class="memItemRight"><a class="el" href="#ac4a2a3764fc080db77ba035804226d2d">occurrence</a> = 0u</td></tr>
+<tr class="memitem:a256b1e4b337343e25d51599d70dbe660" id="r_a256b1e4b337343e25d51599d70dbe660"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a242f28264f3031574437322a0af26db0">DevErrorSnapshotSourceId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a256b1e4b337343e25d51599d70dbe660">source</a> = 0u</td></tr>
+<tr class="memitem:a829174fd69700c3f5b694dc0389be1ec" id="r_a829174fd69700c3f5b694dc0389be1ec"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a829174fd69700c3f5b694dc0389be1ec">expectedRevision</a> = 0u</td></tr>
+<tr class="memitem:a8109dc677f727ae333a57a5dab601bfd" id="r_a8109dc677f727ae333a57a5dab601bfd"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a8109dc677f727ae333a57a5dab601bfd">capturedRevision</a> = 0u</td></tr>
+<tr class="memitem:a4a8c17b40b03600b8704259833772ea2" id="r_a4a8c17b40b03600b8704259833772ea2"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#aa055a1e173dded6d4f2087ceb5fc619d">DevErrorSnapshotOutcome</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4a8c17b40b03600b8704259833772ea2">outcome</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#aa055a1e173dded6d4f2087ceb5fc619da453e6aa38d87b28ccae545967c53004f">DevErrorSnapshotOutcome::Unavailable</a></td></tr>
+<tr class="memitem:a03cdac545116d191f1e800d019f93317" id="r_a03cdac545116d191f1e800d019f93317"><td class="memItemLeft">uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#a03cdac545116d191f1e800d019f93317">valueCount</a> = 0u</td></tr>
+<tr class="memitem:ac32ddff13d45b411279d485ba090dc69" id="r_ac32ddff13d45b411279d485ba090dc69"><td class="memItemLeft">std::array&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorEvidenceValue.html">DevErrorEvidenceValue</a>, <a class="el" href="namespaceFlowUi_1_1devSystems.html#a9abb1f40076102cfe752419bdf42bd4e">kDevErrorSnapshotValueCapacity</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ac32ddff13d45b411279d485ba090dc69">values</a> {}</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Owned bounded subsystem evidence captured at a safe point, with requested and observed revision identities. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a8109dc677f727ae333a57a5dab601bfd" name="a8109dc677f727ae333a57a5dab601bfd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8109dc677f727ae333a57a5dab601bfd">&#9670;&#160;</a></span>capturedRevision</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorSnapshot::capturedRevision = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Subsystem revision actually observed by the snapshot provider. </p>
+
+</div>
+</div>
+<a id="a829174fd69700c3f5b694dc0389be1ec" name="a829174fd69700c3f5b694dc0389be1ec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a829174fd69700c3f5b694dc0389be1ec">&#9670;&#160;</a></span>expectedRevision</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorSnapshot::expectedRevision = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Subsystem revision requested by the snapshot consumer. </p>
+
+</div>
+</div>
+<a id="ac4a2a3764fc080db77ba035804226d2d" name="ac4a2a3764fc080db77ba035804226d2d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac4a2a3764fc080db77ba035804226d2d">&#9670;&#160;</a></span>occurrence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a> FlowUi::devSystems::DevErrorSnapshot::occurrence = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Diagnostic occurrence identity; zero means no explicit occurrence. </p>
+
+</div>
+</div>
+<a id="a4a8c17b40b03600b8704259833772ea2" name="a4a8c17b40b03600b8704259833772ea2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a8c17b40b03600b8704259833772ea2">&#9670;&#160;</a></span>outcome</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#aa055a1e173dded6d4f2087ceb5fc619d">DevErrorSnapshotOutcome</a> FlowUi::devSystems::DevErrorSnapshot::outcome = <a class="el" href="namespaceFlowUi_1_1devSystems.html#aa055a1e173dded6d4f2087ceb5fc619da453e6aa38d87b28ccae545967c53004f">DevErrorSnapshotOutcome::Unavailable</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Availability and revision result reported by the snapshot provider. </p>
+
+</div>
+</div>
+<a id="a256b1e4b337343e25d51599d70dbe660" name="a256b1e4b337343e25d51599d70dbe660"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a256b1e4b337343e25d51599d70dbe660">&#9670;&#160;</a></span>source</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a242f28264f3031574437322a0af26db0">DevErrorSnapshotSourceId</a> FlowUi::devSystems::DevErrorSnapshot::source = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Snapshot source or evidence identity associated with this record. </p>
+
+</div>
+</div>
+<a id="a03cdac545116d191f1e800d019f93317" name="a03cdac545116d191f1e800d019f93317"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a03cdac545116d191f1e800d019f93317">&#9670;&#160;</a></span>valueCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t FlowUi::devSystems::DevErrorSnapshot::valueCount = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of populated snapshot values. </p>
+
+</div>
+</div>
+<a id="ac32ddff13d45b411279d485ba090dc69" name="ac32ddff13d45b411279d485ba090dc69"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac32ddff13d45b411279d485ba090dc69">&#9670;&#160;</a></span>values</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::array&lt;<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorEvidenceValue.html">DevErrorEvidenceValue</a>, <a class="el" href="namespaceFlowUi_1_1devSystems.html#a9abb1f40076102cfe752419bdf42bd4e">kDevErrorSnapshotValueCapacity</a>&gt; FlowUi::devSystems::DevErrorSnapshot::values {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Fixed-capacity storage; only count or valueCount entries are populated. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/errors/<a class="el" href="DevErrorTypes_8hpp_source.html">DevErrorTypes.hpp</a></li>
 </ul>
@@ -140,7 +243,7 @@ std::array&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorEvidenc
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorSnapshot.html">DevErrorSnapshot</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorSnapshot.html">DevErrorSnapshot</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

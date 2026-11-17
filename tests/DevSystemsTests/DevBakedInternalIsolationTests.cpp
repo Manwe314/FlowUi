@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
@@ -97,8 +98,8 @@ int main() {
 	configuration.window.height = 480;
 	configuration.vk.enableValidation = false;
 	configuration.dev.excludeInternalDevElementsFromCapture = false;
-	auto app = makeApplication(configuration);
-	auto& schemas = app.devTooling().schemas();
+	auto app = ::FlowUi::test::requireValue(makeApplication(configuration));
+	auto& schemas = ::FlowUi::test::requireValue(app.devTooling()).get().schemas();
 	schemas.ensureElement<Probe>();
 	assert(schemas.publishPendingAtSafePoint());
 	const auto schema = schemas.view();
@@ -111,9 +112,9 @@ int main() {
 	std::vector<std::int32_t> observations;
 	observations.reserve(8);
 	const Parameters parameters{.observations = &observations};
-	auto& ui = app.ui();
+	auto& ui = ::FlowUi::test::requireValue(app.ui()).get();
 	const auto check_snapshot = [&](std::int32_t effective_value, std::size_t expected_count) {
-		const auto& capture = app.devTooling().overrides().elementSnapshot(app.mainWindowId());
+		const auto& capture = ::FlowUi::test::requireValue(app.devTooling()).get().overrides().elementSnapshot(app.mainWindowId());
 		assert(capture.schema && capture.frameNumber && capture.generation);
 		std::size_t observed_count = 0;
 		for (const auto& captured_element : capture.elements) {
@@ -140,7 +141,7 @@ int main() {
 	assert(app.drawFrame());
 	check_snapshot(20, 1);
 
-	auto& overrides = app.devTooling().overrides();
+	auto& overrides = ::FlowUi::test::requireValue(app.devTooling()).get().overrides();
 	DevOwnedValue live_value;
 	assert(overrides.copyValue(std::int32_t{30}, live_value) == DevValueOperationStatus::Success);
 	assert(overrides.submit({.transaction = 1, .commands = {{
@@ -148,7 +149,7 @@ int main() {
 		.element = {.definition = Probe::definitionId, .scope = DevOverrideScope::Definition},
 		.field = {.ownerType = schema->type(element->parametersType)->id, .field = value_field->id},
 		.layer = DevOverrideLayer::LiveDefinition, .value = std::move(live_value)}}}));
-	overrides.commitAtSafePoint(app.themes());
+	overrides.commitAtSafePoint(::FlowUi::test::requireValue(app.themes()).get());
 	assert(overrides.commandResults().front().applied);
 	observations.clear();
 	assert(app.beginFrame());

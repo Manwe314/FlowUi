@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,34 +106,57 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevTreeSnapshot Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Owned completed window tree; all node indices and string references are snapshot-local.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevTreeTypes_8hpp_source.html">DevTreeTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ae57ef45a2c489d9ea6437f26b081bb7b" id="r_ae57ef45a2c489d9ea6437f26b081bb7b"><td class="memItemLeft"><a id="ae57ef45a2c489d9ea6437f26b081bb7b" name="ae57ef45a2c489d9ea6437f26b081bb7b"></a>
 std::string_view&#160;</td><td class="memItemRight"><b>string</b> (<a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeStringRef.html">DevTreeStringRef</a> ref) const noexcept</td></tr>
+<tr class="memdesc:ae57ef45a2c489d9ea6437f26b081bb7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow copied UTF-8 data from this snapshot; return empty for an invalid byte range. <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:aa6b2a8b71a7bd69eb830479524b222fd" id="r_aa6b2a8b71a7bd69eb830479524b222fd"><td class="memItemLeft"><a id="aa6b2a8b71a7bd69eb830479524b222fd" name="aa6b2a8b71a7bd69eb830479524b222fd"></a>
-WindowId&#160;</td><td class="memItemRight"><b>window</b> = InvalidWindowId</td></tr>
+<a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a>&#160;</td><td class="memItemRight"><b>window</b> = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td></tr>
+<tr class="memdesc:aa6b2a8b71a7bd69eb830479524b222fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Application window represented by the copied tree. <br /></td></tr>
 <tr class="memitem:adaa41577555c305f4904ecf12e0df006" id="r_adaa41577555c305f4904ecf12e0df006"><td class="memItemLeft"><a id="adaa41577555c305f4904ecf12e0df006" name="adaa41577555c305f4904ecf12e0df006"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>frameNumber</b> = 0</td></tr>
+<tr class="memdesc:adaa41577555c305f4904ecf12e0df006"><td class="mdescLeft">&#160;</td><td class="mdescRight">Capture frame supplied by the owning window. <br /></td></tr>
 <tr class="memitem:a81f081b98158101a2273513d638c10a2" id="r_a81f081b98158101a2273513d638c10a2"><td class="memItemLeft"><a id="a81f081b98158101a2273513d638c10a2" name="a81f081b98158101a2273513d638c10a2"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>app_tick</b> = 0</td></tr>
+<tr class="memdesc:a81f081b98158101a2273513d638c10a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">App-global tick owning this completed capture. <br /></td></tr>
 <tr class="memitem:abfd7f482d57f91d5ca25b212ca703ff4" id="r_abfd7f482d57f91d5ca25b212ca703ff4"><td class="memItemLeft"><a id="abfd7f482d57f91d5ca25b212ca703ff4" name="abfd7f482d57f91d5ca25b212ca703ff4"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>ui_runtime_frame</b> = 0</td></tr>
+<tr class="memdesc:abfd7f482d57f91d5ca25b212ca703ff4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Authoritative runtime window-frame identity associated with this capture. <br /></td></tr>
 <tr class="memitem:a0af678ecceb4b4ea1350d406734a5559" id="r_a0af678ecceb4b4ea1350d406734a5559"><td class="memItemLeft"><a id="a0af678ecceb4b4ea1350d406734a5559" name="a0af678ecceb4b4ea1350d406734a5559"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>generation</b> = 0</td></tr>
+<tr class="memdesc:a0af678ecceb4b4ea1350d406734a5559"><td class="mdescLeft">&#160;</td><td class="mdescRight">Monotonic publication identity. <br /></td></tr>
+<tr class="memitem:aed800dad388b6f46d57cbb2a476ff359" id="r_aed800dad388b6f46d57cbb2a476ff359"><td class="memItemLeft"><a id="aed800dad388b6f46d57cbb2a476ff359" name="aed800dad388b6f46d57cbb2a476ff359"></a>
+uint32_t&#160;</td><td class="memItemRight"><b>authoredClayElementCount</b> = 0</td></tr>
+<tr class="memdesc:aed800dad388b6f46d57cbb2a476ff359"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clay layout element count before synthetic development overlays. <br /></td></tr>
 <tr class="memitem:acd5a20aebcc07be38ad8feb6fa3daa40" id="r_acd5a20aebcc07be38ad8feb6fa3daa40"><td class="memItemLeft"><a id="acd5a20aebcc07be38ad8feb6fa3daa40" name="acd5a20aebcc07be38ad8feb6fa3daa40"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFlowForest.html">DevFlowForest</a>&#160;</td><td class="memItemRight"><b>flow</b> {}</td></tr>
+<tr class="memdesc:acd5a20aebcc07be38ad8feb6fa3daa40"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copied Flow invocation forest. <br /></td></tr>
+<tr class="memitem:a8332ddaad33f6b4c36d9150d2c85e64d" id="r_a8332ddaad33f6b4c36d9150d2c85e64d"><td class="memItemLeft"><a id="a8332ddaad33f6b4c36d9150d2c85e64d" name="a8332ddaad33f6b4c36d9150d2c85e64d"></a>
+<a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevClayForest.html">DevClayForest</a>&#160;</td><td class="memItemRight"><b>clay</b> {}</td></tr>
+<tr class="memdesc:a8332ddaad33f6b4c36d9150d2c85e64d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copied Clay attachment forest when capture support is enabled. <br /></td></tr>
 <tr class="memitem:a895b853bb91a5220a74264f2cb66d7e8" id="r_a895b853bb91a5220a74264f2cb66d7e8"><td class="memItemLeft"><a id="a895b853bb91a5220a74264f2cb66d7e8" name="a895b853bb91a5220a74264f2cb66d7e8"></a>
 std::vector&lt; char &gt;&#160;</td><td class="memItemRight"><b>strings</b> {}</td></tr>
+<tr class="memdesc:a895b853bb91a5220a74264f2cb66d7e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Owned names, source metadata, and text used by string references. <br /></td></tr>
 <tr class="memitem:a5fa9ab13bf3c8ad68a0a289147fbf54f" id="r_a5fa9ab13bf3c8ad68a0a289147fbf54f"><td class="memItemLeft"><a id="a5fa9ab13bf3c8ad68a0a289147fbf54f" name="a5fa9ab13bf3c8ad68a0a289147fbf54f"></a>
 std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeDiagnostic.html">DevTreeDiagnostic</a> &gt;&#160;</td><td class="memItemRight"><b>diagnostics</b> {}</td></tr>
+<tr class="memdesc:a5fa9ab13bf3c8ad68a0a289147fbf54f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Owned validation/capacity diagnostics. <br /></td></tr>
 <tr class="memitem:ae0db3e0e95e757aeacc25fa019b89fa8" id="r_ae0db3e0e95e757aeacc25fa019b89fa8"><td class="memItemLeft"><a id="ae0db3e0e95e757aeacc25fa019b89fa8" name="ae0db3e0e95e757aeacc25fa019b89fa8"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCaptureStats.html">DevTreeCaptureStats</a>&#160;</td><td class="memItemRight"><b>stats</b> {}</td></tr>
+<tr class="memdesc:ae0db3e0e95e757aeacc25fa019b89fa8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Node counts, completeness, and retained-memory accounting. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Owned completed window tree; all node indices and string references are snapshot-local. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/tree/<a class="el" href="DevTreeTypes_8hpp_source.html">DevTreeTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -149,7 +172,7 @@ std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1Dev
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeSnapshot.html">DevTreeSnapshot</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeSnapshot.html">DevTreeSnapshot</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

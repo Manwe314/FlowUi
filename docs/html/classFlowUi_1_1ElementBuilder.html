@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,108 +107,124 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Builder returned by <a class="el" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803" title="Create a builder for a typed FlowUi element instance.">UiManager::createElement()</a>.  
+<p>Builder returned by <a class="el" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803" title="Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve und...">UiManager::createElement()</a>.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="ElementBuilder_8hpp_source.html">ElementBuilder.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-types" class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a7e561c353e3abb902b23e9d19f3e3fc2" id="r_a7e561c353e3abb902b23e9d19f3e3fc2"><td class="memItemLeft"><a id="a7e561c353e3abb902b23e9d19f3e3fc2" name="a7e561c353e3abb902b23e9d19f3e3fc2"></a>
-using&#160;</td><td class="memItemRight"><b>ElementType</b> = std::remove_cvref_t&lt;Element&gt;</td></tr>
-<tr class="memitem:a099ec8bdc24a6730a6ae5224aac4cdb5" id="r_a099ec8bdc24a6730a6ae5224aac4cdb5"><td class="memItemLeft"><a id="a099ec8bdc24a6730a6ae5224aac4cdb5" name="a099ec8bdc24a6730a6ae5224aac4cdb5"></a>
-using&#160;</td><td class="memItemRight"><b>ParametersType</b> = ParametersOf&lt;ElementType&gt;</td></tr>
-<tr class="memitem:ac2a58f9aac79dafcae173f80db991ce0" id="r_ac2a58f9aac79dafcae173f80db991ce0"><td class="memItemLeft"><a id="ac2a58f9aac79dafcae173f80db991ce0" name="ac2a58f9aac79dafcae173f80db991ce0"></a>
-using&#160;</td><td class="memItemRight"><b>BuildContext</b> = <a class="el" href="structFlowUi_1_1ElementBuildContext.html">ElementBuildContext</a>&lt;ElementType&gt;</td></tr>
-<tr class="memitem:a24029b6b1b4507c3f38dcd106f2f7367" id="r_a24029b6b1b4507c3f38dcd106f2f7367"><td class="memItemLeft"><a id="a24029b6b1b4507c3f38dcd106f2f7367" name="a24029b6b1b4507c3f38dcd106f2f7367"></a>
-using&#160;</td><td class="memItemRight"><b>InteractionContext</b> = <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">ElementInteractionContext</a>&lt;ElementType&gt;</td></tr>
+<tr class="memitem:a7e561c353e3abb902b23e9d19f3e3fc2" id="r_a7e561c353e3abb902b23e9d19f3e3fc2"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a7e561c353e3abb902b23e9d19f3e3fc2">ElementType</a> = std::remove_cvref_t&lt;Element&gt;</td></tr>
+<tr class="memitem:a099ec8bdc24a6730a6ae5224aac4cdb5" id="r_a099ec8bdc24a6730a6ae5224aac4cdb5"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a099ec8bdc24a6730a6ae5224aac4cdb5">ParametersType</a> = <a class="el" href="namespaceFlowUi.html#a59018466ca1c85e41b73f6e6c11666cd">ParametersOf</a>&lt;<a class="el" href="#a7e561c353e3abb902b23e9d19f3e3fc2">ElementType</a>&gt;</td></tr>
+<tr class="memitem:ac2a58f9aac79dafcae173f80db991ce0" id="r_ac2a58f9aac79dafcae173f80db991ce0"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#ac2a58f9aac79dafcae173f80db991ce0">BuildContext</a> = <a class="el" href="structFlowUi_1_1ElementBuildContext.html">ElementBuildContext</a>&lt;<a class="el" href="#a7e561c353e3abb902b23e9d19f3e3fc2">ElementType</a>&gt;</td></tr>
+<tr class="memitem:a24029b6b1b4507c3f38dcd106f2f7367" id="r_a24029b6b1b4507c3f38dcd106f2f7367"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a24029b6b1b4507c3f38dcd106f2f7367">InteractionContext</a> = <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">ElementInteractionContext</a>&lt;<a class="el" href="#a7e561c353e3abb902b23e9d19f3e3fc2">ElementType</a>&gt;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a787caa264ae9a7dd4d21e4d005e12d5a" id="r_a787caa264ae9a7dd4d21e4d005e12d5a"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> (<a class="el" href="classFlowUi_1_1UiManager.html">UiManager</a> &amp;uiManager, <a class="el" href="classFlowUi_1_1ElementManager.html">ElementManager</a> &amp;elementManager, WindowId window, <a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> parentId, <a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> elementId, std::source_location sourceLocation=std::source_location::current(), bool automaticIdentity=false)</td></tr>
-<tr class="memdesc:a787caa264ae9a7dd4d21e4d005e12d5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct one pending typed element invocation.  <br /></td></tr>
-<tr class="memitem:a650c4bfdb09f5d4271158b6849de7488" id="r_a650c4bfdb09f5d4271158b6849de7488"><td class="memItemLeft"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a650c4bfdb09f5d4271158b6849de7488">setParameters</a> (const ParametersType &amp;parameters)</td></tr>
-<tr class="memitem:abde5dc53b2c9ee14804e1efa6a8af3ab" id="r_abde5dc53b2c9ee14804e1efa6a8af3ab"><td class="memItemLeft"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#abde5dc53b2c9ee14804e1efa6a8af3ab">setParameters</a> (ParametersType &amp;&amp;parameters)</td></tr>
+<tr class="memitem:a650c4bfdb09f5d4271158b6849de7488" id="r_a650c4bfdb09f5d4271158b6849de7488"><td class="memItemLeft">ElementBuilder &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a650c4bfdb09f5d4271158b6849de7488">setParameters</a> (const <a class="el" href="#a099ec8bdc24a6730a6ae5224aac4cdb5">ParametersType</a> &amp;parameters)</td></tr>
+<tr class="memdesc:a650c4bfdb09f5d4271158b6849de7488"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy or move a complete parameter draft into the builder and return this builder by reference. Any views/pointers in the parameters remain borrowed.  <br /></td></tr>
+<tr class="memitem:abde5dc53b2c9ee14804e1efa6a8af3ab" id="r_abde5dc53b2c9ee14804e1efa6a8af3ab"><td class="memItemLeft">ElementBuilder &amp;&#160;</td><td class="memItemRight"><a class="el" href="#abde5dc53b2c9ee14804e1efa6a8af3ab">setParameters</a> (<a class="el" href="#a099ec8bdc24a6730a6ae5224aac4cdb5">ParametersType</a> &amp;&amp;parameters)</td></tr>
+<tr class="memdesc:abde5dc53b2c9ee14804e1efa6a8af3ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy or move a complete parameter draft into the builder and return this builder by reference. Any views/pointers in the parameters remain borrowed.  <br /></td></tr>
 <tr class="memitem:a923b8880d3749a1f8650f078a1798a65" id="r_a923b8880d3749a1f8650f078a1798a65"><td class="memTemplParams" colspan="2">template&lt;typename MergeFn&gt; </td></tr>
-<tr class="memitem:a923b8880d3749a1f8650f078a1798a65 template"><td class="memItemLeft"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a923b8880d3749a1f8650f078a1798a65">mergeParams</a> (MergeFn &amp;&amp;mergeFn)</td></tr>
-<tr class="memitem:a82d2357e9b125b91fd9fc70479c4c048" id="r_a82d2357e9b125b91fd9fc70479c4c048"><td class="memItemLeft"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a82d2357e9b125b91fd9fc70479c4c048">withID</a> (<a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> name)</td></tr>
-<tr class="memitem:ae9a2b3127395432f6343c91529a65179" id="r_ae9a2b3127395432f6343c91529a65179"><td class="memItemLeft"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ae9a2b3127395432f6343c91529a65179">withID</a> (<a class="el" href="structFlowUi_1_1RuntimeElementName.html">RuntimeElementName</a> name)</td></tr>
-<tr class="memitem:afdcd7a81ba5f3f09133f5f6fb52725b5" id="r_afdcd7a81ba5f3f09133f5f6fb52725b5"><td class="memItemLeft"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#afdcd7a81ba5f3f09133f5f6fb52725b5">withID</a> (<a class="el" href="structFlowUi_1_1IndexedElementName.html">IndexedElementName</a> name)</td></tr>
-<tr class="memitem:a46984410a745294759c0faac732c2b2a" id="r_a46984410a745294759c0faac732c2b2a"><td class="memItemLeft"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a46984410a745294759c0faac732c2b2a">withID</a> (<a class="el" href="structFlowUi_1_1AutoElementName.html">AutoElementName</a> name)</td></tr>
-<tr class="memitem:ab4f1c7efd4737928b0f1b261cc52f9ce" id="r_ab4f1c7efd4737928b0f1b261cc52f9ce"><td class="memItemLeft"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ab4f1c7efd4737928b0f1b261cc52f9ce">withID</a> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> id)</td></tr>
-<tr class="memitem:aafbb8ff6751ed00d788248a3593b7fca" id="r_aafbb8ff6751ed00d788248a3593b7fca"><td class="memItemLeft"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#aafbb8ff6751ed00d788248a3593b7fca">withID</a> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> id)</td></tr>
-<tr class="memitem:ae72dee5579a19a1a5796d78b527d8d8a" id="r_ae72dee5579a19a1a5796d78b527d8d8a"><td class="memItemLeft"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ae72dee5579a19a1a5796d78b527d8d8a">withID</a> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> id)</td></tr>
-<tr class="memitem:a554f90e3c5fae6091c29c11d9a175630" id="r_a554f90e3c5fae6091c29c11d9a175630"><td class="memItemLeft"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a554f90e3c5fae6091c29c11d9a175630">setDevInternalCapture</a> (bool isDevInternal=true) noexcept</td></tr>
+<tr class="memitem:a923b8880d3749a1f8650f078a1798a65 template"><td class="memItemLeft">ElementBuilder &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a923b8880d3749a1f8650f078a1798a65">mergeParams</a> (MergeFn &amp;&amp;mergeFn)</td></tr>
+<tr class="memdesc:a923b8880d3749a1f8650f078a1798a65"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke the mutator immediately on the builder-owned <a class="el" href="#a099ec8bdc24a6730a6ae5224aac4cdb5">ParametersType</a>&amp; and return this builder by reference. No callback is retained.  <br /></td></tr>
+<tr class="memitem:a82d2357e9b125b91fd9fc70479c4c048" id="r_a82d2357e9b125b91fd9fc70479c4c048"><td class="memItemLeft">ElementBuilder &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a82d2357e9b125b91fd9fc70479c4c048">withID</a> (<a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> name)</td></tr>
+<tr class="memdesc:a82d2357e9b125b91fd9fc70479c4c048"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero.  <br /></td></tr>
+<tr class="memitem:ae9a2b3127395432f6343c91529a65179" id="r_ae9a2b3127395432f6343c91529a65179"><td class="memItemLeft">ElementBuilder &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ae9a2b3127395432f6343c91529a65179">withID</a> (<a class="el" href="structFlowUi_1_1RuntimeElementName.html">RuntimeElementName</a> name)</td></tr>
+<tr class="memdesc:ae9a2b3127395432f6343c91529a65179"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero.  <br /></td></tr>
+<tr class="memitem:afdcd7a81ba5f3f09133f5f6fb52725b5" id="r_afdcd7a81ba5f3f09133f5f6fb52725b5"><td class="memItemLeft">ElementBuilder &amp;&#160;</td><td class="memItemRight"><a class="el" href="#afdcd7a81ba5f3f09133f5f6fb52725b5">withID</a> (<a class="el" href="structFlowUi_1_1IndexedElementName.html">IndexedElementName</a> name)</td></tr>
+<tr class="memdesc:afdcd7a81ba5f3f09133f5f6fb52725b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero.  <br /></td></tr>
+<tr class="memitem:a46984410a745294759c0faac732c2b2a" id="r_a46984410a745294759c0faac732c2b2a"><td class="memItemLeft">ElementBuilder &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a46984410a745294759c0faac732c2b2a">withID</a> (<a class="el" href="structFlowUi_1_1AutoElementName.html">AutoElementName</a> name)</td></tr>
+<tr class="memdesc:a46984410a745294759c0faac732c2b2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero.  <br /></td></tr>
+<tr class="memitem:ab4f1c7efd4737928b0f1b261cc52f9ce" id="r_ab4f1c7efd4737928b0f1b261cc52f9ce"><td class="memItemLeft">ElementBuilder &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ab4f1c7efd4737928b0f1b261cc52f9ce">withID</a> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> id)</td></tr>
+<tr class="memdesc:ab4f1c7efd4737928b0f1b261cc52f9ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero.  <br /></td></tr>
+<tr class="memitem:aafbb8ff6751ed00d788248a3593b7fca" id="r_aafbb8ff6751ed00d788248a3593b7fca"><td class="memItemLeft">ElementBuilder &amp;&#160;</td><td class="memItemRight"><a class="el" href="#aafbb8ff6751ed00d788248a3593b7fca">withID</a> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> id)</td></tr>
+<tr class="memdesc:aafbb8ff6751ed00d788248a3593b7fca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero.  <br /></td></tr>
+<tr class="memitem:ae72dee5579a19a1a5796d78b527d8d8a" id="r_ae72dee5579a19a1a5796d78b527d8d8a"><td class="memItemLeft">ElementBuilder &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ae72dee5579a19a1a5796d78b527d8d8a">withID</a> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> id)</td></tr>
+<tr class="memdesc:ae72dee5579a19a1a5796d78b527d8d8a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero.  <br /></td></tr>
+<tr class="memitem:a554f90e3c5fae6091c29c11d9a175630" id="r_a554f90e3c5fae6091c29c11d9a175630"><td class="memItemLeft">ElementBuilder &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a554f90e3c5fae6091c29c11d9a175630">setDevInternalCapture</a> (bool isDevInternal=true) noexcept</td></tr>
+<tr class="memdesc:a554f90e3c5fae6091c29c11d9a175630"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return this builder after selecting whether developer capture treats this invocation as internal UI. Without developer support this is a no-op setting.  <br /></td></tr>
 <tr class="memitem:a29afc3c4439f57b17785e3f66fc035a6" id="r_a29afc3c4439f57b17785e3f66fc035a6"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a29afc3c4439f57b17785e3f66fc035a6">construct</a> (<a class="el" href="group__flowui__element__system.html#ga71b44228a1f1c0d96b98787d702cc69d">ElementDrawOptions</a> options=<a class="el" href="group__flowui__element__system.html#gga71b44228a1f1c0d96b98787d702cc69da7a1920d61156abc05a60135aefe8bc67">ElementDrawOptions::Default</a>)</td></tr>
+<tr class="memdesc:a29afc3c4439f57b17785e3f66fc035a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Run enabled pointer callbacks, runLogic and constructElement synchronously, then open the declared Clay root. Requires <a class="el" href="conceptFlowUi_1_1ConstructibleFlowElement.html">ConstructibleFlowElement</a>; close using <a class="el" href="classFlowUi_1_1UiManager.html#a857a971efa5a8e904806b9398e0e4883" title="Close the most recent root opened by ElementBuilder::construct(), including its FlowUi scope and deve...">UiManager::drawConstructed()</a>.  <br /></td></tr>
 <tr class="memitem:afb603397299e2253826d6df1b10fb286" id="r_afb603397299e2253826d6df1b10fb286"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#afb603397299e2253826d6df1b10fb286">draw</a> (<a class="el" href="group__flowui__element__system.html#ga71b44228a1f1c0d96b98787d702cc69d">ElementDrawOptions</a> options=<a class="el" href="group__flowui__element__system.html#gga71b44228a1f1c0d96b98787d702cc69da7a1920d61156abc05a60135aefe8bc67">ElementDrawOptions::Default</a>)</td></tr>
+<tr class="memdesc:afb603397299e2253826d6df1b10fb286"><td class="mdescLeft">&#160;</td><td class="mdescRight">Run enabled pointer callbacks, runLogic and buildElement synchronously. Requires <a class="el" href="conceptFlowUi_1_1DrawableFlowElement.html">DrawableFlowElement</a>. Returns void.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;FlowElement Element&gt;<br />
-class FlowUi::ElementBuilder&lt; Element &gt;</div><p>Builder returned by <a class="el" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803" title="Create a builder for a typed FlowUi element instance.">UiManager::createElement()</a>. </p>
-<p><a class="el" href="classFlowUi_1_1ElementBuilder.html" title="Builder returned by UiManager::createElement().">ElementBuilder</a> owns an element instance's logical id and parameter values. Element behavior is selected entirely from ElementType at compile time; the constexpr tag passed to createElement() is never stored.</p>
+class FlowUi::ElementBuilder&lt; Element &gt;</div><p>Builder returned by <a class="el" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803" title="Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve und...">UiManager::createElement()</a>. </p>
+<p><a class="el" href="classFlowUi_1_1ElementBuilder.html" title="Builder returned by UiManager::createElement().">ElementBuilder</a> owns an element instance's logical id and parameter values. Element behavior is selected entirely from <a class="el" href="#a7e561c353e3abb902b23e9d19f3e3fc2">ElementType</a> at compile time; the constexpr tag passed to createElement() is never stored. Use the builder during an active frame on its owning <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a>. Borrowed values inside Parameters are not deep-copied and must remain valid through rendering. Builder methods do not queue work: <a class="el" href="#afb603397299e2253826d6df1b10fb286" title="Run enabled pointer callbacks, runLogic and buildElement synchronously. Requires DrawableFlowElement....">draw()</a> and <a class="el" href="#a29afc3c4439f57b17785e3f66fc035a6" title="Run enabled pointer callbacks, runLogic and constructElement synchronously, then open the declared Cl...">construct()</a> execute their callbacks synchronously.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">Element</td><td>Complete empty-tag element type satisfying <a class="el" href="conceptFlowUi_1_1FlowElement.html">FlowElement</a>. </td></tr>
   </table>
   </dd>
 </dl>
-</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a787caa264ae9a7dd4d21e4d005e12d5a" name="a787caa264ae9a7dd4d21e4d005e12d5a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a787caa264ae9a7dd4d21e4d005e12d5a">&#9670;&#160;</a></span>ElementBuilder()</h2>
+</div><a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Member Typedef Documentation</h2>
+<a id="ac2a58f9aac79dafcae173f80db991ce0" name="ac2a58f9aac79dafcae173f80db991ce0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac2a58f9aac79dafcae173f80db991ce0">&#9670;&#160;</a></span>BuildContext</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;FlowElement Element&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::ElementBuilder </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classFlowUi_1_1UiManager.html">UiManager</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>uiManager</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classFlowUi_1_1ElementManager.html">ElementManager</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>elementManager</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">WindowId</td>          <td class="paramname"><span class="paramname"><em>window</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a></td>          <td class="paramname"><span class="paramname"><em>parentId</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a></td>          <td class="paramname"><span class="paramname"><em>elementId</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::source_location</td>          <td class="paramname"><span class="paramname"><em>sourceLocation</em></span><span class="paramdefsep"> = </span><span class="paramdefval">std::source_location::current()</span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>automaticIdentity</em></span><span class="paramdefsep"> = </span><span class="paramdefval">false</span>&#160;)</td>
+          <td class="memname">using <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::BuildContext = <a class="el" href="structFlowUi_1_1ElementBuildContext.html">ElementBuildContext</a>&lt;<a class="el" href="#a7e561c353e3abb902b23e9d19f3e3fc2">ElementType</a>&gt;</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+<p>Context supplied to buildElement() and constructElement(). </p>
 
-<p>Construct one pending typed element invocation. </p>
-<p><a class="el" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803" title="Create a builder for a typed FlowUi element instance.">UiManager::createElement()</a> is the intended entry point. The builder keeps direct references to the frame's <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> and app-owned <a class="el" href="classFlowUi_1_1ElementManager.html" title="App-wide owner and public access point for Flow element runtime data.">ElementManager</a>, plus the WindowId needed to identify per-window state. </p>
+</div>
+</div>
+<a id="a7e561c353e3abb902b23e9d19f3e3fc2" name="a7e561c353e3abb902b23e9d19f3e3fc2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7e561c353e3abb902b23e9d19f3e3fc2">&#9670;&#160;</a></span>ElementType</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;FlowElement Element&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::ElementType = std::remove_cvref_t&lt;Element&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Complete element definition type selected at compile time. </p>
+
+</div>
+</div>
+<a id="a24029b6b1b4507c3f38dcd106f2f7367" name="a24029b6b1b4507c3f38dcd106f2f7367"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24029b6b1b4507c3f38dcd106f2f7367">&#9670;&#160;</a></span>InteractionContext</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;FlowElement Element&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::InteractionContext = <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">ElementInteractionContext</a>&lt;<a class="el" href="#a7e561c353e3abb902b23e9d19f3e3fc2">ElementType</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Context supplied to pointer event hooks and runLogic(). </p>
+
+</div>
+</div>
+<a id="a099ec8bdc24a6730a6ae5224aac4cdb5" name="a099ec8bdc24a6730a6ae5224aac4cdb5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a099ec8bdc24a6730a6ae5224aac4cdb5">&#9670;&#160;</a></span>ParametersType</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;FlowElement Element&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::ParametersType = <a class="el" href="namespaceFlowUi.html#a59018466ca1c85e41b73f6e6c11666cd">ParametersOf</a>&lt;<a class="el" href="#a7e561c353e3abb902b23e9d19f3e3fc2">ElementType</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Builder-owned parameter payload, or <a class="el" href="structFlowUi_1_1NoElementParameters.html">NoElementParameters</a> when omitted. </p>
 
 </div>
 </div>
@@ -237,7 +253,15 @@ template&lt;FlowElement Element&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Run the common callback pipeline and open this element's Clay root. Children emitted afterward remain nested until <a class="el" href="classFlowUi_1_1UiManager.html#a857a971efa5a8e904806b9398e0e4883" title="Close the current element opened by ElementBuilder::construct().">UiManager::drawConstructed()</a>. </p>
+
+<p>Run enabled pointer callbacks, runLogic and constructElement synchronously, then open the declared Clay root. Requires <a class="el" href="conceptFlowUi_1_1ConstructibleFlowElement.html">ConstructibleFlowElement</a>; close using <a class="el" href="classFlowUi_1_1UiManager.html#a857a971efa5a8e904806b9398e0e4883" title="Close the most recent root opened by ElementBuilder::construct(), including its FlowUi scope and deve...">UiManager::drawConstructed()</a>. </p>
+<p>Direct throwing API: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line"><span class="keyword">auto</span> builder = ui.createElement(counter, <span class="stringliteral">&quot;counter&quot;</span>);</div>
+<div class="line">builder.construct();</div>
+<div class="line">ui.createElement(counter, <span class="stringliteral">&quot;child&quot;</span>).draw();</div>
+<div class="line">ui.drawConstructed();</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -265,7 +289,14 @@ template&lt;FlowElement Element&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Run the common callback pipeline and invoke ElementType::buildElement(). </p>
+
+<p>Run enabled pointer callbacks, runLogic and buildElement synchronously. Requires <a class="el" href="conceptFlowUi_1_1DrawableFlowElement.html">DrawableFlowElement</a>. Returns void. </p>
+<p>Direct throwing API: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line"><span class="keyword">auto</span> builder = ui.createElement(counter, <span class="stringliteral">&quot;counter&quot;</span>);</div>
+<div class="line">builder.draw(<a class="code hl_enumvalue" href="group__flowui__element__system.html#gga71b44228a1f1c0d96b98787d702cc69dae1ee3d1f24e799c63d454d0e4dbf3d2e">FlowUi::ElementDrawOptions::SkipEventCallbacks</a>);</div>
+<div class="ttc" id="agroup__flowui__element__system_html_gga71b44228a1f1c0d96b98787d702cc69dae1ee3d1f24e799c63d454d0e4dbf3d2e"><div class="ttname"><a href="group__flowui__element__system.html#gga71b44228a1f1c0d96b98787d702cc69dae1ee3d1f24e799c63d454d0e4dbf3d2e">FlowUi::ElementDrawOptions::SkipEventCallbacks</a></div><div class="ttdeci">@ SkipEventCallbacks</div><div class="ttdoc">Skip onHovered, onPressed, onHeld, and onReleased.</div><div class="ttdef"><b>Definition</b> ElementContexts.hpp:630</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -283,7 +314,7 @@ template&lt;typename MergeFn&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::mergeParams </td>
+          <td class="memname">ElementBuilder &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::mergeParams </td>
           <td>(</td>
           <td class="paramtype">MergeFn &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>mergeFn</em></span></td><td>)</td>
           <td></td>
@@ -291,11 +322,18 @@ template&lt;typename MergeFn&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Mutate the builder-owned parameters with a callable. </p>
+
+<p>Invoke the mutator immediately on the builder-owned <a class="el" href="#a099ec8bdc24a6730a6ae5224aac4cdb5">ParametersType</a>&amp; and return this builder by reference. No callback is retained. </p>
+<p>Direct throwing API: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line"><span class="keyword">auto</span> builder = ui.createElement(counter, <span class="stringliteral">&quot;counter&quot;</span>);</div>
+<div class="line">builder.mergeParams([](Counter::Parameters&amp; parameters) { parameters.width = 160.0f; }).<a class="code hl_function" href="#afb603397299e2253826d6df1b10fb286">draw</a>();</div>
+<div class="ttc" id="aclassFlowUi_1_1ElementBuilder_html_afb603397299e2253826d6df1b10fb286"><div class="ttname"><a href="#afb603397299e2253826d6df1b10fb286">FlowUi::ElementBuilder::draw</a></div><div class="ttdeci">void draw(ElementDrawOptions options=ElementDrawOptions::Default)</div><div class="ttdoc">Run enabled pointer callbacks, runLogic and buildElement synchronously. Requires DrawableFlowElement....</div><div class="ttdef"><b>Definition</b> ElementBuilder.hpp:569</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -311,7 +349,7 @@ template&lt;FlowElement Element&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::setDevInternalCapture </td>
+          <td class="memname">ElementBuilder &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::setDevInternalCapture </td>
           <td>(</td>
           <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>isDevInternal</em></span><span class="paramdefsep"> = </span><span class="paramdefval">true</span></td><td>)</td>
           <td></td>
@@ -323,7 +361,9 @@ template&lt;FlowElement Element&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Override whether this invocation is captured as internal developer UI. </p>
+
+<p>Return this builder after selecting whether developer capture treats this invocation as internal UI. Without developer support this is a no-op setting. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -339,19 +379,26 @@ template&lt;FlowElement Element&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::setParameters </td>
+          <td class="memname">ElementBuilder &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::setParameters </td>
           <td>(</td>
-          <td class="paramtype">const ParametersType &amp;</td>          <td class="paramname"><span class="paramname"><em>parameters</em></span></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="#a099ec8bdc24a6730a6ae5224aac4cdb5">ParametersType</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>parameters</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Replace element parameters by copy. </p>
+
+<p>Copy or move a complete parameter draft into the builder and return this builder by reference. Any views/pointers in the parameters remain borrowed. </p>
+<p>Direct throwing API: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line"><span class="keyword">auto</span> builder = ui.createElement(counter, <span class="stringliteral">&quot;counter&quot;</span>);</div>
+<div class="line">Counter::Parameters parameters{.width = 160.0f};</div>
+<div class="line">builder.setParameters(parameters).draw();</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -367,19 +414,26 @@ template&lt;FlowElement Element&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::setParameters </td>
+          <td class="memname">ElementBuilder &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::setParameters </td>
           <td>(</td>
-          <td class="paramtype">ParametersType &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>parameters</em></span></td><td>)</td>
+          <td class="paramtype"><a class="el" href="#a099ec8bdc24a6730a6ae5224aac4cdb5">ParametersType</a> &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>parameters</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Replace element parameters by move. </p>
+
+<p>Copy or move a complete parameter draft into the builder and return this builder by reference. Any views/pointers in the parameters remain borrowed. </p>
+<p>Direct throwing API: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line"><span class="keyword">auto</span> builder = ui.createElement(counter, <span class="stringliteral">&quot;counter&quot;</span>);</div>
+<div class="line">Counter::Parameters parameters{.width = 160.0f};</div>
+<div class="line">builder.setParameters(std::move(parameters)).draw();</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -395,7 +449,7 @@ template&lt;FlowElement Element&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::withID </td>
+          <td class="memname">ElementBuilder &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::withID </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structFlowUi_1_1AutoElementName.html">AutoElementName</a></td>          <td class="paramname"><span class="paramname"><em>name</em></span></td><td>)</td>
           <td></td>
@@ -403,11 +457,18 @@ template&lt;FlowElement Element&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Resolve an automatic replacement against the captured parent. </p>
+
+<p>Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero. </p>
+<p>Direct throwing API: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line"><span class="keyword">auto</span> builder = ui.createElement(counter, <span class="stringliteral">&quot;counter&quot;</span>);</div>
+<div class="line">builder.withID(<a class="code hl_function" href="namespaceFlowUi.html#a4866f6a494e247b6e01d4e018d80be8c">FlowUi::AutoID</a>()).draw();</div>
+<div class="ttc" id="anamespaceFlowUi_html_a4866f6a494e247b6e01d4e018d80be8c"><div class="ttname"><a href="namespaceFlowUi.html#a4866f6a494e247b6e01d4e018d80be8c">FlowUi::AutoID</a></div><div class="ttdeci">constexpr AutoElementName AutoID(const char *fileName=__builtin_FILE(), uint32_t line=__builtin_LINE(), uint32_t column=0) noexcept</div><div class="ttdoc">Capture the caller location as an automatic identity token.</div><div class="ttdef"><b>Definition</b> ElementID.hpp:402</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -423,7 +484,7 @@ template&lt;FlowElement Element&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::withID </td>
+          <td class="memname">ElementBuilder &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::withID </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
           <td></td>
@@ -431,11 +492,17 @@ template&lt;FlowElement Element&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Replace the builder identity with an already resolved local ID. </p>
+
+<p>Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero. </p>
+<p>Direct throwing API: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line"><span class="keyword">auto</span> builder = ui.createElement(counter, <span class="stringliteral">&quot;counter&quot;</span>);</div>
+<div class="line">builder.withID(<span class="keywordtype">id</span>).draw();</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -451,7 +518,7 @@ template&lt;FlowElement Element&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::withID </td>
+          <td class="memname">ElementBuilder &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::withID </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
           <td></td>
@@ -459,11 +526,17 @@ template&lt;FlowElement Element&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Replace the builder identity with a part address already bound to its owner. </p>
+
+<p>Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero. </p>
+<p>Direct throwing API: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line"><span class="keyword">auto</span> builder = ui.createElement(counter, <span class="stringliteral">&quot;counter&quot;</span>);</div>
+<div class="line">builder.withID(<span class="keywordtype">id</span>).draw();</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -479,7 +552,7 @@ template&lt;FlowElement Element&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::withID </td>
+          <td class="memname">ElementBuilder &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::withID </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
           <td></td>
@@ -487,11 +560,17 @@ template&lt;FlowElement Element&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Replace the builder identity with an explicitly global address. </p>
+
+<p>Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero. </p>
+<p>Direct throwing API: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line"><span class="keyword">auto</span> builder = ui.createElement(counter, <span class="stringliteral">&quot;counter&quot;</span>);</div>
+<div class="line">builder.withID(<span class="keywordtype">id</span>).draw();</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -507,7 +586,7 @@ template&lt;FlowElement Element&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::withID </td>
+          <td class="memname">ElementBuilder &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::withID </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structFlowUi_1_1IndexedElementName.html">IndexedElementName</a></td>          <td class="paramname"><span class="paramname"><em>name</em></span></td><td>)</td>
           <td></td>
@@ -515,11 +594,18 @@ template&lt;FlowElement Element&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Resolve an indexed/keyed replacement against the captured parent. </p>
+
+<p>Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero. </p>
+<p>Direct throwing API: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line"><span class="keyword">auto</span> builder = ui.createElement(counter, <span class="stringliteral">&quot;counter&quot;</span>);</div>
+<div class="line">builder.withID(<a class="code hl_function" href="namespaceFlowUi.html#ac6240c50bc1cd842b3503644a10ae529">FlowUi::Indexed</a>(<span class="stringliteral">&quot;row&quot;</span>, 1)).draw();</div>
+<div class="ttc" id="anamespaceFlowUi_html_ac6240c50bc1cd842b3503644a10ae529"><div class="ttname"><a href="namespaceFlowUi.html#ac6240c50bc1cd842b3503644a10ae529">FlowUi::Indexed</a></div><div class="ttdeci">constexpr IndexedElementName Indexed(LocalElementName name, uint64_t index) noexcept</div><div class="ttdef"><b>Definition</b> ElementID.hpp:280</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -535,7 +621,7 @@ template&lt;FlowElement Element&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::withID </td>
+          <td class="memname">ElementBuilder &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::withID </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a></td>          <td class="paramname"><span class="paramname"><em>name</em></span></td><td>)</td>
           <td></td>
@@ -543,11 +629,17 @@ template&lt;FlowElement Element&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Resolve a replacement local name against the parent captured at creation. </p>
+
+<p>Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero. </p>
+<p>Direct throwing API: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line"><span class="keyword">auto</span> builder = ui.createElement(counter, <span class="stringliteral">&quot;counter&quot;</span>);</div>
+<div class="line">builder.withID(<span class="stringliteral">&quot;renamed&quot;</span>).draw();</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -563,7 +655,7 @@ template&lt;FlowElement Element&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#a787caa264ae9a7dd4d21e4d005e12d5a">ElementBuilder</a> &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::withID </td>
+          <td class="memname">ElementBuilder &amp; <a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a>&lt; Element &gt;::withID </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structFlowUi_1_1RuntimeElementName.html">RuntimeElementName</a></td>          <td class="paramname"><span class="paramname"><em>name</em></span></td><td>)</td>
           <td></td>
@@ -571,11 +663,18 @@ template&lt;FlowElement Element&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Resolve a runtime-authored replacement name against the captured parent. </p>
+
+<p>Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero. </p>
+<p>Direct throwing API: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line"><span class="keyword">auto</span> builder = ui.createElement(counter, <span class="stringliteral">&quot;counter&quot;</span>);</div>
+<div class="line">builder.withID(<a class="code hl_function" href="namespaceFlowUi.html#a6d9da0c2fbac1b0f170957b7d70b4b4f">FlowUi::RuntimeName</a>(<span class="stringliteral">&quot;renamed&quot;</span>)).draw();</div>
+<div class="ttc" id="anamespaceFlowUi_html_a6d9da0c2fbac1b0f170957b7d70b4b4f"><div class="ttname"><a href="namespaceFlowUi.html#a6d9da0c2fbac1b0f170957b7d70b4b4f">FlowUi::RuntimeName</a></div><div class="ttdeci">constexpr RuntimeElementName RuntimeName(std::string_view name) noexcept</div><div class="ttdef"><b>Definition</b> ElementID.hpp:258</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -596,7 +695,7 @@ template&lt;FlowElement Element&gt; </div>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1ElementBuilder.html">ElementBuilder</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1ElementBuilder.html">ElementBuilder</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

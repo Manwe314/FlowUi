@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,28 +106,45 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevElementSchema Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Immutable links from one Flow definition to its parameter/state/resource schemas.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevSchemaTypes_8hpp_source.html">DevSchemaTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a3da6dea23e680b6ad3a2c859a2336362" id="r_a3da6dea23e680b6ad3a2c859a2336362"><td class="memItemLeft"><a id="a3da6dea23e680b6ad3a2c859a2336362" name="a3da6dea23e680b6ad3a2c859a2336362"></a>
 <a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a>&#160;</td><td class="memItemRight"><b>definitionId</b> {}</td></tr>
+<tr class="memdesc:a3da6dea23e680b6ad3a2c859a2336362"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stable Flow definition identity. <br /></td></tr>
 <tr class="memitem:a83b93be2eb02985289325421ee72ba60" id="r_a83b93be2eb02985289325421ee72ba60"><td class="memItemLeft"><a id="a83b93be2eb02985289325421ee72ba60" name="a83b93be2eb02985289325421ee72ba60"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTypeIndex.html">DevTypeIndex</a>&#160;</td><td class="memItemRight"><b>definitionType</b> {}</td></tr>
+<tr class="memdesc:a83b93be2eb02985289325421ee72ba60"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generation-local element tag type index. <br /></td></tr>
 <tr class="memitem:abc95ae8e32a8dc41844c9013207e74af" id="r_abc95ae8e32a8dc41844c9013207e74af"><td class="memItemLeft"><a id="abc95ae8e32a8dc41844c9013207e74af" name="abc95ae8e32a8dc41844c9013207e74af"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTypeIndex.html">DevTypeIndex</a>&#160;</td><td class="memItemRight"><b>parametersType</b> {}</td></tr>
+<tr class="memdesc:abc95ae8e32a8dc41844c9013207e74af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generation-local parameter type index. <br /></td></tr>
 <tr class="memitem:afe3f2aa0c081ee224029503dd42695f2" id="r_afe3f2aa0c081ee224029503dd42695f2"><td class="memItemLeft"><a id="afe3f2aa0c081ee224029503dd42695f2" name="afe3f2aa0c081ee224029503dd42695f2"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTypeIndex.html">DevTypeIndex</a>&#160;</td><td class="memItemRight"><b>stateType</b> {}</td></tr>
+<tr class="memdesc:afe3f2aa0c081ee224029503dd42695f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generation-local state type index, or zero when absent. <br /></td></tr>
 <tr class="memitem:a61b2777e1745a7783bde12eb5782bc0f" id="r_a61b2777e1745a7783bde12eb5782bc0f"><td class="memItemLeft"><a id="a61b2777e1745a7783bde12eb5782bc0f" name="a61b2777e1745a7783bde12eb5782bc0f"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTypeIndex.html">DevTypeIndex</a>&#160;</td><td class="memItemRight"><b>resourcesType</b> {}</td></tr>
+<tr class="memdesc:a61b2777e1745a7783bde12eb5782bc0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generation-local shared-resource type index, or zero when absent. <br /></td></tr>
 <tr class="memitem:a795087364a4e9eb9f950125ed3735ac6" id="r_a795087364a4e9eb9f950125ed3735ac6"><td class="memItemLeft"><a id="a795087364a4e9eb9f950125ed3735ac6" name="a795087364a4e9eb9f950125ed3735ac6"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevStringRef.html">DevStringRef</a>&#160;</td><td class="memItemRight"><b>displayName</b> {}</td></tr>
+<tr class="memdesc:a795087364a4e9eb9f950125ed3735ac6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Definition label in the schema string pool. <br /></td></tr>
 <tr class="memitem:af6838cb752bd7cb355e489388b9302c9" id="r_af6838cb752bd7cb355e489388b9302c9"><td class="memItemLeft"><a id="af6838cb752bd7cb355e489388b9302c9" name="af6838cb752bd7cb355e489388b9302c9"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevStringRef.html">DevStringRef</a>&#160;</td><td class="memItemRight"><b>hint</b> {}</td></tr>
+<tr class="memdesc:af6838cb752bd7cb355e489388b9302c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Definition help text in the schema string pool. <br /></td></tr>
 <tr class="memitem:a165da813b5e36db9571ced818bca340d" id="r_a165da813b5e36db9571ced818bca340d"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevRolePolicy.html">DevRolePolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#a165da813b5e36db9571ced818bca340d">parametersPolicy</a></td></tr>
+<tr class="memdesc:a165da813b5e36db9571ced818bca340d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default capture/edit policy for parameters.  <br /></td></tr>
 <tr class="memitem:ad48b0b3d2067b1bb591bf7837dde57c8" id="r_ad48b0b3d2067b1bb591bf7837dde57c8"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevRolePolicy.html">DevRolePolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#ad48b0b3d2067b1bb591bf7837dde57c8">statePolicy</a></td></tr>
+<tr class="memdesc:ad48b0b3d2067b1bb591bf7837dde57c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default capture/edit policy for persistent state.  <br /></td></tr>
 <tr class="memitem:a65a0a324f6ee15c26e2614ad367dfc9e" id="r_a65a0a324f6ee15c26e2614ad367dfc9e"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevRolePolicy.html">DevRolePolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#a65a0a324f6ee15c26e2614ad367dfc9e">resourcesPolicy</a></td></tr>
+<tr class="memdesc:a65a0a324f6ee15c26e2614ad367dfc9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default capture/edit policy for shared resources.  <br /></td></tr>
 </table>
-<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Immutable links from one Flow definition to its parameter/state/resource schemas. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a165da813b5e36db9571ced818bca340d" name="a165da813b5e36db9571ced818bca340d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a165da813b5e36db9571ced818bca340d">&#9670;&#160;</a></span>parametersPolicy</h2>
 
@@ -139,7 +156,13 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"></div><!-- fragment -->
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">        <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a2a42a90248d141a0ce047f726f096684a689202409e48743b914713f96d93947c">DevCaptureCapability::Value</a>, <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a7a36c9891916e94f8f5056aeda8f7911a2c09e798bf8c5a82d211331c82893a0f">DevEditCapability::Editable</a>}</div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1tooling_html_a2a42a90248d141a0ce047f726f096684a689202409e48743b914713f96d93947c"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a2a42a90248d141a0ce047f726f096684a689202409e48743b914713f96d93947c">FlowUi::devSystems::tooling::DevCaptureCapability::Value</a></div><div class="ttdeci">@ Value</div><div class="ttdoc">Copy schema-typed runtime values.</div><div class="ttdef"><b>Definition</b> DevSchemaTypes.hpp:100</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1tooling_html_a7a36c9891916e94f8f5056aeda8f7911a2c09e798bf8c5a82d211331c82893a0f"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a7a36c9891916e94f8f5056aeda8f7911a2c09e798bf8c5a82d211331c82893a0f">FlowUi::devSystems::tooling::DevEditCapability::Editable</a></div><div class="ttdeci">@ Editable</div><div class="ttdoc">Allow supported reflected edits.</div><div class="ttdef"><b>Definition</b> DevSchemaTypes.hpp:112</div></div>
+</div><!-- fragment -->
+<p>Default capture/edit policy for parameters. </p>
+
 </div>
 </div>
 <a id="a65a0a324f6ee15c26e2614ad367dfc9e" name="a65a0a324f6ee15c26e2614ad367dfc9e"></a>
@@ -153,7 +176,13 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"></div><!-- fragment -->
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">        <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a2a42a90248d141a0ce047f726f096684acff080d7dfa0f160550d0a8d1b31ebd0">DevCaptureCapability::MetadataOnly</a>, <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a7a36c9891916e94f8f5056aeda8f7911acaa4c1f198d75a414c7c2c53a11e0526">DevEditCapability::ViewOnly</a>}</div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1tooling_html_a2a42a90248d141a0ce047f726f096684acff080d7dfa0f160550d0a8d1b31ebd0"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a2a42a90248d141a0ce047f726f096684acff080d7dfa0f160550d0a8d1b31ebd0">FlowUi::devSystems::tooling::DevCaptureCapability::MetadataOnly</a></div><div class="ttdeci">@ MetadataOnly</div><div class="ttdoc">Publish type/field metadata without copying runtime values.</div><div class="ttdef"><b>Definition</b> DevSchemaTypes.hpp:98</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1tooling_html_a7a36c9891916e94f8f5056aeda8f7911acaa4c1f198d75a414c7c2c53a11e0526"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a7a36c9891916e94f8f5056aeda8f7911acaa4c1f198d75a414c7c2c53a11e0526">FlowUi::devSystems::tooling::DevEditCapability::ViewOnly</a></div><div class="ttdeci">@ ViewOnly</div><div class="ttdoc">Display observations while preventing direct edits.</div><div class="ttdef"><b>Definition</b> DevSchemaTypes.hpp:110</div></div>
+</div><!-- fragment -->
+<p>Default capture/edit policy for shared resources. </p>
+
 </div>
 </div>
 <a id="ad48b0b3d2067b1bb591bf7837dde57c8" name="ad48b0b3d2067b1bb591bf7837dde57c8"></a>
@@ -167,7 +196,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"></div><!-- fragment -->
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">        <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a2a42a90248d141a0ce047f726f096684a689202409e48743b914713f96d93947c">DevCaptureCapability::Value</a>, <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a7a36c9891916e94f8f5056aeda8f7911acaa4c1f198d75a414c7c2c53a11e0526">DevEditCapability::ViewOnly</a>}</div>
+</div><!-- fragment -->
+<p>Default capture/edit policy for persistent state. </p>
+
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
@@ -186,7 +219,7 @@ Public Attributes</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevElementSchema.html">DevElementSchema</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevElementSchema.html">DevElementSchema</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

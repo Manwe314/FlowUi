@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #pragma once
 
 // Included beside the demo's private application and scenario state definitions.
@@ -44,7 +45,7 @@ inline constexpr auto kAgenticResetDemo = AppAction("flowui.demo.agentic.reset")
 		 {"editor_soft_wrap", state.editorSoftWrap},
 		 {"window_id", agentic::decimal(application.mainWindowId())},
 		 {"completed_window_frame",
-		  agentic::decimal(application.ui().dev_completed_window_frame())}});
+		  agentic::decimal(::FlowUi::test::requireValue(application.ui()).get().dev_completed_window_frame())}});
 }
 
 void reset_demo_agentic_state(App* application, DemoAgenticHarness* harness) {
@@ -64,17 +65,17 @@ register_demo_agentic_interactions(App& application, DemoAgenticHarness& scenari
 		interaction_harness.actions_enabled = actions_enabled;
 		if (!input_enabled && !actions_enabled)
 			return {};
-		auto runtime = application.agentic_workflow().interaction_runtime();
+		auto runtime = ::FlowUi::test::requireValue(application.agentic_workflow()).get().interaction_runtime();
 		if (!runtime)
 			return unexpectedError(runtime.error());
 		if (!actions_enabled)
 			return {};
-		auto bound = application.actions().appActions().bind(
+		auto bound = ::FlowUi::test::requireValue(application.actions()).get().appActions().bind(
 			kAgenticResetDemo, &reset_demo_agentic_state, &application, &scenario_harness);
 		if (!bound)
 			return unexpectedError(bound.error());
-		if (!application.actions().appActions().setAvailability(kAgenticResetDemo,
-																{.enabled = false}))
+		if (!::FlowUi::test::requireValue(::FlowUi::test::requireValue(application.actions()).get().appActions().setAvailability(kAgenticResetDemo,
+																{.enabled = false})))
 			return unexpectedError(agentic::agentic_error(agentic::AgenticError::unavailable));
 		agentic::AgenticActionDeclaration reset;
 		reset.action_id = "demo.reset";
@@ -141,8 +142,8 @@ register_demo_agentic_interactions(App& application, DemoAgenticHarness& scenari
 		};
 		adapter.available = [&scenario_harness](const App& app) -> Result<bool> {
 			return scenario_harness.state_id &&
-				   app.elements().getStatePointerConst(kDemo, app.mainWindowId(),
-													   scenario_harness.state_id) != nullptr;
+				   ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.elements()).get().getStatePointerConst(kDemo, app.mainWindowId(),
+													   scenario_harness.state_id)) != nullptr;
 		};
 		adapter.invoke =
 			[&scenario_harness](
@@ -152,7 +153,7 @@ register_demo_agentic_interactions(App& application, DemoAgenticHarness& scenari
 			if (!state)
 				return unexpectedError(agentic::agentic_error(agentic::AgenticError::unavailable));
 			if (const auto* theme = arguments.find("theme")) {
-				const auto changed = app.themes().setActiveVariant<FSELTheme>(theme->string_or());
+				const auto changed = ::FlowUi::test::requireValue(app.themes()).get().setActiveVariant<FSELTheme>(theme->string_or());
 				if (!changed)
 					return unexpectedError(changed.error());
 			}
@@ -174,7 +175,7 @@ register_demo_agentic_interactions(App& application, DemoAgenticHarness& scenari
 			auto receipt = previous;
 			const auto& expected = previous.completion_token;
 			const auto* prior_frame = expected.find("completed_window_frame");
-			if (!prior_frame || app.ui().dev_completed_window_frame() <= prior_frame->uint64_or())
+			if (!prior_frame || ::FlowUi::test::requireValue(app.ui()).get().dev_completed_window_frame() <= prior_frame->uint64_or())
 				return receipt;
 			receipt.result = demo_agentic_state_result(app, *state);
 			receipt.completed = true;
@@ -221,14 +222,14 @@ publish_demo_agentic_targets(App& application, DemoAgenticHarness& scenario_harn
 		auto* state = scenario_demo_state(application, scenario_harness);
 		if (interaction_harness.actions_enabled &&
 			interaction_harness.reset_available != (state != nullptr)) {
-			if (!application.actions().appActions().setAvailability(kAgenticResetDemo,
-																	{.enabled = state != nullptr}))
+			if (!::FlowUi::test::requireValue(::FlowUi::test::requireValue(application.actions()).get().appActions().setAvailability(kAgenticResetDemo,
+																	{.enabled = state != nullptr})))
 				return unexpectedError(agentic::agentic_error(agentic::AgenticError::unavailable));
 			interaction_harness.reset_available = state != nullptr;
 		}
 		if (!interaction_harness.input_enabled)
 			return {};
-		auto runtime = application.agentic_workflow().interaction_runtime();
+		auto runtime = ::FlowUi::test::requireValue(application.agentic_workflow()).get().interaction_runtime();
 		if (!runtime)
 			return unexpectedError(runtime.error());
 		auto& targets = (*runtime)->targets();
@@ -236,7 +237,7 @@ publish_demo_agentic_targets(App& application, DemoAgenticHarness& scenario_harn
 			agentic::AgenticInteractionTarget selector;
 			selector.kind = agentic::AgenticTargetKind::flow_instance;
 			selector.window_id = application.mainWindowId();
-			const auto& tree = application.ui().devTreeSnapshot();
+			const auto& tree = ::FlowUi::test::requireValue(application.ui()).get().devTreeSnapshot();
 			bool ambiguous = false;
 			for (const auto& node : tree.flow.nodes) {
 				if (node.definition != alias.definition ||
@@ -290,7 +291,7 @@ publish_demo_agentic_targets(App& application, DemoAgenticHarness& scenario_harn
 			owned.observe = [&application, &scenario_harness,
 							 clay_id](const agentic::AgenticResolvedInteractionTarget&)
 				-> Result<agentic::AgenticCustomInteractionObservation> {
-				const auto& actual = application.ui().dev_completed_interaction();
+				const auto& actual = ::FlowUi::test::requireValue(application.ui()).get().dev_completed_interaction();
 				const auto member = [clay_id](const auto& values) {
 					return std::find(values.begin(), values.end(), clay_id) != values.end();
 				};

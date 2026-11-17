@@ -1,5 +1,7 @@
 #pragma once
+#include "FlowUi/Private/ApiBoundary.hpp"
 
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <string_view>
@@ -63,10 +65,9 @@ struct ElementBuildContext
 	using ParametersType = ParametersOf<ElementType>;
 
 	/**
-	 * Bind a build context to the active invocation and builder-owned parameters.
-	 * ElementBuilder creates this context before calling a build hook.
-	 * @param invocation Active runtime invocation that owns the state lease.
-	 * @param parameters Mutable parameters shared by callbacks in this invocation.
+	 * @brief Framework-created callback context bound to an active invocation and its parameter draft. Application elements receive this by reference; do not retain it.
+	 *
+	 * @see docs/api/elements.md
 	 */
 	ElementBuildContext(
 		detail::element::ElementInvocation<ElementType>& invocation,
@@ -96,39 +97,53 @@ struct ElementBuildContext
 	ParametersType& params;
 
 	/**
-	 * Borrow mutable state cached for this invocation; do not retain the reference.
-	 * @tparam E This context's element type, which must declare State.
-	 * @return Per-window state for this element identity.
-	 * @throws FlowUiException If managed state is unavailable.
+	 * @brief Return a direct mutable or const state reference for this exact element type. Available only with HasState; the template argument cannot select another element type.
+	 *
+	 * The reference borrows manager-owned per-window state for this callback through the active invocation lease. State validation failures propagate and latch frame failure; cancel the failed frame.
+	 *
+	 * @see docs/api/elements.md
 	 */
 	template <typename E = ElementType>
-		requires HasState<E>
-	[[nodiscard]] StateOf<E>& state() {
+		requires HasState<E> && std::same_as<E, ElementType>
+	[[nodiscard]] StateOf<E>& state() try {
 		return invocation_.template state<E>();
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::UiManagerInvokeElement);
+		invocation_.uiManager().recordFrameError(error);
+		throw;
 	}
 
 	/**
-	 * Borrow immutable cached state for the duration of this invocation.
-	 * @tparam E This context's element type, which must declare State.
-	 * @return Per-window state for this element identity.
-	 * @throws FlowUiException If managed state is unavailable.
+	 * @brief Return a direct mutable or const state reference for this exact element type. Available only with HasState; the template argument cannot select another element type.
+	 *
+	 * The reference borrows manager-owned per-window state for this callback through the active invocation lease. State validation failures propagate and latch frame failure; cancel the failed frame.
+	 *
+	 * @see docs/api/elements.md
 	 */
 	template <typename E = ElementType>
-		requires HasState<E>
-	[[nodiscard]] const StateOf<E>& state() const {
+		requires HasState<E> && std::same_as<E, ElementType>
+	[[nodiscard]] const StateOf<E>& state() const try {
 		return std::as_const(invocation_).template state<E>();
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::UiManagerInvokeElement);
+		invocation_.uiManager().recordFrameError(error);
+		throw;
 	}
 
 	/**
-	 * Lazily initialize and borrow this definition's immutable app-wide resources.
-	 * @tparam E This context's element type, which must declare Resources.
-	 * @return Resources shared by every instance of this definition in the app.
-	 * @throws FlowUiException If resource registration or initialization fails.
+	 * @brief Lazily initialize and return this exact definition immutable app-wide resources by const reference. Available only with HasResources.
+	 *
+	 * The reference borrows manager-owned app-wide data for this callback. Resource-constructor and allocation exceptions propagate and latch frame failure; cancel the failed frame. Resources are shared across all instances of this definition.
+	 *
+	 * @see docs/api/elements.md
 	 */
 	template <typename E = ElementType>
-		requires HasResources<E>
-	[[nodiscard]] const ResourcesOf<E>& resources() const {
+		requires HasResources<E> && std::same_as<E, ElementType>
+	[[nodiscard]] const ResourcesOf<E>& resources() const try {
 		return invocation_.template resources<E>();
+	} catch (...) {
+		invocation_.uiManager().recordFrameError(detail::currentExceptionError(ErrorSite::UiManagerInvokeElement));
+		throw;
 	}
 
 #if FLOW_UI_DEV_MODE
@@ -136,29 +151,146 @@ struct ElementBuildContext
 	[[nodiscard]] devSystems::DevTimingRecorder* devTimingRecorder() const noexcept;
 #endif
 
-	/** Return this element's numeric Clay root ID. */
+	/**
+	 * @brief Return this element root Clay ID directly. Library failures throw FlowUiException and latch frame failure; abandon the failed frame.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * const Clay_ElementId id = context.clayID();
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
 	[[nodiscard]] Clay_ElementId clayID() const;
-	/** Resolve a named Clay/semantic child under this element. */
-	[[nodiscard]] FlowElementID childID(LocalElementName name) const;
-	/** Resolve a runtime name under this element; the name text is hashed, not retained. */
-	[[nodiscard]] FlowElementID childID(RuntimeElementName name) const;
-	/** Resolve an indexed or keyed child under this element. */
-	[[nodiscard]] FlowElementID childID(IndexedElementName name) const;
-	/** Resolve and bridge a named child in one call. */
-	[[nodiscard]] Clay_ElementId clayID(LocalElementName name) const;
-	/** Resolve a runtime-named child and return its Clay bridge identity. */
-	[[nodiscard]] Clay_ElementId clayID(RuntimeElementName name) const;
-	/** Resolve an indexed or keyed child and return its Clay bridge identity. */
-	[[nodiscard]] Clay_ElementId clayID(IndexedElementName name) const;
-	/** Bind one definition-time part declaration to this concrete owner instance. */
-	[[nodiscard]] FlowElementPartID part(FlowElementPart declaration) const;
-	/** Create a child element directly at one semantic part address. */
+	/**
+	 * @brief Resolve a local, runtime or indexed/keyed child name under this concrete element and return its strong FlowElementID. Runtime text is hashed, not retained.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = context.childID("label");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::FlowElementID id = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] Result<FlowElementID> childID(LocalElementName name) const noexcept;
+	/**
+	 * @brief Resolve a local, runtime or indexed/keyed child name under this concrete element and return its strong FlowElementID. Runtime text is hashed, not retained.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = context.childID(FlowUi::RuntimeName("label"));
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::FlowElementID id = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] Result<FlowElementID> childID(RuntimeElementName name) const noexcept;
+	/**
+	 * @brief Resolve a local, runtime or indexed/keyed child name under this concrete element and return its strong FlowElementID. Runtime text is hashed, not retained.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = context.childID(FlowUi::Indexed("row", 0));
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::FlowElementID id = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] Result<FlowElementID> childID(IndexedElementName name) const noexcept;
+	/**
+	 * @brief Resolve and bridge a named child through a checked Result. Invalid child names can be rejected locally; bridge/storage failures latch the frame and require cancellation.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = context.clayID("label");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const Clay_ElementId id = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] Result<Clay_ElementId> clayID(LocalElementName name) const noexcept;
+	/**
+	 * @brief Resolve and bridge a named child through a checked Result. Invalid child names can be rejected locally; bridge/storage failures latch the frame and require cancellation.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = context.clayID(FlowUi::RuntimeName("label"));
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const Clay_ElementId id = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] Result<Clay_ElementId> clayID(RuntimeElementName name) const noexcept;
+	/**
+	 * @brief Resolve and bridge a named child through a checked Result. Invalid child names can be rejected locally; bridge/storage failures latch the frame and require cancellation.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = context.clayID(FlowUi::Indexed("row", 0));
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const Clay_ElementId id = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] Result<Clay_ElementId> clayID(IndexedElementName name) const noexcept;
+	/**
+	 * @brief Bind a definition-time semantic part declaration to this concrete owner and return its FlowElementPartID.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * constexpr auto declaration = FlowUi::Part("label");
+	 * auto result = context.part(declaration);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::FlowElementPartID id = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] Result<FlowElementPartID> part(FlowElementPart declaration) const noexcept;
+	/**
+	 * @brief Create a direct child builder at a semantic part address. Validation and parameter-construction exceptions propagate and fail the frame.
+	 *
+	 * @see docs/api/elements.md
+	 */
 	template <FlowElement PartElement>
 	[[nodiscard]] ElementBuilder<PartElement> createPart(
 		const PartElement& element,
 		FlowElementPart declaration) const;
 
-	/** Create a local positional sequence. State follows position after reordering. */
+	/**
+	 * @brief Create a positional child-name sequence. Names follow position after reordering; use Keyed names for stable data identity.
+	 *
+	 * @see docs/api/elements.md
+	 */
 	[[nodiscard]] constexpr IndexedElementIDSequence indexedIDs(
 		LocalElementName baseName,
 		uint64_t firstIndex = 0) const noexcept {
@@ -193,11 +325,9 @@ struct ElementInteractionContext
 	using ParametersType = ParametersOf<ElementType>;
 
 	/**
-	 * Bind an interaction context to the active invocation and prior snapshot.
-	 * ElementBuilder creates this context before calling interaction hooks.
-	 * @param invocation Active runtime invocation that owns the state lease.
-	 * @param parameters Mutable parameters shared by callbacks in this invocation.
-	 * @param interaction Previous completed frame's interaction snapshot.
+	 * @brief Framework-created callback context with the previous completed interaction snapshot. Application hooks receive this by reference; do not retain it.
+	 *
+	 * @see docs/api/elements.md
 	 */
 	ElementInteractionContext(
 		detail::element::ElementInvocation<ElementType>& invocation,
@@ -238,50 +368,196 @@ struct ElementInteractionContext
 	 */
 	const InteractionSnapshot& previousInteraction;
 
-	/** Return the state resolved once and cached for this element invocation. */
+	/**
+	 * @brief Return a direct mutable or const state reference for this exact element type. Available only with HasState; the template argument cannot select another element type.
+	 *
+	 * The reference borrows manager-owned per-window state for this callback through the active invocation lease. State validation failures propagate and latch frame failure; cancel the failed frame.
+	 *
+	 * @see docs/api/elements.md
+	 */
 	template <typename E = ElementType>
-		requires HasState<E>
-	[[nodiscard]] StateOf<E>& state() {
+		requires HasState<E> && std::same_as<E, ElementType>
+	[[nodiscard]] StateOf<E>& state() try {
 		return invocation_.template state<E>();
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::UiManagerInvokeElement);
+		invocation_.uiManager().recordFrameError(error);
+		throw;
 	}
 
-	/** Return immutable cached state from a const context. */
+	/**
+	 * @brief Return a direct mutable or const state reference for this exact element type. Available only with HasState; the template argument cannot select another element type.
+	 *
+	 * The reference borrows manager-owned per-window state for this callback through the active invocation lease. State validation failures propagate and latch frame failure; cancel the failed frame.
+	 *
+	 * @see docs/api/elements.md
+	 */
 	template <typename E = ElementType>
-		requires HasState<E>
-	[[nodiscard]] const StateOf<E>& state() const {
+		requires HasState<E> && std::same_as<E, ElementType>
+	[[nodiscard]] const StateOf<E>& state() const try {
 		return std::as_const(invocation_).template state<E>();
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::UiManagerInvokeElement);
+		invocation_.uiManager().recordFrameError(error);
+		throw;
 	}
 
-	/** Lazily resolve and return this definition's immutable app-wide resources. */
+	/**
+	 * @brief Lazily initialize and return this exact definition immutable app-wide resources by const reference. Available only with HasResources.
+	 *
+	 * The reference borrows manager-owned app-wide data for this callback. Resource-constructor and allocation exceptions propagate and latch frame failure; cancel the failed frame. Resources are shared across all instances of this definition.
+	 *
+	 * @see docs/api/elements.md
+	 */
 	template <typename E = ElementType>
-		requires HasResources<E>
-	[[nodiscard]] const ResourcesOf<E>& resources() const {
+		requires HasResources<E> && std::same_as<E, ElementType>
+	[[nodiscard]] const ResourcesOf<E>& resources() const try {
 		return invocation_.template resources<E>();
+	} catch (...) {
+		invocation_.uiManager().recordFrameError(detail::currentExceptionError(ErrorSite::UiManagerInvokeElement));
+		throw;
 	}
 
-	/** Return this element's numeric Clay root ID. */
+	/**
+	 * @brief Return this element root Clay ID directly. Library failures throw FlowUiException and latch frame failure; abandon the failed frame.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * const Clay_ElementId id = context.clayID();
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
 	[[nodiscard]] Clay_ElementId clayID() const;
-	/** Resolve a named Clay/semantic child under this element. */
-	[[nodiscard]] FlowElementID childID(LocalElementName name) const;
-	/** Resolve a runtime name under this element; the name text is hashed, not retained. */
-	[[nodiscard]] FlowElementID childID(RuntimeElementName name) const;
-	/** Resolve an indexed or keyed child under this element. */
-	[[nodiscard]] FlowElementID childID(IndexedElementName name) const;
-	/** Resolve and bridge a named child in one call. */
-	[[nodiscard]] Clay_ElementId clayID(LocalElementName name) const;
-	/** Resolve a runtime-named child and return its Clay bridge identity. */
-	[[nodiscard]] Clay_ElementId clayID(RuntimeElementName name) const;
-	/** Resolve an indexed or keyed child and return its Clay bridge identity. */
-	[[nodiscard]] Clay_ElementId clayID(IndexedElementName name) const;
-	/** Bind one definition-time part declaration to this concrete owner instance. */
-	[[nodiscard]] FlowElementPartID part(FlowElementPart declaration) const;
-	/** Create a child element directly at one semantic part address. */
+	/**
+	 * @brief Resolve a local, runtime or indexed/keyed child name under this concrete element and return its strong FlowElementID. Runtime text is hashed, not retained.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = context.childID("label");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::FlowElementID id = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] Result<FlowElementID> childID(LocalElementName name) const noexcept;
+	/**
+	 * @brief Resolve a local, runtime or indexed/keyed child name under this concrete element and return its strong FlowElementID. Runtime text is hashed, not retained.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = context.childID(FlowUi::RuntimeName("label"));
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::FlowElementID id = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] Result<FlowElementID> childID(RuntimeElementName name) const noexcept;
+	/**
+	 * @brief Resolve a local, runtime or indexed/keyed child name under this concrete element and return its strong FlowElementID. Runtime text is hashed, not retained.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = context.childID(FlowUi::Indexed("row", 0));
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::FlowElementID id = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] Result<FlowElementID> childID(IndexedElementName name) const noexcept;
+	/**
+	 * @brief Resolve and bridge a named child through a checked Result. Invalid child names can be rejected locally; bridge/storage failures latch the frame and require cancellation.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = context.clayID("label");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const Clay_ElementId id = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] Result<Clay_ElementId> clayID(LocalElementName name) const noexcept;
+	/**
+	 * @brief Resolve and bridge a named child through a checked Result. Invalid child names can be rejected locally; bridge/storage failures latch the frame and require cancellation.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = context.clayID(FlowUi::RuntimeName("label"));
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const Clay_ElementId id = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] Result<Clay_ElementId> clayID(RuntimeElementName name) const noexcept;
+	/**
+	 * @brief Resolve and bridge a named child through a checked Result. Invalid child names can be rejected locally; bridge/storage failures latch the frame and require cancellation.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = context.clayID(FlowUi::Indexed("row", 0));
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const Clay_ElementId id = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] Result<Clay_ElementId> clayID(IndexedElementName name) const noexcept;
+	/**
+	 * @brief Bind a definition-time semantic part declaration to this concrete owner and return its FlowElementPartID.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * constexpr auto declaration = FlowUi::Part("label");
+	 * auto result = context.part(declaration);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::FlowElementPartID id = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] Result<FlowElementPartID> part(FlowElementPart declaration) const noexcept;
+	/**
+	 * @brief Create a direct child builder at a semantic part address. Validation and parameter-construction exceptions propagate and fail the frame.
+	 *
+	 * @see docs/api/elements.md
+	 */
 	template <FlowElement PartElement>
 	[[nodiscard]] ElementBuilder<PartElement> createPart(
 		const PartElement& element,
 		FlowElementPart declaration) const;
 
-	/** Create a local positional sequence. State follows position after reordering. */
+	/**
+	 * @brief Create a positional child-name sequence. Names follow position after reordering; use Keyed names for stable data identity.
+	 *
+	 * @see docs/api/elements.md
+	 */
 	[[nodiscard]] constexpr IndexedElementIDSequence indexedIDs(
 		LocalElementName baseName,
 		uint64_t firstIndex = 0) const noexcept {
@@ -289,17 +565,34 @@ struct ElementInteractionContext
 	}
 
 	/**
-	 * Invoke an app or local UI action with this window, element and hook as source.
-	 * @param call Action and borrowed payload to invoke synchronously.
-	 * @return Whether the action ran, was unavailable, or failed validation.
+	 * @brief Invoke this action synchronously with this window/element/hook as source. Return a direct ActionInvocationStatus; callback exceptions propagate unchanged.
+	 *
+	 * @see docs/api/elements.md
+
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * const FlowUi::ActionInvocationStatus outcome = actions.invoke(call);
+	 * const bool invoked = outcome == FlowUi::ActionInvocationStatus::Invoked;
+	 * @endcode
 	 */
-	ActionInvocationStatus invoke(ActionCall call);
+	[[nodiscard]] ActionInvocationStatus invoke(ActionCall call);
 	/**
-	 * Query an action's current enabled state without invoking it.
-	 * @param call Action and payload to validate.
-	 * @return Current action availability and its reported reason.
+	 * @brief Return checked effective action availability without invoking the call. Unavailable/empty/unbound calls have enabled=false; structured resolution failures remain distinct errors.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = context.actionAvailability(call);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const bool enabled = result->enabled;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
 	 */
-	[[nodiscard]] ActionAvailability actionAvailability(ActionCall call) const;
+	[[nodiscard]] Result<ActionAvailability> actionAvailability(ActionCall call) const noexcept;
 
 private:
 	friend class ElementBuilder<ElementType>;
@@ -354,11 +647,9 @@ enum class ElementDrawOptions : std::uint8_t {
 };
 
 /**
- * @brief Combine two ElementDrawOptions flags.
+ * @brief Combine callback skip flags without throwing. SkipBuildCallback affects draw(), while construct() still calls constructElement().
  *
- * @param first_options First option value.
- * @param second_options Second option value.
- * @return Option value containing both flags.
+ * @see docs/api/elements.md
  */
 [[nodiscard]] constexpr ElementDrawOptions operator|(ElementDrawOptions first_options,
 													 ElementDrawOptions second_options) noexcept {
@@ -367,12 +658,9 @@ enum class ElementDrawOptions : std::uint8_t {
 }
 
 /**
- * @brief Return whether an ElementDrawOptions flag is set.
+ * @brief Return whether value and flag share any set bit; Default (zero) is never reported as set.
  *
- * @param value Combined option value to inspect.
- * @param flag Flag to test.
- * @retval true value contains flag.
- * @retval false value does not contain flag.
+ * @see docs/api/elements.md
  */
 [[nodiscard]] constexpr bool elementDrawOptionsHas(ElementDrawOptions value,
 												   ElementDrawOptions flag) noexcept {

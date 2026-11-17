@@ -31,7 +31,17 @@ enum class PopupAttachmentPoint : uint8_t {
 	BottomRight,
 };
 
-/** Translate a popup attachment point to its Clay equivalent; an unrecognized value maps to center. */
+/**
+ * @brief Convert a popup attachment point to Clay's alignment enum.
+ *
+ * This is a constexpr/noexcept value conversion.
+ *
+ * @return An unrecognized enum value maps to CLAY_ATTACH_POINT_CENTER_CENTER.
+ *
+ * @code{.cpp}
+ * const auto attachment = FlowUi::toClayAttachment(FlowUi::PopupAttachmentPoint::BottomLeft);
+ * @endcode
+ */
 [[nodiscard]] constexpr Clay_FloatingAttachPointType toClayAttachment(
 	PopupAttachmentPoint point) noexcept {
 	switch (point) {
@@ -86,12 +96,32 @@ struct PopupAnchor {
 	/** Window layout coordinate used only for Position anchors. */
 	Clay_Vector2 coordinate{};
 
-	/** Anchor to the current Clay parent. */
+	/**
+	 * @brief Create an anchor for the current Clay parent.
+	 *
+	 * This constexpr/noexcept factory owns no UI object.
+	 *
+	 * @return Returns a value descriptor; placement is resolved during popup layout.
+	 *
+	 * @code{.cpp}
+	 * const auto anchor = FlowUi::PopupAnchor::parent();
+	 * @endcode
+	 */
 	[[nodiscard]] static constexpr PopupAnchor parent() noexcept {
 		return PopupAnchor{.kind = PopupAnchorKind::Parent};
 	}
 
-	/** Anchor to a local Flow element in the current window. */
+	/**
+	 * @brief Create an anchor for a Flow element or semantic part in the current window.
+	 *
+	 * Local, global, and semantic part IDs all resolve in the popup's current window; a global name does not select a different window.
+	 *
+	 * @return Returns an Element descriptor containing the supplied identity value.
+	 *
+	 * @code{.cpp}
+	 * const auto anchor = FlowUi::PopupAnchor::element(fieldId);
+	 * @endcode
+	 */
 	[[nodiscard]] static constexpr PopupAnchor element(FlowElementID id) noexcept {
 		return PopupAnchor{
 			.kind = PopupAnchorKind::Element,
@@ -99,7 +129,17 @@ struct PopupAnchor {
 		};
 	}
 
-	/** Anchor to a globally named Flow element in the current window. */
+	/**
+	 * @brief Create an anchor for a Flow element or semantic part in the current window.
+	 *
+	 * Local, global, and semantic part IDs all resolve in the popup's current window; a global name does not select a different window.
+	 *
+	 * @return Returns an Element descriptor containing the supplied identity value.
+	 *
+	 * @code{.cpp}
+	 * const auto anchor = FlowUi::PopupAnchor::element(fieldId);
+	 * @endcode
+	 */
 	[[nodiscard]] static constexpr PopupAnchor element(GlobalFlowID id) noexcept {
 		return PopupAnchor{
 			.kind = PopupAnchorKind::Element,
@@ -107,7 +147,17 @@ struct PopupAnchor {
 		};
 	}
 
-	/** Anchor to a semantic part in the current window. */
+	/**
+	 * @brief Create an anchor for a Flow element or semantic part in the current window.
+	 *
+	 * Local, global, and semantic part IDs all resolve in the popup's current window; a global name does not select a different window.
+	 *
+	 * @return Returns an Element descriptor containing the supplied identity value.
+	 *
+	 * @code{.cpp}
+	 * const auto anchor = FlowUi::PopupAnchor::element(fieldId);
+	 * @endcode
+	 */
 	[[nodiscard]] static constexpr PopupAnchor element(FlowElementPartID id) noexcept {
 		return PopupAnchor{
 			.kind = PopupAnchorKind::Element,
@@ -115,17 +165,47 @@ struct PopupAnchor {
 		};
 	}
 
-	/** Anchor to the pointer captured when this popup first resolves its pointer position. */
+	/**
+	 * @brief Create an anchor at the pointer position first resolved for this popup.
+	 *
+	 * This constexpr/noexcept factory does not sample input immediately.
+	 *
+	 * @return Returns a value descriptor; the resolved coordinate is retained while the popup remains open.
+	 *
+	 * @code{.cpp}
+	 * const auto anchor = FlowUi::PopupAnchor::pointerSnapshot();
+	 * @endcode
+	 */
 	[[nodiscard]] static constexpr PopupAnchor pointerSnapshot() noexcept {
 		return PopupAnchor{.kind = PopupAnchorKind::PointerSnapshot};
 	}
 
-	/** Follow the current pointer coordinate on each submitted frame. */
+	/**
+	 * @brief Create an anchor that follows the current frame pointer.
+	 *
+	 * This constexpr/noexcept factory owns no pointer state.
+	 *
+	 * @return Returns a value descriptor sampled when submitted.
+	 *
+	 * @code{.cpp}
+	 * const auto anchor = FlowUi::PopupAnchor::pointerFollow();
+	 * @endcode
+	 */
 	[[nodiscard]] static constexpr PopupAnchor pointerFollow() noexcept {
 		return PopupAnchor{.kind = PopupAnchorKind::PointerFollow};
 	}
 
-	/** Anchor at value in the current window's logical layout coordinates. */
+	/**
+	 * @brief Create an anchor at an explicit window-layout coordinate.
+	 *
+	 * Coordinates use logical layout pixels, not framebuffer pixels.
+	 *
+	 * @return Returns a Position descriptor storing the coordinate.
+	 *
+	 * @code{.cpp}
+	 * const auto anchor = FlowUi::PopupAnchor::position(Clay_Vector2{24.0f, 48.0f});
+	 * @endcode
+	 */
 	[[nodiscard]] static constexpr PopupAnchor position(Clay_Vector2 value) noexcept {
 		return PopupAnchor{
 			.kind = PopupAnchorKind::Position,
@@ -133,7 +213,17 @@ struct PopupAnchor {
 		};
 	}
 
-	/** Anchor to the full current window viewport rectangle. */
+	/**
+	 * @brief Create an anchor for the current window viewport rectangle.
+	 *
+	 * This constexpr/noexcept factory owns no viewport object.
+	 *
+	 * @return Returns a value descriptor resolved during layout.
+	 *
+	 * @code{.cpp}
+	 * const auto anchor = FlowUi::PopupAnchor::viewport();
+	 * @endcode
+	 */
 	[[nodiscard]] static constexpr PopupAnchor viewport() noexcept {
 		return PopupAnchor{.kind = PopupAnchorKind::Viewport};
 	}

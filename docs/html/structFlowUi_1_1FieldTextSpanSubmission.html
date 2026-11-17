@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,16 +106,63 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::FieldTextSpanSubmission Struct Reference<div class="ingroups"><a class="el" href="group__flowui__input__field__manager.html">Input Field Manager</a></div></div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="InputFieldTypes_8hpp_source.html">InputFieldTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a8e2a447597fb110414369c825b75b790" id="r_a8e2a447597fb110414369c825b75b790"><td class="memItemLeft"><a id="a8e2a447597fb110414369c825b75b790" name="a8e2a447597fb110414369c825b75b790"></a>
-<a class="el" href="structFlowUi_1_1TextRange.html">TextRange</a>&#160;</td><td class="memItemRight"><b>logicalRange</b> {}</td></tr>
-<tr class="memitem:a34d605110e182fa98c0614723c6917c7" id="r_a34d605110e182fa98c0614723c6917c7"><td class="memItemLeft"><a id="a34d605110e182fa98c0614723c6917c7" name="a34d605110e182fa98c0614723c6917c7"></a>
-Clay_ElementId&#160;</td><td class="memItemRight"><b>textElementId</b> {}</td></tr>
-<tr class="memitem:a26e09523ebfa971d62b0bd4b70dd758b" id="r_a26e09523ebfa971d62b0bd4b70dd758b"><td class="memItemLeft"><a id="a26e09523ebfa971d62b0bd4b70dd758b" name="a26e09523ebfa971d62b0bd4b70dd758b"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>visualLineIndex</b> = 0</td></tr>
+<tr class="memitem:a8e2a447597fb110414369c825b75b790" id="r_a8e2a447597fb110414369c825b75b790"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1TextRange.html">TextRange</a>&#160;</td><td class="memItemRight"><a class="el" href="#a8e2a447597fb110414369c825b75b790">logicalRange</a> {}</td></tr>
+<tr class="memitem:a34d605110e182fa98c0614723c6917c7" id="r_a34d605110e182fa98c0614723c6917c7"><td class="memItemLeft">Clay_ElementId&#160;</td><td class="memItemRight"><a class="el" href="#a34d605110e182fa98c0614723c6917c7">textElementId</a> {}</td></tr>
+<tr class="memitem:a26e09523ebfa971d62b0bd4b70dd758b" id="r_a26e09523ebfa971d62b0bd4b70dd758b"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a26e09523ebfa971d62b0bd4b70dd758b">visualLineIndex</a> = 0</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Map a rendered Clay text node to its half-open logical byte range for hit testing and caret geometry. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a8e2a447597fb110414369c825b75b790" name="a8e2a447597fb110414369c825b75b790"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8e2a447597fb110414369c825b75b790">&#9670;&#160;</a></span>logicalRange</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1TextRange.html">TextRange</a> FlowUi::FieldTextSpanSubmission::logicalRange {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Document interval represented by the visible slice or submitted text node. </p>
+
+</div>
+</div>
+<a id="a34d605110e182fa98c0614723c6917c7" name="a34d605110e182fa98c0614723c6917c7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a34d605110e182fa98c0614723c6917c7">&#9670;&#160;</a></span>textElementId</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Clay_ElementId FlowUi::FieldTextSpanSubmission::textElementId {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Clay text node corresponding to the supplied logical interval. </p>
+
+</div>
+</div>
+<a id="a26e09523ebfa971d62b0bd4b70dd758b" name="a26e09523ebfa971d62b0bd4b70dd758b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26e09523ebfa971d62b0bd4b70dd758b">&#9670;&#160;</a></span>visualLineIndex</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::FieldTextSpanSubmission::visualLineIndex = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Zero-based visual line index after wrapping. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="InputFieldTypes_8hpp_source.html">InputFieldTypes.hpp</a></li>
 </ul>
@@ -132,7 +179,7 @@ uint32_t&#160;</td><td class="memItemRight"><b>visualLineIndex</b> = 0</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1FieldTextSpanSubmission.html">FieldTextSpanSubmission</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1FieldTextSpanSubmission.html">FieldTextSpanSubmission</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -33,9 +33,9 @@ class DevTooling {
 public:
 	/**
 	 * @brief Construct schema, override and capture services using the supplied development
-	 * limits.
+	 * limits. Allocation and member-construction failures propagate to the owner.
 	 */
-	explicit DevTooling(const DevToolingConfig& config = {}) noexcept;
+	explicit DevTooling(const DevToolingConfig& config = {});
 	/**
 	 * @brief Destroy owned tooling services; borrowed references returned by this object expire.
 	 */
@@ -90,6 +90,10 @@ public:
 	void setOverlaySelection(
 		WindowId window,
 		const tooling::DevOverlaySelectionSpec& selection) noexcept;
+	/** @brief Return cumulative optional overlay updates dropped after allocation failure. */
+	[[nodiscard]] std::uint64_t droppedOverlaySelectionUpdates() const noexcept {
+		return droppedOverlaySelectionUpdates_;
+	}
 	/** @brief Remove any stored external overlay selection for window. */
 	void clearOverlaySelection(WindowId window) noexcept;
 	/**
@@ -102,12 +106,12 @@ public:
 
 	/** Persist the current bakeable live edits to the active .flowchanges manifest. */
 	tooling::DevCommandResult bakeActiveEdits() noexcept;
-	/** @brief Return an owned snapshot of manifest and compiled bake status. */
-	[[nodiscard]] tooling::DevBakeStatusSnapshot queryBakeStatus() const noexcept;
+	/** @brief Return owned manifest/compiled status; collection failures propagate. */
+	[[nodiscard]] tooling::DevBakeStatusSnapshot queryBakeStatus() const;
 	/**
-	 * @brief Return owned entries describing differences between active and compiled edits.
+	 * @brief Return owned active/compiled differences; collection failures propagate.
 	 */
-	[[nodiscard]] std::vector<tooling::DevBakeDiffEntry> queryBakeDiff() const noexcept;
+	[[nodiscard]] std::vector<tooling::DevBakeDiffEntry> queryBakeDiff() const;
 
 	/**
 	 * @brief Apply queued edits to themes outside UI drawing; optional timing attributes the work
@@ -136,6 +140,7 @@ private:
 	tooling::DevInspectInteractionController inspect_interaction_{};
 	tooling::DevCatalogues catalogues_{};
 	std::vector<WindowOverlaySelection> overlaySelections_{};
+	std::uint64_t droppedOverlaySelectionUpdates_ = 0;
 };
 
 } // namespace FlowUi::devSystems

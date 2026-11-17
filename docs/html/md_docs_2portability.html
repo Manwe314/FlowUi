@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,9 +106,9 @@ $(function() {
   <div class="headertitle"><div class="title">Resources and portable builds </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>FlowUi uses CMake 3.25+, C++23, Vulkan and GLFW. MSVC receives <span class="tt">/Zc:preprocessor</span>, <span class="tt">/bigobj</span>, and <span class="tt">/utf-8</span> through <span class="tt">FlowUi::FlowUi</span>, including installed consumers. Bundled font libraries follow <span class="tt">CMAKE_MSVC_RUNTIME_LIBRARY</span>; the default is the dynamic CRT. Use a separate build directory for each compiler, target platform and architecture.</p>
+<div class="textblock"><p><a class="el" href="namespaceFlowUi.html">FlowUi</a> uses CMake 3.25+, C++23, Vulkan and GLFW. MSVC receives <span class="tt">/Zc:preprocessor</span>, <span class="tt">/bigobj</span>, and <span class="tt">/utf-8</span> through <span class="tt">FlowUi::FlowUi</span>, including installed consumers. Bundled font libraries follow <span class="tt">CMAKE_MSVC_RUNTIME_LIBRARY</span>; the default is the dynamic CRT. Use a separate build directory for each compiler, target platform and architecture.</p>
 <h1>Development and packaging</h1>
-<p>Link <span class="tt">FlowUi::FlowUi</span> as usual. Building FlowUi automatically compiles and stages its six shaders and default Inter font. Application startup finds these without depending on the current working directory.</p>
+<p>Link <span class="tt">FlowUi::FlowUi</span> as usual. Building <a class="el" href="namespaceFlowUi.html">FlowUi</a> automatically compiles and stages its six shaders and default Inter font. Application startup finds these without depending on the current working directory.</p>
 <p>For a deployed application, add one call after creating and linking its target:</p>
 <div class="fragment"><div class="line">find_package(FlowUi CONFIG REQUIRED) # Or add_subdirectory(FlowUi).</div>
 <div class="line">add_executable(my_app main.cpp)</div>
@@ -139,24 +139,27 @@ $(function() {
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;FlowUi/Public/Resources.hpp&gt;</span></div>
 <div class="line"> </div>
 <div class="line"><a class="code hl_struct" href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a> config;</div>
-<div class="line">config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a1342370b9bee51342d95618c7de9ba8f">resources</a>.roots = {std::filesystem::path(u8<span class="stringliteral">&quot;/my/package/资源&quot;</span>)};</div>
+<div class="line">config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a1342370b9bee51342d95618c7de9ba8f">resources</a>.<a class="code hl_variable" href="structFlowUi_1_1ResourceConfig.html#af3d04ad790c2d4eea3e3d320ad67de46">roots</a> = {std::filesystem::path(u8<span class="stringliteral">&quot;/my/package/资源&quot;</span>)};</div>
 <div class="line"><span class="comment">// Optional strict deployment mode:</span></div>
-<div class="line">config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a1342370b9bee51342d95618c7de9ba8f">resources</a>.use_build_directory = <span class="keyword">false</span>;</div>
+<div class="line">config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a1342370b9bee51342d95618c7de9ba8f">resources</a>.<a class="code hl_variable" href="structFlowUi_1_1ResourceConfig.html#a24f87e43bf36876873d00ee639267a93">use_build_directory</a> = <span class="keyword">false</span>;</div>
 <div class="line"><span class="comment">// config.resources.use_platform_defaults = false; // Use only explicit roots.</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">auto</span> texture_path = FlowUi::locate_resource(<span class="stringliteral">&quot;textures/default.png&quot;</span>, config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a1342370b9bee51342d95618c7de9ba8f">resources</a>);</div>
+<div class="line"><span class="keyword">auto</span> texture_path = <a class="code hl_function" href="namespaceFlowUi.html#a00120c83b3aa52eb57e41531b05c894e">FlowUi::locate_resource</a>(<span class="stringliteral">&quot;textures/default.png&quot;</span>, config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a1342370b9bee51342d95618c7de9ba8f">resources</a>);</div>
 <div class="line"><span class="keywordflow">if</span> (texture_path) {</div>
 <div class="line">    <span class="keyword">auto</span> registered = app.images().register_image_file(<span class="stringliteral">&quot;default&quot;</span>, *texture_path);</div>
 <div class="line">    <span class="comment">// Handle registered through the normal Result API.</span></div>
 <div class="line">}</div>
-<div class="ttc" id="astructFlowUi_1_1AppConfig_html"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a></div><div class="ttdoc">Top-level configuration used to initialize a FlowUi app.</div><div class="ttdef"><b>Definition</b> AppConfig.hpp:24</div></div>
-<div class="ttc" id="astructFlowUi_1_1AppConfig_html_a1342370b9bee51342d95618c7de9ba8f"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html#a1342370b9bee51342d95618c7de9ba8f">FlowUi::AppConfig::resources</a></div><div class="ttdeci">ResourceConfig resources</div><div class="ttdef"><b>Definition</b> AppConfig.hpp:26</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a00120c83b3aa52eb57e41531b05c894e"><div class="ttname"><a href="namespaceFlowUi.html#a00120c83b3aa52eb57e41531b05c894e">FlowUi::locate_resource</a></div><div class="ttdeci">Result&lt; std::filesystem::path &gt; locate_resource(const std::filesystem::path &amp;name, const ResourceConfig &amp;config={}) noexcept</div><div class="ttdoc">Locate a packaged resource in configured search order.</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppConfig_html"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a></div><div class="ttdef"><b>Definition</b> AppConfig.hpp:23</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppConfig_html_a1342370b9bee51342d95618c7de9ba8f"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html#a1342370b9bee51342d95618c7de9ba8f">FlowUi::AppConfig::resources</a></div><div class="ttdeci">ResourceConfig resources</div><div class="ttdef"><b>Definition</b> AppConfig.hpp:25</div></div>
+<div class="ttc" id="astructFlowUi_1_1ResourceConfig_html_a24f87e43bf36876873d00ee639267a93"><div class="ttname"><a href="structFlowUi_1_1ResourceConfig.html#a24f87e43bf36876873d00ee639267a93">FlowUi::ResourceConfig::use_build_directory</a></div><div class="ttdeci">bool use_build_directory</div><div class="ttdef"><b>Definition</b> ResourceConfig.hpp:20</div></div>
+<div class="ttc" id="astructFlowUi_1_1ResourceConfig_html_af3d04ad790c2d4eea3e3d320ad67de46"><div class="ttname"><a href="structFlowUi_1_1ResourceConfig.html#af3d04ad790c2d4eea3e3d320ad67de46">FlowUi::ResourceConfig::roots</a></div><div class="ttdeci">std::vector&lt; std::filesystem::path &gt; roots</div><div class="ttdef"><b>Definition</b> ResourceConfig.hpp:14</div></div>
 </div><!-- fragment --><p>Lookup order is explicit roots, <span class="tt">FLOWUI_RESOURCE_ROOT</span>, executable/library-relative platform locations, Unix system locations, then the build-tree pack. <span class="tt">ResourceConfig::executable_directory</span> overrides executable discovery for embedding hosts. Disabling platform defaults also disables environment and module lookup. Absolute resource paths are explicit overrides; relative resource names may not contain parent traversal. Explicit relative file paths supplied to image/font/SVG loading retain normal filesystem semantics.</p>
-<p>The resource service is shared by shader and default-font loading. Explicit custom font files remain caller-controlled. <span class="tt">locate_resource</span> and <span class="tt">read_file_bytes</span> return normal FlowUi error results. Pack roots contain <span class="tt">shaders/</span>, <span class="tt">fonts/</span>, and any application-specific directories.</p>
-<p>Use <span class="tt">std::filesystem::path</span> for filenames, <span class="tt">u8"..."</span> path literals, and <span class="tt">FlowUi::path_from_utf8</span> / <span class="tt">path_to_utf8</span> at text boundaries. Native image/SVG entry points are <span class="tt">register_image_file</span> and <span class="tt">register_file</span>; existing string-based entry points interpret filenames as UTF-8. Font paths already use <span class="tt">std::filesystem::path</span>. Image and font codecs receive file contents from native-path streams, avoiding narrow Windows filename APIs. Text supplied to the UI remains UTF-8.</p>
+<p>The resource service is shared by shader and default-font loading. Explicit custom font files remain caller-controlled. <span class="tt">locate_resource</span> and <span class="tt">read_file_bytes</span> return normal <a class="el" href="namespaceFlowUi.html">FlowUi</a> error results. Pack roots contain <span class="tt">shaders/</span>, <span class="tt">fonts/</span>, and any application-specific directories.</p>
+<p>Use <span class="tt">std::filesystem::path</span> for filenames, <span class="tt">u8"..."</span> path literals, and <span class="tt"><a class="el" href="namespaceFlowUi.html#aa5efbf74171b0882e4619e16d3f615d7" title="Convert UTF-8 text to a native filesystem path without a Windows code-page conversion.">FlowUi::path_from_utf8</a></span> / <span class="tt">path_to_utf8</span> at text boundaries. Native image/SVG entry points are <span class="tt">register_image_file</span> and <span class="tt">register_file</span>; existing string-based entry points interpret filenames as UTF-8. Font paths already use <span class="tt">std::filesystem::path</span>. Image and font codecs receive file contents from native-path streams, avoiding narrow Windows filename APIs. Text supplied to the UI remains UTF-8.</p>
 <p>The command-line tools convert Windows wide arguments to UTF-8 and open input/output streams with native paths. Their Windows manifest requests UTF-8 for the remaining vendor font-export filename API; this requires Windows 10 version 1903 or newer. See Microsoft's <a href="https://learn.microsoft.com/en-us/windows/apps/design/globalizing/use-utf8-code-page">UTF-8 application code-page documentation</a>.</p>
 <h1>Shared libraries and cross-compilation</h1>
-<p><span class="tt">-DBUILD_SHARED_LIBS=ON</span> builds a DLL/shared library. Windows uses automatic function exports plus explicit imports for Clay's public data. Link the exported CMake target so consumers receive the build definitions. Keep the same compiler ABI, architecture, library configuration, and compatible CRT across the application and FlowUi; this is a C++ API, not a stable cross-compiler binary ABI.</p>
+<p><span class="tt">-DBUILD_SHARED_LIBS=ON</span> builds a DLL/shared library. Windows uses automatic function exports plus explicit imports for Clay's public data. Link the exported CMake target so consumers receive the build definitions. Keep the same compiler ABI, architecture, library configuration, and compatible CRT across the application and <a class="el" href="namespaceFlowUi.html">FlowUi</a>; this is a C++ API, not a stable cross-compiler binary ABI.</p>
 <p>Cross-compilation uses a normal <a href="https://cmake.org/cmake/help/manual/cmake-toolchains.7.html">CMake toolchain file</a>:</p>
 <div class="fragment"><div class="line">cmake -S . -B build-target -G Ninja \</div>
 <div class="line">  -DCMAKE_TOOLCHAIN_FILE=/path/to/target-toolchain.cmake \</div>

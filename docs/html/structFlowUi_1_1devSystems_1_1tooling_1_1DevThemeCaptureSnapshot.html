@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,26 +106,45 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevThemeCaptureSnapshot Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Owned immutable publication of registered theme values and variant names.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevOverrideTypes_8hpp_source.html">DevOverrideTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a1ae9a4dcda2269cca6a783cbbb871bc0" id="r_a1ae9a4dcda2269cca6a783cbbb871bc0"><td class="memItemLeft"><a id="a1ae9a4dcda2269cca6a783cbbb871bc0" name="a1ae9a4dcda2269cca6a783cbbb871bc0"></a>
 std::string_view&#160;</td><td class="memItemRight"><b>variant</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCapturedTheme.html">DevCapturedTheme</a> &amp;theme) const noexcept</td></tr>
+<tr class="memdesc:a1ae9a4dcda2269cca6a783cbbb871bc0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow a captured theme's variant name from this snapshot; return empty for an invalid range. <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a272471c1ddecf8a8c34dcf059decc9d0" id="r_a272471c1ddecf8a8c34dcf059decc9d0"><td class="memItemLeft"><a id="a272471c1ddecf8a8c34dcf059decc9d0" name="a272471c1ddecf8a8c34dcf059decc9d0"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>generation</b> = 0</td></tr>
+<tr class="memdesc:a272471c1ddecf8a8c34dcf059decc9d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Monotonic theme capture publication identity. <br /></td></tr>
 <tr class="memitem:a16bede3c38a88739b0038f59791ffdf6" id="r_a16bede3c38a88739b0038f59791ffdf6"><td class="memItemLeft"><a id="a16bede3c38a88739b0038f59791ffdf6" name="a16bede3c38a88739b0038f59791ffdf6"></a>
 <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaView.html">tooling::DevSchemaView</a>&#160;</td><td class="memItemRight"><b>schema</b> {}</td></tr>
+<tr class="memdesc:a16bede3c38a88739b0038f59791ffdf6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shared immutable schema generation pinning field metadata. <br /></td></tr>
 <tr class="memitem:a5bdc9913638e1c713cb390455e284057" id="r_a5bdc9913638e1c713cb390455e284057"><td class="memItemLeft"><a id="a5bdc9913638e1c713cb390455e284057" name="a5bdc9913638e1c713cb390455e284057"></a>
 std::vector&lt; char &gt;&#160;</td><td class="memItemRight"><b>strings</b> {}</td></tr>
+<tr class="memdesc:a5bdc9913638e1c713cb390455e284057"><td class="mdescLeft">&#160;</td><td class="mdescRight">Owned UTF-8 variant-name pool. <br /></td></tr>
 <tr class="memitem:aa4d6ec3c8e084fe93b02c0fdcd32e364" id="r_aa4d6ec3c8e084fe93b02c0fdcd32e364"><td class="memItemLeft"><a id="aa4d6ec3c8e084fe93b02c0fdcd32e364" name="aa4d6ec3c8e084fe93b02c0fdcd32e364"></a>
 std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCapturedTheme.html">DevCapturedTheme</a> &gt;&#160;</td><td class="memItemRight"><b>themes</b> {}</td></tr>
+<tr class="memdesc:aa4d6ec3c8e084fe93b02c0fdcd32e364"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contiguous captured theme variant records. <br /></td></tr>
 <tr class="memitem:a4c5d5f58ee465bd2595ea9edfa2d050f" id="r_a4c5d5f58ee465bd2595ea9edfa2d050f"><td class="memItemLeft"><a id="a4c5d5f58ee465bd2595ea9edfa2d050f" name="a4c5d5f58ee465bd2595ea9edfa2d050f"></a>
 std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCapturedField.html">DevCapturedField</a> &gt;&#160;</td><td class="memItemRight"><b>fields</b> {}</td></tr>
+<tr class="memdesc:a4c5d5f58ee465bd2595ea9edfa2d050f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contiguous owned field values referenced by theme ranges. <br /></td></tr>
+<tr class="memitem:ac3ffb790279ecb1f3ea925916ffaa2f3" id="r_ac3ffb790279ecb1f3ea925916ffaa2f3"><td class="memItemLeft"><a id="ac3ffb790279ecb1f3ea925916ffaa2f3" name="ac3ffb790279ecb1f3ea925916ffaa2f3"></a>
+std::uint64_t&#160;</td><td class="memItemRight"><b>failedCaptureCount</b> = 0</td></tr>
+<tr class="memdesc:ac3ffb790279ecb1f3ea925916ffaa2f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cumulative failed theme collections; generation stays unchanged after failure. <br /></td></tr>
+<tr class="memitem:a9edacec52aa3d1c4697e1022bef7471a" id="r_a9edacec52aa3d1c4697e1022bef7471a"><td class="memItemLeft"><a id="a9edacec52aa3d1c4697e1022bef7471a" name="a9edacec52aa3d1c4697e1022bef7471a"></a>
+bool&#160;</td><td class="memItemRight"><b>collectionFailed</b> = false</td></tr>
+<tr class="memdesc:a9edacec52aa3d1c4697e1022bef7471a"><td class="mdescLeft">&#160;</td><td class="mdescRight">The latest collection failed; retained values belong to the previous generation. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Owned immutable publication of registered theme values and variant names. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/override/<a class="el" href="DevOverrideTypes_8hpp_source.html">DevOverrideTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -141,7 +160,7 @@ std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1Dev
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevThemeCaptureSnapshot.html">DevThemeCaptureSnapshot</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevThemeCaptureSnapshot.html">DevThemeCaptureSnapshot</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

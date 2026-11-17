@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,42 +106,91 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevErrorTriggeredCapture Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevErrorReporting_8hpp_source.html">DevErrorReporting.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:af27586423f4f18798be7c55e04f92530" id="r_af27586423f4f18798be7c55e04f92530"><td class="memItemLeft"><a id="af27586423f4f18798be7c55e04f92530" name="af27586423f4f18798be7c55e04f92530"></a>
-DevErrorCaptureId&#160;</td><td class="memItemRight"><b>id</b> = 0u</td></tr>
-<tr class="memitem:aab64e482a03df11c8f88411b2d8c627c" id="r_aab64e482a03df11c8f88411b2d8c627c"><td class="memItemLeft"><a id="aab64e482a03df11c8f88411b2d8c627c" name="aab64e482a03df11c8f88411b2d8c627c"></a>
-DevErrorOccurrenceId&#160;</td><td class="memItemRight"><b>triggerOccurrence</b> = 0u</td></tr>
-<tr class="memitem:a3d22c4ce7ddc23fc13e7f12136dff8e2" id="r_a3d22c4ce7ddc23fc13e7f12136dff8e2"><td class="memItemLeft"><a id="a3d22c4ce7ddc23fc13e7f12136dff8e2" name="a3d22c4ce7ddc23fc13e7f12136dff8e2"></a>
-AppTickId&#160;</td><td class="memItemRight"><b>firstAppTick</b> = 0u</td></tr>
-<tr class="memitem:a7106edbf58f0f33d186ebdfd0cae8d8f" id="r_a7106edbf58f0f33d186ebdfd0cae8d8f"><td class="memItemLeft"><a id="a7106edbf58f0f33d186ebdfd0cae8d8f" name="a7106edbf58f0f33d186ebdfd0cae8d8f"></a>
-AppTickId&#160;</td><td class="memItemRight"><b>lastAppTick</b> = 0u</td></tr>
-<tr class="memitem:a7bf5bc86855a4d76dc8789046c373f2b" id="r_a7bf5bc86855a4d76dc8789046c373f2b"><td class="memItemLeft"><a id="a7bf5bc86855a4d76dc8789046c373f2b" name="a7bf5bc86855a4d76dc8789046c373f2b"></a>
-DevErrorTriggeredCaptureState&#160;</td><td class="memItemRight"><b>state</b> = DevErrorTriggeredCaptureState::Collecting</td></tr>
-<tr class="memitem:aa4d7516370012d74bfdab4259ce32db9" id="r_aa4d7516370012d74bfdab4259ce32db9"><td class="memItemLeft"><a id="aa4d7516370012d74bfdab4259ce32db9" name="aa4d7516370012d74bfdab4259ce32db9"></a>
-bool&#160;</td><td class="memItemRight"><b>timingHistoryEvicted</b> = false</td></tr>
-<tr class="memitem:a7c68ca955a6464a3ed57a61e2b2247aa" id="r_a7c68ca955a6464a3ed57a61e2b2247aa"><td class="memItemLeft"><a id="a7c68ca955a6464a3ed57a61e2b2247aa" name="a7c68ca955a6464a3ed57a61e2b2247aa"></a>
-bool&#160;</td><td class="memItemRight"><b>memoryHistoryEvicted</b> = false</td></tr>
-<tr class="memitem:a869b04e9e09f0dbaa2f5f515a2c16140" id="r_a869b04e9e09f0dbaa2f5f515a2c16140"><td class="memItemLeft"><a id="a869b04e9e09f0dbaa2f5f515a2c16140" name="a869b04e9e09f0dbaa2f5f515a2c16140"></a>
-bool&#160;</td><td class="memItemRight"><b>timingTruncated</b> = false</td></tr>
-<tr class="memitem:ae05414da83519e773802ed7eaab3538a" id="r_ae05414da83519e773802ed7eaab3538a"><td class="memItemLeft"><a id="ae05414da83519e773802ed7eaab3538a" name="ae05414da83519e773802ed7eaab3538a"></a>
-bool&#160;</td><td class="memItemRight"><b>memoryTruncated</b> = false</td></tr>
-<tr class="memitem:add030b24bb1bf46f4f8191d6836fa753" id="r_add030b24bb1bf46f4f8191d6836fa753"><td class="memItemLeft"><a id="add030b24bb1bf46f4f8191d6836fa753" name="add030b24bb1bf46f4f8191d6836fa753"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>timing_generation</b> = 0</td></tr>
-<tr class="memitem:a3a79ec0676e0125fb39b6b4ca29dece8" id="r_a3a79ec0676e0125fb39b6b4ca29dece8"><td class="memItemLeft"><a id="a3a79ec0676e0125fb39b6b4ca29dece8" name="a3a79ec0676e0125fb39b6b4ca29dece8"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>timing_retained_ticks</b> = 0</td></tr>
+<tr class="memitem:af27586423f4f18798be7c55e04f92530" id="r_af27586423f4f18798be7c55e04f92530"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a63f87018378c9341bd2b9a219ad0b4a5">DevErrorCaptureId</a>&#160;</td><td class="memItemRight"><a class="el" href="#af27586423f4f18798be7c55e04f92530">id</a> = 0u</td></tr>
+<tr class="memitem:aab64e482a03df11c8f88411b2d8c627c" id="r_aab64e482a03df11c8f88411b2d8c627c"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a>&#160;</td><td class="memItemRight"><a class="el" href="#aab64e482a03df11c8f88411b2d8c627c">triggerOccurrence</a> = 0u</td></tr>
+<tr class="memitem:a3d22c4ce7ddc23fc13e7f12136dff8e2" id="r_a3d22c4ce7ddc23fc13e7f12136dff8e2"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a3d22c4ce7ddc23fc13e7f12136dff8e2">firstAppTick</a> = 0u</td></tr>
+<tr class="memitem:a7106edbf58f0f33d186ebdfd0cae8d8f" id="r_a7106edbf58f0f33d186ebdfd0cae8d8f"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a7106edbf58f0f33d186ebdfd0cae8d8f">lastAppTick</a> = 0u</td></tr>
+<tr class="memitem:a7bf5bc86855a4d76dc8789046c373f2b" id="r_a7bf5bc86855a4d76dc8789046c373f2b"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a7b316ac523cc390acce3ee2e12ee4b12">DevErrorTriggeredCaptureState</a>&#160;</td><td class="memItemRight"><a class="el" href="#a7bf5bc86855a4d76dc8789046c373f2b">state</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a7b316ac523cc390acce3ee2e12ee4b12a7063194175c59222cd3ae177ad3bfafd">DevErrorTriggeredCaptureState::Collecting</a></td></tr>
+<tr class="memitem:aa4d7516370012d74bfdab4259ce32db9" id="r_aa4d7516370012d74bfdab4259ce32db9"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#aa4d7516370012d74bfdab4259ce32db9">timingHistoryEvicted</a> = false</td></tr>
+<tr class="memitem:a7c68ca955a6464a3ed57a61e2b2247aa" id="r_a7c68ca955a6464a3ed57a61e2b2247aa"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a7c68ca955a6464a3ed57a61e2b2247aa">memoryHistoryEvicted</a> = false</td></tr>
+<tr class="memitem:a869b04e9e09f0dbaa2f5f515a2c16140" id="r_a869b04e9e09f0dbaa2f5f515a2c16140"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a869b04e9e09f0dbaa2f5f515a2c16140">timingTruncated</a> = false</td></tr>
+<tr class="memitem:ae05414da83519e773802ed7eaab3538a" id="r_ae05414da83519e773802ed7eaab3538a"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ae05414da83519e773802ed7eaab3538a">memoryTruncated</a> = false</td></tr>
+<tr class="memitem:add030b24bb1bf46f4f8191d6836fa753" id="r_add030b24bb1bf46f4f8191d6836fa753"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#add030b24bb1bf46f4f8191d6836fa753">timing_generation</a> = 0</td></tr>
+<tr class="memitem:a3a79ec0676e0125fb39b6b4ca29dece8" id="r_a3a79ec0676e0125fb39b6b4ca29dece8"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a3a79ec0676e0125fb39b6b4ca29dece8">timing_retained_ticks</a> = 0</td></tr>
 <tr class="memitem:aa24dba0dee9704df1d4d8a4b38ede221" id="r_aa24dba0dee9704df1d4d8a4b38ede221"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#aa24dba0dee9704df1d4d8a4b38ede221">memory_generation</a> = UINT64_MAX</td></tr>
-<tr class="memitem:a09ff43bc78235b1e278cf907fe7962e0" id="r_a09ff43bc78235b1e278cf907fe7962e0"><td class="memItemLeft"><a id="a09ff43bc78235b1e278cf907fe7962e0" name="a09ff43bc78235b1e278cf907fe7962e0"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>memory_cursor</b> = 0</td></tr>
-<tr class="memitem:a5216cac2c7caf8c054c7324573cd786e" id="r_a5216cac2c7caf8c054c7324573cd786e"><td class="memItemLeft"><a id="a5216cac2c7caf8c054c7324573cd786e" name="a5216cac2c7caf8c054c7324573cd786e"></a>
-bool&#160;</td><td class="memItemRight"><b>memory_sealed</b> = false</td></tr>
-<tr class="memitem:a2c20003db48583397ddf30628eefb3f3" id="r_a2c20003db48583397ddf30628eefb3f3"><td class="memItemLeft"><a id="a2c20003db48583397ddf30628eefb3f3" name="a2c20003db48583397ddf30628eefb3f3"></a>
-DevErrorCorrelationState&#160;</td><td class="memItemRight"><b>timing_state</b> = DevErrorCorrelationState::NotCaptured</td></tr>
-<tr class="memitem:a7de36fbddf226102e3ad750d6d3c4bf7" id="r_a7de36fbddf226102e3ad750d6d3c4bf7"><td class="memItemLeft"><a id="a7de36fbddf226102e3ad750d6d3c4bf7" name="a7de36fbddf226102e3ad750d6d3c4bf7"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1RetainedMemoryEvent.html">RetainedMemoryEvent</a> &gt;&#160;</td><td class="memItemRight"><b>memoryEvents</b> {}</td></tr>
+<tr class="memitem:a09ff43bc78235b1e278cf907fe7962e0" id="r_a09ff43bc78235b1e278cf907fe7962e0"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a09ff43bc78235b1e278cf907fe7962e0">memory_cursor</a> = 0</td></tr>
+<tr class="memitem:a5216cac2c7caf8c054c7324573cd786e" id="r_a5216cac2c7caf8c054c7324573cd786e"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a5216cac2c7caf8c054c7324573cd786e">memory_sealed</a> = false</td></tr>
+<tr class="memitem:a2c20003db48583397ddf30628eefb3f3" id="r_a2c20003db48583397ddf30628eefb3f3"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a479db3ebbaabbfc900e247edfb40dbce">DevErrorCorrelationState</a>&#160;</td><td class="memItemRight"><a class="el" href="#a2c20003db48583397ddf30628eefb3f3">timing_state</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a479db3ebbaabbfc900e247edfb40dbceaa644888fecd95f34b5c883342b9f920b">DevErrorCorrelationState::NotCaptured</a></td></tr>
+<tr class="memitem:a7de36fbddf226102e3ad750d6d3c4bf7" id="r_a7de36fbddf226102e3ad750d6d3c4bf7"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1RetainedMemoryEvent.html">RetainedMemoryEvent</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a7de36fbddf226102e3ad750d6d3c4bf7">memoryEvents</a> {}</td></tr>
 </table>
-<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Bounded timing and memory evidence window opened by one diagnostic occurrence. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a3d22c4ce7ddc23fc13e7f12136dff8e2" name="a3d22c4ce7ddc23fc13e7f12136dff8e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3d22c4ce7ddc23fc13e7f12136dff8e2">&#9670;&#160;</a></span>firstAppTick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> FlowUi::devSystems::DevErrorTriggeredCapture::firstAppTick = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>First application tick included in the occurrence or query range. </p>
+
+</div>
+</div>
+<a id="af27586423f4f18798be7c55e04f92530" name="af27586423f4f18798be7c55e04f92530"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af27586423f4f18798be7c55e04f92530">&#9670;&#160;</a></span>id</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a63f87018378c9341bd2b9a219ad0b4a5">DevErrorCaptureId</a> FlowUi::devSystems::DevErrorTriggeredCapture::id = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Stable identity of this retained entity; zero means unassigned. </p>
+
+</div>
+</div>
+<a id="a7106edbf58f0f33d186ebdfd0cae8d8f" name="a7106edbf58f0f33d186ebdfd0cae8d8f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7106edbf58f0f33d186ebdfd0cae8d8f">&#9670;&#160;</a></span>lastAppTick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> FlowUi::devSystems::DevErrorTriggeredCapture::lastAppTick = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Last application tick included in the occurrence or query range. </p>
+
+</div>
+</div>
+<a id="a09ff43bc78235b1e278cf907fe7962e0" name="a09ff43bc78235b1e278cf907fe7962e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a09ff43bc78235b1e278cf907fe7962e0">&#9670;&#160;</a></span>memory_cursor</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorTriggeredCapture::memory_cursor = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Append cursor for pinned memory operation evidence. </p>
+
+</div>
+</div>
 <a id="aa24dba0dee9704df1d4d8a4b38ede221" name="aa24dba0dee9704df1d4d8a4b38ede221"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa24dba0dee9704df1d4d8a4b38ede221">&#9670;&#160;</a></span>memory_generation</h2>
 
@@ -153,7 +202,173 @@ std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1RetainedMemory
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Append cursor and generation for explicitly pinned operation evidence. </p>
+<p>Append cursor and generation for explicitly pinned operation evidence.</p>
+<p>Memory history generation pinned by the capture; UINT64_MAX is unassigned. </p>
+
+</div>
+</div>
+<a id="a5216cac2c7caf8c054c7324573cd786e" name="a5216cac2c7caf8c054c7324573cd786e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5216cac2c7caf8c054c7324573cd786e">&#9670;&#160;</a></span>memory_sealed</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevErrorTriggeredCapture::memory_sealed = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether memory evidence collection for the capture has closed. </p>
+
+</div>
+</div>
+<a id="a7de36fbddf226102e3ad750d6d3c4bf7" name="a7de36fbddf226102e3ad750d6d3c4bf7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7de36fbddf226102e3ad750d6d3c4bf7">&#9670;&#160;</a></span>memoryEvents</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="structFlowUi_1_1devSystems_1_1RetainedMemoryEvent.html">RetainedMemoryEvent</a>&gt; FlowUi::devSystems::DevErrorTriggeredCapture::memoryEvents {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned retained memory operations attached to the capture. </p>
+
+</div>
+</div>
+<a id="a7c68ca955a6464a3ed57a61e2b2247aa" name="a7c68ca955a6464a3ed57a61e2b2247aa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7c68ca955a6464a3ed57a61e2b2247aa">&#9670;&#160;</a></span>memoryHistoryEvicted</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevErrorTriggeredCapture::memoryHistoryEvicted = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether memory evidence was evicted before it could be retained. </p>
+
+</div>
+</div>
+<a id="ae05414da83519e773802ed7eaab3538a" name="ae05414da83519e773802ed7eaab3538a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae05414da83519e773802ed7eaab3538a">&#9670;&#160;</a></span>memoryTruncated</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevErrorTriggeredCapture::memoryTruncated = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether the memory evidence window was truncated. </p>
+
+</div>
+</div>
+<a id="a7bf5bc86855a4d76dc8789046c373f2b" name="a7bf5bc86855a4d76dc8789046c373f2b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7bf5bc86855a4d76dc8789046c373f2b">&#9670;&#160;</a></span>state</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a7b316ac523cc390acce3ee2e12ee4b12">DevErrorTriggeredCaptureState</a> FlowUi::devSystems::DevErrorTriggeredCapture::state = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a7b316ac523cc390acce3ee2e12ee4b12a7063194175c59222cd3ae177ad3bfafd">DevErrorTriggeredCaptureState::Collecting</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Retention, correlation or collection state of this record. </p>
+
+</div>
+</div>
+<a id="add030b24bb1bf46f4f8191d6836fa753" name="add030b24bb1bf46f4f8191d6836fa753"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add030b24bb1bf46f4f8191d6836fa753">&#9670;&#160;</a></span>timing_generation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorTriggeredCapture::timing_generation = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Timing capture generation pinned by the triggered capture. </p>
+
+</div>
+</div>
+<a id="a3a79ec0676e0125fb39b6b4ca29dece8" name="a3a79ec0676e0125fb39b6b4ca29dece8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3a79ec0676e0125fb39b6b4ca29dece8">&#9670;&#160;</a></span>timing_retained_ticks</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorTriggeredCapture::timing_retained_ticks = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of timing ticks retained for the triggered capture. </p>
+
+</div>
+</div>
+<a id="a2c20003db48583397ddf30628eefb3f3" name="a2c20003db48583397ddf30628eefb3f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c20003db48583397ddf30628eefb3f3">&#9670;&#160;</a></span>timing_state</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a479db3ebbaabbfc900e247edfb40dbce">DevErrorCorrelationState</a> FlowUi::devSystems::DevErrorTriggeredCapture::timing_state = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a479db3ebbaabbfc900e247edfb40dbceaa644888fecd95f34b5c883342b9f920b">DevErrorCorrelationState::NotCaptured</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Availability of timing evidence for the triggered capture. </p>
+
+</div>
+</div>
+<a id="aa4d7516370012d74bfdab4259ce32db9" name="aa4d7516370012d74bfdab4259ce32db9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa4d7516370012d74bfdab4259ce32db9">&#9670;&#160;</a></span>timingHistoryEvicted</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevErrorTriggeredCapture::timingHistoryEvicted = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether timing evidence was evicted before it could be retained. </p>
+
+</div>
+</div>
+<a id="a869b04e9e09f0dbaa2f5f515a2c16140" name="a869b04e9e09f0dbaa2f5f515a2c16140"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a869b04e9e09f0dbaa2f5f515a2c16140">&#9670;&#160;</a></span>timingTruncated</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevErrorTriggeredCapture::timingTruncated = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether the timing evidence window was truncated. </p>
+
+</div>
+</div>
+<a id="aab64e482a03df11c8f88411b2d8c627c" name="aab64e482a03df11c8f88411b2d8c627c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aab64e482a03df11c8f88411b2d8c627c">&#9670;&#160;</a></span>triggerOccurrence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a> FlowUi::devSystems::DevErrorTriggeredCapture::triggerOccurrence = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Occurrence whose error opened the capture window. </p>
 
 </div>
 </div>
@@ -173,7 +388,7 @@ std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1RetainedMemory
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorTriggeredCapture.html">DevErrorTriggeredCapture</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorTriggeredCapture.html">DevErrorTriggeredCapture</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

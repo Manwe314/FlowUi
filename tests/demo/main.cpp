@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -112,18 +113,18 @@ struct DemoResources {
 	DemoResources() = default;
 	explicit DemoResources(App& app) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
-		auto& icons = app.icons();
-		if (icons.contains(standard_icons::kIncrementKey)) {
-			incrementIcon = icons.textureRef(standard_icons::kIncrementKey);
+		auto& icons = ::FlowUi::test::requireValue(app.icons()).get();
+		if (::FlowUi::test::requireValue(icons.contains(standard_icons::kIncrementKey))) {
+			incrementIcon = ::FlowUi::test::requireValue(icons.textureRef(standard_icons::kIncrementKey));
 		}
-		if (icons.contains(standard_icons::kDecrementKey)) {
-			decrementIcon = icons.textureRef(standard_icons::kDecrementKey);
+		if (::FlowUi::test::requireValue(icons.contains(standard_icons::kDecrementKey))) {
+			decrementIcon = ::FlowUi::test::requireValue(icons.textureRef(standard_icons::kDecrementKey));
 		}
-		if (icons.contains(standard_icons::kComboBoxOpenKey)) {
-			comboOpenIcon = icons.textureRef(standard_icons::kComboBoxOpenKey);
+		if (::FlowUi::test::requireValue(icons.contains(standard_icons::kComboBoxOpenKey))) {
+			comboOpenIcon = ::FlowUi::test::requireValue(icons.textureRef(standard_icons::kComboBoxOpenKey));
 		}
-		if (icons.contains(standard_icons::kComboBoxClosedKey)) {
-			comboClosedIcon = icons.textureRef(standard_icons::kComboBoxClosedKey);
+		if (::FlowUi::test::requireValue(icons.contains(standard_icons::kComboBoxClosedKey))) {
+			comboClosedIcon = ::FlowUi::test::requireValue(icons.textureRef(standard_icons::kComboBoxClosedKey));
 		}
 #else
 		(void)app;
@@ -1658,10 +1659,10 @@ int main(int argument_count, char** arguments) {
 			std::cerr << "Unsupported demo option: " << argument << '\n';
 			return 2;
 		}
-		App app = makeApplication(config);
+		App app = ::FlowUi::test::requireValue(makeApplication(config));
 #if FLOW_UI_DEV_MODE
 		devSystems::tooling::register_element_catalogue(
-			app.devTooling().schemas(), "FSEL",
+			::FlowUi::test::requireValue(app.devTooling()).get().schemas(), "FSEL",
 			ElementSet<FSEL::Box, FSEL::Button, FSEL::Checkbox, FSEL::ComboBox,
 					   FSEL::DragValue<int>, FSEL::DragValue<unsigned int>, FSEL::DragValue<float>,
 					   FSEL::Label, FSEL::NumberInput<int>, FSEL::NumberInput<unsigned int>,
@@ -1672,8 +1673,8 @@ int main(int argument_count, char** arguments) {
 #endif
 #if FLOW_UI_AGENTIC_WORKFLOW
 		if (!agentic_changes_path.empty())
-			app.devTooling().bakePipeline().setManifestPath(std::move(agentic_changes_path));
-		const auto agentic_capabilities = app.agentic_workflow().capabilities();
+			::FlowUi::test::requireValue(app.devTooling()).get().bakePipeline().setManifestPath(std::move(agentic_changes_path));
+		const auto agentic_capabilities = ::FlowUi::test::requireValue(app.agentic_workflow()).get().capabilities();
 		if (agentic_capabilities && agentic_capabilities->enabled) {
 			requireStatus(register_demo_agentic_scenarios(app, parameters, agentic_harness));
 			requireStatus(
@@ -1686,9 +1687,9 @@ int main(int argument_count, char** arguments) {
 		}
 #endif
 
-		while (!app.shouldClose()) {
+		while (!::FlowUi::test::requireValue(app.shouldClose())) {
 			requireStatus(app.beginFrame());
-			app.ui().createElement(kDemo, "demo")
+			::FlowUi::test::requireValue(app.ui()).get().createElement(kDemo, "demo")
 				.setParameters(parameters)
 				.draw();
 			requireStatus(app.endFrame());

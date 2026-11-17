@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.hpp"
 #include "FlowUi/Public/input/Key.hpp"
 
@@ -171,20 +172,20 @@ void property(Context& context, uint64_t key, std::string_view label, std::strin
 	declaration.layout.padding = {0, 0, 6, 6};
 	declaration.layout.childAlignment.y = CLAY_ALIGN_Y_TOP;
 	declaration.border = {.color = interface_theme::kBorderPrimary, .width = {.bottom = 1}};
-	CLAY(context.clayID(Keyed("property", key)), declaration) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("property", key))), declaration) {
 		auto data = narrow ? column(3) : row(8);
 		data.layout.sizing.width = CLAY_SIZING_FIXED(data_width);
 		data.layout.childAlignment.y = CLAY_ALIGN_Y_TOP;
-		CLAY(context.clayID(Keyed("property-data", key)), data) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("property-data", key))), data) {
 			auto label_cell = column(0);
 			if (!narrow)
 				label_cell.layout.sizing.width = CLAY_SIZING_PERCENT(.38f);
-			CLAY(context.clayID(Keyed("property-label", key)), label_cell)
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("property-label", key))), label_cell)
 			text(context, label, interface_theme::kTextSecondary, 11, 0, false);
 			auto value_cell = column(0);
 			value_cell.layout.sizing.width = CLAY_SIZING_FIXED(content_width);
-			CLAY(context.clayID(Keyed("property-value", key)), value_cell) {
-				CLAY(context.clayID(Keyed("property-text", key)), column(0))
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("property-value", key))), value_cell) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("property-text", key))), column(0))
 				text(context, value, color, 12, content_width);
 			}
 		}
@@ -198,7 +199,7 @@ void subtitle(Context& context, uint64_t key, std::string_view title) {
 	auto declaration = column();
 	declaration.layout.padding = {0, 0, 8, 3};
 	declaration.border = {.color = interface_theme::kBorderPrimary, .width = {.top = 1}};
-	CLAY(context.clayID(Keyed("subtitle", key)), declaration)
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("subtitle", key))), declaration)
 	text(context, title, interface_theme::kTextSecondary, 12);
 }
 void disclosure(Context& context, uint64_t key, std::string_view label, bool& expanded,
@@ -220,10 +221,10 @@ void disclosure(Context& context, uint64_t key, std::string_view label, bool& ex
 	parameters.hoveredOverrides.backgroundColor = interface_theme::kHoverSurface;
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	if (context.params.app) {
-		auto& icons = context.params.app->icons();
+		auto& icons = FlowUi::ValueOrThrow(context.params.app->icons()).get();
 		interface_icons::registerDevInterfaceIcons(icons);
-		parameters.icon = icons.textureRef(expanded ? interface_icons::kCollapseKey
-													: interface_icons::kExpandKey);
+		parameters.icon = FlowUi::ValueOrThrow(icons.textureRef(expanded ? interface_icons::kCollapseKey
+													: interface_icons::kExpandKey));
 		parameters.contentMode = FSEL::ButtonContentMode::IconThenText;
 		parameters.iconSize = 12;
 		parameters.text = label;
@@ -231,7 +232,7 @@ void disclosure(Context& context, uint64_t key, std::string_view label, bool& ex
 #endif
 	if (context.params.app)
 		parameters.onActivate =
-			ActionCall{context.params.app->actions().uiActions().make(toggle_section, expanded)};
+			ActionCall{FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(toggle_section, expanded)};
 	context.uiManager.createElement(FSEL::kButton, Keyed("section-disclosure", key))
 		.setParameters(parameters)
 		.setDevInternalCapture(true)
@@ -879,13 +880,13 @@ void DevDiagnosticsCopy::runLogic(InteractionContext& context) {
 	const auto& current = context.uiManager.getCurrentFrameInput();
 	const auto& previous = context.uiManager.getPreviousFrameInput();
 	if (context.params.app &&
-		context.uiManager.shortcuts().focusedElement().id == context.clayID().id &&
+		FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id == context.clayID().id &&
 		!context.uiManager.inputFields().hasPrimaryFieldFocus() &&
 		((current.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)] &&
 		  !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)]) ||
 		 (current.keyDown[FlowUi::keyCode(FlowUi::Key::Space)] &&
 		  !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Space)])))
-		context.params.app->setClipboardText(context.params.value);
+		FlowUi::ValueOrThrow(context.params.app->setClipboardText(context.params.value));
 }
 void DevDiagnosticsCopy::onHovered(InteractionContext& context) {
 	if (context.params.app)
@@ -893,8 +894,8 @@ void DevDiagnosticsCopy::onHovered(InteractionContext& context) {
 }
 void DevDiagnosticsCopy::onReleased(InteractionContext& context) {
 	if (FSEL::detail::selectable_surface::onReleased(context, context.params.app != nullptr)) {
-		context.uiManager.shortcuts().setFocusedElement(context.clayID());
-		context.params.app->setClipboardText(context.params.value);
+		FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(context.clayID()));
+		FlowUi::ValueOrThrow(context.params.app->setClipboardText(context.params.value));
 	}
 }
 void DevDiagnosticsCopy::buildElement(BuildContext& context) {
@@ -910,7 +911,7 @@ void DevDiagnosticsCopy::buildElement(BuildContext& context) {
 	declaration.layout.childGap = 4;
 	declaration.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
 	declaration.cornerRadius = CLAY_CORNER_RADIUS(3);
-	if (context.uiManager.shortcuts().focusedElement().id == context.clayID().id)
+	if (FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id == context.clayID().id)
 		declaration.border = {.color = interface_theme::kAccentCurrent, .width = {1, 1, 1, 1, 0}};
 	declaration.backgroundColor = hovered				   ? interface_theme::kHoverSurface
 								  : context.params.compact ? Clay_Color{}
@@ -925,7 +926,7 @@ void DevDiagnosticsCopy::buildElement(BuildContext& context) {
 															  : interface_theme::kTextSecondary)
 												   : interface_theme::kTextMuted;
 		image.image = {.imageData = context.uiManager.imageData(icon)};
-		CLAY(context.clayID("icon"), image) {}
+		CLAY(FlowUi::ValueOrThrow(context.clayID("icon")), image) {}
 #else
 		text(context, context.params.compact ? "Copy" : context.params.label,
 			 interface_theme::kTextSecondary, 10, 0, false);
@@ -942,7 +943,7 @@ void DevDiagnosticsCopy::buildElement(BuildContext& context) {
 			tooltip.floating.offset.y = 4;
 			tooltip.floating.zIndex = 120;
 			tooltip.floating.pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_PASSTHROUGH;
-			CLAY(context.clayID("tooltip"), tooltip)
+			CLAY(FlowUi::ValueOrThrow(context.clayID("tooltip")), tooltip)
 			text(context, context.params.label, interface_theme::kTextCanvas, 11);
 		}
 	}
@@ -975,7 +976,7 @@ void DevDiagnosticsInspector::buildElement(BuildContext& context) {
 		auto title = column(5);
 		title.layout.padding = {12, 12, 10, 10};
 		title.backgroundColor = interface_theme::kDepth2Ink;
-		CLAY(context.clayID("title"), title) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("title")), title) {
 			text(context, "Occurrence details", interface_theme::kTextCanvas, 14);
 			if (occurrence) {
 				text(context,
@@ -1001,7 +1002,7 @@ void DevDiagnosticsInspector::buildElement(BuildContext& context) {
 				else
 					text(context, "No retained step for context/source focus",
 						 interface_theme::kTextSecondary, 11);
-				CLAY(context.clayID("copy-actions"), row()) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("copy-actions")), row()) {
 					copy(context, 90000, std::to_string(occurrence->id), "Copy occurrence ID");
 					copy(context, 90001, details_text(state, *occurrence), "Copy details");
 				}
@@ -1014,12 +1015,12 @@ void DevDiagnosticsInspector::buildElement(BuildContext& context) {
 		auto body = column(0);
 		body.layout.sizing.height = CLAY_SIZING_GROW(0);
 		body.clip = {.vertical = true};
-		const auto scroll = Clay_GetScrollContainerData(context.clayID("scroll-body"));
+		const auto scroll = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("scroll-body")));
 		if (scroll.found && scroll.scrollPosition) {
 			if (state.inspector_scroll_to < state.inspector_expanded.size()) {
 				const auto heading = Clay_GetElementData(
-					context.clayID(Keyed("section", state.inspector_scroll_to)));
-				const auto viewport = Clay_GetElementData(context.clayID("scroll-body"));
+					FlowUi::ValueOrThrow(context.clayID(Keyed("section", state.inspector_scroll_to))));
+				const auto viewport = Clay_GetElementData(FlowUi::ValueOrThrow(context.clayID("scroll-body")));
 				if (heading.found && viewport.found) {
 					scroll.scrollPosition->y += viewport.boundingBox.y - heading.boundingBox.y;
 					state.inspector_scroll_to = UINT64_MAX;
@@ -1029,7 +1030,7 @@ void DevDiagnosticsInspector::buildElement(BuildContext& context) {
 			state.inspector_scroll = scroll.scrollPosition->y;
 		} else
 			body.clip.childOffset = {0, state.inspector_scroll};
-		CLAY(context.clayID("scroll-body"), body) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("scroll-body")), body) {
 			const std::array<std::string, 10> headings{
 				"Error contract",
 				"Source location",
@@ -1044,13 +1045,13 @@ void DevDiagnosticsInspector::buildElement(BuildContext& context) {
 				"Reporting status · global",
 				"Fatal capsule"};
 			for (size_t section_index = 0; section_index < headings.size(); ++section_index) {
-				CLAY(context.clayID(Keyed("section", section_index)), column(0)) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("section", section_index))), column(0)) {
 					disclosure(context, section_index, headings[section_index],
 							   state.inspector_expanded[section_index]);
 					if (state.inspector_expanded[section_index]) {
 						auto content = column(8);
 						content.layout.padding = {12, 12, 10, 12};
-						CLAY(context.clayID(Keyed("section-content", section_index)), content) {
+						CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("section-content", section_index))), content) {
 							if (section_index == 8)
 								reporting_status(context, state.snapshot.status, narrow);
 							else if (section_index == 9)

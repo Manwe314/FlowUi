@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #pragma once
 
 // Included beside the demo's private Demo/DemoState definitions.
@@ -30,15 +31,15 @@ run_demo_scenario_step(Function&& function) noexcept {
 
 [[nodiscard]] DemoState* scenario_demo_state(App& application, DemoAgenticHarness& harness) {
 	if (!harness.state_id) {
-		const auto& tree = application.ui().devTreeSnapshot();
+		const auto& tree = ::FlowUi::test::requireValue(application.ui()).get().devTreeSnapshot();
 		for (const auto& node : tree.flow.nodes)
 			if (node.definition == Demo::definitionId) {
 				harness.state_id.value = node.instance.value;
 				break;
 			}
 	}
-	return harness.state_id ? application.elements().getStatePointer(
-								  kDemo, application.mainWindowId(), harness.state_id)
+	return harness.state_id ? ::FlowUi::test::requireValue(::FlowUi::test::requireValue(application.elements()).get().getStatePointer(
+								  kDemo, application.mainWindowId(), harness.state_id))
 							: nullptr;
 }
 
@@ -47,7 +48,7 @@ run_demo_scenario_step(Function&& function) noexcept {
 		std::string name;
 		bool failed = false;
 	} active;
-	application.themes().visitDevCatalogueThemes(
+	::FlowUi::test::requireValue(application.themes()).get().visitDevCatalogueThemes(
 		&active, [](void* owner, const ThemeManager::DevThemePayloadView& theme) noexcept {
 			auto& selected = *static_cast<ActiveVariant*>(owner);
 			if (theme.active && theme.type == FlowUi::detail::typeHash<FSELTheme>()) {
@@ -130,7 +131,7 @@ run_demo_scenario_step(Function&& function) noexcept {
 										   ": seed 17; stable text, wrapping and editor layout.\n";
 				}
 				requireStatus(
-					context.application->themes().setActiveVariant<FSELTheme>("agentic-default"));
+					::FlowUi::test::requireValue(context.application->themes()).get().setActiveVariant<FSELTheme>("agentic-default"));
 			}
 			return agentic::AgenticScenarioProgress::complete;
 		});
@@ -150,7 +151,7 @@ run_demo_scenario_step(Function&& function) noexcept {
 				state->editorSoftWrap = matrix_state < 2u;
 				parameters.backgroundColor =
 					matrix_state < 2u ? Flow_Color("#0c111bff") : Flow_Color("#081b26ff");
-				requireStatus(context.application->themes().setActiveVariant<FSELTheme>(
+				requireStatus(::FlowUi::test::requireValue(context.application->themes()).get().setActiveVariant<FSELTheme>(
 					matrix_state < 2u ? "agentic-default" : "agentic-ocean"));
 			}
             agentic::AgenticScenarioAction observed;
@@ -159,7 +160,7 @@ run_demo_scenario_step(Function&& function) noexcept {
             observed.arguments = agentic::Json::make_object({{"theme", active_demo_theme(*context.application)},
                 {"step", agentic::decimal(harness.measured_steps)}, {"selected", state->surfaceSelected},
                 {"soft_wrap", state->editorSoftWrap}});
-            observed.state_revision = context.application->themes().devRevision();
+            observed.state_revision = ::FlowUi::test::requireValue(context.application->themes()).get().devRevision();
             requireStatus(context.record_action(observed));
 			++harness.measured_steps;
 			return agentic::AgenticScenarioProgress::complete;
@@ -179,7 +180,7 @@ run_demo_scenario_step(Function&& function) noexcept {
 				assertion.arguments = agentic::Json::make_object(
 					{{"expected", std::move(expected)}, {"observed", std::move(observed)}});
 				if (context.application) {
-					const auto& tree = context.application->ui().devTreeSnapshot();
+					const auto& tree = ::FlowUi::test::requireValue(context.application->ui()).get().devTreeSnapshot();
 					assertion.state_revision = tree.generation;
 				}
 				requireStatus(context.record_action(assertion));
@@ -215,7 +216,7 @@ run_demo_scenario_step(Function&& function) noexcept {
 				*state = std::move(*harness.previous_state);
 				parameters = harness.previous_parameters;
 				if (!harness.previous_variant.empty())
-					requireStatus(context.application->themes().setActiveVariant<FSELTheme>(
+					requireStatus(::FlowUi::test::requireValue(context.application->themes()).get().setActiveVariant<FSELTheme>(
 						harness.previous_variant));
 				harness.previous_state.reset();
 			}
@@ -228,8 +229,8 @@ run_demo_scenario_step(Function&& function) noexcept {
 [[nodiscard]] Status register_demo_agentic_scenarios(App& application, DemoParameters& parameters,
 													 DemoAgenticHarness& harness) noexcept {
 	try {
-		const FSELTheme original = application.themes().getActiveTheme<FSELTheme>();
-		Status registered = application.themes().registerTheme("agentic-default", original, false);
+		const FSELTheme original = ::FlowUi::test::requireValue(::FlowUi::test::requireValue(application.themes()).get().getActiveTheme<FSELTheme>()).get();
+		Status registered = ::FlowUi::test::requireValue(application.themes()).get().registerTheme("agentic-default", original, false);
 		if (!registered)
 			return registered;
 		auto ocean = original;
@@ -238,12 +239,12 @@ run_demo_scenario_step(Function&& function) noexcept {
 		ocean.buttonTheme.pressed.backgroundColor = Flow_Color("#087c96ff");
 		ocean.textInputTheme.focused.borderColor = Flow_Color("#44d6e8ff");
 		ocean.selectableSurfaceTheme.selected.backgroundColor = Flow_Color("#124e65ff");
-		registered = application.themes().registerTheme("agentic-ocean", ocean, false);
+		registered = ::FlowUi::test::requireValue(application.themes()).get().registerTheme("agentic-ocean", ocean, false);
 		if (!registered)
 			return registered;
 		for (const auto fixture : {DemoAgenticFixture::gallery, DemoAgenticFixture::writing,
 								   DemoAgenticFixture::theme_matrix}) {
-			registered = application.agentic_workflow().register_scenario(
+			registered = ::FlowUi::test::requireValue(application.agentic_workflow()).get().register_scenario(
 				make_demo_scenario(fixture, parameters, harness));
 			if (!registered)
 				return registered;

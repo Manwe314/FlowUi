@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,19 +106,38 @@ $(function() {
 <div class="textblock">Here is a list of all documented functions with links to the class documentation for each member:</div>
 
 <h3 class="doxsection"><a id="index_t" name="index_t"></a>- t -</h3><ul>
-<li>take_start_request()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1DevInterface.html#ae10175d85d37fd01567bad113d2039b0">FlowUi::devSystems::DevInterface</a></li>
-<li>texture()&#160;:&#160;<a class="el" href="structFlowUi_1_1devSystems_1_1interface__elements_1_1DevMemoryControlResources.html#a52f62c0e48ac389ee5869203ae45aaae">FlowUi::devSystems::interface_elements::DevMemoryControlResources</a>, <a class="el" href="structFlowUi_1_1devSystems_1_1interface__elements_1_1DevTimelineButtonResources.html#af59b21c2aa4e4c6d55c0185b731f89f0">FlowUi::devSystems::interface_elements::DevTimelineButtonResources</a></li>
-<li>textureRef()&#160;:&#160;<a class="el" href="structFlowUi_1_1IconManager.html#a0de1a60d027cd3b9985f73aebf128f48">FlowUi::IconManager</a>, <a class="el" href="classFlowUi_1_1ViewPort.html#a10f7c5d9f22a074f95691c59fc7dce0d">FlowUi::ViewPort</a></li>
-<li>theme()&#160;:&#160;<a class="el" href="classFlowUi_1_1UiManager.html#ad20b526851ef6b7948612512c11d09b4">FlowUi::UiManager</a></li>
-<li>themes()&#160;:&#160;<a class="el" href="classFlowUi_1_1App.html#a00db43401d213994be87716679cd8f91">FlowUi::App</a></li>
+<li>take_reopen_request()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1DevPerformanceCapture.html#a52dc845db53af45be86fa99f3c73f6f0">FlowUi::devSystems::DevPerformanceCapture</a></li>
+<li>targets()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticInteractionRuntime.html#a2e5fa58ee903cf84af9bd1d620987fb6">FlowUi::devSystems::agentic::AgenticInteractionRuntime</a></li>
+<li>text()&#160;:&#160;<a class="el" href="classFlowUi_1_1InputSink.html#ac51254d4c6ab1ad8f9b7299c7f1c5a74">FlowUi::InputSink</a></li>
+<li>textLimit()&#160;:&#160;<a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldOptions.html#aae20865c13400e1dad09a8a7f96a8d66">FlowUi::devSystems::tooling::DevFieldOptions</a></li>
+<li>textureRef()&#160;:&#160;<a class="el" href="structFlowUi_1_1IconManager.html#a5997178bc80d7aa8d3f7c1c7bfa8cd5c">FlowUi::IconManager</a>, <a class="el" href="classFlowUi_1_1ViewPort.html#a10f7c5d9f22a074f95691c59fc7dce0d">FlowUi::ViewPort</a></li>
+<li>theme()&#160;:&#160;<a class="el" href="classFlowUi_1_1UiManager.html#a72d5077348ca5ea8b3541c110c422ca5">FlowUi::UiManager</a></li>
+<li>themeBakeRecords()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideEngine.html#a85688cc473c8dabed8b8eda832846af5">FlowUi::devSystems::tooling::DevOverrideEngine</a></li>
+<li>themeBakeTombstones()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideEngine.html#ac59940be4e258cb883d84e33991d7691">FlowUi::devSystems::tooling::DevOverrideEngine</a></li>
+<li>ThemeManager()&#160;:&#160;<a class="el" href="classFlowUi_1_1ThemeManager.html#a006f2dd32c6c05355ed40fa97bb0dd6c">FlowUi::ThemeManager</a></li>
+<li>themes()&#160;:&#160;<a class="el" href="classFlowUi_1_1App.html#a54943b40279e1ce34c05cf778dc0afde">FlowUi::App</a>, <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideCapture.html#a444764d1d13e175f89940f0ba8300915">FlowUi::devSystems::tooling::DevOverrideCapture</a></li>
+<li>themeSnapshot()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideEngine.html#a7376a49e3986127c8ddbe7e88f974c52">FlowUi::devSystems::tooling::DevOverrideEngine</a></li>
 <li>timeline_controller()&#160;:&#160;<a class="el" href="classFlowUi_1_1UiManager.html#a6aecd1a6f796581ec3cfdf519078b999">FlowUi::UiManager</a></li>
-<li>TimelineSnapshot()&#160;:&#160;<a class="el" href="structFlowUi_1_1devSystems_1_1interface__elements_1_1TimelineSnapshot.html#a9c582c762d364b2a0836e6037fb028e8">FlowUi::devSystems::interface_elements::TimelineSnapshot</a></li>
+<li>timing()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1DevMonitoringAndReporting.html#ad0091c8024ff02088e96265dccc1f67a">FlowUi::devSystems::DevMonitoringAndReporting</a></li>
+<li>TimingCaptureSnapshot()&#160;:&#160;<a class="el" href="structFlowUi_1_1devSystems_1_1TimingCaptureSnapshot.html#a62123af6040946b27e1f1fd7eb56f4b9">FlowUi::devSystems::TimingCaptureSnapshot</a></li>
+<li>timingReporting()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1DevMonitoringAndReporting.html#a1fda618c975fc5c2098615def81d7f89">FlowUi::devSystems::DevMonitoringAndReporting</a></li>
 <li>toClayEID()&#160;:&#160;<a class="el" href="classFlowUi_1_1UiManager.html#a8444d3c1aa6671658b33cdc3da3afe49">FlowUi::UiManager</a></li>
 <li>toClaySID()&#160;:&#160;<a class="el" href="classFlowUi_1_1UiManager.html#ab5a7131ff83f731ff6f99006f4563d29">FlowUi::UiManager</a></li>
 <li>toClayString()&#160;:&#160;<a class="el" href="classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437">FlowUi::UiManager</a></li>
 <li>toggle_pick_domain()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevInspectInteractionController.html#ac4fe0f5725092b3db02a2eb5d192c0d1">FlowUi::devSystems::tooling::DevInspectInteractionController</a></li>
 <li>toggle_primary_pick()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevInspectInteractionController.html#aa32124c807329a9fa613b030c12519aa">FlowUi::devSystems::tooling::DevInspectInteractionController</a></li>
 <li>toggle_surface()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevInspectInteractionController.html#a46140a1dc3edc041f9a27af5b1ea9849">FlowUi::devSystems::tooling::DevInspectInteractionController</a></li>
+<li>toggle_window_fullscreen()&#160;:&#160;<a class="el" href="classFlowUi_1_1App.html#abe2ae288a65490ee24da31a471a05ac1">FlowUi::App</a></li>
+<li>toggle_window_maximized()&#160;:&#160;<a class="el" href="classFlowUi_1_1App.html#a3972268e26e3022e2b6ac0fa4b9cb7fd">FlowUi::App</a></li>
+<li>trackId()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1DevErrorRecorder.html#af0685f9bb2357ba409872e9a9fe65bee">FlowUi::devSystems::DevErrorRecorder</a>, <a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html#a60e4109b441590df4a14c2fd97ddab26">FlowUi::devSystems::DevTimingRecorder</a></li>
+<li>trackName()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1DevErrorRecorder.html#a0d5c6c48e20dc93c110a7b6589f492cf">FlowUi::devSystems::DevErrorRecorder</a>, <a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html#a20b13c037eeb79074d6299085588f7a1">FlowUi::devSystems::DevTimingRecorder</a></li>
+<li>trackSnapshot()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1DevTiming.html#a658acc907976eb72036891bbdc50c60a">FlowUi::devSystems::DevTiming</a></li>
+<li>transient()&#160;:&#160;<a class="el" href="structFlowUi_1_1ElementStatePolicy.html#ae2288106c0174be1afef7a9bf584c89b">FlowUi::ElementStatePolicy</a></li>
+<li>translators()&#160;:&#160;<a class="el" href="classFlowUi_1_1InputTranslatorPack.html#a416387f68e39888361d2aa8527daf670">FlowUi::InputTranslatorPack&lt; Translators &gt;</a></li>
+<li>tryBegin()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html#a3eb6e8f367d81541c55aacbe51f6968d">FlowUi::devSystems::DevTimingRecorder</a></li>
+<li>tryRecord()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1DevMemoryRecorder.html#a27a90b8d34bf4be64a94a0764705a488">FlowUi::devSystems::DevMemoryRecorder</a></li>
+<li>tuningTargetSnapshot()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1DevMemory.html#a80e3383729ee23e800fce5d01d484edd">FlowUi::devSystems::DevMemory</a>, <a class="el" href="classFlowUi_1_1devSystems_1_1DevMemoryReporting.html#a0759ebbfa0975c36c038ebab66f7bf7c">FlowUi::devSystems::DevMemoryReporting</a></li>
+<li>type()&#160;:&#160;<a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOwnedValue.html#a02eca59effe0fc7d825c974a6430ec35">FlowUi::devSystems::tooling::DevOwnedValue</a>, <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaGeneration.html#a28068d0c8e96e2d0bfdf05a1b6753f89">FlowUi::devSystems::tooling::DevSchemaGeneration</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

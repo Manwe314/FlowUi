@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,7 +106,8 @@ $(function() {
   <div class="headertitle"><div class="title">Agentic verification suites </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Verification groups registered scenarios, finite pointer/keyboard plans, assertions, and selected screenshots into one sequential job. CLI, authenticated local IPC, and MCP use the same five operations. See the <a href="../include/devSystems/devAgenticWorkflow/schemas/v1/VerificationRequest.schema.json">request schema</a>, <a href="../include/devSystems/devAgenticWorkflow/schemas/v1/VerificationReport.schema.json">report schema</a>, and <a class="el" href="md_docs_2agentic-workflow.html" title="Agentic Workflow frame evidence">runtime setup</a>.</p>
+<div class="textblock"><p>Keep runtime evidence, screenshots, logs, coverage reports and verification matrices (including Markdown reports) under <span class="tt">.flowui/agentic/</span>. The <span class="tt">docs/</span> tree is reserved for authored Markdown documentation and generated Doxygen output. Use <span class="tt">.flowui/agentic/verification/&lt;suite&gt;/</span> for harness exports and <span class="tt">.flowui/agentic/v1/</span> for the versioned runtime store.</p>
+<p>Verification groups registered scenarios, finite pointer/keyboard plans, assertions, and selected screenshots into one sequential job. CLI, authenticated local IPC, and MCP use the same five operations. See the <a href="../include/devSystems/devAgenticWorkflow/schemas/v1/VerificationRequest.schema.json">request schema</a>, <a href="../include/devSystems/devAgenticWorkflow/schemas/v1/VerificationReport.schema.json">report schema</a>, and <a class="el" href="md_docs_2agentic-workflow.html" title="Agentic Workflow frame evidence">runtime setup</a>.</p>
 <table class="markdownTable">
 <tr class="markdownTableHead">
 <th class="markdownTableHeadNone">Operation  </th><th class="markdownTableHeadNone">MCP tool  </th><th class="markdownTableHeadNone">Behavior  </th></tr>

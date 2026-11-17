@@ -4,7 +4,7 @@ Create a C++23 application with a custom, stateful Flow element and a Vulkan-bac
 
 ## Requirements and project layout
 
-Use CMake 3.25 or newer, Ninja, a C++23 compiler, Vulkan development libraries, a supported window system, and a shader compiler (`glslc` or `glslangValidator`). FlowUi uses its vendored GLFW submodule when present; otherwise install a system `glfw3` package. See [portability](../portability.md) for supported dependency configurations.
+Use CMake 3.25 or newer, Ninja, a C++23 compiler, Vulkan development libraries, a supported window system, and a shader compiler (`glslc` or `glslangValidator`). FlowUi uses its vendored GLFW submodule when present; otherwise install a system `glfw3` package. See [portability](docs/portability.md) for supported dependency configurations.
 
 ```text
 RainbowApp/
@@ -101,12 +101,15 @@ struct RainbowButton {
     }
 
     static void buildElement(BuildContext& context) {
-        const auto& colors = context.resources().colors;
+        const auto& resources = context.resources();
+        const auto& state = context.state();
+        const auto rootId = context.clayID();
+        const auto& colors = resources.colors;
         Clay_ElementDeclaration root{};
         root.layout.sizing = context.params.sizing;
-        root.backgroundColor = colors[context.state().color_index % colors.size()];
+        root.backgroundColor = colors[state.color_index % colors.size()];
         root.cornerRadius = CLAY_CORNER_RADIUS(context.params.corner_radius);
-        CLAY(context.clayID(), root) {}
+        CLAY(rootId, root) {}
     }
 };
 
@@ -128,7 +131,7 @@ A Flow element is an empty tag struct with a strong `definitionId` and static ca
 
 The builder invokes event callbacks using the previous completed interaction snapshot, then logic and drawing. `context.clayID()` bridges the instance's strong Flow identity to its Clay root. The root must use that identity for normal element interaction.
 
-The schema macros describe values for the modern developer systems. They expand away when developer support is disabled; normal element behavior has no dependency on mutable registration or a separate developer runtime. See [Developer Systems](developer_mode.md) for constraints, explicit catalogues, overrides, and baking.
+The schema macros describe values for the modern developer systems. They expand away when developer support is disabled; normal element behavior has no dependency on mutable registration or a separate developer runtime. See [Developer Systems](docs/tutorials/developer_mode.md) for constraints, explicit catalogues, overrides, and baking.
 
 ## Run the application
 
@@ -146,30 +149,59 @@ int main() {
     configuration.dev.enabled = true;
 #endif
     auto application = FlowUi::makeApplication(configuration);
+    if (!application)
+        return 1;
 
-    while (!application.shouldClose()) {
-        if (const auto status = application.beginFrame(); !status) {
-            application.reportError(status.error());
+    while (true) {
+        const auto closed = application->shouldClose();
+        if (!closed) {
+            application->reportError(closed.error());
             return 1;
         }
-
-        application.ui().createElement(rainbow::kRainbowButton, "main/rainbow")
-            .setParameters({.corner_radius = 18.0f})
-            .draw();
-
-        if (const auto status = application.endFrame(); !status) {
-            application.reportError(status.error());
-            return 1;
-        }
-        if (const auto status = application.drawFrame(); !status) {
-            application.reportError(status.error());
+        if (*closed)
+            break;
+        const auto frame = application->runFrame([](FlowUi::UiManager& ui, FlowUi::WindowId) {
+            ui.createElement(rainbow::kRainbowButton, "main/rainbow")
+                .setParameters({.corner_radius = 18.0f})
+                .draw();
+        });
+        if (!frame) {
+            application->reportError(frame.error());
             return 1;
         }
     }
+    return 0;
 }
 ```
 
-`beginFrame()` polls application events and begins the main window. Describe UI between the successful begin and end calls, then submit with `drawFrame()`. Check each `Status` before proceeding. Window and resource startup failures are reported by the construction boundary.
+`makeApplication()` returns `Result<App>`. Check it before using the owned application. `runFrame()` polls events, begins the main-window frame, executes the callback, ends the frame, and presents it. Check its `Status` before proceeding. UI helper failures are retained on the frame, so returning early from the callback lets `runFrame()` cancel the frame and return the original `FlowUiError`. Exceptions from user element or build callbacks are also contained at this library-owned boundary. For manual window sequencing, check the separate `pollEvents()`, `beginFrame()`, `endFrame()`, and `drawFrame()` results.
+
+## Handle public API results
+
+Operations with a local recovery decision return `Result<T>` or `Status`. Check those results before dereferencing them. Builder operations, invocation-local state/resources, and ordinary action invocation propagate exceptions to the enclosing build/frame or caller boundary; they do not manufacture successful-looking empty values. Hybrid operations retain documented returned errors while allowing application or preparation exceptions to propagate. Existing `FlowUiError` values retain their code, detecting site, subject, auxiliary value, and native status. Allocation failures become `AllocationFailed`; otherwise unclassified callback or third-party exceptions become `ForeignExceptionObserved`.
+
+The application-facing contracts are:
+
+| Operation | Checked result |
+| --- | --- |
+| `makeApplication(config)` | `Result<App>`; move or access the app after checking success. |
+| `app.ui()`, `app.fonts()`, and other manager accessors | `Result<std::reference_wrapper<T>>`; use `result->get()` after checking success. |
+| Window queries such as `shouldClose()` and `windowSize()` | `Result<T>`; test success before inspecting the returned value. |
+| Window commands such as `setWindowTitle()` | `Status`; handle its error before proceeding. |
+| `ui.createElement(...)` | `ElementBuilder<...>`; construction/identity failures propagate to the enclosing frame. |
+| Builder setters such as `setParameters(...)` | `ElementBuilder&`; chain directly and abandon the builder/frame if an assignment or merge throws. |
+| `builder.draw()`, `builder.construct()`, `ui.drawConstructed()` | `void`; failures propagate and mark the frame failed. |
+
+For example, manager access keeps ownership in the app:
+
+```cpp
+auto manager = application->fonts();
+if (!manager)
+    return 1;
+FlowUi::FontManager& fonts = manager->get();
+```
+
+`runFrame()` accepts a callback returning either `void` or `Status`. A failing callback `Status` becomes the frame result with the same error. UI helpers also retain the first failure on their frame, so an ignored helper failure still cancels that frame at its completion boundary. Manual UI builds must inspect helper results and the results of `endFrame()` and `drawFrame()`; `beginFrame()` has already returned before manually submitted build code runs.
 
 Configure and build:
 
@@ -180,4 +212,4 @@ cmake --build build --target rainbow_app -j
 
 Run the resulting executable from the build directory. If developer systems are enabled, Ctrl+Shift+D toggles the dedicated developer window. A production build can set `FLOW_UI_DEV_MODE=OFF` without changing the element code.
 
-Continue with [custom elements](custom_elements.md), [element identity and lifetime](../concepts/element_system.md), or [input fields and shortcuts](input_fields_and_shortcuts.md).
+Continue with [custom elements](docs/tutorials/custom_elements.md), [element identity and lifetime](docs/concepts/element_system.md), or [input fields and shortcuts](docs/tutorials/input_fields_and_shortcuts.md).

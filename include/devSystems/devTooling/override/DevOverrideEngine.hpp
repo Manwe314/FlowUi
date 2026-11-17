@@ -58,12 +58,16 @@ public:
 		bool preview_only = false;
 		/** @brief Whether the next manifest should remove the compiled assignment. */
 		bool remove_baked = false;
+		/** @brief A payload assignment failed; retained evidence is not automatically retried. */
+		bool assignmentFailed = false;
 	};
 
-	/** @brief Borrow schemas for this engine's lifetime and copy queue/capture limits from config. */
+	/** @brief Borrow schemas for this engine's lifetime and copy queue/capture limits from config.
+	 * Allocation and member-construction failures propagate to the owner.
+	 */
 	explicit DevOverrideEngine(
 		tooling::DevSchemaRegistry& schemas,
-		DevOverrideEngineConfig config = {}) noexcept;
+		DevOverrideEngineConfig config = {});
 	/** @brief Release owned commands, assignments, and captures; the borrowed registry remains alive. */
 	~DevOverrideEngine();
 
@@ -88,7 +92,7 @@ public:
 		return DevOwnedValue::copyFrom(*schema, index, std::addressof(source), destination);
 	}
 
-	/** @brief Validate queued transactions and apply theme updates outside UI construction; borrowed timing optionally attributes the work. */
+	/** @brief Validate the whole transaction before execution. Later execution failure preserves completed prefix facts and may leave partial effects; arbitrary payload changes are not rolled back or automatically retried. */
 	void commitAtSafePoint(
 		ThemeManager& themes,
 		DevTimingRecorder* timing = nullptr) noexcept;
@@ -188,13 +192,13 @@ private:
 	[[nodiscard]] ResolvedField resolveRootField(
 		tooling::DevTypeIndex owner,
 		DevOverrideFieldKey key) const noexcept;
-	void applyCommand(
+	DevCommandStatus applyCommand(
 		DevOverrideCommand command,
 		ResolvedField resolved,
 		std::uint64_t transaction,
 		ThemeManager& themes);
 	void bindThemeRecords();
-	void applyThemeRecords(ThemeManager& themes) noexcept;
+	[[nodiscard]] bool applyThemeRecords(ThemeManager& themes) noexcept;
 	// Move referenced resource names to the manager's stable pool before payload assignment.
 	[[nodiscard]] bool stabilize_theme_references(ThemeManager& themes, DevOwnedValue& value,
 		tooling::DevTypeIndex type) const noexcept;

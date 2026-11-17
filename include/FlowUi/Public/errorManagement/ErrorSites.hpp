@@ -16,6 +16,8 @@ namespace FlowUi {
 enum class ErrorSite : std::uint16_t {
 	None = 0x0000, /**< No detecting operation. */
 
+	ColorParse = 0x0001, /**< Parse a runtime hexadecimal color; no subject identity. */
+
 	AppConstruct = 0x0101, /**< App Construct operation; subject kind App. */
 	AppInitialize = 0x0102, /**< App Initialize operation; subject kind App. */
 	AppPollEvents = 0x0103, /**< App Poll Events operation; subject kind App. */
@@ -298,6 +300,11 @@ struct ErrorSiteDescriptor {
 /**
  * Return static metadata for site. Unknown values preserve the numeric identity and return None
  * subject kind with the name UnknownErrorSite.
+
+ * @par Example
+ * @code{.cpp}
+ * const auto metadata = FlowUi::describeErrorSite(FlowUi::ErrorSite::AppAccessWindow);
+ * @endcode
  */
 [[nodiscard]] constexpr ErrorSiteDescriptor describeErrorSite(ErrorSite site) noexcept {
 #define FLOWUI_ERROR_SITE_CASE(siteName, subjectKind)                     \
@@ -308,6 +315,7 @@ struct ErrorSiteDescriptor {
 	switch (site) {
 		FLOWUI_ERROR_SITE_CASE(None, None);
 
+		FLOWUI_ERROR_SITE_CASE(ColorParse, None);
 		FLOWUI_ERROR_SITE_CASE(AppConstruct, App);
 		FLOWUI_ERROR_SITE_CASE(AppInitialize, App);
 		FLOWUI_ERROR_SITE_CASE(AppPollEvents, App);
@@ -578,7 +586,13 @@ struct ErrorSiteDescriptor {
 	return {site, ErrorSubjectKind::None, "UnknownErrorSite"};
 }
 
-/** Return a static operation name, or UnknownErrorSite for an unrecognized value. */
+/**
+ * Return a static operation name, or UnknownErrorSite for an unrecognized value.
+ * @par Example
+ * @code{.cpp}
+ * const std::string_view name = FlowUi::errorSiteName(FlowUi::ErrorSite::AppAccessWindow);
+ * @endcode
+ */
 [[nodiscard]] constexpr std::string_view errorSiteName(ErrorSite site) noexcept {
 	return describeErrorSite(site).name;
 }

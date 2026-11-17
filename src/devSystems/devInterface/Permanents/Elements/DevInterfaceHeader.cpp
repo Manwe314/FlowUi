@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.hpp"
 
 #if FLOW_UI_DEV_MODE
@@ -35,7 +36,7 @@ bool submitHistoryCommands(
 	DevInterfaceState& state,
 	const std::vector<tooling::DevOverrideCommand>& commands) {
 	if (commands.empty()) return true;
-	return app.devTooling().overrides().submit(tooling::DevChangeSet{
+	return FlowUi::ValueOrThrow(app.devTooling()).get().overrides().submit(tooling::DevChangeSet{
 		.transaction = state.nextEditTransaction++,
 		.commands = commands,
 	});
@@ -92,12 +93,12 @@ std::string formatBytes(uint64_t bytes) {
 }
 
 uint64_t currentMemoryBytes(const App& app) {
-	const auto environment = app.devMonitoring().memoryReporting().environmentSnapshot();
+	const auto environment = FlowUi::ValueOrThrow(app.devMonitoring()).get().memoryReporting().environmentSnapshot();
 	if (environment && environment->process.residentBytes > 0u) {
 		return environment->process.residentBytes;
 	}
 
-	return app.devMonitoring().memoryReporting().current_backing_bytes();
+	return FlowUi::ValueOrThrow(app.devMonitoring()).get().memoryReporting().current_backing_bytes();
 }
 
 void drawInsetSeparator(DevInterfaceHeader::BuildContext& context) {
@@ -115,8 +116,8 @@ void drawInsetSeparator(DevInterfaceHeader::BuildContext& context) {
 	};
 	line.backgroundColor = interface_theme::kBorderPrimary;
 
-	CLAY(context.clayID(kTitleSeparatorInset), inset) {
-		CLAY(context.clayID(kTitleSeparatorLine), line);
+	CLAY(FlowUi::ValueOrThrow(context.clayID(kTitleSeparatorInset)), inset) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kTitleSeparatorLine)), line);
 	}
 }
 
@@ -181,7 +182,7 @@ void draw_telemetry_section(DevInterfaceHeader::BuildContext& context, LocalElem
 	section.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
 	section.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
 	const Clay_TextElementConfig style = textConfig(interface_theme::kTextSecondary, 11);
-	CLAY(context.clayID(identity), section) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(identity)), section) {
 		CLAY_TEXT(context.uiManager.toClayString(text), CLAY_TEXT_CONFIG(style));
 	}
 }
@@ -210,7 +211,7 @@ void drawHeaderContents(DevInterfaceHeader::BuildContext& context, App* app,
 		}
 		if (app->hasWindow(state->selectedWindowId)) {
 			const double frame_delta_seconds =
-				app->ui(state->selectedWindowId).getCurrentFrameInput().dt;
+				FlowUi::ValueOrThrow(app->ui(state->selectedWindowId)).get().getCurrentFrameInput().dt;
 			frames_per_second = frame_delta_seconds > 0.0 ? 1.0 / frame_delta_seconds : 0.0;
 		}
 	}
@@ -227,7 +228,7 @@ void drawHeaderContents(DevInterfaceHeader::BuildContext& context, App* app,
 		telemetry.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
 		telemetry.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		telemetry.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
-		CLAY(context.clayID("telemetry"), telemetry) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("telemetry")), telemetry) {
 			draw_telemetry_section(context, LocalElementName{"telemetry-target"}, target_title,
 								   std::clamp(available_width - 660.0f, 40.0f, 300.0f));
 			draw_telemetry_section(context, LocalElementName{"telemetry-fps"}, fps_text, 72.0f);
@@ -243,7 +244,7 @@ void drawHeaderContents(DevInterfaceHeader::BuildContext& context, App* app,
 		.width = CLAY_SIZING_GROW(0),
 		.height = CLAY_SIZING_FIXED(1),
 	};
-	CLAY(context.clayID(kActionSpacer), spacer);
+	CLAY(FlowUi::ValueOrThrow(context.clayID(kActionSpacer)), spacer);
 
 	Clay_ElementDeclaration actions{};
 	actions.layout.sizing = {
@@ -256,14 +257,14 @@ void drawHeaderContents(DevInterfaceHeader::BuildContext& context, App* app,
 		.y = CLAY_ALIGN_Y_CENTER,
 	};
 	actions.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
-	CLAY(context.clayID(kHeaderActions), actions) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(kHeaderActions)), actions) {
 		ActionCall undo{};
 		ActionCall redo{};
 		if (app && state) {
 			undo =
-				ActionCall{app->actions().uiActions().make(kUndoEditorTransaction, *app, *state)};
+				ActionCall{FlowUi::ValueOrThrow(app->actions()).get().uiActions().make(kUndoEditorTransaction, *app, *state)};
 			redo =
-				ActionCall{app->actions().uiActions().make(kRedoEditorTransaction, *app, *state)};
+				ActionCall{FlowUi::ValueOrThrow(app->actions()).get().uiActions().make(kRedoEditorTransaction, *app, *state)};
 		}
 		drawActionButton(context, kUndoAction, "Undo", undo, state && !state->editUndoStack.empty(),
 						 context.resources().undoIcon);
@@ -282,18 +283,18 @@ void drawHeaderContents(DevInterfaceHeader::BuildContext& context, App* app,
 
 DevInterfaceHeaderResources::DevInterfaceHeaderResources(App& app) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
-	IconManager& icons = app.icons();
+	IconManager& icons = FlowUi::ValueOrThrow(app.icons()).get();
 	interface_icons::registerDevInterfaceIcons(icons);
-	if (icons.contains(interface_icons::kUndoKey)) {
-		undoIcon = icons.textureRef(interface_icons::kUndoKey);
+	if (FlowUi::ValueOrThrow(icons.contains(interface_icons::kUndoKey))) {
+		undoIcon = FlowUi::ValueOrThrow(icons.textureRef(interface_icons::kUndoKey));
 	}
-	if (icons.contains(interface_icons::kRedoKey)) {
-		redoIcon = icons.textureRef(interface_icons::kRedoKey);
+	if (FlowUi::ValueOrThrow(icons.contains(interface_icons::kRedoKey))) {
+		redoIcon = FlowUi::ValueOrThrow(icons.textureRef(interface_icons::kRedoKey));
 	}
-	if (icons.contains(interface_icons::kHistoryKey))
-		history_icon = icons.textureRef(interface_icons::kHistoryKey);
-	if (icons.contains(interface_icons::kSettingsKey))
-		settings_icon = icons.textureRef(interface_icons::kSettingsKey);
+	if (FlowUi::ValueOrThrow(icons.contains(interface_icons::kHistoryKey)))
+		history_icon = FlowUi::ValueOrThrow(icons.textureRef(interface_icons::kHistoryKey));
+	if (FlowUi::ValueOrThrow(icons.contains(interface_icons::kSettingsKey)))
+		settings_icon = FlowUi::ValueOrThrow(icons.textureRef(interface_icons::kSettingsKey));
 #else
 	(void)app;
 #endif
@@ -303,7 +304,7 @@ void DevInterfaceHeader::buildElement(BuildContext& context) {
 	App* const app = context.params.app;
 	DevInterfaceState* const state = context.params.interfaceState;
 
-	std::vector<DevWindowInfo> windows = app ? app->devWindowSnapshot() : std::vector<DevWindowInfo>{};
+	std::vector<DevWindowInfo> windows = app ? FlowUi::ValueOrThrow(app->devWindowSnapshot()) : std::vector<DevWindowInfo>{};
 	std::erase_if(windows, [&](const DevWindowInfo& window) {
 		return window.id == context.params.interfaceWindowId;
 	});

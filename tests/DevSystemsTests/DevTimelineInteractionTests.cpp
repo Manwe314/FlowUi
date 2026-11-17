@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #include "FlowUi/Public/Flow.hpp"
 #include "devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevContiguousTimelineStrip.hpp"
@@ -33,8 +34,8 @@ constexpr auto card_id = Global<kDevDrillDownTimelineCard>("timeline.test.card")
 													  Keyed("control", index).token);
 }
 [[nodiscard]] Clay_BoundingBox bounds(App& app, FlowElementID element) {
-	const auto clay_id = app.ui().toClayEID(element).id;
-	for (const auto& node : app.ui().devTreeSnapshot().clay.nodes)
+	const auto clay_id = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(element).id;
+	for (const auto& node : ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot().clay.nodes)
 		if (node.clayId == clay_id)
 			return node.bounds;
 	return {};
@@ -44,7 +45,7 @@ void draw_frame(App& app, DevTimelineState& state, DevPerformanceSelection& sele
 				float pointer_y = -10, bool middle = false, float wheel = 0, bool focused = true,
 				int key_code = 0) {
 	require(app.beginFrame(), "begin frame");
-	auto& manager = app.ui();
+	auto& manager = ::FlowUi::test::requireValue(app.ui()).get();
 	auto& interaction = const_cast<InteractionSnapshot&>(manager.getPreviousFramesInteraction());
 	interaction = {};
 	auto& input = const_cast<FrameInput&>(manager.getCurrentFrameInput());
@@ -99,7 +100,7 @@ int main() {
 	config.window.width = 1200;
 	config.window.height = 800;
 	config.vk.enableValidation = true;
-	auto app = makeApplication(config);
+	auto app = ::FlowUi::test::requireValue(makeApplication(config));
 	DevTimelineState state;
 	DevPerformanceSelection selection;
 	selection.selected_scope = {1, DevPerformanceScopeKind::Window};
@@ -151,7 +152,7 @@ int main() {
 	draw_frame(app, state, selection);
 	draw_frame(app, state, selection);
 	draw_frame(app, state, selection);
-	const auto cached_stats = app.ui().timeline_controller()->stats();
+	const auto cached_stats = ::FlowUi::test::requireValue(app.ui()).get().timeline_controller()->stats();
 	require(cached_stats.surfaces == 2 && cached_stats.layout_builds == 0 &&
 				cached_stats.base_builds == 0,
 			"Paused geometry and glyph batches are reused across frame slots");
@@ -285,7 +286,7 @@ int main() {
 		draw_frame(app, state, selection);
 		draw_frame(app, state, selection);
 		draw_frame(app, state, selection);
-		const auto count = app.ui().devTreeSnapshot().clay.nodes.size();
+		const auto count = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot().clay.nodes.size();
 		if (!sparse_clay_count)
 			sparse_clay_count = count;
 		require(count == sparse_clay_count, "Clay element count is independent of sample count");
@@ -301,7 +302,7 @@ int main() {
 	const auto draw_workbench = [&](float wheel = 0, FlowElementID control = {},
 									int pointer_event = 0, float pointer_y = -10) {
 		require(app.beginFrame(), "begin Workbench frame");
-		auto& input = const_cast<FrameInput&>(app.ui().getCurrentFrameInput());
+		auto& input = const_cast<FrameInput&>(::FlowUi::test::requireValue(app.ui()).get().getCurrentFrameInput());
 		input.mouseX = wheel || control ? 600 : -10;
 		input.mouseY = control ? pointer_y : -10;
 		if (control && pointer_y < 0) {
@@ -321,10 +322,10 @@ int main() {
 		input.mouseDown = {};
 		input.mouseDown[0] = pointer_event == 1 || pointer_event == 3;
 		auto& interaction =
-			const_cast<InteractionSnapshot&>(app.ui().getPreviousFramesInteraction());
+			const_cast<InteractionSnapshot&>(::FlowUi::test::requireValue(app.ui()).get().getPreviousFramesInteraction());
 		interaction = {};
 		if (control) {
-			const auto control_clay = app.ui().toClayEID(control).id;
+			const auto control_clay = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(control).id;
 			interaction.hoveredElementIds.emplace_back(control_clay);
 			if (pointer_event == 1)
 				interaction.pressedElementIds.emplace_back(control_clay);
@@ -335,7 +336,7 @@ int main() {
 		workbench_row.backgroundColor = interface_theme::kDepth0Keel;
 		workbench_row.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
 		CLAY(CLAY_ID("timeline-workbench-test"), workbench_row) {
-			app.ui()
+			::FlowUi::test::requireValue(app.ui()).get()
 				.createElement(kDevPerformanceWorkbench, workbench_id)
 				.setParameters({&app, &interface_state})
 				.draw();
@@ -344,7 +345,7 @@ int main() {
 			inspector_panel.layout.sizing = {.width = CLAY_SIZING_FIXED(280),
 											 .height = CLAY_SIZING_GROW(0)};
 			CLAY(CLAY_ID("timeline-inspector-test"), inspector_panel) {
-				app.ui()
+				::FlowUi::test::requireValue(app.ui()).get()
 					.createElement(kDevPerformanceInspector,
 								   Global<kDevPerformanceInspector>("timeline.test.inspector"))
 					.setParameters({&app, &interface_state})
@@ -354,7 +355,7 @@ int main() {
 		require(app.endFrame(), "end Workbench frame");
 		require(app.drawFrame(), "render Workbench frame");
 	};
-	auto& reporting = app.devMonitoring().timingReporting();
+	auto& reporting = ::FlowUi::test::requireValue(app.devMonitoring()).get().timingReporting();
 	require(reporting.begin_capture(1) == 1, "seed sealed generation");
 	reporting.admit_tick(1, 100);
 	reporting.note_tick_boundary(2, 200);
@@ -384,7 +385,7 @@ int main() {
 	const auto pinned_after = bounds(app, pinned_id);
 	require(pinned_before.y == pinned_after.y && pinned_after.height == 176,
 			"Pinned header remains fixed while canvas reveals cards");
-	require(app.ui().timeline_controller()->stats().surfaces == 3,
+	require(::FlowUi::test::requireValue(app.ui()).get().timeline_controller()->stats().surfaces == 3,
 			"Navigation history renders exactly minimap, major and one minor viewport");
 	const auto major_id = ::FlowUi::detail::element_id::resolveLocal(
 		FlowElementID{.value = workbench_id.value}, DevContiguousTimelineStrip::definitionId,
@@ -398,21 +399,21 @@ int main() {
 		  control_id(GlobalFlowID{pinned_id.value}, 32)}) {
 		for (int hover_frame = 0; hover_frame < 4; ++hover_frame) {
 			draw_workbench(0, hovered_control);
-			require(app.ui().timeline_controller()->stats().surfaces == 3,
+			require(::FlowUi::test::requireValue(app.ui()).get().timeline_controller()->stats().surfaces == 3,
 					"Hovering timeline controls keeps every timeline rendered");
 			for (const auto panel : {major_id, retained_minor_id}) {
 				const auto definition = panel == major_id ? DevContiguousTimelineStrip::definitionId
 														  : DevDrillDownTimelineCard::definitionId;
 				const auto plot = ::FlowUi::detail::element_id::resolveLocal(
 					panel, definition, LocalElementName{"plot-scroll"}.token);
-				const auto& nodes = app.ui().devTreeSnapshot().clay.nodes;
-				const auto found = std::ranges::find(nodes, app.ui().toClayEID(plot).id,
+				const auto& nodes = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot().clay.nodes;
+				const auto found = std::ranges::find(nodes, ::FlowUi::test::requireValue(app.ui()).get().toClayEID(plot).id,
 													 &tooling::DevClayNode::clayId);
-				require(found != nodes.end() && found->clipClayId == app.ui().toClayEID(panel).id,
+				require(found != nodes.end() && found->clipClayId == ::FlowUi::test::requireValue(app.ui()).get().toClayEID(panel).id,
 						"Hover tooltips preserve major and minor timeline clipping ancestry");
 			}
 			draw_workbench();
-			require(app.ui().timeline_controller()->stats().surfaces == 3,
+			require(::FlowUi::test::requireValue(app.ui()).get().timeline_controller()->stats().surfaces == 3,
 					"Leaving timeline controls keeps every timeline rendered");
 		}
 	}
@@ -442,7 +443,7 @@ int main() {
 		LocalElementName{"minor"}.token);
 	const auto plot_id = ::FlowUi::detail::element_id::resolveLocal(
 		minor_id, DevDrillDownTimelineCard::definitionId, LocalElementName{"plot-scroll"}.token);
-	auto plot_scroll = Clay_GetScrollContainerData(app.ui().toClayEID(plot_id));
+	auto plot_scroll = Clay_GetScrollContainerData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(plot_id));
 	require(plot_scroll.found &&
 				plot_scroll.contentDimensions.height > plot_scroll.scrollContainerDimensions.height,
 			"Deep minor hierarchy has an independent scroll container");

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,22 +111,107 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a73bc292239e1f729613105495c724b1f" id="r_a73bc292239e1f729613105495c724b1f"><td class="memItemLeft"><a id="a73bc292239e1f729613105495c724b1f" name="a73bc292239e1f729613105495c724b1f"></a>
-std::string&#160;</td><td class="memItemRight"><b>name</b> {}</td></tr>
-<tr class="memitem:ab696f8c5800f1dd2b03a32cdeebe3628" id="r_ab696f8c5800f1dd2b03a32cdeebe3628"><td class="memItemLeft"><a id="ab696f8c5800f1dd2b03a32cdeebe3628" name="ab696f8c5800f1dd2b03a32cdeebe3628"></a>
-std::string&#160;</td><td class="memItemRight"><b>file</b> {}</td></tr>
-<tr class="memitem:a3b220974d940cb39b9078c2b5b46f963" id="r_a3b220974d940cb39b9078c2b5b46f963"><td class="memItemLeft"><a id="a3b220974d940cb39b9078c2b5b46f963" name="a3b220974d940cb39b9078c2b5b46f963"></a>
-std::string&#160;</td><td class="memItemRight"><b>function</b> {}</td></tr>
-<tr class="memitem:aba51532f0747f6de742dd2501d92b77a" id="r_aba51532f0747f6de742dd2501d92b77a"><td class="memItemLeft"><a id="aba51532f0747f6de742dd2501d92b77a" name="aba51532f0747f6de742dd2501d92b77a"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>id</b> = 0</td></tr>
-<tr class="memitem:ab76b40f478ad281dcf17d048f1fa5009" id="r_ab76b40f478ad281dcf17d048f1fa5009"><td class="memItemLeft"><a id="ab76b40f478ad281dcf17d048f1fa5009" name="ab76b40f478ad281dcf17d048f1fa5009"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>line</b> = 0</td></tr>
-<tr class="memitem:aabe96b7191cccbfb9efaba1e93328585" id="r_aabe96b7191cccbfb9efaba1e93328585"><td class="memItemLeft"><a id="aabe96b7191cccbfb9efaba1e93328585" name="aabe96b7191cccbfb9efaba1e93328585"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>column</b> = 0</td></tr>
+<tr class="memitem:a73bc292239e1f729613105495c724b1f" id="r_a73bc292239e1f729613105495c724b1f"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a73bc292239e1f729613105495c724b1f">name</a> {}</td></tr>
+<tr class="memitem:ab696f8c5800f1dd2b03a32cdeebe3628" id="r_ab696f8c5800f1dd2b03a32cdeebe3628"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#ab696f8c5800f1dd2b03a32cdeebe3628">file</a> {}</td></tr>
+<tr class="memitem:a3b220974d940cb39b9078c2b5b46f963" id="r_a3b220974d940cb39b9078c2b5b46f963"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a3b220974d940cb39b9078c2b5b46f963">function</a> {}</td></tr>
+<tr class="memitem:aba51532f0747f6de742dd2501d92b77a" id="r_aba51532f0747f6de742dd2501d92b77a"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#aba51532f0747f6de742dd2501d92b77a">id</a> = 0</td></tr>
+<tr class="memitem:ab76b40f478ad281dcf17d048f1fa5009" id="r_ab76b40f478ad281dcf17d048f1fa5009"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#ab76b40f478ad281dcf17d048f1fa5009">line</a> = 0</td></tr>
+<tr class="memitem:aabe96b7191cccbfb9efaba1e93328585" id="r_aabe96b7191cccbfb9efaba1e93328585"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#aabe96b7191cccbfb9efaba1e93328585">column</a> = 0</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Owned registered source text, independent of recorder/catalogue storage. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="aabe96b7191cccbfb9efaba1e93328585" name="aabe96b7191cccbfb9efaba1e93328585"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aabe96b7191cccbfb9efaba1e93328585">&#9670;&#160;</a></span>column</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::DevDiagnosticsSource::column = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Source column number; zero means unavailable. </p>
+
+</div>
+</div>
+<a id="ab696f8c5800f1dd2b03a32cdeebe3628" name="ab696f8c5800f1dd2b03a32cdeebe3628"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab696f8c5800f1dd2b03a32cdeebe3628">&#9670;&#160;</a></span>file</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string FlowUi::devSystems::DevDiagnosticsSource::file {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned file text, independent of recorder storage. </p>
+
+</div>
+</div>
+<a id="a3b220974d940cb39b9078c2b5b46f963" name="a3b220974d940cb39b9078c2b5b46f963"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b220974d940cb39b9078c2b5b46f963">&#9670;&#160;</a></span>function</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string FlowUi::devSystems::DevDiagnosticsSource::function {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned function text, independent of recorder storage. </p>
+
+</div>
+</div>
+<a id="aba51532f0747f6de742dd2501d92b77a" name="aba51532f0747f6de742dd2501d92b77a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba51532f0747f6de742dd2501d92b77a">&#9670;&#160;</a></span>id</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevDiagnosticsSource::id = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Stable identity of this retained entity; zero means unassigned. </p>
+
+</div>
+</div>
+<a id="ab76b40f478ad281dcf17d048f1fa5009" name="ab76b40f478ad281dcf17d048f1fa5009"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab76b40f478ad281dcf17d048f1fa5009">&#9670;&#160;</a></span>line</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::DevDiagnosticsSource::line = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Source line number; zero means unavailable. </p>
+
+</div>
+</div>
+<a id="a73bc292239e1f729613105495c724b1f" name="a73bc292239e1f729613105495c724b1f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a73bc292239e1f729613105495c724b1f">&#9670;&#160;</a></span>name</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string FlowUi::devSystems::DevDiagnosticsSource::name {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned name text, independent of recorder storage. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevDiagnosticsReporting_8hpp_source.html">DevDiagnosticsReporting.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -142,7 +227,7 @@ uint32_t&#160;</td><td class="memItemRight"><b>column</b> = 0</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevDiagnosticsSource.html">DevDiagnosticsSource</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevDiagnosticsSource.html">DevDiagnosticsSource</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

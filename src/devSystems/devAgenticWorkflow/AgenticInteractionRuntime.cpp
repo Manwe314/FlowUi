@@ -1,3 +1,4 @@
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticInteractionRuntime.hpp"
 #include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
@@ -107,7 +108,8 @@ struct AgenticInteractionRuntime::Impl {
 		bool recording = false, include_text = false, cancel = false, stop = false, gate = false,
 			 owns_capture = true;
 		bool cleanup_observed = false, baseline_observed = false, materialized = false,
-			 payload_evicted = false, drain_selected = false, drain_observed = false;
+			 payload_evicted = false, drain_selected = false, drain_observed = false,
+			 action_cancellation_requested = false;
 		AgenticInteractionPhase final_phase = AgenticInteractionPhase::completed;
 		JobPhase owner_phase = JobPhase::queued;
 	};
@@ -275,7 +277,7 @@ struct AgenticInteractionRuntime::Impl {
 			return unexpectedError(agentic_error(AgenticError::invalid_scope));
 		if (execution->compiled.plan.clock == AgenticInteractionClock::exact_window_frames &&
 			execution->compiled.plan.first_window_frame <=
-				application->ui(static_cast<WindowId>(window_id)).dev_completed_window_frame())
+				FlowUi::detail::requireApiValue(application->ui(static_cast<WindowId>(window_id))).get().dev_completed_window_frame())
 			return unexpectedError(agentic_error(AgenticError::stale_generation));
 		const auto available = service->capabilities();
 		if (!available)
@@ -315,7 +317,10 @@ struct AgenticInteractionRuntime::Impl {
 		}
 		execution->started_ns = monotonic_nanoseconds();
 		if (owner.empty()) {
-			if (service->capture_lease_active())
+			const auto lease = service->capture_lease_active();
+			if (!lease)
+				return unexpectedError(lease.error());
+			if (*lease)
 				return unexpectedError(agentic_error(AgenticError::busy));
 			auto requested =
 				capture_request(capture, window_id, execution->compiled.plan.deadline_ns);
@@ -335,11 +340,28 @@ struct AgenticInteractionRuntime::Impl {
 				return unexpectedError(admitted.error());
 			execution->capture_job_id = std::move(*admitted);
 		} else {
-			if (execution->compiled.requires_geometry && !service->optional_collection_enabled())
-				return unexpectedError(agentic_error(AgenticError::incompatible));
+			if (execution->compiled.requires_geometry) {
+				const auto collection = service->optional_collection_enabled();
+				if (!collection)
+					return unexpectedError(collection.error());
+				if (!*collection)
+					return unexpectedError(agentic_error(AgenticError::incompatible));
+			}
 			execution->capture_job_id = owner;
 			execution->owns_capture = false;
 		}
+		struct CaptureAdmissionGuard {
+			AgenticWorkflowService& owner;
+			Execution& pending;
+			bool committed = false;
+			~CaptureAdmissionGuard() noexcept {
+				if (!committed && pending.owns_capture) {
+					const auto canceled = owner.cancel_job(pending.capture_job_id);
+					if (!canceled)
+						pending.result.evidence_complete = false;
+				}
+			}
+		} admissionGuard{*service, *execution};
 		const auto status = service->query_job(execution->capture_job_id);
 		if (!status)
 			return unexpectedError(status.error());
@@ -351,14 +373,14 @@ struct AgenticInteractionRuntime::Impl {
 				return unexpectedError(tracked.error());
 		}
 		executions.emplace_back(std::move(execution));
+		admissionGuard.committed = true;
 		active_index = executions.size() - 1;
 		return std::move(*identity);
 	}
 	void request_release(Execution& execution, std::string_view reason,
-						 AgenticInteractionPhase final_phase) {
+						 AgenticInteractionPhase final_phase) noexcept {
 		if (terminal(execution.result.phase))
 			return;
-		execution.result.reason = reason;
 		execution.final_phase = final_phase;
 		if (execution.result.phase != AgenticInteractionPhase::releasing_control)
 			execution.release_started_ns = monotonic_nanoseconds();
@@ -367,16 +389,39 @@ struct AgenticInteractionRuntime::Impl {
 			execution.result.first_divergence_offset = execution.offset;
 		execution.result.phase = AgenticInteractionPhase::releasing_control;
 		execution.gate = false;
-		if (execution.action_receipt && !execution.action_receipt->completed) {
+		if (execution.action_receipt && execution.action_receipt->dispatched &&
+			!execution.action_receipt->completed) {
+			execution.action_receipt->completionObservationFailed = true;
+			try {
+				if (execution.action_receipt->reason.empty())
+					execution.action_receipt->reason = reason;
+			} catch (...) {
+				execution.result.evidence_complete = false;
+			}
+		}
+		try {
+			execution.result.reason = reason;
+		} catch (...) {
+			execution.result.evidence_complete = false;
+		}
+		if (execution.action_receipt && !execution.action_receipt->completed &&
+			!execution.action_cancellation_requested) {
+			execution.action_cancellation_requested = true;
 			const auto canceled = action_registry.cancel(*application, *execution.action_receipt);
-			if (!canceled)
-				execution.result.limitations.emplace_back(
-					"application_action_cancellation_unavailable");
+			if (!canceled) {
+				execution.result.evidence_complete = false;
+				try {
+					execution.result.limitations.emplace_back(
+						"application_action_cancellation_unavailable");
+				} catch (...) {
+					++execution.result.coverage.lost;
+				}
+			}
 		}
 		if (execution.action_invocation)
 			execution.cleanup_observed = true;
 	}
-	void complete(Execution& execution, bool observations_available = true) {
+	void complete(Execution& execution, bool observations_available = true) noexcept {
 		execution.result.phase = execution.final_phase;
 		execution.result.cleanup_complete =
 			observations_available &&
@@ -391,14 +436,25 @@ struct AgenticInteractionRuntime::Impl {
 													 : AgenticInteractionVerdict::unavailable;
 		if (execution.action_invocation)
 			execution.result.handoff_complete = true;
-		if (!observations_available)
-			execution.result.limitations.emplace_back("neutralization_or_observations_unavailable");
+		active_index = SIZE_MAX;
+		if (!observations_available) {
+			try {
+				execution.result.limitations.emplace_back("neutralization_or_observations_unavailable");
+			} catch (...) {
+				++execution.result.coverage.lost;
+			}
+		}
 		if (execution.owns_capture) {
 			const auto stopped = service->stop_capture(execution.capture_job_id);
-			if (!stopped)
-				execution.result.limitations.emplace_back("capture_already_stopped");
+			if (!stopped) {
+				try {
+					execution.result.limitations.emplace_back("capture_already_stopped");
+				} catch (...) {
+					execution.result.evidence_complete = false;
+					++execution.result.coverage.lost;
+				}
+			}
 		}
-		active_index = SIZE_MAX;
 	}
 	void bound_evidence(Execution& execution) {
 		if (execution.inputs.size() >= execution.compiled.plan.limits.maximum_observations ||
@@ -960,7 +1016,7 @@ Status AgenticInteractionRuntime::select_input(const EvidenceFrameKey& supplied,
 					: AgenticInteractionPhase::synchronizing;
 			if (!execution->recording &&
 				execution->compiled.plan.baseline == AgenticInteractionBaseline::require_neutral &&
-				!neutral(impl_->application->ui(static_cast<WindowId>(key.window_id))
+				!neutral(FlowUi::detail::requireApiValue(impl_->application->ui(static_cast<WindowId>(key.window_id))).get()
 							 .getCurrentFrameInput()))
 				impl_->request_release(*execution, "required_neutral_baseline_mismatch",
 									   AgenticInteractionPhase::failed);
@@ -1170,8 +1226,8 @@ Status AgenticInteractionRuntime::select_input(const EvidenceFrameKey& supplied,
 						}
 						if (planned && (!span->preserve_pointer || span->target_pointer ||
 										span->destination_pointer)) {
-							const auto extent = impl_->application->windowSize(
-								static_cast<WindowId>(key.window_id));
+							const auto extent = FlowUi::detail::requireApiValue(impl_->application->windowSize(
+								static_cast<WindowId>(key.window_id)));
 							selected->pointer_inside = selected->pointer_x >= 0 &&
 													   selected->pointer_y >= 0 &&
 													   selected->pointer_x < extent.first &&
@@ -1288,7 +1344,7 @@ void AgenticInteractionRuntime::observe_ui(const EvidenceFrameKey& supplied) noe
 		const auto& receipt = execution->inputs.back();
 		if (!receipt.frame || !same_frame(*receipt.frame, supplied))
 			return;
-		auto& ui = impl_->application->ui(static_cast<WindowId>(supplied.window_id));
+		auto& ui = FlowUi::detail::requireApiValue(impl_->application->ui(static_cast<WindowId>(supplied.window_id))).get();
 		const auto& interaction = ui.dev_completed_interaction();
 		const auto maximum_ids = execution->compiled.plan.limits.maximum_target_candidates;
 		if (interaction.hoveredElementIds.size() > maximum_ids ||
@@ -1505,7 +1561,7 @@ void AgenticInteractionRuntime::advance(std::uint64_t app_tick, std::uint64_t no
 			if (!execution->action_receipt) {
 				execution->action_invocation->plan_id = execution->result.job_id;
 				auto receipt = impl_->action_registry.invoke(*impl_->application,
-															 *execution->action_invocation);
+														 *execution->action_invocation);
 				if (!receipt) {
 					impl_->request_release(*execution, errorName(receipt.error().code),
 										   AgenticInteractionPhase::failed);
@@ -1513,23 +1569,29 @@ void AgenticInteractionRuntime::advance(std::uint64_t app_tick, std::uint64_t no
 				}
 				execution->action_receipt = std::move(*receipt);
 				execution->result.phase = AgenticInteractionPhase::executing;
-			} else if (!execution->action_receipt->completed) {
+			} else if (!execution->action_receipt->completed &&
+					   !execution->action_receipt->completionObservationFailed) {
 				auto receipt =
 					impl_->action_registry.poll(*impl_->application, *execution->action_receipt);
 				if (!receipt) {
+					execution->action_receipt->completionObservationFailed = true;
 					impl_->request_release(*execution, errorName(receipt.error().code),
 										   AgenticInteractionPhase::failed);
 					return;
 				}
 				execution->action_receipt = std::move(*receipt);
 			}
-			if (execution->action_receipt->completed) {
+			if (execution->action_receipt->completed ||
+				execution->action_receipt->completionObservationFailed) {
+				const bool succeeded = execution->action_receipt->completed &&
+					execution->action_receipt->completion_succeeded &&
+					!execution->action_receipt->completionObservationFailed;
 				execution->result.assertion_verdict =
-					execution->action_receipt->completion_succeeded
+					succeeded
 						? AgenticInteractionVerdict::passed
 						: AgenticInteractionVerdict::failed;
 				impl_->request_release(*execution, execution->action_receipt->reason,
-									   execution->action_receipt->completion_succeeded
+									   succeeded
 										   ? AgenticInteractionPhase::completed
 										   : AgenticInteractionPhase::failed);
 			}

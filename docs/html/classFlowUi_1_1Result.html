@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,42 +111,600 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:adecd76b348a37419caddcda7a7e2c1fb" id="r_adecd76b348a37419caddcda7a7e2c1fb"><td class="memItemLeft"><a id="adecd76b348a37419caddcda7a7e2c1fb" name="adecd76b348a37419caddcda7a7e2c1fb"></a>
-&#160;</td><td class="memItemRight"><b>Result</b> (const T &amp;value)</td></tr>
-<tr class="memitem:ab1c1da2a88b377269cb17e7e5aec5c74" id="r_ab1c1da2a88b377269cb17e7e5aec5c74"><td class="memItemLeft"><a id="ab1c1da2a88b377269cb17e7e5aec5c74" name="ab1c1da2a88b377269cb17e7e5aec5c74"></a>
-&#160;</td><td class="memItemRight"><b>Result</b> (T &amp;&amp;value)</td></tr>
-<tr class="memitem:ab269019e633bcba094c39097fe6b4eb6" id="r_ab269019e633bcba094c39097fe6b4eb6"><td class="memItemLeft"><a id="ab269019e633bcba094c39097fe6b4eb6" name="ab269019e633bcba094c39097fe6b4eb6"></a>
-&#160;</td><td class="memItemRight"><b>Result</b> (detail::UnexpectedFlowUiError failure)</td></tr>
-<tr class="memitem:a09eaccee0ea703a4abdb477f952a7596" id="r_a09eaccee0ea703a4abdb477f952a7596"><td class="memItemLeft"><a id="a09eaccee0ea703a4abdb477f952a7596" name="a09eaccee0ea703a4abdb477f952a7596"></a>
-bool&#160;</td><td class="memItemRight"><b>has_value</b> () const noexcept</td></tr>
-<tr class="memitem:a7e1eaa1c47c8636e9c9ef0784eab35b0" id="r_a7e1eaa1c47c8636e9c9ef0784eab35b0"><td class="memItemLeft"><a id="a7e1eaa1c47c8636e9c9ef0784eab35b0" name="a7e1eaa1c47c8636e9c9ef0784eab35b0"></a>
-&#160;</td><td class="memItemRight"><b>operator bool</b> () const noexcept</td></tr>
-<tr class="memitem:a81822a29a88f25088412a0b1cca43241" id="r_a81822a29a88f25088412a0b1cca43241"><td class="memItemLeft"><a id="a81822a29a88f25088412a0b1cca43241" name="a81822a29a88f25088412a0b1cca43241"></a>
-T &amp;&#160;</td><td class="memItemRight"><b>value</b> () &amp;</td></tr>
-<tr class="memitem:a01111f683c61ef197f60a64bea29cdde" id="r_a01111f683c61ef197f60a64bea29cdde"><td class="memItemLeft"><a id="a01111f683c61ef197f60a64bea29cdde" name="a01111f683c61ef197f60a64bea29cdde"></a>
-const T &amp;&#160;</td><td class="memItemRight"><b>value</b> () const &amp;</td></tr>
-<tr class="memitem:a47768154ceb89e0549d8c57447a71a78" id="r_a47768154ceb89e0549d8c57447a71a78"><td class="memItemLeft"><a id="a47768154ceb89e0549d8c57447a71a78" name="a47768154ceb89e0549d8c57447a71a78"></a>
-T &amp;&amp;&#160;</td><td class="memItemRight"><b>value</b> () &amp;&amp;</td></tr>
-<tr class="memitem:a6259f322ded2b1c10037e6fafe8378c3" id="r_a6259f322ded2b1c10037e6fafe8378c3"><td class="memItemLeft"><a id="a6259f322ded2b1c10037e6fafe8378c3" name="a6259f322ded2b1c10037e6fafe8378c3"></a>
-T &amp;&#160;</td><td class="memItemRight"><b>operator*</b> () &amp;</td></tr>
-<tr class="memitem:ad3976d83e0a922066dd45b3e3a635173" id="r_ad3976d83e0a922066dd45b3e3a635173"><td class="memItemLeft"><a id="ad3976d83e0a922066dd45b3e3a635173" name="ad3976d83e0a922066dd45b3e3a635173"></a>
-const T &amp;&#160;</td><td class="memItemRight"><b>operator*</b> () const &amp;</td></tr>
-<tr class="memitem:a577b49197e443f464728e7e9a54bdad3" id="r_a577b49197e443f464728e7e9a54bdad3"><td class="memItemLeft"><a id="a577b49197e443f464728e7e9a54bdad3" name="a577b49197e443f464728e7e9a54bdad3"></a>
-T *&#160;</td><td class="memItemRight"><b>operator-&gt;</b> ()</td></tr>
-<tr class="memitem:ad05768234f3501ca46ca7745dbf6ccc4" id="r_ad05768234f3501ca46ca7745dbf6ccc4"><td class="memItemLeft"><a id="ad05768234f3501ca46ca7745dbf6ccc4" name="ad05768234f3501ca46ca7745dbf6ccc4"></a>
-const T *&#160;</td><td class="memItemRight"><b>operator-&gt;</b> () const</td></tr>
-<tr class="memitem:a5694ad00f39a0e2d187415ddd9b9801b" id="r_a5694ad00f39a0e2d187415ddd9b9801b"><td class="memItemLeft"><a id="a5694ad00f39a0e2d187415ddd9b9801b" name="a5694ad00f39a0e2d187415ddd9b9801b"></a>
-<a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> &amp;&#160;</td><td class="memItemRight"><b>error</b> () &amp;</td></tr>
-<tr class="memitem:af7f817b2a82e93e9b8281c7e403d5970" id="r_af7f817b2a82e93e9b8281c7e403d5970"><td class="memItemLeft"><a id="af7f817b2a82e93e9b8281c7e403d5970" name="af7f817b2a82e93e9b8281c7e403d5970"></a>
-const <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> &amp;&#160;</td><td class="memItemRight"><b>error</b> () const &amp;</td></tr>
-<tr class="memitem:a15fe195c7b74bf982186424ca503cb74" id="r_a15fe195c7b74bf982186424ca503cb74"><td class="memTemplParams" colspan="2"><a id="a15fe195c7b74bf982186424ca503cb74" name="a15fe195c7b74bf982186424ca503cb74"></a>
-template&lt;typename U&gt; </td></tr>
-<tr class="memitem:a15fe195c7b74bf982186424ca503cb74 template"><td class="memItemLeft">T&#160;</td><td class="memItemRight"><b>value_or</b> (U &amp;&amp;fallback) const &amp;</td></tr>
+<tr class="memitem:a5c86b6582d06a090bdb8a4f1eae9a96e" id="r_a5c86b6582d06a090bdb8a4f1eae9a96e"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a5c86b6582d06a090bdb8a4f1eae9a96e">Result</a> ()</td></tr>
+<tr class="memitem:adecd76b348a37419caddcda7a7e2c1fb" id="r_adecd76b348a37419caddcda7a7e2c1fb"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#adecd76b348a37419caddcda7a7e2c1fb">Result</a> (const T &amp;<a class="el" href="#a81822a29a88f25088412a0b1cca43241">value</a>)</td></tr>
+<tr class="memitem:ab1c1da2a88b377269cb17e7e5aec5c74" id="r_ab1c1da2a88b377269cb17e7e5aec5c74"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ab1c1da2a88b377269cb17e7e5aec5c74">Result</a> (T &amp;&amp;<a class="el" href="#a81822a29a88f25088412a0b1cca43241">value</a>)</td></tr>
+<tr class="memitem:afe133b7d1906f71ee990beaf1b437d94" id="r_afe133b7d1906f71ee990beaf1b437d94"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#afe133b7d1906f71ee990beaf1b437d94">Result</a> (detail::UnexpectedFlowUiError failure) noexcept</td></tr>
+<tr class="memitem:a09eaccee0ea703a4abdb477f952a7596" id="r_a09eaccee0ea703a4abdb477f952a7596"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a09eaccee0ea703a4abdb477f952a7596">has_value</a> () const noexcept</td></tr>
+<tr class="memitem:a7e1eaa1c47c8636e9c9ef0784eab35b0" id="r_a7e1eaa1c47c8636e9c9ef0784eab35b0"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a7e1eaa1c47c8636e9c9ef0784eab35b0">operator bool</a> () const noexcept</td></tr>
+<tr class="memitem:a81822a29a88f25088412a0b1cca43241" id="r_a81822a29a88f25088412a0b1cca43241"><td class="memItemLeft">T &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a81822a29a88f25088412a0b1cca43241">value</a> () &amp;</td></tr>
+<tr class="memitem:a01111f683c61ef197f60a64bea29cdde" id="r_a01111f683c61ef197f60a64bea29cdde"><td class="memItemLeft">const T &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a01111f683c61ef197f60a64bea29cdde">value</a> () const &amp;</td></tr>
+<tr class="memitem:a47768154ceb89e0549d8c57447a71a78" id="r_a47768154ceb89e0549d8c57447a71a78"><td class="memItemLeft">T &amp;&amp;&#160;</td><td class="memItemRight"><a class="el" href="#a47768154ceb89e0549d8c57447a71a78">value</a> () &amp;&amp;</td></tr>
+<tr class="memitem:a6259f322ded2b1c10037e6fafe8378c3" id="r_a6259f322ded2b1c10037e6fafe8378c3"><td class="memItemLeft">T &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a6259f322ded2b1c10037e6fafe8378c3">operator*</a> () &amp;</td></tr>
+<tr class="memitem:ad3976d83e0a922066dd45b3e3a635173" id="r_ad3976d83e0a922066dd45b3e3a635173"><td class="memItemLeft">const T &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ad3976d83e0a922066dd45b3e3a635173">operator*</a> () const &amp;</td></tr>
+<tr class="memitem:a577b49197e443f464728e7e9a54bdad3" id="r_a577b49197e443f464728e7e9a54bdad3"><td class="memItemLeft">T *&#160;</td><td class="memItemRight"><a class="el" href="#a577b49197e443f464728e7e9a54bdad3">operator-&gt;</a> ()</td></tr>
+<tr class="memitem:ad05768234f3501ca46ca7745dbf6ccc4" id="r_ad05768234f3501ca46ca7745dbf6ccc4"><td class="memItemLeft">const T *&#160;</td><td class="memItemRight"><a class="el" href="#ad05768234f3501ca46ca7745dbf6ccc4">operator-&gt;</a> () const</td></tr>
+<tr class="memitem:a5694ad00f39a0e2d187415ddd9b9801b" id="r_a5694ad00f39a0e2d187415ddd9b9801b"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a5694ad00f39a0e2d187415ddd9b9801b">error</a> () &amp;</td></tr>
+<tr class="memitem:af7f817b2a82e93e9b8281c7e403d5970" id="r_af7f817b2a82e93e9b8281c7e403d5970"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#af7f817b2a82e93e9b8281c7e403d5970">error</a> () const &amp;</td></tr>
+<tr class="memitem:a15fe195c7b74bf982186424ca503cb74" id="r_a15fe195c7b74bf982186424ca503cb74"><td class="memTemplParams" colspan="2">template&lt;typename U&gt; </td></tr>
+<tr class="memitem:a15fe195c7b74bf982186424ca503cb74 template"><td class="memItemLeft">T&#160;</td><td class="memItemRight"><a class="el" href="#a15fe195c7b74bf982186424ca503cb74">value_or</a> (U &amp;&amp;fallback) const &amp;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;typename T&gt;<br />
-class FlowUi::Result&lt; T &gt;</div><p>Compatibility result used only when the selected C++ library lacks expected. </p>
-</div><hr/>The documentation for this class was generated from the following file:<ul>
+class FlowUi::Result&lt; T &gt;</div><p>Compatibility result used when the C++ library lacks std::expected. Owns exactly one successful value or <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; check <a class="el" href="#a09eaccee0ea703a4abdb477f952a7596">has_value()</a> before accessing either alternative. <a class="el" href="#a81822a29a88f25088412a0b1cca43241">value()</a>, dereference/arrow and non-void <a class="el" href="#a5694ad00f39a0e2d187415ddd9b9801b">error()</a> throw std::bad_variant_access on inactive access. This fallback does not supply monadic operations, emplace, swap or std::expected-only overloads. Its value operations can throw; <a class="el" href="classFlowUi_1_1Result.html">Result</a> is a container, not an exception boundary. </p><dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>Owned successful result type. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> std::string title = <span class="stringliteral">&quot;Inspector&quot;</span>;</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;std::string&gt;</a> copied{title};</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;std::string&gt;</a> moved{std::string{<span class="stringliteral">&quot;Inspector&quot;</span>}};</div>
+<div class="line">FlowUi::Result&lt;std::string&gt; <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efca26934eb377001f66e37289a5c93fe284">failed</a> = <a class="code hl_function" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">FlowUi::unexpectedError</a>(<a class="code hl_function" href="namespaceFlowUi.html#acc43e6e141d7713ef0ae5e7919d2a6cb">FlowUi::makeError</a>(</div>
+<div class="line">    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a11fe7d47987098a74dd27d0a3623d4c5">FlowUi::ErrorCode::InvalidWindowConfiguration</a>, <a class="code hl_enumvalue" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2ad875973cbb690f1db9095ecbfd4132ee">FlowUi::ErrorSite::AppCreateWindow</a>));</div>
+<div class="line">FlowUi::Result&lt;std::string&gt; emptyTitle{}; <span class="comment">// Successful empty string.</span></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html"><div class="ttname"><a href="classFlowUi_1_1Result.html">FlowUi::Result</a></div><div class="ttdef"><b>Definition</b> Result.hpp:77</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html_aa93f7a9aafec6f4cf684da9b2bfe3efca26934eb377001f66e37289a5c93fe284"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efca26934eb377001f66e37289a5c93fe284">FlowUi::devSystems::agentic::AgenticInteractionPhase::failed</a></div><div class="ttdeci">@ failed</div><div class="ttdef"><b>Definition</b> AgenticInteraction.hpp:488</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a6c0cc7e54c56965df307ef7660db14ea"><div class="ttname"><a href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">FlowUi::unexpectedError</a></div><div class="ttdeci">constexpr detail::UnexpectedFlowUiError unexpectedError(FlowUiError error) noexcept</div><div class="ttdef"><b>Definition</b> Result.hpp:459</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a7dfe1f1cc6456aa2441d007e1ddd26a2ad875973cbb690f1db9095ecbfd4132ee"><div class="ttname"><a href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2ad875973cbb690f1db9095ecbfd4132ee">FlowUi::ErrorSite::AppCreateWindow</a></div><div class="ttdeci">@ AppCreateWindow</div><div class="ttdef"><b>Definition</b> ErrorSites.hpp:24</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a8b5266e6d5dd54d23806b9d4be835d76a11fe7d47987098a74dd27d0a3623d4c5"><div class="ttname"><a href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a11fe7d47987098a74dd27d0a3623d4c5">FlowUi::ErrorCode::InvalidWindowConfiguration</a></div><div class="ttdeci">@ InvalidWindowConfiguration</div><div class="ttdef"><b>Definition</b> ErrorCodeTypes.hpp:43</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_acc43e6e141d7713ef0ae5e7919d2a6cb"><div class="ttname"><a href="namespaceFlowUi.html#acc43e6e141d7713ef0ae5e7919d2a6cb">FlowUi::makeError</a></div><div class="ttdeci">constexpr FlowUiError makeError(ErrorCode code, ErrorSite site, std::uint64_t subject=0u, std::uint64_t auxiliary=0u, std::uint32_t nativeCode=0u) noexcept</div><div class="ttdef"><b>Definition</b> ErrorValue.hpp:118</div></div>
+</div><!-- fragment --> </dd></dl>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a5c86b6582d06a090bdb8a4f1eae9a96e" name="a5c86b6582d06a090bdb8a4f1eae9a96e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5c86b6582d06a090bdb8a4f1eae9a96e">&#9670;&#160;</a></span>Result() <span class="overload">[1/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result</a>&lt; T &gt;::Result </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Construct a successful result by default-constructing T. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> std::string title = <span class="stringliteral">&quot;Inspector&quot;</span>;</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;std::string&gt;</a> copied{title};</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;std::string&gt;</a> moved{std::string{<span class="stringliteral">&quot;Inspector&quot;</span>}};</div>
+<div class="line">FlowUi::Result&lt;std::string&gt; <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efca26934eb377001f66e37289a5c93fe284">failed</a> = <a class="code hl_function" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">FlowUi::unexpectedError</a>(<a class="code hl_function" href="namespaceFlowUi.html#acc43e6e141d7713ef0ae5e7919d2a6cb">FlowUi::makeError</a>(</div>
+<div class="line">    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a11fe7d47987098a74dd27d0a3623d4c5">FlowUi::ErrorCode::InvalidWindowConfiguration</a>, <a class="code hl_enumvalue" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2ad875973cbb690f1db9095ecbfd4132ee">FlowUi::ErrorSite::AppCreateWindow</a>));</div>
+<div class="line">FlowUi::Result&lt;std::string&gt; emptyTitle{}; <span class="comment">// Successful empty string.</span></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="adecd76b348a37419caddcda7a7e2c1fb" name="adecd76b348a37419caddcda7a7e2c1fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adecd76b348a37419caddcda7a7e2c1fb">&#9670;&#160;</a></span>Result() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result</a>&lt; T &gt;::Result </td>
+          <td>(</td>
+          <td class="paramtype">const T &amp;</td>          <td class="paramname"><span class="paramname"><em>value</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy a successful value. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> std::string title = <span class="stringliteral">&quot;Inspector&quot;</span>;</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;std::string&gt;</a> copied{title};</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;std::string&gt;</a> moved{std::string{<span class="stringliteral">&quot;Inspector&quot;</span>}};</div>
+<div class="line">FlowUi::Result&lt;std::string&gt; <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efca26934eb377001f66e37289a5c93fe284">failed</a> = <a class="code hl_function" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">FlowUi::unexpectedError</a>(<a class="code hl_function" href="namespaceFlowUi.html#acc43e6e141d7713ef0ae5e7919d2a6cb">FlowUi::makeError</a>(</div>
+<div class="line">    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a11fe7d47987098a74dd27d0a3623d4c5">FlowUi::ErrorCode::InvalidWindowConfiguration</a>, <a class="code hl_enumvalue" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2ad875973cbb690f1db9095ecbfd4132ee">FlowUi::ErrorSite::AppCreateWindow</a>));</div>
+<div class="line">FlowUi::Result&lt;std::string&gt; emptyTitle{}; <span class="comment">// Successful empty string.</span></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="ab1c1da2a88b377269cb17e7e5aec5c74" name="ab1c1da2a88b377269cb17e7e5aec5c74"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab1c1da2a88b377269cb17e7e5aec5c74">&#9670;&#160;</a></span>Result() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result</a>&lt; T &gt;::Result </td>
+          <td>(</td>
+          <td class="paramtype">T &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>value</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Move a successful value. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> std::string title = <span class="stringliteral">&quot;Inspector&quot;</span>;</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;std::string&gt;</a> copied{title};</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;std::string&gt;</a> moved{std::string{<span class="stringliteral">&quot;Inspector&quot;</span>}};</div>
+<div class="line">FlowUi::Result&lt;std::string&gt; <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efca26934eb377001f66e37289a5c93fe284">failed</a> = <a class="code hl_function" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">FlowUi::unexpectedError</a>(<a class="code hl_function" href="namespaceFlowUi.html#acc43e6e141d7713ef0ae5e7919d2a6cb">FlowUi::makeError</a>(</div>
+<div class="line">    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a11fe7d47987098a74dd27d0a3623d4c5">FlowUi::ErrorCode::InvalidWindowConfiguration</a>, <a class="code hl_enumvalue" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2ad875973cbb690f1db9095ecbfd4132ee">FlowUi::ErrorSite::AppCreateWindow</a>));</div>
+<div class="line">FlowUi::Result&lt;std::string&gt; emptyTitle{}; <span class="comment">// Successful empty string.</span></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="afe133b7d1906f71ee990beaf1b437d94" name="afe133b7d1906f71ee990beaf1b437d94"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe133b7d1906f71ee990beaf1b437d94">&#9670;&#160;</a></span>Result() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result</a>&lt; T &gt;::Result </td>
+          <td>(</td>
+          <td class="paramtype">detail::UnexpectedFlowUiError</td>          <td class="paramname"><span class="paramname"><em>failure</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Construct a failure from <a class="el" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">unexpectedError()</a>. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> std::string title = <span class="stringliteral">&quot;Inspector&quot;</span>;</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;std::string&gt;</a> copied{title};</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;std::string&gt;</a> moved{std::string{<span class="stringliteral">&quot;Inspector&quot;</span>}};</div>
+<div class="line">FlowUi::Result&lt;std::string&gt; <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efca26934eb377001f66e37289a5c93fe284">failed</a> = <a class="code hl_function" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">FlowUi::unexpectedError</a>(<a class="code hl_function" href="namespaceFlowUi.html#acc43e6e141d7713ef0ae5e7919d2a6cb">FlowUi::makeError</a>(</div>
+<div class="line">    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a11fe7d47987098a74dd27d0a3623d4c5">FlowUi::ErrorCode::InvalidWindowConfiguration</a>, <a class="code hl_enumvalue" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2ad875973cbb690f1db9095ecbfd4132ee">FlowUi::ErrorSite::AppCreateWindow</a>));</div>
+<div class="line">FlowUi::Result&lt;std::string&gt; emptyTitle{}; <span class="comment">// Successful empty string.</span></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a5694ad00f39a0e2d187415ddd9b9801b" name="a5694ad00f39a0e2d187415ddd9b9801b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5694ad00f39a0e2d187415ddd9b9801b">&#9670;&#160;</a></span>error() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> &amp; <a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result</a>&lt; T &gt;::error </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> &amp;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Borrow the error; throws std::bad_variant_access on success. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;int&gt;</a> result = <a class="code hl_function" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">FlowUi::unexpectedError</a>(<a class="code hl_function" href="namespaceFlowUi.html#acc43e6e141d7713ef0ae5e7919d2a6cb">FlowUi::makeError</a>(</div>
+<div class="line">    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a578d94a033118e2be61bae941585cd57">FlowUi::ErrorCode::InvalidWindowId</a>, <a class="code hl_enumvalue" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2a7eaec137cb724dff02ec304c8b3c3a08">FlowUi::ErrorSite::AppAccessWindow</a>, window));</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUi::FlowUiError</a>&amp; <a class="code hl_function" href="#a5694ad00f39a0e2d187415ddd9b9801b">error</a> = result.<a class="code hl_function" href="#a5694ad00f39a0e2d187415ddd9b9801b">error</a>();</div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; readOnly = std::as_const(result);</div>
+<div class="line">    <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUi::FlowUiError</a>&amp; observedError = readOnly.error();</div>
+<div class="line">}</div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_a5694ad00f39a0e2d187415ddd9b9801b"><div class="ttname"><a href="#a5694ad00f39a0e2d187415ddd9b9801b">FlowUi::Result::error</a></div><div class="ttdeci">FlowUiError &amp; error() &amp;</div><div class="ttdef"><b>Definition</b> Result.hpp:253</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a7dfe1f1cc6456aa2441d007e1ddd26a2a7eaec137cb724dff02ec304c8b3c3a08"><div class="ttname"><a href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2a7eaec137cb724dff02ec304c8b3c3a08">FlowUi::ErrorSite::AppAccessWindow</a></div><div class="ttdeci">@ AppAccessWindow</div><div class="ttdef"><b>Definition</b> ErrorSites.hpp:42</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a8b5266e6d5dd54d23806b9d4be835d76a578d94a033118e2be61bae941585cd57"><div class="ttname"><a href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a578d94a033118e2be61bae941585cd57">FlowUi::ErrorCode::InvalidWindowId</a></div><div class="ttdeci">@ InvalidWindowId</div><div class="ttdef"><b>Definition</b> ErrorCodeTypes.hpp:42</div></div>
+<div class="ttc" id="astructFlowUi_1_1FlowUiError_html"><div class="ttname"><a href="structFlowUi_1_1FlowUiError.html">FlowUi::FlowUiError</a></div><div class="ttdef"><b>Definition</b> ErrorValue.hpp:16</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="af7f817b2a82e93e9b8281c7e403d5970" name="af7f817b2a82e93e9b8281c7e403d5970"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af7f817b2a82e93e9b8281c7e403d5970">&#9670;&#160;</a></span>error() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> &amp; <a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result</a>&lt; T &gt;::error </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const &amp;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Borrow the error as const; throws std::bad_variant_access on success. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;int&gt;</a> result = <a class="code hl_function" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">FlowUi::unexpectedError</a>(<a class="code hl_function" href="namespaceFlowUi.html#acc43e6e141d7713ef0ae5e7919d2a6cb">FlowUi::makeError</a>(</div>
+<div class="line">    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a578d94a033118e2be61bae941585cd57">FlowUi::ErrorCode::InvalidWindowId</a>, <a class="code hl_enumvalue" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2a7eaec137cb724dff02ec304c8b3c3a08">FlowUi::ErrorSite::AppAccessWindow</a>, window));</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUi::FlowUiError</a>&amp; <a class="code hl_function" href="#a5694ad00f39a0e2d187415ddd9b9801b">error</a> = result.<a class="code hl_function" href="#a5694ad00f39a0e2d187415ddd9b9801b">error</a>();</div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; readOnly = std::as_const(result);</div>
+<div class="line">    <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUi::FlowUiError</a>&amp; observedError = readOnly.error();</div>
+<div class="line">}</div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="a09eaccee0ea703a4abdb477f952a7596" name="a09eaccee0ea703a4abdb477f952a7596"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a09eaccee0ea703a4abdb477f952a7596">&#9670;&#160;</a></span>has_value()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result</a>&lt; T &gt;::has_value </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return whether the successful alternative is active. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keywordflow">if</span> (!result)</div>
+<div class="line">    <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">FlowUi::unexpectedError</a>(result.error()); <span class="comment">// Preserve the original failure.</span></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="a7e1eaa1c47c8636e9c9ef0784eab35b0" name="a7e1eaa1c47c8636e9c9ef0784eab35b0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7e1eaa1c47c8636e9c9ef0784eab35b0">&#9670;&#160;</a></span>operator bool()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result</a>&lt; T &gt;::operator bool </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel explicit">explicit</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return whether the operation succeeded. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keywordflow">if</span> (!result)</div>
+<div class="line">    <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">FlowUi::unexpectedError</a>(result.error()); <span class="comment">// Preserve the original failure.</span></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="a6259f322ded2b1c10037e6fafe8378c3" name="a6259f322ded2b1c10037e6fafe8378c3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6259f322ded2b1c10037e6fafe8378c3">&#9670;&#160;</a></span>operator*() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">T &amp; <a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result</a>&lt; T &gt;::operator* </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> &amp;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Borrow the successful value; requires success. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;std::string&gt;</a> title{std::string{<span class="stringliteral">&quot;Inspector&quot;</span>}};</div>
+<div class="line"><span class="keywordflow">if</span> (title) {</div>
+<div class="line">    std::string&amp; editable = *title;</div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; readOnly = std::as_const(title);</div>
+<div class="line">    <span class="keyword">const</span> std::string&amp; observed = *readOnly;</div>
+<div class="line">    <span class="keyword">const</span> std::size_t length = title-&gt;size();</div>
+<div class="line">    <span class="keyword">const</span> std::size_t observedLength = readOnly-&gt;size();</div>
+<div class="line">}</div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="ad3976d83e0a922066dd45b3e3a635173" name="ad3976d83e0a922066dd45b3e3a635173"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad3976d83e0a922066dd45b3e3a635173">&#9670;&#160;</a></span>operator*() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const T &amp; <a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result</a>&lt; T &gt;::operator* </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const &amp;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Borrow the successful value as const; requires success. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;std::string&gt;</a> title{std::string{<span class="stringliteral">&quot;Inspector&quot;</span>}};</div>
+<div class="line"><span class="keywordflow">if</span> (title) {</div>
+<div class="line">    std::string&amp; editable = *title;</div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; readOnly = std::as_const(title);</div>
+<div class="line">    <span class="keyword">const</span> std::string&amp; observed = *readOnly;</div>
+<div class="line">    <span class="keyword">const</span> std::size_t length = title-&gt;size();</div>
+<div class="line">    <span class="keyword">const</span> std::size_t observedLength = readOnly-&gt;size();</div>
+<div class="line">}</div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="a577b49197e443f464728e7e9a54bdad3" name="a577b49197e443f464728e7e9a54bdad3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a577b49197e443f464728e7e9a54bdad3">&#9670;&#160;</a></span>operator-&gt;() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">T * <a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result</a>&lt; T &gt;::operator-&gt; </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return a pointer to the successful value; requires success. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;std::string&gt;</a> title{std::string{<span class="stringliteral">&quot;Inspector&quot;</span>}};</div>
+<div class="line"><span class="keywordflow">if</span> (title) {</div>
+<div class="line">    std::string&amp; editable = *title;</div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; readOnly = std::as_const(title);</div>
+<div class="line">    <span class="keyword">const</span> std::string&amp; observed = *readOnly;</div>
+<div class="line">    <span class="keyword">const</span> std::size_t length = title-&gt;size();</div>
+<div class="line">    <span class="keyword">const</span> std::size_t observedLength = readOnly-&gt;size();</div>
+<div class="line">}</div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="ad05768234f3501ca46ca7745dbf6ccc4" name="ad05768234f3501ca46ca7745dbf6ccc4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad05768234f3501ca46ca7745dbf6ccc4">&#9670;&#160;</a></span>operator-&gt;() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const T * <a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result</a>&lt; T &gt;::operator-&gt; </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return a const pointer to the successful value; requires success. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;std::string&gt;</a> title{std::string{<span class="stringliteral">&quot;Inspector&quot;</span>}};</div>
+<div class="line"><span class="keywordflow">if</span> (title) {</div>
+<div class="line">    std::string&amp; editable = *title;</div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; readOnly = std::as_const(title);</div>
+<div class="line">    <span class="keyword">const</span> std::string&amp; observed = *readOnly;</div>
+<div class="line">    <span class="keyword">const</span> std::size_t length = title-&gt;size();</div>
+<div class="line">    <span class="keyword">const</span> std::size_t observedLength = readOnly-&gt;size();</div>
+<div class="line">}</div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="a81822a29a88f25088412a0b1cca43241" name="a81822a29a88f25088412a0b1cca43241"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a81822a29a88f25088412a0b1cca43241">&#9670;&#160;</a></span>value() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">T &amp; <a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result</a>&lt; T &gt;::value </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> &amp;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Borrow the successful value; throws std::bad_variant_access on failure. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;std::string&gt;</a> title{std::string{<span class="stringliteral">&quot;Inspector&quot;</span>}};</div>
+<div class="line"><span class="keywordflow">if</span> (title.<a class="code hl_function" href="#a09eaccee0ea703a4abdb477f952a7596">has_value</a>()) {</div>
+<div class="line">    std::string&amp; editable = title.<a class="code hl_function" href="#a81822a29a88f25088412a0b1cca43241">value</a>();</div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; readOnly = std::as_const(title);</div>
+<div class="line">    <span class="keyword">const</span> std::string&amp; observed = readOnly.value();</div>
+<div class="line">    std::string owned = std::move(title).value();</div>
+<div class="line">}</div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_a09eaccee0ea703a4abdb477f952a7596"><div class="ttname"><a href="#a09eaccee0ea703a4abdb477f952a7596">FlowUi::Result::has_value</a></div><div class="ttdeci">bool has_value() const noexcept</div><div class="ttdef"><b>Definition</b> Result.hpp:137</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_a81822a29a88f25088412a0b1cca43241"><div class="ttname"><a href="#a81822a29a88f25088412a0b1cca43241">FlowUi::Result::value</a></div><div class="ttdeci">T &amp; value() &amp;</div><div class="ttdef"><b>Definition</b> Result.hpp:158</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="a47768154ceb89e0549d8c57447a71a78" name="a47768154ceb89e0549d8c57447a71a78"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a47768154ceb89e0549d8c57447a71a78">&#9670;&#160;</a></span>value() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">T &amp;&amp; <a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result</a>&lt; T &gt;::value </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> &amp;&amp;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Move from the successful value; throws std::bad_variant_access on failure. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;std::string&gt;</a> title{std::string{<span class="stringliteral">&quot;Inspector&quot;</span>}};</div>
+<div class="line"><span class="keywordflow">if</span> (title.<a class="code hl_function" href="#a09eaccee0ea703a4abdb477f952a7596">has_value</a>()) {</div>
+<div class="line">    std::string&amp; editable = title.<a class="code hl_function" href="#a81822a29a88f25088412a0b1cca43241">value</a>();</div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; readOnly = std::as_const(title);</div>
+<div class="line">    <span class="keyword">const</span> std::string&amp; observed = readOnly.value();</div>
+<div class="line">    std::string owned = std::move(title).value();</div>
+<div class="line">}</div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="a01111f683c61ef197f60a64bea29cdde" name="a01111f683c61ef197f60a64bea29cdde"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a01111f683c61ef197f60a64bea29cdde">&#9670;&#160;</a></span>value() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const T &amp; <a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result</a>&lt; T &gt;::value </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const &amp;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Borrow the successful value as const; throws std::bad_variant_access on failure. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;std::string&gt;</a> title{std::string{<span class="stringliteral">&quot;Inspector&quot;</span>}};</div>
+<div class="line"><span class="keywordflow">if</span> (title.<a class="code hl_function" href="#a09eaccee0ea703a4abdb477f952a7596">has_value</a>()) {</div>
+<div class="line">    std::string&amp; editable = title.<a class="code hl_function" href="#a81822a29a88f25088412a0b1cca43241">value</a>();</div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; readOnly = std::as_const(title);</div>
+<div class="line">    <span class="keyword">const</span> std::string&amp; observed = readOnly.value();</div>
+<div class="line">    std::string owned = std::move(title).value();</div>
+<div class="line">}</div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="a15fe195c7b74bf982186424ca503cb74" name="a15fe195c7b74bf982186424ca503cb74"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15fe195c7b74bf982186424ca503cb74">&#9670;&#160;</a></span>value_or()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+<div class="memtemplate">
+template&lt;typename U&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">T <a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result</a>&lt; T &gt;::value_or </td>
+          <td>(</td>
+          <td class="paramtype">U &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>fallback</em></span></td><td>)</td>
+          <td> const &amp;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy the successful value, or convert fallback to T on failure. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> std::string title = result.value_or(std::string{<span class="stringliteral">&quot;Untitled&quot;</span>});</div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/FlowUi/Public/errorManagement/<a class="el" href="Result_8hpp_source.html">Result.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -162,7 +720,7 @@ class FlowUi::Result&lt; T &gt;</div><p>Compatibility result used only when the 
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1Result.html">Result</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1Result.html">Result</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

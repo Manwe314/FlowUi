@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,18 +106,79 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::ActionInvocationSource Struct Reference<div class="ingroups"><a class="el" href="group__flowui__action__manager.html">Action Manager</a></div></div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="ActionTypes_8hpp_source.html">ActionTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:aff6dc928d983cc25c0ec305f3f7641a7" id="r_aff6dc928d983cc25c0ec305f3f7641a7"><td class="memItemLeft"><a id="aff6dc928d983cc25c0ec305f3f7641a7" name="aff6dc928d983cc25c0ec305f3f7641a7"></a>
-ActionInvocationSourceKind&#160;</td><td class="memItemRight"><b>kind</b> = ActionInvocationSourceKind::Direct</td></tr>
-<tr class="memitem:a2e1164e591af4751c7d65f121aa7a49b" id="r_a2e1164e591af4751c7d65f121aa7a49b"><td class="memItemLeft"><a id="a2e1164e591af4751c7d65f121aa7a49b" name="a2e1164e591af4751c7d65f121aa7a49b"></a>
-WindowId&#160;</td><td class="memItemRight"><b>window</b> = InvalidWindowId</td></tr>
-<tr class="memitem:aa76027d4007c29fc0f980f09018bf03c" id="r_aa76027d4007c29fc0f980f09018bf03c"><td class="memItemLeft"><a id="aa76027d4007c29fc0f980f09018bf03c" name="aa76027d4007c29fc0f980f09018bf03c"></a>
-<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a>&#160;</td><td class="memItemRight"><b>element</b> {}</td></tr>
-<tr class="memitem:a16983da880d17c0ca42e49b16a559228" id="r_a16983da880d17c0ca42e49b16a559228"><td class="memItemLeft"><a id="a16983da880d17c0ca42e49b16a559228" name="a16983da880d17c0ca42e49b16a559228"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>sourceId</b> = 0</td></tr>
+<tr class="memitem:aff6dc928d983cc25c0ec305f3f7641a7" id="r_aff6dc928d983cc25c0ec305f3f7641a7"><td class="memItemLeft"><a class="el" href="group__flowui__action__manager.html#gada1a2f6902950293d796b8531ba9bac0">ActionInvocationSourceKind</a>&#160;</td><td class="memItemRight"><a class="el" href="#aff6dc928d983cc25c0ec305f3f7641a7">kind</a> = <a class="el" href="group__flowui__action__manager.html#ggada1a2f6902950293d796b8531ba9bac0afd1dd0c603be8170f9eae0be9f2f6afb">ActionInvocationSourceKind::Direct</a></td></tr>
+<tr class="memitem:a2e1164e591af4751c7d65f121aa7a49b" id="r_a2e1164e591af4751c7d65f121aa7a49b"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a2e1164e591af4751c7d65f121aa7a49b">window</a> = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td></tr>
+<tr class="memitem:aa76027d4007c29fc0f980f09018bf03c" id="r_aa76027d4007c29fc0f980f09018bf03c"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa76027d4007c29fc0f980f09018bf03c">element</a> {}</td></tr>
+<tr class="memitem:a16983da880d17c0ca42e49b16a559228" id="r_a16983da880d17c0ca42e49b16a559228"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a16983da880d17c0ca42e49b16a559228">sourceId</a> = 0</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Optional source attribution supplied to <a class="el" href="classFlowUi_1_1ActionManager.html" title="App-owned dispatcher for retained semantic actions and compact UI calls.">ActionManager</a> when invoking a call. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="aa76027d4007c29fc0f980f09018bf03c" name="aa76027d4007c29fc0f980f09018bf03c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa76027d4007c29fc0f980f09018bf03c">&#9670;&#160;</a></span>element</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> FlowUi::ActionInvocationSource::element {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Originating element when available. </p>
+
+</div>
+</div>
+<a id="aff6dc928d983cc25c0ec305f3f7641a7" name="aff6dc928d983cc25c0ec305f3f7641a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aff6dc928d983cc25c0ec305f3f7641a7">&#9670;&#160;</a></span>kind</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__flowui__action__manager.html#gada1a2f6902950293d796b8531ba9bac0">ActionInvocationSourceKind</a> FlowUi::ActionInvocationSource::kind = <a class="el" href="group__flowui__action__manager.html#ggada1a2f6902950293d796b8531ba9bac0afd1dd0c603be8170f9eae0be9f2f6afb">ActionInvocationSourceKind::Direct</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Callback or subsystem responsible for invocation. </p>
+
+</div>
+</div>
+<a id="a16983da880d17c0ca42e49b16a559228" name="a16983da880d17c0ca42e49b16a559228"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a16983da880d17c0ca42e49b16a559228">&#9670;&#160;</a></span>sourceId</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::ActionInvocationSource::sourceId = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Additional source identity, such as a shortcut registration. </p>
+
+</div>
+</div>
+<a id="a2e1164e591af4751c7d65f121aa7a49b" name="a2e1164e591af4751c7d65f121aa7a49b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e1164e591af4751c7d65f121aa7a49b">&#9670;&#160;</a></span>window</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> FlowUi::ActionInvocationSource::window = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Originating window, or zero for app-wide/direct attribution. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="ActionTypes_8hpp_source.html">ActionTypes.hpp</a></li>
 </ul>
@@ -134,7 +195,7 @@ uint64_t&#160;</td><td class="memItemRight"><b>sourceId</b> = 0</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1ActionInvocationSource.html">ActionInvocationSource</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1ActionInvocationSource.html">ActionInvocationSource</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

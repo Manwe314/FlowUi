@@ -1,123 +1,440 @@
 # Popup Manager API
 
-`PopupManager` is the window-scoped service for popup placement and behavior. It turns a stable popup identity plus a `PopupRequest` into the `Clay_FloatingElementConfig` needed for the current frame. It also owns first-frame measurement, viewport overflow correction, popup z-order allocation, and automatic dismissal.
+[Public declarations](include/FlowUi/Public/managers/PopupManager.hpp) · [Popup values](include/FlowUi/Public/managerStructs/PopupTypes.hpp)
 
-Access it through `UiManager`:
+Submit each open popup once during the active window UI build. `PopupRequest` defaults to parent anchoring, bottom-left to top-left placement, flip/shift overflow handling, hidden first-frame measurement, casual layer, pointer capture, anchor-blocking outside-press dismissal, and Escape dismissal. `expectedSize` supplies an optional positive finite layout-pixel estimate. Missing-anchor, duplicate, and capacity behavior follows the window error policy.
+
+A successful `PopupFrame` can be visible, hidden for measurement (`measureOnly`), or entirely hidden. Emit its floating root for either visible or measure-only frames. Placement/dismissal state commits with the window build and rolls back if the build is canceled; dismissals requested outside a build update committed state immediately.
+
+## Acquire the manager
+
+`App` getters return `Result<std::reference_wrapper<T>>`. Check the wrapper, then name the borrowed object as a normal reference:
+
+**Example:**
 
 ```cpp
-FlowUi::PopupManager& popups = app.ui().popups();
+auto result = app.ui();
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+FlowUi::UiManager& manager = result->get();
 ```
 
-The manager does not draw a surface, dim the application, trap keyboard focus, or decide what children belong in a popup. Those remain element and application policy. This keeps the service usable by arbitrary custom Flow elements as well as `FlowUi::FSEL::kPopupSurface`.
+Call `ui.popups()` on that `UiManager&` to obtain the direct manager reference. The reference is borrowed; the App must outlive it, and window-owned managers must also stay within their owning window lifetime. The examples use an already acquired manager reference and existing field/window identities where needed. They choose an application policy of throwing `FlowUiException` after a failed Result; returning/reporting the error is equally possible. Include the relevant manager/value headers and `FlowUi/Public/errorManagement/Exception.hpp`.
 
-## Popup Request
+`request()` retains `Result<PopupFrame>` because configured duplicate rejection can be handled locally. `dismiss()` returns void and `consumeDismissed()` returns bool directly; their operational failures throw and latch frame failure. A false dismissal notification is an ordinary answer.
+
+## Value helpers: FlowUi
+
+### **toClayAttachment**
+
+#### `[[nodiscard]] constexpr Clay_FloatingAttachPointType toClayAttachment( PopupAttachmentPoint point) noexcept`
+
+- **Returns:** `Clay_FloatingAttachPointType`
+- **Arguments:** `point`
+
+Convert a popup attachment point to Clay's alignment enum. An unrecognized enum value maps to CLAY_ATTACH_POINT_CENTER_CENTER.
+
+This is a constexpr/noexcept value conversion.
+
+**Example:**
 
 ```cpp
-struct PopupRequest {
-    PopupAnchor anchor = PopupAnchor::parent();
-    PopupPlacement placement{};
-    PopupOverflowPolicy overflow{};
-    PopupFirstFramePolicy firstFrame = PopupFirstFramePolicy::DeferUntilMeasured;
-    std::optional<Clay_Dimensions> expectedSize = std::nullopt;
-    PopupLayer layer = PopupLayer::CasualPopup;
-    Clay_PointerCaptureMode pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_CAPTURE;
-    Clay_FloatingClipToElement clipTo = CLAY_CLIP_TO_NONE;
-    PopupOutsidePressPolicy outsidePress =
-        PopupOutsidePressPolicy::DismissAndBlockAnchor;
-    bool dismissOnEscape = true;
-};
+const auto attachment = FlowUi::toClayAttachment(FlowUi::PopupAttachmentPoint::BottomLeft);
 ```
 
-`PopupAnchor` supports the current Clay parent, a specific Flow element, a pointer snapshot, a pointer-following anchor, an absolute position, or the viewport. Element anchors resolve from completed Clay geometry, so the usual anchor is a stable element that was present on the preceding frame. Keep the anchor authored before its popup as well.
+See: [Owning header](include/FlowUi/Public/managerStructs/PopupTypes.hpp).
 
-`PopupPlacement` names both attachment points with the same nine-point vocabulary: `TopLeft`, `TopMiddle`, `TopRight`, `MiddleLeft`, `Center`, `MiddleRight`, `BottomLeft`, `BottomMiddle`, and `BottomRight`. Pointer and absolute-position anchors have no size, so all nine anchor points resolve to the same logical coordinate.
+## Value helpers: PopupAnchor
 
-The overflow policy first keeps the requested placement when it fits. Otherwise it can try horizontal and vertical mirrors, select the candidate with the least overflow, and shift the result into the viewport.
+### **parent**
 
-`PopupLayer` provides three conventional z-index bands starting at 10000:
+#### `[[nodiscard]] static constexpr PopupAnchor parent() noexcept`
 
-- `CasualPopup`
-- `WarningPopup`
-- `CriticalPopup`
+- **Returns:** `PopupAnchor`
+- **Arguments:** none.
 
-These bands order manager-authored popups but do not reserve Clay z-index values globally. Custom elements may still use overlapping values when their application deliberately wants that behavior.
+Create an anchor for the current Clay parent. Returns a value descriptor; placement is resolved during popup layout.
 
-## First-Frame Placement
+This constexpr/noexcept factory owns no UI object.
 
-The default `DeferUntilMeasured` policy returns a measurement-only floating configuration when no prior measured size is available. The element must still construct its complete, normally styled popup tree on this frame; the manager places it offscreen with pointer passthrough. On the next frame the measured size is available for overflow correction and normal display.
-
-Supplying a correct `expectedSize` avoids that hidden measurement frame:
+**Example:**
 
 ```cpp
-FlowUi::PopupRequest request{
-    .anchor = FlowUi::PopupAnchor::viewport(),
-    .placement = {
-        .anchorPoint = FlowUi::PopupAttachmentPoint::TopMiddle,
-        .popupPoint = FlowUi::PopupAttachmentPoint::TopMiddle,
-        .offset = {0.0f, 24.0f},
-    },
-    .expectedSize = Clay_Dimensions{340.0f, 66.0f},
-    .layer = FlowUi::PopupLayer::WarningPopup,
-};
+const auto anchor = FlowUi::PopupAnchor::parent();
 ```
 
-`PlaceImmediately` also draws on the first frame, but without a known size overflow correction cannot account for the popup extent.
+See: [Owning header](include/FlowUi/Public/managerStructs/PopupTypes.hpp).
 
-## Request and Dismissal API
+### **element**
 
-`request()` accepts `FlowElementID`, `GlobalFlowID`, and `FlowElementPartID`:
+#### `[[nodiscard]] static constexpr PopupAnchor element(FlowElementID id) noexcept`
+
+- **Returns:** `PopupAnchor`
+- **Arguments:** `id` window-scoped identity
+
+Create an anchor for a Flow element or semantic part in the current window. Returns an Element descriptor containing the supplied identity value.
+
+Local, global, and semantic part IDs all resolve in the popup's current window; a global name does not select a different window.
+
+**Example:**
 
 ```cpp
-FlowUi::PopupFrame frame = ui.popups().request(popupId, request);
+const auto anchor = FlowUi::PopupAnchor::element(fieldId);
+```
 
-Clay_ElementDeclaration root{};
-if (frame.visible || frame.measureOnly) {
-    root.floating = frame.floating;
+See: [Owning header](include/FlowUi/Public/managerStructs/PopupTypes.hpp).
+
+### **element**
+
+#### `[[nodiscard]] static constexpr PopupAnchor element(GlobalFlowID id) noexcept`
+
+- **Returns:** `PopupAnchor`
+- **Arguments:** `id` window-scoped identity
+
+Create an anchor for a Flow element or semantic part in the current window. Returns an Element descriptor containing the supplied identity value.
+
+Local, global, and semantic part IDs all resolve in the popup's current window; a global name does not select a different window.
+
+**Example:**
+
+```cpp
+const auto anchor = FlowUi::PopupAnchor::element(fieldId);
+```
+
+See: [Owning header](include/FlowUi/Public/managerStructs/PopupTypes.hpp).
+
+### **element**
+
+#### `[[nodiscard]] static constexpr PopupAnchor element(FlowElementPartID id) noexcept`
+
+- **Returns:** `PopupAnchor`
+- **Arguments:** `id` window-scoped identity
+
+Create an anchor for a Flow element or semantic part in the current window. Returns an Element descriptor containing the supplied identity value.
+
+Local, global, and semantic part IDs all resolve in the popup's current window; a global name does not select a different window.
+
+**Example:**
+
+```cpp
+const auto anchor = FlowUi::PopupAnchor::element(fieldId);
+```
+
+See: [Owning header](include/FlowUi/Public/managerStructs/PopupTypes.hpp).
+
+### **pointerSnapshot**
+
+#### `[[nodiscard]] static constexpr PopupAnchor pointerSnapshot() noexcept`
+
+- **Returns:** `PopupAnchor`
+- **Arguments:** none.
+
+Create an anchor at the pointer position first resolved for this popup. Returns a value descriptor; the resolved coordinate is retained while the popup remains open.
+
+This constexpr/noexcept factory does not sample input immediately.
+
+**Example:**
+
+```cpp
+const auto anchor = FlowUi::PopupAnchor::pointerSnapshot();
+```
+
+See: [Owning header](include/FlowUi/Public/managerStructs/PopupTypes.hpp).
+
+### **pointerFollow**
+
+#### `[[nodiscard]] static constexpr PopupAnchor pointerFollow() noexcept`
+
+- **Returns:** `PopupAnchor`
+- **Arguments:** none.
+
+Create an anchor that follows the current frame pointer. Returns a value descriptor sampled when submitted.
+
+This constexpr/noexcept factory owns no pointer state.
+
+**Example:**
+
+```cpp
+const auto anchor = FlowUi::PopupAnchor::pointerFollow();
+```
+
+See: [Owning header](include/FlowUi/Public/managerStructs/PopupTypes.hpp).
+
+### **position**
+
+#### `[[nodiscard]] static constexpr PopupAnchor position(Clay_Vector2 value) noexcept`
+
+- **Returns:** `PopupAnchor`
+- **Arguments:** `value`
+
+Create an anchor at an explicit window-layout coordinate. Returns a Position descriptor storing the coordinate.
+
+Coordinates use logical layout pixels, not framebuffer pixels.
+
+**Example:**
+
+```cpp
+const auto anchor = FlowUi::PopupAnchor::position(Clay_Vector2{24.0f, 48.0f});
+```
+
+See: [Owning header](include/FlowUi/Public/managerStructs/PopupTypes.hpp).
+
+### **viewport**
+
+#### `[[nodiscard]] static constexpr PopupAnchor viewport() noexcept`
+
+- **Returns:** `PopupAnchor`
+- **Arguments:** none.
+
+Create an anchor for the current window viewport rectangle. Returns a value descriptor resolved during layout.
+
+This constexpr/noexcept factory owns no viewport object.
+
+**Example:**
+
+```cpp
+const auto anchor = FlowUi::PopupAnchor::viewport();
+```
+
+See: [Owning header](include/FlowUi/Public/managerStructs/PopupTypes.hpp).
+
+## Public API
+
+### **frameStatus**
+
+#### `[[nodiscard]] Status frameStatus() const noexcept`
+
+- **Returns:** `Status`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** none.
+
+Read a caught failure requiring cancellation of the popup frame. Success means no popup frame error has been latched; an error requires cancellation of the surrounding frame.
+
+UiManager checks the latch during frame completion.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+
+**Example:**
+
+```cpp
+auto result = manager.frameStatus();
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
 }
 ```
 
-Submit each present popup exactly once per frame under a stable identity. `PopupFrame::visible` means the surface should be drawn normally. `measureOnly` means it must be constructed completely but remains offscreen for this frame. When both are false, custom construct-only elements must keep their children out of normal layout, typically by returning an inert offscreen floating declaration.
+See: [Owning header](include/FlowUi/Public/managers/PopupManager.hpp).
 
-Automatic outside-press and Escape dismissal is evaluated at frame start from the last committed popup bounds. Only the topmost popup owns the outside-press decision for one input transition. `PopupOutsidePressPolicy` makes the resulting input ownership explicit:
+### **request**
 
-- `DismissAndConsume` dismisses the popup and hides the complete primary-pointer gesture from every other UI consumer.
-- `DismissAndBlockAnchor` dismisses the popup and removes its anchor from the press targets, preventing the common dismiss-then-reopen trigger bug while leaving unrelated controls usable.
-- `Ignore` does not dismiss and leaves the press untouched.
+#### `[[nodiscard]] Result<PopupFrame> request(FlowElementID popupId, const PopupRequest& request) noexcept`
 
-The anchor-only policy is the default. It is most appropriate for dropdowns and similar anchored surfaces. Full consumption is useful for heads-up or modal-like surfaces whose dismissing click must not activate anything underneath. Programmatic dismissal uses the same state path but does not consume input:
+- **Returns:** `Result<PopupFrame>`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** `popupId`, `request` operation configuration
+
+Submit an open popup for the active window UI build. Success contains PopupFrame, which may be hidden or measureOnly; a zero ID yields an empty frame. Inactive frame or configured duplicate/placement failures return errors.
+
+Request each popup once per active build. Emit the floating root when visible or measureOnly, using its floating configuration. Placement/dismissal participate in commit; canceling the build rolls them back. Default unknown-size policy uses a hidden measurement frame.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+
+**Example:**
 
 ```cpp
-ui.popups().dismiss(popupId);
-```
-
-The popup owner observes the edge once with `consumeDismissed()`:
-
-```cpp
-if (ui.popups().consumeDismissed(popupId)) {
-    popupOpen = false;
+FlowUi::PopupRequest request{};
+request.anchor = FlowUi::PopupAnchor::parent();
+request.expectedSize = Clay_Dimensions{240.0f, 160.0f};
+auto result = manager.request(fieldId, request);
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
 }
+const auto popup = *result;
 ```
 
-A dismissed identity remains dismissed while it continues to be requested. Omit the popup after consuming dismissal; requesting the same identity again after it has been absent creates a fresh popup session.
+See: [Owning header](include/FlowUi/Public/managers/PopupManager.hpp).
 
-## FSEL PopupSurface
+### **request**
 
-When FSEL is enabled, `FlowUi::FSEL::kPopupSurface` is the standard construct-only adapter. It requests `PopupManager`, applies the returned floating configuration, supplies a themed Box-like surface, and invokes `onDismissed` when the manager reports dismissal. The application still owns the open flag and conditionally authors the element; bind `onDismissed` to clear that flag:
+#### `[[nodiscard]] Result<PopupFrame> request(GlobalFlowID popupId, const PopupRequest& request) noexcept`
+
+- **Returns:** `Result<PopupFrame>`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** `popupId`, `request` operation configuration
+
+Submit an open popup for the active window UI build. Success contains PopupFrame, which may be hidden or measureOnly; a zero ID yields an empty frame. Inactive frame or configured duplicate/placement failures return errors.
+
+Request each popup once per active build. Emit the floating root when visible or measureOnly, using its floating configuration. Placement/dismissal participate in commit; canceling the build rolls them back. Default unknown-size policy uses a hidden measurement frame.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+
+**Example:**
 
 ```cpp
-if (menuOpen) {
-    ui.createElement(FlowUi::FSEL::kPopupSurface, "edit-menu")
-        .setParameters(FlowUi::FSEL::PopupSurfaceParameters{
-            .popupRequest = {
-                .anchor = FlowUi::PopupAnchor::element(editButtonId),
-            },
-            .onDismissed = closeMenuAction,
-        })
-        .construct();
-
-    CLAY_TEXT(CLAY_STRING("Menu contents"), CLAY_TEXT_CONFIG(textConfig));
-    ui.drawConstructed();
+FlowUi::PopupRequest request{};
+request.anchor = FlowUi::PopupAnchor::parent();
+request.expectedSize = Clay_Dimensions{240.0f, 160.0f};
+auto result = manager.request(fieldId, request);
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
 }
+const auto popup = *result;
 ```
 
-The surface exposes sizing, padding, child layout, clipping, background, border, and corner-radius overrides. It intentionally has no `isOpen` parameter, built-in content, modal scrim, focus trap, animation policy, or semantic menu/dialog behavior.
+See: [Owning header](include/FlowUi/Public/managers/PopupManager.hpp).
+
+### **request**
+
+#### `[[nodiscard]] Result<PopupFrame> request(FlowElementPartID popupId, const PopupRequest& request) noexcept`
+
+- **Returns:** `Result<PopupFrame>`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** `popupId`, `request` operation configuration
+
+Submit an open popup for the active window UI build. Success contains PopupFrame, which may be hidden or measureOnly; a zero ID yields an empty frame. Inactive frame or configured duplicate/placement failures return errors.
+
+Request each popup once per active build. Emit the floating root when visible or measureOnly, using its floating configuration. Placement/dismissal participate in commit; canceling the build rolls them back. Default unknown-size policy uses a hidden measurement frame.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+
+**Example:**
+
+```cpp
+FlowUi::PopupRequest request{};
+request.anchor = FlowUi::PopupAnchor::parent();
+request.expectedSize = Clay_Dimensions{240.0f, 160.0f};
+auto result = manager.request(fieldId, request);
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+const auto popup = *result;
+```
+
+See: [Owning header](include/FlowUi/Public/managers/PopupManager.hpp).
+
+### **dismiss**
+
+#### `void dismiss(FlowElementID popupId)`
+
+- **Returns:** `void` (no payload).
+- **Arguments:** `popupId`
+
+Dismiss a popup and record a consumable notification. Success means the dismissal request completed; zero IDs are ignored.
+
+During a build the change commits with the frame and is rolled back on cancel. Outside a build it commits immediately. An already submitted popup becomes hidden.
+
+Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; `App::runFrame()` contains it and cancels the frame. Catching an exception does not clear a latched frame error.
+
+**Example:**
+
+```cpp
+manager.dismiss(fieldId);
+```
+
+See: [Owning header](include/FlowUi/Public/managers/PopupManager.hpp).
+
+### **dismiss**
+
+#### `void dismiss(GlobalFlowID popupId)`
+
+- **Returns:** `void` (no payload).
+- **Arguments:** `popupId`
+
+Dismiss a popup and record a consumable notification. Success means the dismissal request completed; zero IDs are ignored.
+
+During a build the change commits with the frame and is rolled back on cancel. Outside a build it commits immediately. An already submitted popup becomes hidden.
+
+Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; `App::runFrame()` contains it and cancels the frame. Catching an exception does not clear a latched frame error.
+
+**Example:**
+
+```cpp
+manager.dismiss(fieldId);
+```
+
+See: [Owning header](include/FlowUi/Public/managers/PopupManager.hpp).
+
+### **dismiss**
+
+#### `void dismiss(FlowElementPartID popupId)`
+
+- **Returns:** `void` (no payload).
+- **Arguments:** `popupId`
+
+Dismiss a popup and record a consumable notification. Success means the dismissal request completed; zero IDs are ignored.
+
+During a build the change commits with the frame and is rolled back on cancel. Outside a build it commits immediately. An already submitted popup becomes hidden.
+
+Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; `App::runFrame()` contains it and cancels the frame. Catching an exception does not clear a latched frame error.
+
+**Example:**
+
+```cpp
+manager.dismiss(fieldId);
+```
+
+See: [Owning header](include/FlowUi/Public/managers/PopupManager.hpp).
+
+### **consumeDismissed**
+
+#### `[[nodiscard]] bool consumeDismissed(FlowElementID popupId)`
+
+- **Returns:** `bool`.
+- **Arguments:** `popupId`
+
+Read and consume one pending popup dismissal. Success contains true once per notification, or false for zero, unknown, or already-consumed IDs.
+
+Consumption during a canceled build is rolled back.
+
+Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; `App::runFrame()` contains it and cancels the frame. Catching an exception does not clear a latched frame error.
+
+**Example:**
+
+```cpp
+const auto dismissed = manager.consumeDismissed(fieldId);
+```
+
+See: [Owning header](include/FlowUi/Public/managers/PopupManager.hpp).
+
+### **consumeDismissed**
+
+#### `[[nodiscard]] bool consumeDismissed(GlobalFlowID popupId)`
+
+- **Returns:** `bool`.
+- **Arguments:** `popupId`
+
+Read and consume one pending popup dismissal. Success contains true once per notification, or false for zero, unknown, or already-consumed IDs.
+
+Consumption during a canceled build is rolled back.
+
+Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; `App::runFrame()` contains it and cancels the frame. Catching an exception does not clear a latched frame error.
+
+**Example:**
+
+```cpp
+const auto dismissed = manager.consumeDismissed(fieldId);
+```
+
+See: [Owning header](include/FlowUi/Public/managers/PopupManager.hpp).
+
+### **consumeDismissed**
+
+#### `[[nodiscard]] bool consumeDismissed(FlowElementPartID popupId)`
+
+- **Returns:** `bool`.
+- **Arguments:** `popupId`
+
+Read and consume one pending popup dismissal. Success contains true once per notification, or false for zero, unknown, or already-consumed IDs.
+
+Consumption during a canceled build is rolled back.
+
+Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; `App::runFrame()` contains it and cancels the frame. Catching an exception does not clear a latched frame error.
+
+**Example:**
+
+```cpp
+const auto dismissed = manager.consumeDismissed(fieldId);
+```
+
+## Build-gated development hooks
+
+`FLOW_UI_DEV_MODE` and the development memory-level macros expose additional inspection/recording hooks in the header. They are development infrastructure, not the application API described here. Their existing build gates and signatures are unchanged.
+
+See: [Owning header](include/FlowUi/Public/managers/PopupManager.hpp).

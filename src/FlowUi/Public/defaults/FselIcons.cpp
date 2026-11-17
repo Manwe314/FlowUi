@@ -3,19 +3,16 @@
 #if FLOWUI_INCLUDE_ICON_MANAGER
 namespace FlowUi::FSEL::standard_icons {
 
-void registerStandardIcons(IconManager& icons) {
-	if (!icons.contains(kIncrementKey)) {
-		(void)icons.registerSvg(kIncrementKey, kIncrementSvg);
-	}
-	if (!icons.contains(kDecrementKey)) {
-		(void)icons.registerSvg(kDecrementKey, kDecrementSvg);
-	}
-	if (!icons.contains(kComboBoxOpenKey)) {
-		(void)icons.registerSvg(kComboBoxOpenKey, kComboBoxOpenSvg);
-	}
-	if (!icons.contains(kComboBoxClosedKey)) {
-		(void)icons.registerSvg(kComboBoxClosedKey, kComboBoxClosedSvg);
-	}
+void registerStandardIcons(IconManager& icons) noexcept {
+	const auto registerMissingIcon = [&icons](std::string_view iconKey, std::string_view svgSource) {
+		const auto containsIcon = icons.contains(iconKey);
+		if (containsIcon && !*containsIcon)
+			(void)icons.registerSvg(iconKey, svgSource);
+	};
+	registerMissingIcon(kIncrementKey, kIncrementSvg);
+	registerMissingIcon(kDecrementKey, kDecrementSvg);
+	registerMissingIcon(kComboBoxOpenKey, kComboBoxOpenSvg);
+	registerMissingIcon(kComboBoxClosedKey, kComboBoxClosedSvg);
 }
 
 } // namespace FlowUi::FSEL::standard_icons

@@ -101,9 +101,9 @@ void transitionViewportImageLayout(
 
 namespace FlowUi {
 #if FLOW_UI_DEV_MODE
-void ViewPortManager::visitDevViewports(void* target, DevViewportVisitor visitor) const {
+Result<bool> ViewPortManager::visitDevViewports(void* target, DevViewportVisitor visitor) const noexcept try {
 	if (!controller_ || !visitor)
-		return;
+		return false;
 	for (const auto& [key, record] : controller_->records) {
 		const auto& pending = record.pending_capture;
 		const auto& capture =
@@ -134,8 +134,11 @@ void ViewPortManager::visitDevViewports(void* target, DevViewportVisitor visitor
 				 (!pending.submission || pending.submission > storage_->completedSerial())),
 			.capture_failed = record.flags.has_flag(ViewportRecordFlag::capture_failed)};
 		if (!visitor(target, view))
-			break;
+			return false;
 	}
+	return true;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ViewportLookup));
 }
 
 Status ViewPortManager::request_dev_capture(std::string_view key) noexcept {
@@ -332,27 +335,45 @@ TextureRef ViewPort::textureRef() const noexcept {
 	return state_ ? TextureRef{
 		.handle = state_->texture, .sourceWidth = state_->width, .sourceHeight = state_->height} : TextureRef{};
 }
-void ViewPort::setRenderCallback(RenderCallback callback) {
-	if (!state_) throw FlowUiException(makeError(ErrorCode::ViewportDetached, ErrorSite::ViewportConfigure));
-	state_->renderCallback = std::move(callback);
-	state_->storage->noteManagerMutation(state_->window);
+Status ViewPort::setRenderCallback(const RenderCallback& callback) {
+	if (!state_) return unexpectedError(makeError(ErrorCode::ViewportDetached, ErrorSite::ViewportConfigure));
+	RenderCallback preparedCallback(callback);
+	try {
+		state_->storage->noteManagerMutation(state_->window);
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	}
+	state_->renderCallback.swap(preparedCallback);
+	return {};
 }
-void ViewPort::clearRenderCallback() { setRenderCallback({}); }
+Status ViewPort::clearRenderCallback() {
+	return setRenderCallback({});
+}
 bool ViewPort::hasRenderCallback() const noexcept {
 	return state_ && static_cast<bool>(state_->renderCallback);
 }
-void ViewPort::setClearColor(float r, float g, float b, float a) {
-	if (!state_) throw FlowUiException(makeError(ErrorCode::ViewportDetached, ErrorSite::ViewportConfigure));
+Status ViewPort::setClearColor(float r, float g, float b, float a) {
+	if (!state_) return unexpectedError(makeError(ErrorCode::ViewportDetached, ErrorSite::ViewportConfigure));
+	try {
+		state_->storage->noteManagerMutation(state_->window);
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	}
 	state_->clearColor = {r, g, b, a};
-	state_->storage->noteManagerMutation(state_->window);
+	return {};
 }
 std::array<float, 4> ViewPort::clearColor() const noexcept {
 	return state_ ? state_->clearColor : std::array<float, 4>{0, 0, 0, 0};
 }
-void ViewPort::setClearEveryFrame(bool enabled) {
-	if (!state_) throw FlowUiException(makeError(ErrorCode::ViewportDetached, ErrorSite::ViewportConfigure));
+Status ViewPort::setClearEveryFrame(bool enabled) {
+	if (!state_) return unexpectedError(makeError(ErrorCode::ViewportDetached, ErrorSite::ViewportConfigure));
+	try {
+		state_->storage->noteManagerMutation(state_->window);
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	}
 	state_->clearEveryFrame = enabled;
-	state_->storage->noteManagerMutation(state_->window);
+	return {};
 }
 bool ViewPort::clearEveryFrame() const noexcept {
 	return !state_ || state_->clearEveryFrame;
@@ -388,11 +409,13 @@ void ViewPortManager::init(
 	}
 }
 
-Result<bool> ViewPortManager::create(std::string_view key, const ViewPortCreateInfo& createInfo) {
+Result<bool> ViewPortManager::create(std::string_view key, const ViewPortCreateInfo& createInfo) noexcept try {
 	return create(ResourceKey{.name = key}, createInfo);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ViewportCreate));
 }
 
-Result<bool> ViewPortManager::create(ResourceKey key, const ViewPortCreateInfo& createInfo) {
+Result<bool> ViewPortManager::create(ResourceKey key, const ViewPortCreateInfo& createInfo) noexcept try {
 	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ViewportCreate));
 	try {
 		(void)viewportKey(*storage_, key, windowId_);
@@ -405,6 +428,7 @@ Result<bool> ViewPortManager::create(ResourceKey key, const ViewPortCreateInfo& 
 	}
 	const VkFormat format = createInfo.colorFormat == VK_FORMAT_UNDEFINED
 		? VK_FORMAT_R8G8B8A8_UNORM : createInfo.colorFormat;
+	storage_->noteManagerMutation(windowId_);
 	manager_storage::ViewportTargetGeneration targets{};
 	try {
 		targets = controller_->buildTargets(1, 1, format);
@@ -443,7 +467,6 @@ Result<bool> ViewPortManager::create(ResourceKey key, const ViewPortCreateInfo& 
 				manager_storage::ViewportTextureOwner{keyString, slot});
 		}
 		storage_->clearDiagnosticMark(viewportKey(*storage_, key, windowId_), 1u);
-		storage_->noteManagerMutation(windowId_);
 		return true;
 	} catch (const std::bad_alloc&) {
 		if (facadeInserted) controller_->facades.erase(keyString);
@@ -476,10 +499,14 @@ Result<bool> ViewPortManager::create(ResourceKey key, const ViewPortCreateInfo& 
 		controller_->discardUnpublished(std::move(targets));
 		return unexpectedError(makeError(ErrorCode::ResourcePublicationFailed, ErrorSite::ViewportCreate));
 	}
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ViewportCreate));
 }
 
-Result<bool> ViewPortManager::remove(std::string_view key) { return remove(ResourceKey{.name = key}); }
-Result<bool> ViewPortManager::remove(ResourceKey key) {
+Result<bool> ViewPortManager::remove(std::string_view key) noexcept try { return remove(ResourceKey{.name = key}); } catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ViewportDestroy));
+}
+Result<bool> ViewPortManager::remove(ResourceKey key) noexcept try {
 	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ViewportDestroy));
 	try {
 		(void)viewportKey(*storage_, key, windowId_);
@@ -489,6 +516,7 @@ Result<bool> ViewPortManager::remove(ResourceKey key) {
 	const std::string keyString(key.name);
 	const auto it = controller_->records.find(keyString);
 	if (it == controller_->records.end()) return false;
+	storage_->noteManagerMutation(windowId_);
 #if FLOW_UI_DEV_MODE
 	if (it->second.pending_capture.texture && !it->second.pending_capture.submission)
 		return unexpectedError(
@@ -503,37 +531,52 @@ Result<bool> ViewPortManager::remove(ResourceKey key) {
 	controller_->retireTargets(std::move(it->second.active));
 	controller_->records.erase(it);
 	controller_->facades.erase(keyString);
-	storage_->noteManagerMutation(windowId_);
 	return true;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ViewportDestroy));
 }
 
-bool ViewPortManager::contains(std::string_view key) const { return contains(ResourceKey{.name = key}); }
-bool ViewPortManager::contains(ResourceKey key) const {
-	if (!controller_ || !storage_) return false;
+Result<bool> ViewPortManager::contains(std::string_view key) const noexcept try { return contains(ResourceKey{.name = key}); } catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ViewportLookup));
+}
+Result<bool> ViewPortManager::contains(ResourceKey key) const noexcept try {
+	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ViewportLookup));
 	(void)viewportKey(*storage_, key, windowId_);
 	return controller_->records.contains(std::string(key.name));
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ViewportLookup));
 }
-ViewPort* ViewPortManager::getViewPort(std::string_view key) { return getViewPort(ResourceKey{.name = key}); }
-ViewPort* ViewPortManager::getViewPort(ResourceKey key) {
-	if (!controller_ || !storage_) return nullptr;
+Result<ViewPort*> ViewPortManager::getViewPort(std::string_view key) noexcept try { return getViewPort(ResourceKey{.name = key}); } catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ViewportLookup));
+}
+Result<ViewPort*> ViewPortManager::getViewPort(ResourceKey key) noexcept try {
+	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ViewportLookup));
 	(void)viewportKey(*storage_, key, windowId_);
 	const auto it = controller_->facades.find(std::string(key.name));
 	return it == controller_->facades.end() ? nullptr : &it->second;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ViewportLookup));
 }
-const ViewPort* ViewPortManager::getViewPort(std::string_view key) const {
+Result<const ViewPort*> ViewPortManager::getViewPort(std::string_view key) const noexcept try {
 	return getViewPort(ResourceKey{.name = key});
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ViewportLookup));
 }
-const ViewPort* ViewPortManager::getViewPort(ResourceKey key) const {
-	if (!controller_ || !storage_) return nullptr;
+Result<const ViewPort*> ViewPortManager::getViewPort(ResourceKey key) const noexcept try {
+	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ViewportLookup));
 	(void)viewportKey(*storage_, key, windowId_);
 	const auto it = controller_->facades.find(std::string(key.name));
 	return it == controller_->facades.end() ? nullptr : &it->second;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ViewportLookup));
 }
-TextureRef ViewPortManager::getTexture(std::string_view key) const {
+Result<TextureRef> ViewPortManager::getTexture(std::string_view key) const noexcept try {
 	return getTexture(ResourceKey{.name = key});
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ViewportLookup));
 }
-TextureRef ViewPortManager::getTexture(ResourceKey key) const {
-	if (!controller_ || !storage_) return {};
+Result<TextureRef> ViewPortManager::getTexture(ResourceKey key) const noexcept try {
+	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ViewportLookup));
 	const storage::ResourceKey normalized = viewportKey(*storage_, key, windowId_);
 	const auto it = controller_->records.find(std::string(key.name));
 	if (it == controller_->records.end()) {
@@ -553,11 +596,13 @@ TextureRef ViewPortManager::getTexture(ResourceKey key) const {
 		};
 	}
 	return it->second.facadeAddress ? it->second.facadeAddress->textureRef() : TextureRef{};
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ViewportLookup));
 }
 
-const ViewPortVulkanInterop& ViewPortManager::getVulkanInterop() const {
-	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ViewportLookup));
-	return controller_->interop;
+Result<std::reference_wrapper<const ViewPortVulkanInterop>> ViewPortManager::getVulkanInterop() const noexcept {
+	if (!controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ViewportLookup));
+	return std::cref(controller_->interop);
 }
 
 void ViewPortManager::onFrameStart(VulkanContext&, uint32_t frameIndex) {
@@ -696,20 +741,32 @@ static void ensureRenderTargetSize(
 	const uint32_t height = std::max(1u, record.desiredHeight);
 	if (!record.active.images.empty() && record.active.images.front().width == width &&
 		record.active.images.front().height == height) return;
-	manager_storage::ViewportTargetGeneration candidate = controller.buildTargets(width, height, record.state.colorFormat);
 	controller.reserveRetirement();
+	storageSystem.noteManagerMutation(window);
+	manager_storage::ViewportTargetGeneration candidate =
+		controller.buildTargets(width, height, record.state.colorFormat);
+	try {
+		std::unordered_map<uint64_t, manager_storage::ViewportTextureOwner> preparedOwners;
+		preparedOwners.reserve(candidate.textures.size());
+		for (uint32_t slot = 0; slot < candidate.textures.size(); ++slot) {
+			preparedOwners.emplace(candidate.textures[slot].packed(),
+				manager_storage::ViewportTextureOwner{record.state.key, slot});
+		}
+		controller.textureOwners.reserve(controller.textureOwners.size() + preparedOwners.size());
+		controller.textureOwners.merge(preparedOwners);
+	} catch (...) {
+		for (TextureHandle texture : candidate.textures)
+			controller.textureOwners.erase(texture.packed());
+		controller.discardUnpublished(std::move(candidate));
+		throw;
+	}
 	manager_storage::ViewportTargetGeneration previous = std::move(record.active);
 	record.active = std::move(candidate);
-	for (uint32_t slot = 0; slot < record.active.textures.size(); ++slot) {
-		controller.textureOwners.emplace(record.active.textures[slot].packed(),
-			manager_storage::ViewportTextureOwner{record.state.key, slot});
-	}
 	const uint32_t slot = controller.currentFrameIndex % record.active.textures.size();
 	record.state.texture = record.active.textures[slot];
 	record.state.width = static_cast<int32_t>(width);
 	record.state.height = static_cast<int32_t>(height);
 	controller.retireTargets(std::move(previous));
-	storageSystem.noteManagerMutation(window);
 }
 
 #if FLOW_UI_AGENTIC_WORKFLOW

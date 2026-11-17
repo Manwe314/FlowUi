@@ -23,57 +23,58 @@ config.dev.enabled = true;
 
 FlowUi::App app = FlowUi::makeApplication(config);
 
-FlowUi::FontFamilyId bodyFamily = app.fonts().createFamily({
+FlowUi::FontFamilyId bodyFamily = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.fonts()).get().createFamily({
     .name = "Body",
     .faces = {{.path = "assets/fonts/Inter.arfont", .pixelSize = 18.0f}},
-});
+}));
 
-app.images().registerImage("avatar", "assets/avatar.png");
-app.icons().registerFromFile("save", "assets/icons/save.svg");
-app.viewPorts().create("preview", {.clearColor = {0.02f, 0.02f, 0.03f, 1.0f}});
+(void)FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.images()).get().registerImage("avatar", "assets/avatar.png"));
+(void)FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.icons()).get().registerFromFile("save", "assets/icons/save.svg"));
+(void)FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.viewPorts()).get().create("preview", {.clearColor = {0.02f, 0.02f, 0.03f, 1.0f}}));
 
-if (FlowUi::ViewPort* preview = app.viewPorts().getViewPort("preview")) {
-    preview->setRenderCallback([](const FlowUi::ViewPortRenderContext& context) {
+if (FlowUi::ViewPort* preview = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.viewPorts()).get().getViewPort("preview"))) {
+    FlowUi::ValueOrThrow(preview->setRenderCallback([](const FlowUi::ViewPortRenderContext& context) {
         recordPreviewCommands(context);
-    });
+    }));
 }
 
-FlowUi::ShortcutId saveShortcut = app.ui().shortcuts().registerShortcut(
+const auto saveShortcut = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.ui()).get().shortcuts().registerShortcut(
     {.key = GLFW_KEY_S, .ctrl = true},
     FlowUi::ShortcutScope::Global,
     100,
     [](FlowUi::ShortcutContext& context) {
         saveDocument();
         return true;
+    }));
+
+while (!FlowUi::ValueOrThrow(app.shouldClose())) {
+    const auto frame = app.runFrame([&](FlowUi::UiManager& ui, FlowUi::WindowId) {
+        const FlowUi::FontId bodyFont = ui.resolveFont(bodyFamily, 400, FlowUi::FontStyle::Normal);
+        FlowUi::TextureRef avatar = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.images()).get().getTexture("avatar"));
+        FlowUi::TextureRef saveIcon = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.icons()).get().textureRef("save"));
+        FlowUi::TextureRef previewTexture = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.viewPorts()).get().getTexture("preview"));
+
+        ui.createElement(kToolbarButton, "toolbar/save")
+            .setParameters(ToolbarButtonParams{.icon = saveIcon, .label = "Save", .fontId = bodyFont})
+            .draw();
+
+        ui.createElement(kProfileCard, "sidebar/profile")
+            .setParameters(ProfileCardParams{.avatar = avatar, .fontId = bodyFont})
+            .draw();
+
+        ui.createElement(kSearchField, "content/search")
+            .setParameters(SearchFieldParams{.initialText = "Search", .fontId = bodyFont})
+            .draw();
+
+        ui.createElement(kPreviewPanel, "content/preview")
+            .setParameters(PreviewPanelParams{.texture = previewTexture})
+            .draw();
+
     });
-
-while (!app.shouldClose()) {
-    app.beginFrame();
-
-    FlowUi::UiManager& ui = app.ui();
-    const FlowUi::FontId bodyFont = ui.resolveFont(bodyFamily, 400, FlowUi::FontStyle::Normal);
-    FlowUi::TextureRef avatar = app.images().getTexture("avatar");
-    FlowUi::TextureRef saveIcon = app.icons().textureRef("save");
-    FlowUi::TextureRef previewTexture = app.viewPorts().getTexture("preview");
-
-    ui.createElement(kToolbarButton, "toolbar/save")
-        .setParameters(ToolbarButtonParams{.icon = saveIcon, .label = "Save", .fontId = bodyFont})
-        .draw();
-
-    ui.createElement(kProfileCard, "sidebar/profile")
-        .setParameters(ProfileCardParams{.avatar = avatar, .fontId = bodyFont})
-        .draw();
-
-    ui.createElement(kSearchField, "content/search")
-        .setParameters(SearchFieldParams{.initialText = "Search", .fontId = bodyFont})
-        .draw();
-
-    ui.createElement(kPreviewPanel, "content/preview")
-        .setParameters(PreviewPanelParams{.texture = previewTexture})
-        .draw();
-
-    app.endFrame();
-    app.drawFrame();
+    if (!frame) {
+        app.reportError(frame.error());
+        break;
+    }
 }
 ```
 
@@ -116,7 +117,7 @@ CLAY(context.clayID(), rootDeclaration) {
 }
 ```
 
-Local names resolve under parent and definition scopes; they are not concatenated path strings. `Indexed` and `Keyed` distinguish positional and stable data identities. `Global` creates a reproducible definition-scoped address, while semantic `Part` declarations name meaningful sub-elements. See [the element system](element_system.md) for capabilities, identity, and state lifetime.
+Local names resolve under parent and definition scopes; they are not concatenated path strings. `Indexed` and `Keyed` distinguish positional and stable data identities. `Global` creates a reproducible definition-scoped address, while semantic `Part` declarations name meaningful sub-elements. See [the element system](docs/concepts/element_system.md) for capabilities, identity, and state lifetime.
 
 ## Managers and Subsystems
 
@@ -152,7 +153,7 @@ The key idea is that Flow elements produce structure the modern schema and tree-
 
 Parameters are especially important for visual iteration. If a button's colors, spacing, corner radius, icon size, text style, and sizing are stored in its params struct, developer tooling can present those fields as editable data. A user can tune an instance while the app is running instead of recompiling for each small visual adjustment.
 
-Modern developer changes are reviewed and saved to `.flowui/changes/active.flowchanges`. The build generator validates the manifest and emits typed overlays for the next build, including production builds. `App::devTooling()` owns schema, catalogue, override, and bake services; the dedicated developer interface uses those same services. See [Developer Systems](../tutorials/developer_mode.md).
+Modern developer changes are reviewed and saved to `.flowui/changes/active.flowchanges`. The build generator validates the manifest and emits typed overlays for the next build, including production builds. `App::devTooling()` owns schema, catalogue, override, and bake services; the dedicated developer interface uses those same services. See [Developer Systems](docs/tutorials/developer_mode.md).
 
 The same capture system also helps with hierarchy inspection. Because FlowUi knows which element definition produced which instance id, and because ids are stable, the developer UI can show the structure of the current frame in terms of reusable Flow elements rather than only raw render commands. Internal developer elements can be excluded from capture so app-authored UI remains the focus.
 
@@ -160,7 +161,7 @@ Developer mode is optional by design. Release builds can leave it out, and norma
 
 ## What to Read Next
 
-- [Frame Lifecycle](frame_lifecycle.md)
-- [Element System](element_system.md)
-- [Managers](managers.md)
-- [Quick Start](../tutorials/quick_start.md)
+- [Frame Lifecycle](docs/concepts/frame_lifecycle.md)
+- [Element System](docs/concepts/element_system.md)
+- [Managers](docs/concepts/managers.md)
+- [Quick Start](docs/tutorials/quick_start.md)

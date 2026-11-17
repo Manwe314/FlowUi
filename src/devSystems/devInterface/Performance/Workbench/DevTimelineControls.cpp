@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineControls.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"
@@ -6,10 +7,10 @@ namespace FlowUi::devSystems::interface_elements {
 namespace interaction = FSEL::detail::selectable_surface;
 DevTimelineButtonResources::DevTimelineButtonResources([[maybe_unused]] App& app) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
-	auto& icons = app.icons();
+	auto& icons = FlowUi::ValueOrThrow(app.icons()).get();
 	interface_icons::registerDevInterfaceIcons(icons);
 	for (size_t key_index = 0; key_index < keys.size(); ++key_index)
-		textures[key_index] = icons.textureRef(keys[key_index]);
+		textures[key_index] = FlowUi::ValueOrThrow(icons.textureRef(keys[key_index]));
 #endif
 }
 void DevTimelineButton::onPressed(InteractionContext& context) {
@@ -44,7 +45,7 @@ void DevTimelineButton::buildElement(BuildContext& context) {
 			image.layout.sizing = {.width = CLAY_SIZING_FIXED(14), .height = CLAY_SIZING_FIXED(14)};
 			image.backgroundColor = interface_theme::kTextCanvas;
 			image.image.imageData = context.uiManager.imageData(icon);
-			CLAY(context.clayID("action-icon"), image) {}
+			CLAY(FlowUi::ValueOrThrow(context.clayID("action-icon")), image) {}
 		} else
 			timeline_ui::text(context, context.params.label, interface_theme::kTextCanvas);
 		if (!context.params.icon_key.empty() &&

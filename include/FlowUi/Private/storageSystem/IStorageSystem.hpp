@@ -76,9 +76,9 @@ public:
 	[[nodiscard]] virtual ManagerRecordHandle findManagerRecord(
 		ResourceKey key, ResourceKind kind) const noexcept = 0;
 	[[nodiscard]] virtual void* managerRecordData(
-		ManagerRecordHandle handle, ResourceKind kind) noexcept = 0;
+		ManagerRecordHandle handle, ResourceKind kind) = 0;
 	[[nodiscard]] virtual const void* managerRecordData(
-		ManagerRecordHandle handle, ResourceKind kind) const noexcept = 0;
+		ManagerRecordHandle handle, ResourceKind kind) const = 0;
 	virtual bool removeManagerRecord(ResourceKey key, ResourceKind kind) = 0;
 	virtual void releaseWindowManagerRecords(WindowId window) noexcept = 0;
 	[[nodiscard]] virtual PersistentRecordHandle createPersistentRecord(

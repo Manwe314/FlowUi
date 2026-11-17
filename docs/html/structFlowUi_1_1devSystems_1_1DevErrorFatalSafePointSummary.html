@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,28 +106,159 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevErrorFatalSafePointSummary Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevErrorTypes_8hpp_source.html">DevErrorTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:ad11c9ee89b8b0c4c1947d3bdadab2ca9" id="r_ad11c9ee89b8b0c4c1947d3bdadab2ca9"><td class="memItemLeft"><a id="ad11c9ee89b8b0c4c1947d3bdadab2ca9" name="ad11c9ee89b8b0c4c1947d3bdadab2ca9"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>revision</b> = 0u</td></tr>
-<tr class="memitem:ac830ff903ea69698bd939895eebd63a5" id="r_ac830ff903ea69698bd939895eebd63a5"><td class="memItemLeft"><a id="ac830ff903ea69698bd939895eebd63a5" name="ac830ff903ea69698bd939895eebd63a5"></a>
-AppTickId&#160;</td><td class="memItemRight"><b>appTick</b> = 0u</td></tr>
-<tr class="memitem:a829522da92194c047e33d16efddc3918" id="r_a829522da92194c047e33d16efddc3918"><td class="memItemLeft"><a id="a829522da92194c047e33d16efddc3918" name="a829522da92194c047e33d16efddc3918"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>timingMutationSequence</b> = 0u</td></tr>
-<tr class="memitem:a460e7828084b4354ce34c3fa71d4fccd" id="r_a460e7828084b4354ce34c3fa71d4fccd"><td class="memItemLeft"><a id="a460e7828084b4354ce34c3fa71d4fccd" name="a460e7828084b4354ce34c3fa71d4fccd"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>timingDroppedRecords</b> = 0u</td></tr>
-<tr class="memitem:aae149045aa9bf0fae7223ee4af33e5e6" id="r_aae149045aa9bf0fae7223ee4af33e5e6"><td class="memItemLeft"><a id="aae149045aa9bf0fae7223ee4af33e5e6" name="aae149045aa9bf0fae7223ee4af33e5e6"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>memoryGeneration</b> = 0u</td></tr>
-<tr class="memitem:a236065a15ee006c4ffae7422cf0b61f3" id="r_a236065a15ee006c4ffae7422cf0b61f3"><td class="memItemLeft"><a id="a236065a15ee006c4ffae7422cf0b61f3" name="a236065a15ee006c4ffae7422cf0b61f3"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>memoryMutationSequence</b> = 0u</td></tr>
-<tr class="memitem:a90d7886b62404d8b86c4cf998fdfbd33" id="r_a90d7886b62404d8b86c4cf998fdfbd33"><td class="memItemLeft"><a id="a90d7886b62404d8b86c4cf998fdfbd33" name="a90d7886b62404d8b86c4cf998fdfbd33"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>memoryDroppedOperations</b> = 0u</td></tr>
-<tr class="memitem:a77d788eab403d0ccb5b341aa31f0a4fc" id="r_a77d788eab403d0ccb5b341aa31f0a4fc"><td class="memItemLeft"><a id="a77d788eab403d0ccb5b341aa31f0a4fc" name="a77d788eab403d0ccb5b341aa31f0a4fc"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>errorRecordedEvents</b> = 0u</td></tr>
-<tr class="memitem:a1b6707f6bbe7bb1e93227c9667b1e768" id="r_a1b6707f6bbe7bb1e93227c9667b1e768"><td class="memItemLeft"><a id="a1b6707f6bbe7bb1e93227c9667b1e768" name="a1b6707f6bbe7bb1e93227c9667b1e768"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>errorDroppedEvents</b> = 0u</td></tr>
+<tr class="memitem:ad11c9ee89b8b0c4c1947d3bdadab2ca9" id="r_ad11c9ee89b8b0c4c1947d3bdadab2ca9"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ad11c9ee89b8b0c4c1947d3bdadab2ca9">revision</a> = 0u</td></tr>
+<tr class="memitem:ac830ff903ea69698bd939895eebd63a5" id="r_ac830ff903ea69698bd939895eebd63a5"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a>&#160;</td><td class="memItemRight"><a class="el" href="#ac830ff903ea69698bd939895eebd63a5">appTick</a> = 0u</td></tr>
+<tr class="memitem:a829522da92194c047e33d16efddc3918" id="r_a829522da92194c047e33d16efddc3918"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a829522da92194c047e33d16efddc3918">timingMutationSequence</a> = 0u</td></tr>
+<tr class="memitem:a460e7828084b4354ce34c3fa71d4fccd" id="r_a460e7828084b4354ce34c3fa71d4fccd"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a460e7828084b4354ce34c3fa71d4fccd">timingDroppedRecords</a> = 0u</td></tr>
+<tr class="memitem:aae149045aa9bf0fae7223ee4af33e5e6" id="r_aae149045aa9bf0fae7223ee4af33e5e6"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#aae149045aa9bf0fae7223ee4af33e5e6">memoryGeneration</a> = 0u</td></tr>
+<tr class="memitem:a236065a15ee006c4ffae7422cf0b61f3" id="r_a236065a15ee006c4ffae7422cf0b61f3"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a236065a15ee006c4ffae7422cf0b61f3">memoryMutationSequence</a> = 0u</td></tr>
+<tr class="memitem:a90d7886b62404d8b86c4cf998fdfbd33" id="r_a90d7886b62404d8b86c4cf998fdfbd33"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a90d7886b62404d8b86c4cf998fdfbd33">memoryDroppedOperations</a> = 0u</td></tr>
+<tr class="memitem:a77d788eab403d0ccb5b341aa31f0a4fc" id="r_a77d788eab403d0ccb5b341aa31f0a4fc"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a77d788eab403d0ccb5b341aa31f0a4fc">errorRecordedEvents</a> = 0u</td></tr>
+<tr class="memitem:a1b6707f6bbe7bb1e93227c9667b1e768" id="r_a1b6707f6bbe7bb1e93227c9667b1e768"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a1b6707f6bbe7bb1e93227c9667b1e768">errorDroppedEvents</a> = 0u</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Last published allocation-free summary of monitoring state, reusable when live subsystem inspection is unsafe. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="ac830ff903ea69698bd939895eebd63a5" name="ac830ff903ea69698bd939895eebd63a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac830ff903ea69698bd939895eebd63a5">&#9670;&#160;</a></span>appTick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> FlowUi::devSystems::DevErrorFatalSafePointSummary::appTick = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Application tick associated with this evidence; zero means unassigned. </p>
+
+</div>
+</div>
+<a id="a1b6707f6bbe7bb1e93227c9667b1e768" name="a1b6707f6bbe7bb1e93227c9667b1e768"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1b6707f6bbe7bb1e93227c9667b1e768">&#9670;&#160;</a></span>errorDroppedEvents</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorFatalSafePointSummary::errorDroppedEvents = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Diagnostic events dropped as observed at the safe point. </p>
+
+</div>
+</div>
+<a id="a77d788eab403d0ccb5b341aa31f0a4fc" name="a77d788eab403d0ccb5b341aa31f0a4fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a77d788eab403d0ccb5b341aa31f0a4fc">&#9670;&#160;</a></span>errorRecordedEvents</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorFatalSafePointSummary::errorRecordedEvents = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Diagnostic events recorded as observed at the safe point. </p>
+
+</div>
+</div>
+<a id="a90d7886b62404d8b86c4cf998fdfbd33" name="a90d7886b62404d8b86c4cf998fdfbd33"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a90d7886b62404d8b86c4cf998fdfbd33">&#9670;&#160;</a></span>memoryDroppedOperations</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorFatalSafePointSummary::memoryDroppedOperations = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Dropped memory operations observed at the safe point. </p>
+
+</div>
+</div>
+<a id="aae149045aa9bf0fae7223ee4af33e5e6" name="aae149045aa9bf0fae7223ee4af33e5e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aae149045aa9bf0fae7223ee4af33e5e6">&#9670;&#160;</a></span>memoryGeneration</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorFatalSafePointSummary::memoryGeneration = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Memory history generation observed at the safe point. </p>
+
+</div>
+</div>
+<a id="a236065a15ee006c4ffae7422cf0b61f3" name="a236065a15ee006c4ffae7422cf0b61f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a236065a15ee006c4ffae7422cf0b61f3">&#9670;&#160;</a></span>memoryMutationSequence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorFatalSafePointSummary::memoryMutationSequence = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Memory operation sequence observed at the safe point. </p>
+
+</div>
+</div>
+<a id="ad11c9ee89b8b0c4c1947d3bdadab2ca9" name="ad11c9ee89b8b0c4c1947d3bdadab2ca9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad11c9ee89b8b0c4c1947d3bdadab2ca9">&#9670;&#160;</a></span>revision</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorFatalSafePointSummary::revision = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Revision identifying the observed metadata, report or safe-point state. </p>
+
+</div>
+</div>
+<a id="a460e7828084b4354ce34c3fa71d4fccd" name="a460e7828084b4354ce34c3fa71d4fccd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a460e7828084b4354ce34c3fa71d4fccd">&#9670;&#160;</a></span>timingDroppedRecords</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorFatalSafePointSummary::timingDroppedRecords = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Timing records dropped as observed at the safe point. </p>
+
+</div>
+</div>
+<a id="a829522da92194c047e33d16efddc3918" name="a829522da92194c047e33d16efddc3918"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a829522da92194c047e33d16efddc3918">&#9670;&#160;</a></span>timingMutationSequence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorFatalSafePointSummary::timingMutationSequence = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Last timing history mutation sequence observed at the safe point. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/errors/<a class="el" href="DevErrorTypes_8hpp_source.html">DevErrorTypes.hpp</a></li>
 </ul>
@@ -144,7 +275,7 @@ uint64_t&#160;</td><td class="memItemRight"><b>errorDroppedEvents</b> = 0u</td><
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorFatalSafePointSummary.html">DevErrorFatalSafePointSummary</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorFatalSafePointSummary.html">DevErrorFatalSafePointSummary</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

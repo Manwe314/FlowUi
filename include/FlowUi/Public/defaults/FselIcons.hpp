@@ -53,8 +53,14 @@ inline constexpr std::string_view kComboBoxClosedSvg = R"svg(
  * Registration failures are ignored; controls fall back to empty references or
  * their built-in disclosure rendering when artwork is unavailable.
  * @param icons Application icon manager that owns the registered SVG resources.
+ * @par Example
+ * @code{.cpp}
+ * #if FLOWUI_INCLUDE_ICON_MANAGER
+ * FlowUi::FSEL::standard_icons::registerStandardIcons(icons);
+ * #endif
+ * @endcode
  */
-void registerStandardIcons(IconManager& icons);
+void registerStandardIcons(IconManager& icons) noexcept;
 #endif
 
 } // namespace FlowUi::FSEL::standard_icons

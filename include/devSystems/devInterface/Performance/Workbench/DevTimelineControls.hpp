@@ -1,3 +1,4 @@
+#include "FlowUi/Private/ApiBoundary.hpp"
 #pragma once
 #include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,44 +106,67 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevBakeEntry Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Owned, serializable assignment to an element field or named theme field.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevBakeTypes_8hpp_source.html">DevBakeTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a76f113bf802ce39b4e45b7cf03226724" id="r_a76f113bf802ce39b4e45b7cf03226724"><td class="memItemLeft"><a id="a76f113bf802ce39b4e45b7cf03226724" name="a76f113bf802ce39b4e45b7cf03226724"></a>
-DevBakeTargetKind&#160;</td><td class="memItemRight"><b>targetKind</b> = DevBakeTargetKind::Element</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#af0068e3f1b2da03f61d4b4755ca84e87">DevBakeTargetKind</a>&#160;</td><td class="memItemRight"><b>targetKind</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#af0068e3f1b2da03f61d4b4755ca84e87a231afe47f3f37d3808096b36c28b4ded">DevBakeTargetKind::Element</a></td></tr>
+<tr class="memdesc:a76f113bf802ce39b4e45b7cf03226724"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether this assignment targets element parameters or a theme. <br /></td></tr>
 <tr class="memitem:afa9da1ae2f07336505e8d39865254151" id="r_afa9da1ae2f07336505e8d39865254151"><td class="memItemLeft"><a id="afa9da1ae2f07336505e8d39865254151" name="afa9da1ae2f07336505e8d39865254151"></a>
-DevOverrideScope&#160;</td><td class="memItemRight"><b>targetScope</b> = DevOverrideScope::Definition</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a369e5c7d42272835cb091ca07475631d">DevOverrideScope</a>&#160;</td><td class="memItemRight"><b>targetScope</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a369e5c7d42272835cb091ca07475631da0b890b1926b90387673882e6ccae7fdc">DevOverrideScope::Definition</a></td></tr>
+<tr class="memdesc:afa9da1ae2f07336505e8d39865254151"><td class="mdescLeft">&#160;</td><td class="mdescRight">Definition-wide or exact-instance scope for an element assignment. <br /></td></tr>
 <tr class="memitem:a0d77a754dfaa6be40ec898680e450ced" id="r_a0d77a754dfaa6be40ec898680e450ced"><td class="memItemLeft"><a id="a0d77a754dfaa6be40ec898680e450ced" name="a0d77a754dfaa6be40ec898680e450ced"></a>
 <a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a>&#160;</td><td class="memItemRight"><b>definition</b> {}</td></tr>
+<tr class="memdesc:a0d77a754dfaa6be40ec898680e450ced"><td class="mdescLeft">&#160;</td><td class="mdescRight">Element definition identity; unused for theme assignments. <br /></td></tr>
 <tr class="memitem:a5c8c79588476a0d35c2015bee9a2bf93" id="r_a5c8c79588476a0d35c2015bee9a2bf93"><td class="memItemLeft"><a id="a5c8c79588476a0d35c2015bee9a2bf93" name="a5c8c79588476a0d35c2015bee9a2bf93"></a>
-tooling::DevTypeId&#160;</td><td class="memItemRight"><b>themeType</b> = 0</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a22de4acaf41684da79c8c04eecfa2ed7">tooling::DevTypeId</a>&#160;</td><td class="memItemRight"><b>themeType</b> = 0</td></tr>
+<tr class="memdesc:a5c8c79588476a0d35c2015bee9a2bf93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reflected theme type identity; unused for element assignments. <br /></td></tr>
 <tr class="memitem:a17a34888e11ef946a768cb0a48ddfea7" id="r_a17a34888e11ef946a768cb0a48ddfea7"><td class="memItemLeft"><a id="a17a34888e11ef946a768cb0a48ddfea7" name="a17a34888e11ef946a768cb0a48ddfea7"></a>
 std::string&#160;</td><td class="memItemRight"><b>themeVariant</b> {}</td></tr>
+<tr class="memdesc:a17a34888e11ef946a768cb0a48ddfea7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Owned name of the theme variant receiving this assignment. <br /></td></tr>
 <tr class="memitem:ad8b300785da7f71ba366960f13abcf13" id="r_ad8b300785da7f71ba366960f13abcf13"><td class="memItemLeft"><a id="ad8b300785da7f71ba366960f13abcf13" name="ad8b300785da7f71ba366960f13abcf13"></a>
 ::FlowUi::detail::element::ElementInstanceKey&#160;</td><td class="memItemRight"><b>instanceKey</b> {}</td></tr>
+<tr class="memdesc:ad8b300785da7f71ba366960f13abcf13"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exact element instance key when targetScope selects an instance. <br /></td></tr>
 <tr class="memitem:a275b48fd508f6d2ee87ba881337e3484" id="r_a275b48fd508f6d2ee87ba881337e3484"><td class="memItemLeft"><a id="a275b48fd508f6d2ee87ba881337e3484" name="a275b48fd508f6d2ee87ba881337e3484"></a>
 std::string&#160;</td><td class="memItemRight"><b>instanceDebugLabel</b> {}</td></tr>
+<tr class="memdesc:a275b48fd508f6d2ee87ba881337e3484"><td class="mdescLeft">&#160;</td><td class="mdescRight">Owned diagnostic instance label; does not replace numeric identity. <br /></td></tr>
 <tr class="memitem:a31d4f296cb56118ac25cbad593ac422c" id="r_a31d4f296cb56118ac25cbad593ac422c"><td class="memItemLeft"><a id="a31d4f296cb56118ac25cbad593ac422c" name="a31d4f296cb56118ac25cbad593ac422c"></a>
-tooling::DevFieldId&#160;</td><td class="memItemRight"><b>fieldId</b> = 0</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a65e6a4afe8c8a92eb20237f39499bf4f">tooling::DevFieldId</a>&#160;</td><td class="memItemRight"><b>fieldId</b> = 0</td></tr>
+<tr class="memdesc:a31d4f296cb56118ac25cbad593ac422c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reflected leaf field identity. <br /></td></tr>
 <tr class="memitem:ad61c65c54f01675a0e3375de02b5629d" id="r_ad61c65c54f01675a0e3375de02b5629d"><td class="memItemLeft"><a id="ad61c65c54f01675a0e3375de02b5629d" name="ad61c65c54f01675a0e3375de02b5629d"></a>
 std::string&#160;</td><td class="memItemRight"><b>fieldPath</b> {}</td></tr>
+<tr class="memdesc:ad61c65c54f01675a0e3375de02b5629d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Complete nested member path used for generated assignments. <br /></td></tr>
 <tr class="memitem:a1adba57e6cd53e77adb328de5f5e710a" id="r_a1adba57e6cd53e77adb328de5f5e710a"><td class="memItemLeft"><a id="a1adba57e6cd53e77adb328de5f5e710a" name="a1adba57e6cd53e77adb328de5f5e710a"></a>
-tooling::DevTypeId&#160;</td><td class="memItemRight"><b>valueType</b> = 0</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a22de4acaf41684da79c8c04eecfa2ed7">tooling::DevTypeId</a>&#160;</td><td class="memItemRight"><b>valueType</b> = 0</td></tr>
+<tr class="memdesc:a1adba57e6cd53e77adb328de5f5e710a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reflected type identity of the assigned value. <br /></td></tr>
 <tr class="memitem:ac40b71f121969381086397a8ac5914ce" id="r_ac40b71f121969381086397a8ac5914ce"><td class="memItemLeft"><a id="ac40b71f121969381086397a8ac5914ce" name="ac40b71f121969381086397a8ac5914ce"></a>
 std::string&#160;</td><td class="memItemRight"><b>valueTypeName</b> {}</td></tr>
+<tr class="memdesc:ac40b71f121969381086397a8ac5914ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Owned C++ value-type name used for diagnostics and generation. <br /></td></tr>
 <tr class="memitem:a9071d54ef367c54cc61080498ced2c97" id="r_a9071d54ef367c54cc61080498ced2c97"><td class="memItemLeft"><a id="a9071d54ef367c54cc61080498ced2c97" name="a9071d54ef367c54cc61080498ced2c97"></a>
 std::string&#160;</td><td class="memItemRight"><b>ownerCppType</b> {}</td></tr>
+<tr class="memdesc:a9071d54ef367c54cc61080498ced2c97"><td class="mdescLeft">&#160;</td><td class="mdescRight">Complete C++ owner type used by the code generator. <br /></td></tr>
 <tr class="memitem:abf8dd412fde2112b5fb9178bef7bde16" id="r_abf8dd412fde2112b5fb9178bef7bde16"><td class="memItemLeft"><a id="abf8dd412fde2112b5fb9178bef7bde16" name="abf8dd412fde2112b5fb9178bef7bde16"></a>
 std::string&#160;</td><td class="memItemRight"><b>sourceHeader</b> {}</td></tr>
+<tr class="memdesc:abf8dd412fde2112b5fb9178bef7bde16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Header to include when compiling the generated assignment. <br /></td></tr>
 <tr class="memitem:aa8a1a03fd512e8c570f9a5efdf0b585f" id="r_aa8a1a03fd512e8c570f9a5efdf0b585f"><td class="memItemLeft"><a id="aa8a1a03fd512e8c570f9a5efdf0b585f" name="aa8a1a03fd512e8c570f9a5efdf0b585f"></a>
 std::string&#160;</td><td class="memItemRight"><b>valueJson</b> {}</td></tr>
+<tr class="memdesc:aa8a1a03fd512e8c570f9a5efdf0b585f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Owned JSON encoding of the reflected value. <br /></td></tr>
 <tr class="memitem:ad3af82edba30fade4c66cdb4597f1408" id="r_ad3af82edba30fade4c66cdb4597f1408"><td class="memItemLeft"><a id="ad3af82edba30fade4c66cdb4597f1408" name="ad3af82edba30fade4c66cdb4597f1408"></a>
 std::string&#160;</td><td class="memItemRight"><b>cppValue</b> {}</td></tr>
+<tr class="memdesc:ad3af82edba30fade4c66cdb4597f1408"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validated C++ initializer encoding of the reflected value. <br /></td></tr>
 <tr class="memitem:ae01483a2938b5ad9897ebbfcc64eeb09" id="r_ae01483a2938b5ad9897ebbfcc64eeb09"><td class="memItemLeft"><a id="ae01483a2938b5ad9897ebbfcc64eeb09" name="ae01483a2938b5ad9897ebbfcc64eeb09"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevBakeProvenance.html">DevBakeProvenance</a>&#160;</td><td class="memItemRight"><b>provenance</b> {}</td></tr>
+<tr class="memdesc:ae01483a2938b5ad9897ebbfcc64eeb09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Owned authorship metadata for this assignment. <br /></td></tr>
 <tr class="memitem:acd129ef0bf50305a22e46550bc8fbfb9" id="r_acd129ef0bf50305a22e46550bc8fbfb9"><td class="memItemLeft">std::vector&lt; std::pair&lt; std::string, std::string &gt; &gt;&#160;</td><td class="memItemRight"><a class="el" href="#acd129ef0bf50305a22e46550bc8fbfb9">preserved_metadata</a> {}</td></tr>
 </table>
-<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Owned, serializable assignment to an element field or named theme field. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="acd129ef0bf50305a22e46550bc8fbfb9" name="acd129ef0bf50305a22e46550bc8fbfb9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acd129ef0bf50305a22e46550bc8fbfb9">&#9670;&#160;</a></span>preserved_metadata</h2>
 
@@ -175,7 +198,7 @@ std::string&#160;</td><td class="memItemRight"><b>cppValue</b> {}</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevBakeEntry.html">DevBakeEntry</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevBakeEntry.html">DevBakeEntry</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

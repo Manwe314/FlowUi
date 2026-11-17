@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Private/ApiBoundary.hpp"
+
 #include "FlowUi/Public/BuildConfig.hpp"
 
 #include <array>
@@ -77,191 +79,198 @@ public:
 	using RenderCallback = std::function<void(const ViewPortRenderContext&)>;
 
 	/**
-	 * @brief Return this viewport's key.
+	 * @brief Borrow this viewport's registration key.
 	 *
-	 * @return Stable key used to create and look up the viewport.
+	 * The view is invalid after removal or manager/window destruction.
 	 *
-	 * @code{.cpp}
-	 * if (const FlowUi::ViewPort* viewport = app.viewPorts().getViewPort("scene")) {
-	 *     std::string key(viewport->getKey());
-	 * }
-	 * @endcode
+	 * @return Returns a view of the manager-owned key, or an empty view when detached.
 	 */
 	[[nodiscard]] std::string_view getKey() const noexcept;
 
 	/**
-	 * @brief Return whether the viewport has a non-zero render size.
+	 * @brief Test whether the current render target has nonzero width and height.
 	 *
-	 * @retval true The viewport currently has positive width and height.
-	 * @retval false The viewport has not been sized yet or is currently empty.
+	 * A newly created viewport normally starts at 1x1; later sizing follows UI image usage.
 	 *
-	 * @code{.cpp}
-	 * if (viewport->hasValidSize()) {
-	 *     const VkExtent2D extent = viewport->getSize();
-	 * }
-	 * @endcode
+	 * @return Returns false when detached or unsized.
 	 */
 	[[nodiscard]] bool hasValidSize() const noexcept;
 
 	/**
-	 * @brief Return the current render target size.
+	 * @brief Read the current viewport render extent in framebuffer pixels.
 	 *
-	 * ViewPortManager derives this size from the largest UI image area that uses
-	 * the viewport texture in the current frame, scaled to framebuffer pixels.
+	 * The largest UI image area referencing this viewport drives resizing, with framebuffer scale and configured hysteresis.
 	 *
-	 * @return Current viewport extent in pixels. Width or height may be zero
-	 * before the viewport has been referenced and sized.
-	 *
-	 * @code{.cpp}
-	 * const VkExtent2D extent = viewport->getSize();
-	 * @endcode
+	 * @return Returns VkExtent2D; detached/unsized state may contain zero dimensions.
 	 */
 	[[nodiscard]] VkExtent2D getSize() const noexcept;
 
 	/**
-	 * @brief Return a texture reference for this viewport.
+	 * @brief Read this viewport's current frame-slot TextureRef.
 	 *
-	 * The returned TextureRef points at the viewport image for the currently
-	 * active frame slot. For UI emission by key, ViewPortManager::getTexture()
-	 * is usually more convenient.
+	 * Reacquire per frame and after resizing; ViewPortManager::getTexture() is normally more convenient for keyed UI emission.
 	 *
-	 * @return TextureRef that can be stored in Clay image data.
-	 *
-	 * @code{.cpp}
-	 * Clay_ImageElementConfig image{};
-	 * image.imageData = context.uiManager.imageData(viewport->textureRef());
-	 * @endcode
+	 * @return Returns an unavailable TextureRef when detached.
 	 */
 	[[nodiscard]] TextureRef textureRef() const noexcept;
 
 	/**
-	 * @brief Set the viewport render callback.
+	 * @brief Prepare and publish an owned viewport render callback.
 	 *
-	 * The callback records viewport drawing commands into the secondary command
-	 * buffer provided by ViewPortRenderContext. FlowUi begins and ends that
-	 * command buffer; the callback should not call vkBeginCommandBuffer() or
-	 * vkEndCommandBuffer().
+	 * FlowUi begins/ends the provided secondary command buffer and owns the surrounding pass/transitions. Record commands only; do not begin/end/submit it or destroy App-owned handles. The generic overload constructs an owned std::function before publication. The shared_ptr overload retains its payload until the callback is replaced/cleared and rejects null payloads.
 	 *
-	 * @param callback Callback invoked when the viewport is rendered. Passing an
-	 * empty callback disables custom rendering.
-	 *
-	 * @warning The callback must not destroy App-owned Vulkan handles exposed by
-	 * ViewPortRenderContext::vulkan.
+	 * @return Status reports detached/phase/configuration validation failures without replacing the previous callback. An empty RenderCallback disables rendering.
+	 * @throws Application callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.
 	 *
 	 * @code{.cpp}
-	 * viewport->setRenderCallback([](const FlowUi::ViewPortRenderContext& ctx) {
-	 *     VkViewport vkViewport{};
-	 *     vkViewport.width = static_cast<float>(ctx.extent.width);
-	 *     vkViewport.height = static_cast<float>(ctx.extent.height);
-	 *     vkViewport.maxDepth = 1.0f;
-	 *     vkCmdSetViewport(ctx.commandBuffer, 0, 1, &vkViewport);
-	 *     // Record draw commands here. Do not begin or end ctx.commandBuffer.
-	 * });
+	 * const FlowUi::ViewPort::RenderCallback callback = [](const FlowUi::ViewPortRenderContext& context) {
+	 *     VkViewport dynamicViewport{};
+	 *     dynamicViewport.width = static_cast<float>(context.extent.width);
+	 *     dynamicViewport.height = static_cast<float>(context.extent.height);
+	 *     dynamicViewport.maxDepth = 1.0f;
+	 *     vkCmdSetViewport(context.commandBuffer, 0, 1, &dynamicViewport);
+	 * };
+	 * auto result = viewport.setRenderCallback(callback);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
 	 * @endcode
 	 */
-	void setRenderCallback(RenderCallback callback);
-
+	[[nodiscard]] Status setRenderCallback(const RenderCallback& callback);
 	/**
-	 * @brief Set the viewport render callback while retaining typed user data.
+	 * @brief Prepare and publish an owned viewport render callback.
 	 *
-	 * This overload keeps userData alive for as long as the callback remains set
-	 * and passes the referenced object to the callback after the render context.
+	 * FlowUi begins/ends the provided secondary command buffer and owns the surrounding pass/transitions. Record commands only; do not begin/end/submit it or destroy App-owned handles. The generic overload constructs an owned std::function before publication. The shared_ptr overload retains its payload until the callback is replaced/cleared and rejects null payloads.
 	 *
-	 * @tparam T User data object type.
-	 * @tparam Fn Callable type invocable with
-	 * (const ViewPortRenderContext&, T&).
-	 * @param userData Shared payload retained by the callback.
-	 * @param callback Callable invoked for viewport rendering.
-	 *
-	 * @throws FlowUiException with ViewportConfigurationInvalid if userData is null.
+	 * @return Status reports detached/phase/configuration validation failures without replacing the previous callback. An empty RenderCallback disables rendering.
+	 * @throws Application callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.
 	 *
 	 * @code{.cpp}
-	 * struct SceneRenderer {
-	 *     void render(const FlowUi::ViewPortRenderContext& ctx);
-	 * };
+	 * auto result = viewport.setRenderCallback([](const FlowUi::ViewPortRenderContext& context) {
+	 *     VkViewport dynamicViewport{};
+	 *     dynamicViewport.width = static_cast<float>(context.extent.width);
+	 *     dynamicViewport.height = static_cast<float>(context.extent.height);
+	 *     dynamicViewport.maxDepth = 1.0f;
+	 *     vkCmdSetViewport(context.commandBuffer, 0, 1, &dynamicViewport);
+	 * });
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * @endcode
+	 */
+	template <typename Callback>
+		requires (!std::is_same_v<std::remove_cvref_t<Callback>, RenderCallback>)
+	[[nodiscard]] Status setRenderCallback(Callback&& callback) {
+		return setRenderCallback(RenderCallback(std::forward<Callback>(callback)));
+	}
+
+
+	/**
+	 * @brief Prepare and publish an owned viewport render callback.
 	 *
-	 * auto scene = std::make_shared<SceneRenderer>();
-	 * viewport->setRenderCallback(
-	 *     scene,
-	 *     [](const FlowUi::ViewPortRenderContext& ctx, SceneRenderer& renderer) {
-	 *         renderer.render(ctx);
-	 *     });
+	 * FlowUi begins/ends the provided secondary command buffer and owns the surrounding pass/transitions. Record commands only; do not begin/end/submit it or destroy App-owned handles. The generic overload constructs an owned std::function before publication. The shared_ptr overload retains its payload until the callback is replaced/cleared and rejects null payloads.
+	 *
+	 * @return Status reports detached/phase/configuration validation failures without replacing the previous callback. An empty RenderCallback disables rendering.
+	 * @throws Application callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.
+	 *
+	 * @code{.cpp}
+	 * auto blendConstants = std::make_shared<std::array<float, 4>>(
+	 *     std::array<float, 4>{1.0f, 1.0f, 1.0f, 1.0f});
+	 * auto result = viewport.setRenderCallback(std::move(blendConstants), [](const FlowUi::ViewPortRenderContext& context, std::array<float, 4>& constants) {
+	 *     vkCmdSetBlendConstants(context.commandBuffer, constants.data());
+	 * });
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
 	 * @endcode
 	 */
 	template <typename T, typename Fn>
-	void setRenderCallback(std::shared_ptr<T> userData, Fn&& callback) {
+	[[nodiscard]] Status setRenderCallback(std::shared_ptr<T> userData, Fn&& callback) {
 		if (!userData) {
-			throw FlowUiException(makeError(ErrorCode::ViewportConfigurationInvalid, ErrorSite::ViewportConfigure));
+			return unexpectedError(makeError(ErrorCode::ViewportConfigurationInvalid, ErrorSite::ViewportConfigure));
 		}
 		using CallbackType = std::decay_t<Fn>;
-		setRenderCallback([payload = std::move(userData), typedCallback = CallbackType(std::forward<Fn>(callback))](
+		return setRenderCallback([payload = std::move(userData), typedCallback = CallbackType(std::forward<Fn>(callback))](
 			const ViewPortRenderContext& context) mutable {
 			typedCallback(context, *payload);
 		});
 	}
 
 	/**
-	 * @brief Clear the viewport render callback.
+	 * @brief Clear the installed viewport render callback.
 	 *
-	 * After clearing, FlowUi still manages the viewport texture, but no custom
-	 * draw commands are recorded for it.
+	 * The texture remains managed and may still be cleared; no custom drawing callback is invoked.
+	 *
+	 * @return Status reports detached/phase validation failure without replacing the existing callback.
+	 * @throws Application callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.
 	 *
 	 * @code{.cpp}
-	 * viewport->clearRenderCallback();
+	 * auto result = viewport.clearRenderCallback();
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
 	 * @endcode
 	 */
-	void clearRenderCallback();
+	[[nodiscard]] Status clearRenderCallback();
 
 	/**
-	 * @brief Return whether a render callback is set.
+	 * @brief Test whether this viewport has an installed callback.
 	 *
-	 * @retval true A render callback is installed.
-	 * @retval false No render callback is installed.
+	 * This is a direct noexcept observation.
+	 *
+	 * @return Returns false when detached or no callback is installed.
 	 */
 	[[nodiscard]] bool hasRenderCallback() const noexcept;
 
 	/**
-	 * @brief Set viewport clear color.
+	 * @brief Publish the RGBA viewport clear color.
 	 *
-	 * @param r Red channel.
-	 * @param g Green channel.
-	 * @param b Blue channel.
-	 * @param a Alpha channel.
+	 * The four float channels are stored as provided.
+	 *
+	 * @return Status reports detached/phase validation failures without changing the color.
+	 * @throws Application callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.
 	 *
 	 * @code{.cpp}
-	 * viewport->setClearColor(0.02f, 0.02f, 0.03f, 1.0f);
+	 * auto result = viewport.setClearColor(0.02f, 0.02f, 0.03f, 1.0f);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
 	 * @endcode
 	 */
-	void setClearColor(float r, float g, float b, float a);
+	[[nodiscard]] Status setClearColor(float r, float g, float b, float a);
 
 	/**
-	 * @brief Return viewport clear color.
+	 * @brief Read the viewport's RGBA clear color.
 	 *
-	 * @return RGBA clear color used by the viewport render pass.
+	 * This is a direct noexcept observation.
+	 *
+	 * @return Returns a copied `std::array<float, 4>`; detached state returns zeros.
 	 */
 	[[nodiscard]] std::array<float, 4> clearColor() const noexcept;
 
 	/**
-	 * @brief Set whether the viewport clears every frame.
+	 * @brief Choose whether every pass clears the viewport.
 	 *
-	 * When disabled, FlowUi loads the existing image contents after the image has
-	 * been initialized. This can be useful for persistent render targets.
+	 * false preserves image contents where available after the image's required initialization clear.
 	 *
-	 * @param enabled true to clear each frame, false to preserve previous
-	 * contents when possible.
+	 * @return Status reports detached/phase validation failures without changing the policy.
+	 * @throws Application callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.
 	 *
 	 * @code{.cpp}
-	 * viewport->setClearEveryFrame(false);
+	 * auto result = viewport.setClearEveryFrame(false);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
 	 * @endcode
 	 */
-	void setClearEveryFrame(bool enabled);
+	[[nodiscard]] Status setClearEveryFrame(bool enabled);
 
 	/**
-	 * @brief Return whether the viewport clears every frame.
+	 * @brief Read the viewport clear policy.
 	 *
-	 * @retval true The viewport pass clears before rendering each frame.
-	 * @retval false The viewport pass loads previous contents after
-	 * initialization.
+	 * false means previous initialized contents can be loaded.
+	 *
+	 * @return Returns the stored policy; detached state returns true.
 	 */
 	[[nodiscard]] bool clearEveryFrame() const noexcept;
 
@@ -356,13 +365,68 @@ public:
 	};
 	/** @brief Synchronous observation callback; return false to stop visitation. Arguments are borrowed for the call. */
 	using DevViewportVisitor = bool (*)(void*, const DevViewportView&);
-	/** Inspect registrations without referencing textures or scheduling render callbacks. */
-	void visitDevViewports(void* target, DevViewportVisitor visitor) const;
-	/** Opt in to one immutable copy when this viewport naturally renders again. */
+	/**
+	 * @brief Observe development catalogue entries without invoking application operations.
+	 *
+	 * Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts sized viewport registrations; completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to FlowUiError. Earlier callback effects, including the counter, are not rolled back on failure. This does not schedule rendering or capture; capture_texture is an observation-cache binding and must not be retained as ownership.
+	 *
+	 * @return Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a detached manager or null visitor. A failed Result is an operational/callback error, not an incomplete-visit bool.
+	 *
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
+	 * std::size_t count = 0;
+	 * auto result = manager.visitDevViewports(&count,
+	 *     [](void* target, const FlowUi::ViewPortManager::DevViewportView& viewport) {
+	 *         auto& observedCount = *static_cast<std::size_t*>(target);
+	 *         if (viewport.width != 0 && viewport.height != 0) {
+	 *             ++observedCount;
+	 *         }
+	 *         return true;
+	 *     });
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const bool completed = *result;
+	 * #endif
+	 * @endcode
+	 */
+	[[nodiscard]] Result<bool> visitDevViewports(void* target, DevViewportVisitor visitor) const noexcept;
+	/**
+	 * @brief Request one immutable development copy on a later natural viewport render.
+	 *
+	 * The example expects scene to exist. Successful submission only schedules a request: it does not force rendering or mean the GPU copy has completed. Poll visitDevViewports() for capture_pending/capture_failed and a nonempty capture_texture. Capture is format checked and bounded to 16 active observation caches. No exception escapes.
+	 *
+	 * @return Success when requested; ObjectNotInitialized, ViewportNotFound, unsupported-format ViewportConfigurationInvalid, capacity, storage, or allocation failure otherwise.
+	 *
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
+	 * auto status = viewports.request_dev_capture("scene");
+	 * if (!status) {
+	 *     throw FlowUi::FlowUiException(status.error());
+	 * }
+	 * #endif
+	 * @endcode
+	 */
 	[[nodiscard]] Status request_dev_capture(std::string_view key) noexcept;
 	/** Release the observation cache without affecting the viewport or its renderer. */
 	void release_dev_capture(std::string_view key) noexcept;
-	/** Clone a completed observation's binding without copying or overwriting its image. */
+	/**
+	 * @brief Create an independent texture binding for an exact completed development capture.
+	 *
+	 * Pass the exact capture_texture observed for the same key by visitDevViewports(); incomplete or replaced captures are ResourceHandleInvalid. The image is shared without another copy. This retained logical binding must later be released through the owning App::release_dev_viewport_capture_texture(); release_dev_capture(key) only releases the observation cache. Keep the owning App alive. No exception escapes.
+	 *
+	 * @return A retained TextureHandle, or initialization, missing-viewport, stale/incomplete-handle, storage, or allocation failure.
+	 *
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
+	 * auto result = viewports.retain_dev_capture("scene", observedCapture);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::TextureHandle retained = *result;
+	 * #endif
+	 * @endcode
+	 */
 	[[nodiscard]] Result<TextureHandle> retain_dev_capture(std::string_view key, TextureHandle expected_capture) noexcept;
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
@@ -370,169 +434,251 @@ public:
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
 #endif
 	/**
-	 * @brief Create a viewport by key.
+	 * @brief Create a window-local viewport and its initial 1x1 render targets.
 	 *
-	 * The key is used for later lookup and for generating the texture slots that
-	 * back each frame in flight. Newly created viewports start with a 1x1 render
-	 * target and resize when the viewport texture is referenced by UI image
-	 * commands.
+	 * The viewport resizes from the largest referenced UI image area, scaled to framebuffer pixels. colorFormat == VK_FORMAT_UNDEFINED selects VK_FORMAT_R8G8B8A8_UNORM; createInfo defaults to {}.
 	 *
-	 * @param key Application-defined viewport key. Must not be empty.
-	 * @param createInfo Initial format and clear settings.
-	 * @return A result containing true when created or false when the key
-	 * already exists. Initialization, key, and resource creation failures are
-	 * returned as structured errors.
-	 * @throws std::bad_alloc if allocating viewport metadata fails.
+	 * @return Success currently contains true. A duplicate key returns ViewportKeyCollision, not a successful false value. Invalid configuration/manager/key and allocation/GPU resource failures are errors.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * const auto created = app.viewPorts().create("scene", FlowUi::ViewPortCreateInfo{
-	 *     .clearColor = {0.02f, 0.02f, 0.03f, 1.0f},
-	 * });
-	 * if (!created) {
-	 *     return; // Report created.error() to the application.
+	 * auto result = manager.create("scene", FlowUi::ViewPortCreateInfo{});
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
 	 * }
-	 *
-	 * if (FlowUi::ViewPort* scene = app.viewPorts().getViewPort("scene")) {
-	 *     scene->setRenderCallback(renderScene);
-	 * }
+	 * const auto created = *result;
 	 * @endcode
 	 */
 	[[nodiscard]] Result<bool> create(std::string_view key,
-									  const ViewPortCreateInfo& createInfo = {});
-	/** @brief Create a viewport under a resource key local to this manager's window.
-	 * ResourceDomain::Viewport is inferred when unspecified; incompatible explicit domains or scopes are rejected.
-	 */
-	[[nodiscard]] Result<bool> create(ResourceKey key, const ViewPortCreateInfo& createInfo = {});
-
+									  const ViewPortCreateInfo& createInfo = {}) noexcept;
 	/**
-	 * @brief Remove a viewport by key.
+	 * @brief Create a window-local viewport and its initial 1x1 render targets.
 	 *
-	 * This removes texture slots and retires all per-frame viewport resources
-	 * after their exact logical texture uses complete.
+	 * The viewport resizes from the largest referenced UI image area, scaled to framebuffer pixels. colorFormat == VK_FORMAT_UNDEFINED selects VK_FORMAT_R8G8B8A8_UNORM; createInfo defaults to {}. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.
 	 *
-	 * @param key Application-defined viewport key.
-	 * @return A result containing true when removed or false when the key is
-	 * absent. Invalid manager/key and storage failures are structured errors.
-	 *
+	 * @return Success currently contains true. A duplicate key returns ViewportKeyCollision, not a successful false value. Invalid configuration/manager/key and allocation/GPU resource failures are errors.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * (void)app.viewPorts().remove("scene");
+	 * const FlowUi::ResourceKey key{.name = "scene"};
+	 * auto result = manager.create(key, FlowUi::ViewPortCreateInfo{});
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto created = *result;
 	 * @endcode
 	 */
-	[[nodiscard]] Result<bool> remove(std::string_view key);
-	/** @brief Remove a viewport under a resource key local to this manager's window.
-	 * ResourceDomain::Viewport is inferred when unspecified; incompatible explicit domains or scopes are rejected.
-	 */
-	[[nodiscard]] Result<bool> remove(ResourceKey key);
+	[[nodiscard]] Result<bool> create(ResourceKey key, const ViewPortCreateInfo& createInfo = {}) noexcept;
 
 	/**
-	 * @brief Return whether a viewport exists.
+	 * @brief Remove a viewport and retire its per-frame targets.
 	 *
-	 * @param key Application-defined viewport key.
-	 * @retval true A viewport with key exists.
-	 * @retval false No viewport with key exists.
+	 * Borrowed ViewPort pointers and their key views become invalid immediately; GPU targets retire after their recorded texture uses complete.
+	 *
+	 * @return Success contains true if removed or false if absent.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * if (!app.viewPorts().contains("scene")) {
-	 *     app.viewPorts().create("scene");
+	 * auto result = manager.remove("scene");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto removed = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<bool> remove(std::string_view key) noexcept;
+	/**
+	 * @brief Remove a viewport and retire its per-frame targets.
+	 *
+	 * Borrowed ViewPort pointers and their key views become invalid immediately; GPU targets retire after their recorded texture uses complete. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.
+	 *
+	 * @return Success contains true if removed or false if absent.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "scene"};
+	 * auto result = manager.remove(key);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto removed = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<bool> remove(ResourceKey key) noexcept;
+
+	/**
+	 * @brief Test whether a viewport is registered in this window.
+	 *
+	 * Key normalization/initialization errors are distinct from an absent key.
+	 *
+	 * @return Success contains true if present or false if absent.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * auto result = manager.contains("scene");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto registered = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<bool> contains(std::string_view key) const noexcept;
+	/**
+	 * @brief Test whether a viewport is registered in this window.
+	 *
+	 * Key normalization/initialization errors are distinct from an absent key. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.
+	 *
+	 * @return Success contains true if present or false if absent.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "scene"};
+	 * auto result = manager.contains(key);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto registered = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<bool> contains(ResourceKey key) const noexcept;
+
+	/**
+	 * @brief Borrow a viewport facade by key.
+	 *
+	 * The mutable and const manager overloads return ViewPort* and const ViewPort* respectively. The pointer lasts until that viewport is removed or the manager/window is destroyed; do not retain it across removal/recreation.
+	 *
+	 * @return Success contains a borrowed pointer, which is nullptr for a missing key. Check both the Result and its contained pointer before dereferencing.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * auto result = manager.getViewPort("scene");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * FlowUi::ViewPort* viewport = *result;
+	 * if (viewport != nullptr) {
+	 *     const bool sized = viewport->hasValidSize();
 	 * }
 	 * @endcode
 	 */
-	[[nodiscard]] bool contains(std::string_view key) const;
-	/** @brief Test a viewport resource key local to this manager's window.
-	 * ResourceDomain::Viewport is inferred when unspecified; incompatible explicit domains or scopes are rejected.
-	 */
-	[[nodiscard]] bool contains(ResourceKey key) const;
-
+	[[nodiscard]] Result<ViewPort*> getViewPort(std::string_view key) noexcept;
 	/**
-	 * @brief Return a mutable viewport by key.
+	 * @brief Borrow a viewport facade by key.
 	 *
-	 * @param key Application-defined viewport key.
-	 * @return Borrowed viewport pointer, or nullptr if missing. The pointer
-	 * remains valid until that viewport is removed or the manager is destroyed.
+	 * The mutable and const manager overloads return ViewPort* and const ViewPort* respectively. The pointer lasts until that viewport is removed or the manager/window is destroyed; do not retain it across removal/recreation. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.
+	 *
+	 * @return Success contains a borrowed pointer, which is nullptr for a missing key. Check both the Result and its contained pointer before dereferencing.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * if (FlowUi::ViewPort* viewport = app.viewPorts().getViewPort("scene")) {
-	 *     viewport->setClearEveryFrame(true);
+	 * const FlowUi::ResourceKey key{.name = "scene"};
+	 * auto result = manager.getViewPort(key);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * FlowUi::ViewPort* viewport = *result;
+	 * if (viewport != nullptr) {
+	 *     const bool sized = viewport->hasValidSize();
 	 * }
 	 * @endcode
 	 */
-	[[nodiscard]] ViewPort* getViewPort(std::string_view key);
-	/** @brief Borrow a mutable viewport by window-local resource key; return nullptr when missing.
-	 * ResourceDomain::Viewport is inferred when unspecified; incompatible explicit domains or scopes are rejected.
-	 */
-	[[nodiscard]] ViewPort* getViewPort(ResourceKey key);
+	[[nodiscard]] Result<ViewPort*> getViewPort(ResourceKey key) noexcept;
 
 	/**
-	 * @brief Return an immutable viewport by key.
+	 * @brief Borrow a viewport facade by key.
 	 *
-	 * @param key Application-defined viewport key.
-	 * @return Borrowed viewport pointer, or nullptr if missing. The pointer
-	 * remains valid until that viewport is removed or the manager is destroyed.
-	 */
-	[[nodiscard]] const ViewPort* getViewPort(std::string_view key) const;
-	/** @brief Borrow an immutable viewport by window-local resource key; return nullptr when missing.
-	 * ResourceDomain::Viewport is inferred when unspecified; incompatible explicit domains or scopes are rejected.
-	 */
-	[[nodiscard]] const ViewPort* getViewPort(ResourceKey key) const;
-
-	/**
-	 * @brief Return the texture reference for a viewport key.
+	 * The mutable and const manager overloads return ViewPort* and const ViewPort* respectively. The pointer lasts until that viewport is removed or the manager/window is destroyed; do not retain it across removal/recreation.
 	 *
-	 * Use the returned TextureRef as Clay image data to display the viewport in
-	 * the UI. Missing keys are reported once and return an invalid TextureHandle;
-	 * SkipVisual requests omission, while the fallback policy displays the renderer's
-	 * fallback texture.
-	 *
-	 * @param key Application-defined viewport key.
-	 * @return Borrowed reference for the current frame slot, or an unavailable
-	 * reference governed by the missing-visual policy. Reacquire each frame.
+	 * @return Success contains a borrowed pointer, which is nullptr for a missing key. Check both the Result and its contained pointer before dereferencing.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * Clay_ImageElementConfig image{};
-	 * image.imageData = context.uiManager.imageData(
-	 *     app.viewPorts().getTexture("scene"));
-	 *
-	 * CLAY(context.uiManager.toClaySID("scene/preview"), {
-	 *     .layout = {
-	 *         .sizing = {
-	 *             .width = CLAY_SIZING_FIXED(320.0f),
-	 *             .height = CLAY_SIZING_FIXED(180.0f),
-	 *         },
-	 *     },
-	 *     .image = image,
-	 * }) {}
+	 * auto result = manager.getViewPort("scene");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::ViewPort* viewport = *result;
+	 * if (viewport != nullptr) {
+	 *     const bool sized = viewport->hasValidSize();
+	 * }
 	 * @endcode
 	 */
-	[[nodiscard]] TextureRef getTexture(std::string_view key) const;
-	/** @brief Resolve a window-local viewport key using the configured missing-visual policy.
-	 * ResourceDomain::Viewport is inferred when unspecified; incompatible explicit domains or scopes are rejected.
-	 */
-	[[nodiscard]] TextureRef getTexture(ResourceKey key) const;
-
+	[[nodiscard]] Result<const ViewPort*> getViewPort(std::string_view key) const noexcept;
 	/**
-	 * @brief Return Vulkan interop handles for custom viewport rendering.
+	 * @brief Borrow a viewport facade by key.
 	 *
-	 * The returned handles describe the App-owned Vulkan instance, device,
-	 * allocator, graphics queue, and frame count used by FlowUi. They are useful
-	 * for creating resources compatible with viewport render callbacks.
+	 * The mutable and const manager overloads return ViewPort* and const ViewPort* respectively. The pointer lasts until that viewport is removed or the manager/window is destroyed; do not retain it across removal/recreation. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.
 	 *
-	 * @return Shared Vulkan interop handle bundle.
-	 *
-	 * @throws FlowUiException with ObjectNotInitialized if the manager is unavailable.
-	 *
-	 * @warning The returned Vulkan handles are owned by FlowUi::App. Application
-	 * code must not destroy them.
+	 * @return Success contains a borrowed pointer, which is nullptr for a missing key. Check both the Result and its contained pointer before dereferencing.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * const FlowUi::ViewPortVulkanInterop& vk = app.viewPorts().getVulkanInterop();
-	 * VkDevice device = vk.device;
-	 * uint32_t graphicsFamily = vk.graphicsQueueFamily;
+	 * const FlowUi::ResourceKey key{.name = "scene"};
+	 * auto result = manager.getViewPort(key);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::ViewPort* viewport = *result;
+	 * if (viewport != nullptr) {
+	 *     const bool sized = viewport->hasValidSize();
+	 * }
 	 * @endcode
-	 *
-	 * @see @ref md_docs_2tutorials_2viewports__vulkan__interop "Viewports and Vulkan Interop"
 	 */
-	[[nodiscard]] const ViewPortVulkanInterop& getVulkanInterop() const;
+	[[nodiscard]] Result<const ViewPort*> getViewPort(ResourceKey key) const noexcept;
+
+	/**
+	 * @brief Acquire the viewport texture reference for the current frame slot.
+	 *
+	 * Reacquire each frame because frame-slot images change. The TextureRef conveys a generation-checked borrowed resource identity, not ownership.
+	 *
+	 * @return Missing keys are successful unavailable references, with an invalid handle and a once-per-key diagnostic. SkipVisual omits the visual; the fallback policy uses the renderer fallback.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * auto result = manager.getTexture("scene");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto texture = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<TextureRef> getTexture(std::string_view key) const noexcept;
+	/**
+	 * @brief Acquire the viewport texture reference for the current frame slot.
+	 *
+	 * Reacquire each frame because frame-slot images change. The TextureRef conveys a generation-checked borrowed resource identity, not ownership. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.
+	 *
+	 * @return Missing keys are successful unavailable references, with an invalid handle and a once-per-key diagnostic. SkipVisual omits the visual; the fallback policy uses the renderer fallback.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "scene"};
+	 * auto result = manager.getTexture(key);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto texture = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<TextureRef> getTexture(ResourceKey key) const noexcept;
+
+	/**
+	 * @brief Borrow the App-owned Vulkan interop bundle.
+	 *
+	 * Unwrap result->get() after checking. Keep the borrowed bundle within the App/window lifetime; never destroy its instance/device/allocator/queue handles. This API requires FLOWUI_PUBLIC_VULKAN_INTEROP.
+	 *
+	 * @return Success contains `std::reference_wrapper<const ViewPortVulkanInterop>`; detached state returns ObjectNotInitialized.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * auto result = manager.getVulkanInterop();
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::ViewPortVulkanInterop& borrowed = result->get();
+	 * @endcode
+	 */
+	[[nodiscard]] Result<std::reference_wrapper<const ViewPortVulkanInterop>> getVulkanInterop() const noexcept;
 
 private:
 	friend class App;

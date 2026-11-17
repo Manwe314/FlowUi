@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,26 +111,139 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a446127faa2953a85692d478cf4dfd2aa" id="r_a446127faa2953a85692d478cf4dfd2aa"><td class="memItemLeft"><a id="a446127faa2953a85692d478cf4dfd2aa" name="a446127faa2953a85692d478cf4dfd2aa"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevDiagnosticsOccurrenceRow.html">DevDiagnosticsOccurrenceRow</a> &gt;&#160;</td><td class="memItemRight"><b>rows</b> {}</td></tr>
-<tr class="memitem:a967a949b79ffcab30eeb393f075dc89c" id="r_a967a949b79ffcab30eeb393f075dc89c"><td class="memItemLeft"><a id="a967a949b79ffcab30eeb393f075dc89c" name="a967a949b79ffcab30eeb393f075dc89c"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevDiagnosticsSource.html">DevDiagnosticsSource</a> &gt;&#160;</td><td class="memItemRight"><b>sources</b> {}</td></tr>
-<tr class="memitem:a2961553200a6df668ddb45f1ea25ef74" id="r_a2961553200a6df668ddb45f1ea25ef74"><td class="memItemLeft"><a id="a2961553200a6df668ddb45f1ea25ef74" name="a2961553200a6df668ddb45f1ea25ef74"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevDiagnosticsBreadcrumbDescriptor.html">DevDiagnosticsBreadcrumbDescriptor</a> &gt;&#160;</td><td class="memItemRight"><b>breadcrumb_descriptors</b> {}</td></tr>
-<tr class="memitem:aacc13800b00258b32c9dd4f740e2ba26" id="r_aacc13800b00258b32c9dd4f740e2ba26"><td class="memItemLeft"><a id="aacc13800b00258b32c9dd4f740e2ba26" name="aacc13800b00258b32c9dd4f740e2ba26"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorReportingStatus.html">DevErrorReportingStatus</a>&#160;</td><td class="memItemRight"><b>status</b> {}</td></tr>
-<tr class="memitem:ab80bc83a872cd7ac64ed99a29f89d58c" id="r_ab80bc83a872cd7ac64ed99a29f89d58c"><td class="memItemLeft"><a id="ab80bc83a872cd7ac64ed99a29f89d58c" name="ab80bc83a872cd7ac64ed99a29f89d58c"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorReportingConfig.html">DevErrorReportingConfig</a>&#160;</td><td class="memItemRight"><b>config</b> {}</td></tr>
-<tr class="memitem:aa4e7266979676fd46305731cce508f99" id="r_aa4e7266979676fd46305731cce508f99"><td class="memItemLeft"><a id="aa4e7266979676fd46305731cce508f99" name="aa4e7266979676fd46305731cce508f99"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorConfig.html">DevErrorConfig</a>&#160;</td><td class="memItemRight"><b>capture_config</b> {}</td></tr>
-<tr class="memitem:a3922e3e6c9ebf6f7185e4c250b7448de" id="r_a3922e3e6c9ebf6f7185e4c250b7448de"><td class="memItemLeft"><a id="a3922e3e6c9ebf6f7185e4c250b7448de" name="a3922e3e6c9ebf6f7185e4c250b7448de"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>revision</b> = 0</td></tr>
-<tr class="memitem:ad5b8b05524d20a0d2182408267efafd9" id="r_ad5b8b05524d20a0d2182408267efafd9"><td class="memItemLeft"><a id="ad5b8b05524d20a0d2182408267efafd9" name="ad5b8b05524d20a0d2182408267efafd9"></a>
-bool&#160;</td><td class="memItemRight"><b>stack_provider_available</b> = false</td></tr>
+<tr class="memitem:a446127faa2953a85692d478cf4dfd2aa" id="r_a446127faa2953a85692d478cf4dfd2aa"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevDiagnosticsOccurrenceRow.html">DevDiagnosticsOccurrenceRow</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a446127faa2953a85692d478cf4dfd2aa">rows</a> {}</td></tr>
+<tr class="memitem:a967a949b79ffcab30eeb393f075dc89c" id="r_a967a949b79ffcab30eeb393f075dc89c"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevDiagnosticsSource.html">DevDiagnosticsSource</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a967a949b79ffcab30eeb393f075dc89c">sources</a> {}</td></tr>
+<tr class="memitem:a2961553200a6df668ddb45f1ea25ef74" id="r_a2961553200a6df668ddb45f1ea25ef74"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevDiagnosticsBreadcrumbDescriptor.html">DevDiagnosticsBreadcrumbDescriptor</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a2961553200a6df668ddb45f1ea25ef74">breadcrumb_descriptors</a> {}</td></tr>
+<tr class="memitem:aacc13800b00258b32c9dd4f740e2ba26" id="r_aacc13800b00258b32c9dd4f740e2ba26"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorReportingStatus.html">DevErrorReportingStatus</a>&#160;</td><td class="memItemRight"><a class="el" href="#aacc13800b00258b32c9dd4f740e2ba26">status</a> {}</td></tr>
+<tr class="memitem:ab80bc83a872cd7ac64ed99a29f89d58c" id="r_ab80bc83a872cd7ac64ed99a29f89d58c"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorReportingConfig.html">DevErrorReportingConfig</a>&#160;</td><td class="memItemRight"><a class="el" href="#ab80bc83a872cd7ac64ed99a29f89d58c">config</a> {}</td></tr>
+<tr class="memitem:aa4e7266979676fd46305731cce508f99" id="r_aa4e7266979676fd46305731cce508f99"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorConfig.html">DevErrorConfig</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa4e7266979676fd46305731cce508f99">capture_config</a> {}</td></tr>
+<tr class="memitem:a3922e3e6c9ebf6f7185e4c250b7448de" id="r_a3922e3e6c9ebf6f7185e4c250b7448de"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a3922e3e6c9ebf6f7185e4c250b7448de">revision</a> = 0</td></tr>
+<tr class="memitem:ad5b8b05524d20a0d2182408267efafd9" id="r_ad5b8b05524d20a0d2182408267efafd9"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ad5b8b05524d20a0d2182408267efafd9">stack_provider_available</a> = false</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Coherent non-destructive list read. Timestamps are observations, not coverage guarantees. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a2961553200a6df668ddb45f1ea25ef74" name="a2961553200a6df668ddb45f1ea25ef74"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2961553200a6df668ddb45f1ea25ef74">&#9670;&#160;</a></span>breadcrumb_descriptors</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="structFlowUi_1_1devSystems_1_1DevDiagnosticsBreadcrumbDescriptor.html">DevDiagnosticsBreadcrumbDescriptor</a>&gt; FlowUi::devSystems::DevDiagnosticsSnapshot::breadcrumb_descriptors {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned breadcrumb names and identities. </p>
+
+</div>
+</div>
+<a id="aa4e7266979676fd46305731cce508f99" name="aa4e7266979676fd46305731cce508f99"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa4e7266979676fd46305731cce508f99">&#9670;&#160;</a></span>capture_config</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorConfig.html">DevErrorConfig</a> FlowUi::devSystems::DevDiagnosticsSnapshot::capture_config {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Diagnostic producer capture configuration observed with this dataset. </p>
+
+</div>
+</div>
+<a id="ab80bc83a872cd7ac64ed99a29f89d58c" name="ab80bc83a872cd7ac64ed99a29f89d58c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab80bc83a872cd7ac64ed99a29f89d58c">&#9670;&#160;</a></span>config</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorReportingConfig.html">DevErrorReportingConfig</a> FlowUi::devSystems::DevDiagnosticsSnapshot::config {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Reporting retention configuration observed with this dataset. </p>
+
+</div>
+</div>
+<a id="a3922e3e6c9ebf6f7185e4c250b7448de" name="a3922e3e6c9ebf6f7185e4c250b7448de"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3922e3e6c9ebf6f7185e4c250b7448de">&#9670;&#160;</a></span>revision</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevDiagnosticsSnapshot::revision = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Revision identifying the observed metadata, report or safe-point state. </p>
+
+</div>
+</div>
+<a id="a446127faa2953a85692d478cf4dfd2aa" name="a446127faa2953a85692d478cf4dfd2aa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a446127faa2953a85692d478cf4dfd2aa">&#9670;&#160;</a></span>rows</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="structFlowUi_1_1devSystems_1_1DevDiagnosticsOccurrenceRow.html">DevDiagnosticsOccurrenceRow</a>&gt; FlowUi::devSystems::DevDiagnosticsSnapshot::rows {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned chronological diagnostic occurrence rows. </p>
+
+</div>
+</div>
+<a id="a967a949b79ffcab30eeb393f075dc89c" name="a967a949b79ffcab30eeb393f075dc89c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a967a949b79ffcab30eeb393f075dc89c">&#9670;&#160;</a></span>sources</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="structFlowUi_1_1devSystems_1_1DevDiagnosticsSource.html">DevDiagnosticsSource</a>&gt; FlowUi::devSystems::DevDiagnosticsSnapshot::sources {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned diagnostic source metadata independent of recorder storage. </p>
+
+</div>
+</div>
+<a id="ad5b8b05524d20a0d2182408267efafd9" name="ad5b8b05524d20a0d2182408267efafd9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad5b8b05524d20a0d2182408267efafd9">&#9670;&#160;</a></span>stack_provider_available</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevDiagnosticsSnapshot::stack_provider_available = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether a stack provider was available when the dataset was materialized. </p>
+
+</div>
+</div>
+<a id="aacc13800b00258b32c9dd4f740e2ba26" name="aacc13800b00258b32c9dd4f740e2ba26"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aacc13800b00258b32c9dd4f740e2ba26">&#9670;&#160;</a></span>status</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorReportingStatus.html">DevErrorReportingStatus</a> FlowUi::devSystems::DevDiagnosticsSnapshot::status {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Availability or quality state of this capture result. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevDiagnosticsReporting_8hpp_source.html">DevDiagnosticsReporting.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -146,7 +259,7 @@ bool&#160;</td><td class="memItemRight"><b>stack_provider_available</b> = false<
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevDiagnosticsSnapshot.html">DevDiagnosticsSnapshot</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevDiagnosticsSnapshot.html">DevDiagnosticsSnapshot</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

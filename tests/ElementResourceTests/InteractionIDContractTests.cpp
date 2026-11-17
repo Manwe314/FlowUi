@@ -45,6 +45,9 @@ static_assert(!HasStringClayElementId<FlowUi::UiManager>);
 static_assert(HasTypedClayElementId<FlowUi::UiManager, FlowUi::FlowElementID>);
 static_assert(HasTypedClayElementId<FlowUi::UiManager, FlowUi::GlobalFlowID>);
 static_assert(HasTypedClayElementId<FlowUi::UiManager, FlowUi::FlowElementPartID>);
+static_assert(!noexcept(std::declval<FlowUi::UiManager&>().toClayEID(kLocal)));
+static_assert(!noexcept(std::declval<FlowUi::UiManager&>().toClayEID(kGlobal)));
+static_assert(!noexcept(std::declval<FlowUi::UiManager&>().toClayEID(kPart)));
 static_assert(std::same_as<
 	typename decltype(FlowUi::InteractionSnapshot::hoveredElementIds)::value_type,
 	uint32_t>);

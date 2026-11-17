@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,16 +111,13 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:af3d04ad790c2d4eea3e3d320ad67de46" id="r_af3d04ad790c2d4eea3e3d320ad67de46"><td class="memItemLeft"><a id="af3d04ad790c2d4eea3e3d320ad67de46" name="af3d04ad790c2d4eea3e3d320ad67de46"></a>
-std::vector&lt; std::filesystem::path &gt;&#160;</td><td class="memItemRight"><b>roots</b></td></tr>
+<tr class="memitem:af3d04ad790c2d4eea3e3d320ad67de46" id="r_af3d04ad790c2d4eea3e3d320ad67de46"><td class="memItemLeft">std::vector&lt; std::filesystem::path &gt;&#160;</td><td class="memItemRight"><a class="el" href="#af3d04ad790c2d4eea3e3d320ad67de46">roots</a></td></tr>
 <tr class="memitem:a17b8d2c105419fff3e0d2e5c20faa73b" id="r_a17b8d2c105419fff3e0d2e5c20faa73b"><td class="memItemLeft">std::filesystem::path&#160;</td><td class="memItemRight"><a class="el" href="#a17b8d2c105419fff3e0d2e5c20faa73b">executable_directory</a></td></tr>
-<tr class="memitem:af6d2b68fb3a4d03ee2a705d84d2aa84c" id="r_af6d2b68fb3a4d03ee2a705d84d2aa84c"><td class="memItemLeft"><a id="af6d2b68fb3a4d03ee2a705d84d2aa84c" name="af6d2b68fb3a4d03ee2a705d84d2aa84c"></a>
-bool&#160;</td><td class="memItemRight"><b>use_platform_defaults</b> = true</td></tr>
-<tr class="memitem:a24f87e43bf36876873d00ee639267a93" id="r_a24f87e43bf36876873d00ee639267a93"><td class="memItemLeft"><a id="a24f87e43bf36876873d00ee639267a93" name="a24f87e43bf36876873d00ee639267a93"></a>
-bool&#160;</td><td class="memItemRight"><b>use_build_directory</b> = true</td></tr>
+<tr class="memitem:af6d2b68fb3a4d03ee2a705d84d2aa84c" id="r_af6d2b68fb3a4d03ee2a705d84d2aa84c"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#af6d2b68fb3a4d03ee2a705d84d2aa84c">use_platform_defaults</a> = true</td></tr>
+<tr class="memitem:a24f87e43bf36876873d00ee639267a93" id="r_a24f87e43bf36876873d00ee639267a93"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a24f87e43bf36876873d00ee639267a93">use_build_directory</a> = true</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Resource roots contain shaders/, fonts/, and optional application assets. </p>
+<div class="textblock"><p>Resource lookup roots containing shaders/, fonts/, and optional application assets. Explicit roots are searched before enabled discovery paths; paths are owned by the configuration. </p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a17b8d2c105419fff3e0d2e5c20faa73b" name="a17b8d2c105419fff3e0d2e5c20faa73b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a17b8d2c105419fff3e0d2e5c20faa73b">&#9670;&#160;</a></span>executable_directory</h2>
@@ -133,7 +130,52 @@ bool&#160;</td><td class="memItemRight"><b>use_build_directory</b> = true</td></
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Override executable discovery, for embedding hosts and tests. </p>
+<p>Executable-directory override for hosts/tests; empty uses automatic executable discovery. </p>
+
+</div>
+</div>
+<a id="af3d04ad790c2d4eea3e3d320ad67de46" name="af3d04ad790c2d4eea3e3d320ad67de46"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af3d04ad790c2d4eea3e3d320ad67de46">&#9670;&#160;</a></span>roots</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;std::filesystem::path&gt; FlowUi::ResourceConfig::roots</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Caller-supplied roots searched in order before enabled default discovery paths. </p>
+
+</div>
+</div>
+<a id="a24f87e43bf36876873d00ee639267a93" name="a24f87e43bf36876873d00ee639267a93"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24f87e43bf36876873d00ee639267a93">&#9670;&#160;</a></span>use_build_directory</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::ResourceConfig::use_build_directory = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Search the configured build-tree resource directory when available. </p>
+
+</div>
+</div>
+<a id="af6d2b68fb3a4d03ee2a705d84d2aa84c" name="af6d2b68fb3a4d03ee2a705d84d2aa84c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af6d2b68fb3a4d03ee2a705d84d2aa84c">&#9670;&#160;</a></span>use_platform_defaults</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::ResourceConfig::use_platform_defaults = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Search platform installation and executable-relative resource locations. </p>
 
 </div>
 </div>
@@ -153,7 +195,7 @@ bool&#160;</td><td class="memItemRight"><b>use_build_directory</b> = true</td></
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1ResourceConfig.html">ResourceConfig</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1ResourceConfig.html">ResourceConfig</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

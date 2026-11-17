@@ -99,21 +99,21 @@ We will load the discovered fonts like this:
 After creating the app, grab the app-owned `FlowUi::FontManager`.
 
 ```cpp
-FlowUi::FontManager& fonts = app.fonts();
+FlowUi::FontManager& fonts = FlowUi::ValueOrThrow(app.fonts()).get();
 ```
 
 The default family already exists because it came from `AppConfig`. The two project families are new, so create them with `createFamily()`.
 
 ```cpp
-FlowUi::FontFamilyId interfaceFamily = fonts.createFamily({
+FlowUi::FontFamilyId interfaceFamily = FlowUi::ValueOrThrow(fonts.createFamily({
     .name = "Interface",
     .faces = {},
-});
+}));
 
-FlowUi::FontFamilyId monoFamily = fonts.createFamily({
+FlowUi::FontFamilyId monoFamily = FlowUi::ValueOrThrow(fonts.createFamily({
     .name = "Mono",
     .faces = {},
-});
+}));
 ```
 
 `createFamily()` can also load initial faces through `.faces`, but creating the family first makes it easier to demonstrate both `addFamilyFace()` overloads.
@@ -128,7 +128,7 @@ for (const DiscoveredFontFace& face : discovered) {
         continue;
     }
 
-    fonts.addFamilyFace(
+    (void)FlowUi::ValueOrThrow(fonts.addFamilyFace(
         interfaceFamily,
         FlowUi::FontFaceCreateInfo{
             .path = face.path,
@@ -136,7 +136,7 @@ for (const DiscoveredFontFace& face : discovered) {
             .weight = face.weight,
             .style = face.style,
             .name = face.name,
-        });
+        }));
 }
 ```
 
@@ -152,7 +152,7 @@ for (const DiscoveredFontFace& face : discovered) {
         continue;
     }
 
-    fonts.addFamilyFace(
+    (void)FlowUi::ValueOrThrow(fonts.addFamilyFace(
         "Mono",
         FlowUi::FontFaceCreateInfo{
             .path = face.path,
@@ -160,7 +160,7 @@ for (const DiscoveredFontFace& face : discovered) {
             .weight = face.weight,
             .style = face.style,
             .name = face.name,
-        });
+        }));
 }
 ```
 
@@ -171,8 +171,8 @@ The `std::string_view` overload is convenient when the call site naturally has a
 If another part of the app needs a family id later, use `getFamilyId()`.
 
 ```cpp
-FlowUi::FontFamilyId defaultFamily = fonts.getFamilyId("Default");
-FlowUi::FontFamilyId cachedMonoFamily = fonts.getFamilyId("Mono");
+FlowUi::FontFamilyId defaultFamily = FlowUi::ValueOrThrow(fonts.getFamilyId("Default"));
+FlowUi::FontFamilyId cachedMonoFamily = FlowUi::ValueOrThrow(fonts.getFamilyId("Mono"));
 ```
 
 Missing families return `std::numeric_limits<FlowUi::FontFamilyId>::max()`.
@@ -192,20 +192,20 @@ That makes `getFamilyId()` useful for optional theme fonts: check whether the fa
 `resolveFont()` turns a logical family, weight, and style into a concrete `FlowUi::FontId` for Clay.
 
 ```cpp
-FlowUi::FontId interfaceRegular = fonts.resolveFont(
+FlowUi::FontId interfaceRegular = FlowUi::ValueOrThrow(fonts.resolveFont(
     interfaceFamily,
     400,
-    FlowUi::FontStyle::Normal);
+    FlowUi::FontStyle::Normal));
 
-FlowUi::FontId interfaceItalic = fonts.resolveFont(
+FlowUi::FontId interfaceItalic = FlowUi::ValueOrThrow(fonts.resolveFont(
     interfaceFamily,
     400,
-    FlowUi::FontStyle::Italic);
+    FlowUi::FontStyle::Italic));
 
-FlowUi::FontId monoBold = fonts.resolveFont(
+FlowUi::FontId monoBold = FlowUi::ValueOrThrow(fonts.resolveFont(
     "Mono",
     700,
-    FlowUi::FontStyle::Normal);
+    FlowUi::FontStyle::Normal));
 ```
 
 The first two calls use the `FontFamilyId` overload. The last call uses the family-name overload.
@@ -217,10 +217,10 @@ Resolution first filters faces by the requested style, then chooses the closest 
 Our `"Interface"` family has normal `400` and normal `600`, but not normal `700`.
 
 ```cpp
-FlowUi::FontId interfaceRequested700 = fonts.resolveFont(
+FlowUi::FontId interfaceRequested700 = FlowUi::ValueOrThrow(fonts.resolveFont(
     "Interface",
     700,
-    FlowUi::FontStyle::Normal);
+    FlowUi::FontStyle::Normal));
 ```
 
 Because a normal `700` face does not exist, FlowUi picks the closest normal weight. In this example that is `600`, not `400`.
@@ -234,10 +234,10 @@ If no face matches the requested style, FlowUi falls back to the first face stor
 For predictable fallback behavior, add the family default first: `400 Normal`.
 
 ```cpp
-FlowUi::FontId monoItalicRequest = fonts.resolveFont(
+FlowUi::FontId monoItalicRequest = FlowUi::ValueOrThrow(fonts.resolveFont(
     "Mono",
     400,
-    FlowUi::FontStyle::Italic);
+    FlowUi::FontStyle::Italic));
 ```
 
 Our `"Mono"` family has only normal faces. Because no italic face exists, resolution returns the first face in `"Mono"`. Since we added `400 Normal` first, this behaves like a default `400 Normal` fallback.
@@ -245,7 +245,7 @@ Our `"Mono"` family has only normal faces. Because no italic face exists, resolu
 If the family is missing or empty, resolution returns `0`.
 
 ```cpp
-FlowUi::FontId missing = fonts.resolveFont("NotRegistered", 400, FlowUi::FontStyle::Normal);
+FlowUi::FontId missing = FlowUi::ValueOrThrow(fonts.resolveFont("NotRegistered", 400, FlowUi::FontStyle::Normal));
 ```
 
 ### Use the Resolved FontIds
@@ -285,11 +285,11 @@ panel.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 panel.backgroundColor = FlowUi::Flow_Color("#151922ff");
 panel.cornerRadius = CLAY_CORNER_RADIUS(8);
 
-CLAY(app.ui().toClayEID("typography/panel"), panel) {
-    CLAY_TEXT(app.ui().toClayString("Typography"), CLAY_TEXT_CONFIG(titleText));
-    CLAY_TEXT(app.ui().toClayString("Normal interface copy"), CLAY_TEXT_CONFIG(bodyText));
-    CLAY_TEXT(app.ui().toClayString("Italic note from the same family"), CLAY_TEXT_CONFIG(noteText));
-    CLAY_TEXT(app.ui().toClayString("Mono bold code label"), CLAY_TEXT_CONFIG(codeText));
+CLAY(FlowUi::ValueOrThrow(app.ui()).get().toClaySID("typography/panel"), panel) {
+    CLAY_TEXT(FlowUi::ValueOrThrow(app.ui()).get().toClayString("Typography"), CLAY_TEXT_CONFIG(titleText));
+    CLAY_TEXT(FlowUi::ValueOrThrow(app.ui()).get().toClayString("Normal interface copy"), CLAY_TEXT_CONFIG(bodyText));
+    CLAY_TEXT(FlowUi::ValueOrThrow(app.ui()).get().toClayString("Italic note from the same family"), CLAY_TEXT_CONFIG(noteText));
+    CLAY_TEXT(FlowUi::ValueOrThrow(app.ui()).get().toClayString("Mono bold code label"), CLAY_TEXT_CONFIG(codeText));
 }
 ```
 
@@ -331,7 +331,7 @@ Most application UI code does not need this data. It is there when you need to i
 `getAtlasResource()` returns the Vulkan atlas array used by FlowUi text rendering.
 
 ```cpp
-const FlowUi::Font::AtlasArrayResource& atlas = fonts.getAtlasResource();
+const FlowUi::Font::AtlasArrayResource& atlas = FlowUi::ValueOrThrow(fonts.getAtlasResource());
 ```
 
 For a simple diagnostics line:
@@ -370,26 +370,26 @@ config.ui.defaultFontFamily = FlowUi::FontFamilyCreateInfo{
 };
 
 FlowUi::App app = FlowUi::makeApplication(config);
-FlowUi::FontManager& fonts = app.fonts();
+FlowUi::FontManager& fonts = FlowUi::ValueOrThrow(app.fonts()).get();
 
-FlowUi::FontFamilyId interfaceFamily = fonts.createFamily({.name = "Interface", .faces = {}});
-FlowUi::FontFamilyId monoFamily = fonts.createFamily({.name = "Mono", .faces = {}});
+FlowUi::FontFamilyId interfaceFamily = FlowUi::ValueOrThrow(fonts.createFamily({.name = "Interface", .faces = {}}));
+FlowUi::FontFamilyId monoFamily = FlowUi::ValueOrThrow(fonts.createFamily({.name = "Mono", .faces = {}}));
 (void)monoFamily;
 
-fonts.addFamilyFace(interfaceFamily, FlowUi::FontFaceCreateInfo{.path = "assets/fonts/Inter-Regular.arfont", .pixelSize = 18.0f, .weight = 400, .style = FlowUi::FontStyle::Normal});
-fonts.addFamilyFace(interfaceFamily, FlowUi::FontFaceCreateInfo{.path = "assets/fonts/Inter-SemiBold.arfont", .pixelSize = 18.0f, .weight = 600, .style = FlowUi::FontStyle::Normal});
-fonts.addFamilyFace(interfaceFamily, FlowUi::FontFaceCreateInfo{.path = "assets/fonts/Inter-Italic.ttf", .pixelSize = 18.0f, .weight = 400, .style = FlowUi::FontStyle::Italic});
+(void)FlowUi::ValueOrThrow(fonts.addFamilyFace(interfaceFamily, FlowUi::FontFaceCreateInfo{.path = "assets/fonts/Inter-Regular.arfont", .pixelSize = 18.0f, .weight = 400, .style = FlowUi::FontStyle::Normal}));
+(void)FlowUi::ValueOrThrow(fonts.addFamilyFace(interfaceFamily, FlowUi::FontFaceCreateInfo{.path = "assets/fonts/Inter-SemiBold.arfont", .pixelSize = 18.0f, .weight = 600, .style = FlowUi::FontStyle::Normal}));
+(void)FlowUi::ValueOrThrow(fonts.addFamilyFace(interfaceFamily, FlowUi::FontFaceCreateInfo{.path = "assets/fonts/Inter-Italic.ttf", .pixelSize = 18.0f, .weight = 400, .style = FlowUi::FontStyle::Italic}));
 
-fonts.addFamilyFace("Mono", FlowUi::FontFaceCreateInfo{.path = "assets/fonts/JetBrainsMono-Regular.arfont", .pixelSize = 16.0f, .weight = 400});
-fonts.addFamilyFace("Mono", FlowUi::FontFaceCreateInfo{.path = "assets/fonts/JetBrainsMono-Bold.ttf", .pixelSize = 16.0f, .weight = 700});
+(void)FlowUi::ValueOrThrow(fonts.addFamilyFace("Mono", FlowUi::FontFaceCreateInfo{.path = "assets/fonts/JetBrainsMono-Regular.arfont", .pixelSize = 16.0f, .weight = 400}));
+(void)FlowUi::ValueOrThrow(fonts.addFamilyFace("Mono", FlowUi::FontFaceCreateInfo{.path = "assets/fonts/JetBrainsMono-Bold.ttf", .pixelSize = 16.0f, .weight = 700}));
 
-FlowUi::FontId titleFont = fonts.resolveFont("Interface", 700, FlowUi::FontStyle::Normal);
-FlowUi::FontId bodyFont = fonts.resolveFont(interfaceFamily, 400, FlowUi::FontStyle::Normal);
-FlowUi::FontId noteFont = fonts.resolveFont(interfaceFamily, 400, FlowUi::FontStyle::Italic);
-FlowUi::FontId codeFont = fonts.resolveFont("Mono", 700, FlowUi::FontStyle::Normal);
+FlowUi::FontId titleFont = FlowUi::ValueOrThrow(fonts.resolveFont("Interface", 700, FlowUi::FontStyle::Normal));
+FlowUi::FontId bodyFont = FlowUi::ValueOrThrow(fonts.resolveFont(interfaceFamily, 400, FlowUi::FontStyle::Normal));
+FlowUi::FontId noteFont = FlowUi::ValueOrThrow(fonts.resolveFont(interfaceFamily, 400, FlowUi::FontStyle::Italic));
+FlowUi::FontId codeFont = FlowUi::ValueOrThrow(fonts.resolveFont("Mono", 700, FlowUi::FontStyle::Normal));
 
 const FlowUi::Font::FontFaceData* face = fonts.getFontById(bodyFont);
-const FlowUi::Font::AtlasArrayResource& atlas = fonts.getAtlasResource();
+const FlowUi::Font::AtlasArrayResource& atlas = FlowUi::ValueOrThrow(fonts.getAtlasResource());
 (void)face;
 (void)atlas;
 ```

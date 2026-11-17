@@ -1,4 +1,6 @@
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticProvenance.hpp"
+#include "devSystems/devAgenticWorkflow/detail/AgenticProvenanceState.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
 #include "devSystems/devAgenticWorkflow/AgenticAdapters.hpp"
 #include "FlowUi/Public/App.hpp"
@@ -93,7 +95,8 @@ void erase_keys(Json& value, std::span<const std::string_view> excluded) {
 	std::error_code error;
 	const auto size = std::filesystem::file_size(path, error);
 	if (error || size > maximum_bytes || total_bytes > maximum_bytes - size ||
-		size > static_cast<std::uintmax_t>(std::numeric_limits<std::size_t>::max()))
+		size > static_cast<std::uintmax_t>(std::numeric_limits<std::size_t>::max()) ||
+		size > static_cast<std::uintmax_t>(std::numeric_limits<std::streamsize>::max()))
 		return unexpectedError(
 			agentic_error(error ? AgenticError::unavailable : AgenticError::budget_exhausted));
 	const auto before = std::filesystem::last_write_time(path, error);
@@ -226,9 +229,41 @@ void erase_keys(Json& value, std::span<const std::string_view> excluded) {
 	return result;
 }
 } // namespace
-Status complete_provenance(AgenticCaptureSnapshot& snapshot, App& application,
+Result<std::string> detail::processBinaryIdentity(AgenticBinaryIdentity& identity,
+	std::uint64_t maximumBytes) noexcept {
+	try {
+#if defined(__linux__)
+		// Linux /proc/self/exe retains the loaded inode after pathname replacement;
+		// executing images reject write access (ETXTBSY). Mutable resources are
+		// never cached here. Other platforms keep their fresh pathname-hash behavior.
+		if (!identity.digest.empty()) {
+			if (identity.bytes > maximumBytes)
+				return unexpectedError(agentic_error(AgenticError::budget_exhausted));
+			return identity.digest;
+		}
+#endif
+		const auto executable = process_executable();
+		if (executable.empty())
+			return unexpectedError(agentic_error(AgenticError::unavailable));
+		std::uint64_t binaryBytes = 0;
+		auto binary = hash_file(executable, maximumBytes, binaryBytes);
+#if defined(__linux__)
+		if (binary) {
+			identity.digest = *binary;
+			identity.bytes = binaryBytes;
+		}
+#else
+		identity = {};
+#endif
+		return binary;
+	} catch (...) {
+		return unexpectedError(FlowUi::detail::currentExceptionError(ErrorSite::AgenticSnapshot));
+	}
+}
+Status detail::complete_provenance(AgenticCaptureSnapshot& snapshot, App& application,
 						   DevMonitoringAndReporting& monitoring, DevTooling& tooling,
-						   const ResourceConfig& resources) noexcept {
+						   const ResourceConfig& resources,
+						   AgenticBinaryIdentity& binaryIdentity) noexcept {
 	try {
 		auto& provenance = snapshot.provenance;
 		const auto byte_budget = std::min<std::uint64_t>(
@@ -285,15 +320,15 @@ Status complete_provenance(AgenticCaptureSnapshot& snapshot, App& application,
 		}
 		Json windows = Json::make_array();
 		bool settings_known = true;
-		const auto registered = application.devWindowSnapshot();
+		const auto registered = FlowUi::detail::requireApiValue(application.devWindowSnapshot());
 		for (const auto window_id : snapshot.request.window_ids) {
 			if (window_id > UINT32_MAX ||
 				!application.hasWindow(static_cast<WindowId>(window_id))) {
 				settings_known = false;
 				continue;
 			}
-			const auto logical = application.windowSize(static_cast<WindowId>(window_id));
-			const auto physical = application.framebufferSize(static_cast<WindowId>(window_id));
+			const auto logical = FlowUi::detail::requireApiValue(application.windowSize(static_cast<WindowId>(window_id)));
+			const auto physical = FlowUi::detail::requireApiValue(application.framebufferSize(static_cast<WindowId>(window_id)));
 			auto window = Json::make_object(
 				{{"window_id", decimal(window_id)},
 				 {"logical_width",
@@ -335,7 +370,7 @@ Status complete_provenance(AgenticCaptureSnapshot& snapshot, App& application,
 		tooling_snapshot.request.limits.maximum_records =
 			std::min<std::uint64_t>(snapshot.request.limits.maximum_records, 10000);
 		const auto tooling_copied =
-			materialize_tooling(tooling_snapshot, tooling, application.themes());
+			materialize_tooling(tooling_snapshot, tooling, FlowUi::detail::requireApiValue(application.themes()).get());
 		Json themes;
 		Json catalogue;
 		if (tooling_copied)
@@ -460,14 +495,14 @@ Status complete_provenance(AgenticCaptureSnapshot& snapshot, App& application,
 			if (!entry.sourcePath.empty())
 				add_file("font:" + std::string(entry.familyName) + ":" +
 							 std::string(entry.faceName),
-						 path_from_utf8(entry.sourcePath), false);
+						 FlowUi::detail::requireApiValue(path_from_utf8(entry.sourcePath)), false);
 		for (const auto& entry : tooling.catalogues().queryImages())
 			if (entry.key.domain != ResourceDomain::Development) {
 				std::error_code error;
 				if (!entry.isAnonymous && std::filesystem::is_regular_file(
-											  path_from_utf8(entry.sourcePathOrDebugName), error))
+											  FlowUi::detail::requireApiValue(path_from_utf8(entry.sourcePathOrDebugName)), error))
 					add_file("image:" + std::string(entry.key.name),
-							 path_from_utf8(entry.sourcePathOrDebugName), false);
+							 FlowUi::detail::requireApiValue(path_from_utf8(entry.sourcePathOrDebugName)), false);
 				else
 					++missing_custom_sources;
 			}
@@ -504,14 +539,14 @@ Status complete_provenance(AgenticCaptureSnapshot& snapshot, App& application,
 												  (missing_custom_sources == 0 || fixture_known)
 											  ? Json(sha256(write_json(resource_identity)))
 											  : Json("unknown"));
-		const auto executable = process_executable();
-		std::uint64_t binary_bytes = 0;
-		auto binary =
-			executable.empty()
-				? Result<std::string>(unexpectedError(agentic_error(AgenticError::unavailable)))
-				: hash_file(executable, byte_budget, binary_bytes);
+		auto binary = processBinaryIdentity(binaryIdentity, byte_budget);
 		provenance.set("binary_digest", binary ? Json(*binary) : Json("unknown"));
 		provenance.set("binary_digest_algorithm", "sha256_exact_process_executable_bytes");
+#if defined(__linux__)
+		provenance.set("binary_digest_scope", "configured_process_image_for_run");
+#else
+		provenance.set("binary_digest_scope", "process_executable_path_at_capture");
+#endif
 		if (!binary)
 			limitation(snapshot, "binary_hash_unavailable_or_over_budget");
 		if (!known(provenance.find("application_revision"))) {
@@ -530,6 +565,13 @@ Status complete_provenance(AgenticCaptureSnapshot& snapshot, App& application,
 	} catch (...) {
 		return unexpectedError(makeError(ErrorCode::AllocationFailed, ErrorSite::AgenticSnapshot));
 	}
+}
+Status complete_provenance(AgenticCaptureSnapshot& snapshot, App& application,
+	DevMonitoringAndReporting& monitoring, DevTooling& tooling,
+	const ResourceConfig& resources) noexcept {
+	detail::AgenticBinaryIdentity binaryIdentity;
+	return detail::complete_provenance(snapshot, application, monitoring, tooling, resources,
+		binaryIdentity);
 }
 } // namespace FlowUi::devSystems::agentic
 #endif

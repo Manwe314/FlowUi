@@ -40,10 +40,12 @@ serialize_dev_value(const tooling::DevSchemaGeneration& schema, tooling::DevType
 /** Runtime capture/coalescing side of the manifest-driven baking pipeline. */
 class DevBakePipeline {
 public:
-	/** @brief Borrow the registry and override engine for the pipeline lifetime; no manifest is written by construction. */
+	/** @brief Borrow the registry and override engine for the pipeline lifetime; no manifest is written by construction.
+	 * Allocation and member-construction failures propagate to the owner.
+	 */
 	DevBakePipeline(
 		tooling::DevSchemaRegistry& schemas,
-		DevOverrideEngine& overrides) noexcept;
+		DevOverrideEngine& overrides);
 
 	/** @brief Replace the owned destination path for subsequent reads/reviews/commits; this does not write the file. */
 	void setManifestPath(std::filesystem::path path);
@@ -70,10 +72,10 @@ public:
 						   const std::filesystem::path& review_path = {}) noexcept;
 	/** Remove all memory settings while retaining element/theme entries. */
 	[[nodiscard]] DevCommandResult reset_memory_capacities() noexcept;
-	/** @brief Return an owned current eligibility/status snapshot without changing live values. */
-	[[nodiscard]] DevBakeStatusSnapshot queryStatus() const noexcept;
-	/** @brief Return owned authored/live/compiled comparison rows without changing live values. */
-	[[nodiscard]] std::vector<DevBakeDiffEntry> queryDiff() const noexcept;
+	/** @brief Return an owned current eligibility/status snapshot; collection/allocation failures propagate. */
+	[[nodiscard]] DevBakeStatusSnapshot queryStatus() const;
+	/** @brief Return owned comparison rows; collection/allocation failures propagate instead of an empty success. */
+	[[nodiscard]] std::vector<DevBakeDiffEntry> queryDiff() const;
 	/** @brief Borrow the pipeline's retained manifest until the next bake/review commit or owner destruction. */
 	[[nodiscard]] const DevBakeManifest& manifest() const noexcept { return manifest_; }
 

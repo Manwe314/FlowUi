@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.hpp"
 
 #if FLOW_UI_DEV_MODE
@@ -54,8 +55,8 @@ void drawInsetSeparator(
 	};
 	line.backgroundColor = interface_theme::kBorderPrimary;
 
-	CLAY(context.clayID(insetId), inset) {
-		CLAY(context.clayID(lineId), line);
+	CLAY(FlowUi::ValueOrThrow(context.clayID(insetId)), inset) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(lineId)), line);
 	}
 }
 
@@ -84,8 +85,8 @@ void drawOperationalTag(DevInterfaceFooter::BuildContext& context) {
 	dot.cornerRadius = CLAY_CORNER_RADIUS(4);
 
 	const Clay_TextElementConfig label = textConfig(interface_theme::kTextCanvas, 11);
-	CLAY(context.clayID(kOperationalTag), tag) {
-		CLAY(context.clayID(kOperationalDot), dot);
+	CLAY(FlowUi::ValueOrThrow(context.clayID(kOperationalTag)), tag) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kOperationalDot)), dot);
 		CLAY_TEXT(context.uiManager.toClayString("RUNNING"), CLAY_TEXT_CONFIG(label));
 	}
 }
@@ -121,8 +122,8 @@ void drawReporter(
 	};
 
 	const Clay_TextElementConfig number = textConfig(color, 12);
-	CLAY(context.clayID(reporterId), reporter) {
-		CLAY(context.clayID(iconId), iconDeclaration);
+	CLAY(FlowUi::ValueOrThrow(context.clayID(reporterId)), reporter) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(iconId)), iconDeclaration);
 		CLAY_TEXT(context.uiManager.toClayString(countText), CLAY_TEXT_CONFIG(number));
 	}
 }
@@ -156,7 +157,7 @@ void drawUnbakedStatusTag(
 	const Clay_TextElementConfig label = textConfig(
 		hasChanges ? interface_theme::kAccentSignalCoral : interface_theme::kAccentSeaGlass,
 		11);
-	CLAY(context.clayID(kUnbakedStatusTag), tag) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(kUnbakedStatusTag)), tag) {
 		CLAY_TEXT(context.uiManager.toClayString(statusText), CLAY_TEXT_CONFIG(label));
 	}
 }
@@ -187,7 +188,7 @@ void drawFooterContents(
 		.width = CLAY_SIZING_GROW(0),
 		.height = CLAY_SIZING_FIXED(1),
 	};
-	CLAY(context.clayID(kActionSpacer), spacer);
+	CLAY(FlowUi::ValueOrThrow(context.clayID(kActionSpacer)), spacer);
 
 	drawUnbakedStatusTag(
 		context, context.params.unbakedChangeCount, unbakedStatus);
@@ -197,14 +198,14 @@ void drawFooterContents(
 
 DevInterfaceFooterResources::DevInterfaceFooterResources(App& app) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
-	IconManager& icons = app.icons();
+	IconManager& icons = FlowUi::ValueOrThrow(app.icons()).get();
 	interface_icons::registerDevInterfaceIcons(icons);
-	if (icons.contains(interface_icons::kErrorReporterKey)) {
-		errorIcon = icons.textureRef(interface_icons::kErrorReporterKey);
+	if (FlowUi::ValueOrThrow(icons.contains(interface_icons::kErrorReporterKey))) {
+		errorIcon = FlowUi::ValueOrThrow(icons.textureRef(interface_icons::kErrorReporterKey));
 	}
-	if (icons.contains(interface_icons::kUnbakedChangesReporterKey)) {
-		unbakedChangesIcon = icons.textureRef(
-			interface_icons::kUnbakedChangesReporterKey);
+	if (FlowUi::ValueOrThrow(icons.contains(interface_icons::kUnbakedChangesReporterKey))) {
+		unbakedChangesIcon = FlowUi::ValueOrThrow(icons.textureRef(
+			interface_icons::kUnbakedChangesReporterKey));
 	}
 #else
 	(void)app;

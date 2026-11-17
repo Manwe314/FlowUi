@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -112,30 +112,48 @@ $(function() {
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span> </div>
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &quot;FlowUi/Public/identificationTypes/WindowId.hpp&quot;</span></div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span> </div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="keyword">namespace </span>FlowUi {</div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi.html">FlowUi</a> {</div>
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">enum class</span> ResourceDomain : <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> {</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    Auto = 0,</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    Image,</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    Icon,</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    Font,</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    Ui,</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    InputField,</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    Viewport,</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    Development,</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    Internal,</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>};</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span></div>
-<div class="foldopen" id="foldopen00031" data-start="{" data-end="};">
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ResourceKey.html">   31</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> {</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    std::string_view name{};</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    ResourceDomain domain = ResourceDomain::Auto;</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    WindowId window = InvalidWindowId;</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>};</div>
+<div class="foldopen" id="foldopen00010" data-start="{" data-end="};">
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040f">   10</a></span><span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040f">ResourceDomain</a> : <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> {</div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa06b9281e396db002010bde1de57262eb">   12</a></span>    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a0e507a9881a6d25cb47e1999da040db5a06b9281e396db002010bde1de57262eb">Auto</a> = 0,</div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fabe53a0541a6d36f6ecb879fa2c584b08">   14</a></span>    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818abe53a0541a6d36f6ecb879fa2c584b08">Image</a>,</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa817434295a673aed431435658b65d9a7">   16</a></span>    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818a817434295a673aed431435658b65d9a7">Icon</a>,</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa194f5394ae2e9c74dc3c441b92862d1d">   18</a></span>    Font,</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa730b1d2ffece9a1c748a54cd0bb0e363">   20</a></span>    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa730b1d2ffece9a1c748a54cd0bb0e363">Ui</a>,</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fad2abe56c9800740fc9899bdb1cfa480a">   22</a></span>    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fad2abe56c9800740fc9899bdb1cfa480a">InputField</a>,</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa8d6f3510a5cca2c1281c9c6afe7e0da2">   24</a></span>    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818a8d6f3510a5cca2c1281c9c6afe7e0da2">Viewport</a>,</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa330f49df8243756a8a4dc7f7f7ee6dfe">   26</a></span>    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa330f49df8243756a8a4dc7f7f7ee6dfe">Development</a>,</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040faafbf0897a5a83fdd873dfb032ec695d3">   28</a></span>    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040faafbf0897a5a83fdd873dfb032ec695d3">Internal</a>,</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>};</div>
 </div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>} <span class="comment">// namespace FlowUi</span></div>
-<div class="ttc" id="astructFlowUi_1_1ResourceKey_html"><div class="ttname"><a href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a></div><div class="ttdoc">Human-readable logical identity accepted by FlowUi managers.</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:31</div></div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span></div>
+<div class="foldopen" id="foldopen00039" data-start="{" data-end="};">
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ResourceKey.html">   39</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> {</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ResourceKey.html#a3365831bf233733a76a91fd3b9e82dd6">   41</a></span>    std::string_view <a class="code hl_variable" href="structFlowUi_1_1ResourceKey.html#a3365831bf233733a76a91fd3b9e82dd6">name</a>{};</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ResourceKey.html#a2d3cdf94676c83f0dfbdb25de931c361">   43</a></span>    <a class="code hl_enumeration" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040f">ResourceDomain</a> <a class="code hl_variable" href="structFlowUi_1_1ResourceKey.html#a2d3cdf94676c83f0dfbdb25de931c361">domain</a> = <a class="code hl_enumvalue" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa06b9281e396db002010bde1de57262eb">ResourceDomain::Auto</a>;</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ResourceKey.html#a41907aebfbc2c317c9a8176454f81a0e">   45</a></span>    <a class="code hl_typedef" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> <a class="code hl_variable" href="structFlowUi_1_1ResourceKey.html#a41907aebfbc2c317c9a8176454f81a0e">window</a> = <a class="code hl_variable" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a>;</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>};</div>
+</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="ttc" id="anamespaceFlowUi_html"><div class="ttname"><a href="namespaceFlowUi.html">FlowUi</a></div><div class="ttdef"><b>Definition</b> App.hpp:29</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a0e507a9881a6d25cb47e1999da040db5a06b9281e396db002010bde1de57262eb"><div class="ttname"><a href="namespaceFlowUi.html#a0e507a9881a6d25cb47e1999da040db5a06b9281e396db002010bde1de57262eb">FlowUi::PlatformShortcutStyle::Auto</a></div><div class="ttdeci">@ Auto</div><div class="ttdef"><b>Definition</b> ShortcutManagerConfig.hpp:13</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a2213190865e0806b881be5624c2f3ef6"><div class="ttname"><a href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">FlowUi::WindowId</a></div><div class="ttdeci">uint64_t WindowId</div><div class="ttdoc">Stable identity of a native FlowUi window.</div><div class="ttdef"><b>Definition</b> WindowId.hpp:8</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a65e7297ae6a14e81eec9af6a4fa9912c"><div class="ttname"><a href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">FlowUi::InvalidWindowId</a></div><div class="ttdeci">constexpr WindowId InvalidWindowId</div><div class="ttdoc">Invalid window identity and root attribution for app-shared storage.</div><div class="ttdef"><b>Definition</b> WindowId.hpp:11</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a84c8eba1ce3d492712d1998687e6d818a817434295a673aed431435658b65d9a7"><div class="ttname"><a href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818a817434295a673aed431435658b65d9a7">FlowUi::ErrorDomain::Icon</a></div><div class="ttdeci">@ Icon</div><div class="ttdef"><b>Definition</b> ErrorTypes.hpp:33</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a84c8eba1ce3d492712d1998687e6d818a8d6f3510a5cca2c1281c9c6afe7e0da2"><div class="ttname"><a href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818a8d6f3510a5cca2c1281c9c6afe7e0da2">FlowUi::ErrorDomain::Viewport</a></div><div class="ttdeci">@ Viewport</div><div class="ttdef"><b>Definition</b> ErrorTypes.hpp:40</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a84c8eba1ce3d492712d1998687e6d818abe53a0541a6d36f6ecb879fa2c584b08"><div class="ttname"><a href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818abe53a0541a6d36f6ecb879fa2c584b08">FlowUi::ErrorDomain::Image</a></div><div class="ttdeci">@ Image</div><div class="ttdef"><b>Definition</b> ErrorTypes.hpp:32</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a8a53729d0d10acbed01b5aed921e040f"><div class="ttname"><a href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040f">FlowUi::ResourceDomain</a></div><div class="ttdeci">ResourceDomain</div><div class="ttdoc">Logical manager namespace used by ResourceKey.</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:10</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a8a53729d0d10acbed01b5aed921e040fa06b9281e396db002010bde1de57262eb"><div class="ttname"><a href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa06b9281e396db002010bde1de57262eb">FlowUi::ResourceDomain::Auto</a></div><div class="ttdeci">@ Auto</div><div class="ttdoc">Let the receiving manager select its own domain.</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:12</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a8a53729d0d10acbed01b5aed921e040fa330f49df8243756a8a4dc7f7f7ee6dfe"><div class="ttname"><a href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa330f49df8243756a8a4dc7f7f7ee6dfe">FlowUi::ResourceDomain::Development</a></div><div class="ttdeci">@ Development</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:26</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a8a53729d0d10acbed01b5aed921e040fa730b1d2ffece9a1c748a54cd0bb0e363"><div class="ttname"><a href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa730b1d2ffece9a1c748a54cd0bb0e363">FlowUi::ResourceDomain::Ui</a></div><div class="ttdeci">@ Ui</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:20</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a8a53729d0d10acbed01b5aed921e040faafbf0897a5a83fdd873dfb032ec695d3"><div class="ttname"><a href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040faafbf0897a5a83fdd873dfb032ec695d3">FlowUi::ResourceDomain::Internal</a></div><div class="ttdeci">@ Internal</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:28</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a8a53729d0d10acbed01b5aed921e040fad2abe56c9800740fc9899bdb1cfa480a"><div class="ttname"><a href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fad2abe56c9800740fc9899bdb1cfa480a">FlowUi::ResourceDomain::InputField</a></div><div class="ttdeci">@ InputField</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:22</div></div>
+<div class="ttc" id="astructFlowUi_1_1ResourceKey_html"><div class="ttname"><a href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a></div><div class="ttdoc">Human-readable logical identity accepted by FlowUi managers.</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:39</div></div>
+<div class="ttc" id="astructFlowUi_1_1ResourceKey_html_a2d3cdf94676c83f0dfbdb25de931c361"><div class="ttname"><a href="structFlowUi_1_1ResourceKey.html#a2d3cdf94676c83f0dfbdb25de931c361">FlowUi::ResourceKey::domain</a></div><div class="ttdeci">ResourceDomain domain</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:43</div></div>
+<div class="ttc" id="astructFlowUi_1_1ResourceKey_html_a3365831bf233733a76a91fd3b9e82dd6"><div class="ttname"><a href="structFlowUi_1_1ResourceKey.html#a3365831bf233733a76a91fd3b9e82dd6">FlowUi::ResourceKey::name</a></div><div class="ttdeci">std::string_view name</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:41</div></div>
+<div class="ttc" id="astructFlowUi_1_1ResourceKey_html_a41907aebfbc2c317c9a8176454f81a0e"><div class="ttname"><a href="structFlowUi_1_1ResourceKey.html#a41907aebfbc2c317c9a8176454f81a0e">FlowUi::ResourceKey::window</a></div><div class="ttdeci">WindowId window</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:45</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

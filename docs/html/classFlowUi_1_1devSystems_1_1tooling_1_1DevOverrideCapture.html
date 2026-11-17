@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,34 +106,57 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevOverrideCapture Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Copies schema-typed authored/effective values into immutable window/theme publications; observing values never changes application state.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevOverrideCapture_8hpp_source.html">DevOverrideCapture.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a939e98cb8c5d117f29af990fcf2579fc" id="r_a939e98cb8c5d117f29af990fcf2579fc"><td class="memItemLeft"><a id="a939e98cb8c5d117f29af990fcf2579fc" name="a939e98cb8c5d117f29af990fcf2579fc"></a>
-void&#160;</td><td class="memItemRight"><b>beginWindowFrame</b> (WindowId window, std::uint64_t frameNumber, <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaView.html">tooling::DevSchemaView</a> schema)</td></tr>
+void&#160;</td><td class="memItemRight"><b>beginWindowFrame</b> (<a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> window, std::uint64_t frameNumber, <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaView.html">tooling::DevSchemaView</a> schema)</td></tr>
+<tr class="memdesc:a939e98cb8c5d117f29af990fcf2579fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Begin building window-local value capture using a retained immutable schema generation. <br /></td></tr>
 <tr class="memitem:acfca235d2ea03fb6213b43745c4562d1" id="r_acfca235d2ea03fb6213b43745c4562d1"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevAuthoredElementCapture.html">DevAuthoredElementCapture</a>&#160;</td><td class="memItemRight"><a class="el" href="#acfca235d2ea03fb6213b43745c4562d1">captureAuthoredParameters</a> (<a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a> definition, <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaView.html">tooling::DevSchemaView</a> schema, const void *parameters) const noexcept</td></tr>
 <tr class="memitem:ab996e17d8de4c6119ac1637cb66aadd6" id="r_ab996e17d8de4c6119ac1637cb66aadd6"><td class="memItemLeft"><a id="ab996e17d8de4c6119ac1637cb66aadd6" name="ab996e17d8de4c6119ac1637cb66aadd6"></a>
-void&#160;</td><td class="memItemRight"><b>captureElement</b> (<a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a> definition, WindowId window, ::FlowUi::detail::element::ElementInstanceKey instance, std::uint32_t flowNode, const void *effectiveParameters, const <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideApply.html">DevOverrideApply</a> &amp;overrides, <a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> *timing=nullptr, <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevAuthoredElementCapture.html">DevAuthoredElementCapture</a> authored={}, const void *state=nullptr, const void *resources=nullptr, bool isDevInternal=false) noexcept</td></tr>
+void&#160;</td><td class="memItemRight"><b>captureElement</b> (<a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a> definition, <a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> window, ::FlowUi::detail::element::ElementInstanceKey instance, std::uint32_t flowNode, const void *effectiveParameters, const <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideApply.html">DevOverrideApply</a> &amp;overrides, <a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> *timing=nullptr, <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevAuthoredElementCapture.html">DevAuthoredElementCapture</a> authored={}, const void *state=nullptr, const void *resources=nullptr, bool isDevInternal=false) noexcept</td></tr>
+<tr class="memdesc:ab996e17d8de4c6119ac1637cb66aadd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy the current invocation's effective parameters and optional state/resources; pointer arguments are correctly typed borrowed inputs consumed synchronously. <br /></td></tr>
 <tr class="memitem:a6d1e0fbe353b593412ea70f479ff9800" id="r_a6d1e0fbe353b593412ea70f479ff9800"><td class="memItemLeft"><a id="a6d1e0fbe353b593412ea70f479ff9800" name="a6d1e0fbe353b593412ea70f479ff9800"></a>
-void&#160;</td><td class="memItemRight"><b>endWindowFrame</b> (WindowId window) noexcept</td></tr>
+void&#160;</td><td class="memItemRight"><b>endWindowFrame</b> (<a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> window) noexcept</td></tr>
+<tr class="memdesc:a6d1e0fbe353b593412ea70f479ff9800"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publish the completed window capture and expire prior borrowed views for that window. <br /></td></tr>
 <tr class="memitem:ad80e3fa5648ec9e4fb86ed231fd93d78" id="r_ad80e3fa5648ec9e4fb86ed231fd93d78"><td class="memItemLeft"><a id="ad80e3fa5648ec9e4fb86ed231fd93d78" name="ad80e3fa5648ec9e4fb86ed231fd93d78"></a>
-void&#160;</td><td class="memItemRight"><b>cancelWindowFrame</b> (WindowId window) noexcept</td></tr>
-<tr class="memitem:a59f56cc33d2e5c8befd5407cd1459c60" id="r_a59f56cc33d2e5c8befd5407cd1459c60"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a59f56cc33d2e5c8befd5407cd1459c60">release_window</a> (WindowId window) noexcept</td></tr>
+void&#160;</td><td class="memItemRight"><b>cancelWindowFrame</b> (<a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> window) noexcept</td></tr>
+<tr class="memdesc:ad80e3fa5648ec9e4fb86ed231fd93d78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Discard an in-progress capture and preserve the previous successful window publication. <br /></td></tr>
+<tr class="memitem:a59f56cc33d2e5c8befd5407cd1459c60" id="r_a59f56cc33d2e5c8befd5407cd1459c60"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a59f56cc33d2e5c8befd5407cd1459c60">release_window</a> (<a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> window) noexcept</td></tr>
 <tr class="memitem:a48227f09e86d0e79cb1e35cec81f414e" id="r_a48227f09e86d0e79cb1e35cec81f414e"><td class="memItemLeft"><a id="a48227f09e86d0e79cb1e35cec81f414e" name="a48227f09e86d0e79cb1e35cec81f414e"></a>
-void&#160;</td><td class="memItemRight"><b>captureThemes</b> (const <a class="el" href="classFlowUi_1_1ThemeManager.html">ThemeManager</a> &amp;themes, <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaView.html">tooling::DevSchemaView</a> schema, const void *overrideOwner, bool(*isOverridden)(const void *owner, tooling::DevTypeId themeType, std::string_view variant, tooling::DevFieldId field, DevOverrideLayer &amp;layer) noexcept, <a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> *timing=nullptr) noexcept</td></tr>
+void&#160;</td><td class="memItemRight"><b>captureThemes</b> (const <a class="el" href="classFlowUi_1_1ThemeManager.html">ThemeManager</a> &amp;<a class="el" href="#a444764d1d13e175f89940f0ba8300915">themes</a>, <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaView.html">tooling::DevSchemaView</a> schema, const void *overrideOwner, bool(*isOverridden)(const void *owner, <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a22de4acaf41684da79c8c04eecfa2ed7">tooling::DevTypeId</a> themeType, std::string_view variant, <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a65e6a4afe8c8a92eb20237f39499bf4f">tooling::DevFieldId</a> field, <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a871f5f866ab44b836ae012fabafece58">DevOverrideLayer</a> &amp;layer) noexcept, <a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> *timing=nullptr) noexcept</td></tr>
+<tr class="memdesc:a48227f09e86d0e79cb1e35cec81f414e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy reflected theme values; the borrowed override callback annotates the contributing layer without mutating themes. <br /></td></tr>
 <tr class="memitem:a2563f675343e764350e305a654510d45" id="r_a2563f675343e764350e305a654510d45"><td class="memItemLeft"><a id="a2563f675343e764350e305a654510d45" name="a2563f675343e764350e305a654510d45"></a>
-const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevElementCaptureSnapshot.html">DevElementCaptureSnapshot</a> &amp;&#160;</td><td class="memItemRight"><b>elements</b> (WindowId window) const noexcept</td></tr>
+const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevElementCaptureSnapshot.html">DevElementCaptureSnapshot</a> &amp;&#160;</td><td class="memItemRight"><b>elements</b> (<a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> window) const noexcept</td></tr>
+<tr class="memdesc:a2563f675343e764350e305a654510d45"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the latest successful capture for window, or an empty snapshot when absent. <br /></td></tr>
 <tr class="memitem:aed988ff11a4cee884be0b6f0863730be" id="r_aed988ff11a4cee884be0b6f0863730be"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aed988ff11a4cee884be0b6f0863730be">visitElementSnapshots</a> (void *context, bool(*visitor)(void *, const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevElementCaptureSnapshot.html">DevElementCaptureSnapshot</a> &amp;) noexcept) const noexcept</td></tr>
 <tr class="memitem:a444764d1d13e175f89940f0ba8300915" id="r_a444764d1d13e175f89940f0ba8300915"><td class="memItemLeft"><a id="a444764d1d13e175f89940f0ba8300915" name="a444764d1d13e175f89940f0ba8300915"></a>
 const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevThemeCaptureSnapshot.html">DevThemeCaptureSnapshot</a> &amp;&#160;</td><td class="memItemRight"><b>themes</b> () const noexcept</td></tr>
+<tr class="memdesc:a444764d1d13e175f89940f0ba8300915"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the latest theme publication until the next capture or destruction. <br /></td></tr>
 <tr class="memitem:a600c47a2cacd76469b8ebfdd51f538bd" id="r_a600c47a2cacd76469b8ebfdd51f538bd"><td class="memItemLeft"><a id="a600c47a2cacd76469b8ebfdd51f538bd" name="a600c47a2cacd76469b8ebfdd51f538bd"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>memoryFootprintBytes</b> () const noexcept</td></tr>
+<tr class="memdesc:a600c47a2cacd76469b8ebfdd51f538bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return retained capture values and publication backing bytes. <br /></td></tr>
 <tr class="memitem:a1136cc034a115661fa4ce982340ad44f" id="r_a1136cc034a115661fa4ce982340ad44f"><td class="memItemLeft"><a id="a1136cc034a115661fa4ce982340ad44f" name="a1136cc034a115661fa4ce982340ad44f"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>capturedElementFieldCount</b> () const noexcept</td></tr>
+<tr class="memdesc:a1136cc034a115661fa4ce982340ad44f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return cumulative copied element field values. <br /></td></tr>
 <tr class="memitem:aaa8c9998e1eb6a5ab50f131d0a629c97" id="r_aaa8c9998e1eb6a5ab50f131d0a629c97"><td class="memItemLeft"><a id="aaa8c9998e1eb6a5ab50f131d0a629c97" name="aaa8c9998e1eb6a5ab50f131d0a629c97"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>capturedThemeFieldCount</b> () const noexcept</td></tr>
+<tr class="memdesc:aaa8c9998e1eb6a5ab50f131d0a629c97"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return cumulative copied theme field values. <br /></td></tr>
+<tr class="memitem:a0ab72887358b9ff6010d569894ea30a5" id="r_a0ab72887358b9ff6010d569894ea30a5"><td class="memItemLeft"><a id="a0ab72887358b9ff6010d569894ea30a5" name="a0ab72887358b9ff6010d569894ea30a5"></a>
+std::uint64_t&#160;</td><td class="memItemRight"><b>droppedElementCaptureCount</b> () const noexcept</td></tr>
+<tr class="memdesc:a0ab72887358b9ff6010d569894ea30a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return cumulative omitted element observations. <br /></td></tr>
+<tr class="memitem:a64d2dc619ceb10a76f3e954a5ad5850a" id="r_a64d2dc619ceb10a76f3e954a5ad5850a"><td class="memItemLeft"><a id="a64d2dc619ceb10a76f3e954a5ad5850a" name="a64d2dc619ceb10a76f3e954a5ad5850a"></a>
+std::uint64_t&#160;</td><td class="memItemRight"><b>failedThemeCaptureCount</b> () const noexcept</td></tr>
+<tr class="memdesc:a64d2dc619ceb10a76f3e954a5ad5850a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return cumulative failed theme publication attempts. <br /></td></tr>
 </table>
-<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Copies schema-typed authored/effective values into immutable window/theme publications; observing values never changes application state. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="acfca235d2ea03fb6213b43745c4562d1" name="acfca235d2ea03fb6213b43745c4562d1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acfca235d2ea03fb6213b43745c4562d1">&#9670;&#160;</a></span>captureAuthoredParameters()</h2>
 
@@ -181,7 +204,7 @@ std::uint64_t&#160;</td><td class="memItemRight"><b>capturedThemeFieldCount</b> 
         <tr>
           <td class="memname">void FlowUi::devSystems::tooling::DevOverrideCapture::release_window </td>
           <td>(</td>
-          <td class="paramtype">WindowId</td>          <td class="paramname"><span class="paramname"><em>window</em></span></td><td>)</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a></td>          <td class="paramname"><span class="paramname"><em>window</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -241,7 +264,7 @@ std::uint64_t&#160;</td><td class="memItemRight"><b>capturedThemeFieldCount</b> 
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideCapture.html">DevOverrideCapture</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideCapture.html">DevOverrideCapture</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

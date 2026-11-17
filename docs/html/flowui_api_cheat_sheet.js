@@ -1,8 +1,15 @@
 var flowui_api_cheat_sheet =
 [
-    [ "Public API Index", "md_docs_2api_2all__public__api.html", null ],
+    [ "Public API index", "md_docs_2api_2all__public__api.html", null ],
     [ "App API", "md_docs_2api_2app.html", null ],
     [ "Configuration API", "md_docs_2api_2config.html", null ],
+    [ "Configuration glossary", "flowui_configuration_glossary.html", [
+      [ "Capacity settings and precedence", "flowui_configuration_glossary.html#flowui_config_capacity", null ],
+      [ "Startup configuration", "flowui_configuration_glossary.html#flowui_config_startup", null ],
+      [ "Build-time settings outside AppConfig", "flowui_configuration_glossary.html#flowui_config_build", null ],
+      [ "Additional operation-level settings", "flowui_configuration_glossary.html#flowui_config_operations", null ],
+      [ "Registered capacity keys", "flowui_configuration_glossary.html#flowui_config_capacity_keys", null ]
+    ] ],
     [ "Element API", "md_docs_2api_2elements.html", null ],
     [ "Action Manager API", "md_docs_2api_2action__manager.html", null ],
     [ "UI Manager API", "md_docs_2api_2ui__manager.html", null ],

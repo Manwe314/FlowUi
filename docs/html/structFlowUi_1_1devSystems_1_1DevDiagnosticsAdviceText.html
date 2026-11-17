@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,22 +111,107 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:ae855c9e4c575bcf3f7dc8a8fb120f321" id="r_ae855c9e4c575bcf3f7dc8a8fb120f321"><td class="memItemLeft"><a id="ae855c9e4c575bcf3f7dc8a8fb120f321" name="ae855c9e4c575bcf3f7dc8a8fb120f321"></a>
-std::string&#160;</td><td class="memItemRight"><b>title</b> {}</td></tr>
-<tr class="memitem:addfa0bf94c68977c7c147e1871ed05d4" id="r_addfa0bf94c68977c7c147e1871ed05d4"><td class="memItemLeft"><a id="addfa0bf94c68977c7c147e1871ed05d4" name="addfa0bf94c68977c7c147e1871ed05d4"></a>
-std::string&#160;</td><td class="memItemRight"><b>explanation</b> {}</td></tr>
-<tr class="memitem:af6457072d579b8e9a8af69824516b2d4" id="r_af6457072d579b8e9a8af69824516b2d4"><td class="memItemLeft"><a id="af6457072d579b8e9a8af69824516b2d4" name="af6457072d579b8e9a8af69824516b2d4"></a>
-std::string&#160;</td><td class="memItemRight"><b>suggested_action</b> {}</td></tr>
-<tr class="memitem:a24908c5c3125b5bf72ce3974193a6bc3" id="r_a24908c5c3125b5bf72ce3974193a6bc3"><td class="memItemLeft"><a id="a24908c5c3125b5bf72ce3974193a6bc3" name="a24908c5c3125b5bf72ce3974193a6bc3"></a>
-std::string&#160;</td><td class="memItemRight"><b>configuration_key</b> {}</td></tr>
-<tr class="memitem:af059936de521adc47743cab774569986" id="r_af059936de521adc47743cab774569986"><td class="memItemLeft"><a id="af059936de521adc47743cab774569986" name="af059936de521adc47743cab774569986"></a>
-std::string&#160;</td><td class="memItemRight"><b>documentation</b> {}</td></tr>
-<tr class="memitem:a0e9bab7cb5fe120f5742c31afbf30003" id="r_a0e9bab7cb5fe120f5742c31afbf30003"><td class="memItemLeft"><a id="a0e9bab7cb5fe120f5742c31afbf30003" name="a0e9bab7cb5fe120f5742c31afbf30003"></a>
-std::string&#160;</td><td class="memItemRight"><b>limitation</b> {}</td></tr>
+<tr class="memitem:ae855c9e4c575bcf3f7dc8a8fb120f321" id="r_ae855c9e4c575bcf3f7dc8a8fb120f321"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#ae855c9e4c575bcf3f7dc8a8fb120f321">title</a> {}</td></tr>
+<tr class="memitem:addfa0bf94c68977c7c147e1871ed05d4" id="r_addfa0bf94c68977c7c147e1871ed05d4"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#addfa0bf94c68977c7c147e1871ed05d4">explanation</a> {}</td></tr>
+<tr class="memitem:af6457072d579b8e9a8af69824516b2d4" id="r_af6457072d579b8e9a8af69824516b2d4"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#af6457072d579b8e9a8af69824516b2d4">suggested_action</a> {}</td></tr>
+<tr class="memitem:a24908c5c3125b5bf72ce3974193a6bc3" id="r_a24908c5c3125b5bf72ce3974193a6bc3"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a24908c5c3125b5bf72ce3974193a6bc3">configuration_key</a> {}</td></tr>
+<tr class="memitem:af059936de521adc47743cab774569986" id="r_af059936de521adc47743cab774569986"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#af059936de521adc47743cab774569986">documentation</a> {}</td></tr>
+<tr class="memitem:a0e9bab7cb5fe120f5742c31afbf30003" id="r_a0e9bab7cb5fe120f5742c31afbf30003"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a0e9bab7cb5fe120f5742c31afbf30003">limitation</a> {}</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Prose owned by an investigation; indexed in occurrence/advice order. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a24908c5c3125b5bf72ce3974193a6bc3" name="a24908c5c3125b5bf72ce3974193a6bc3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24908c5c3125b5bf72ce3974193a6bc3">&#9670;&#160;</a></span>configuration_key</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string FlowUi::devSystems::DevDiagnosticsAdviceText::configuration_key {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned configuration key prose; advice views are rebound to this storage. </p>
+
+</div>
+</div>
+<a id="af059936de521adc47743cab774569986" name="af059936de521adc47743cab774569986"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af059936de521adc47743cab774569986">&#9670;&#160;</a></span>documentation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string FlowUi::devSystems::DevDiagnosticsAdviceText::documentation {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned documentation prose; advice views are rebound to this storage. </p>
+
+</div>
+</div>
+<a id="addfa0bf94c68977c7c147e1871ed05d4" name="addfa0bf94c68977c7c147e1871ed05d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#addfa0bf94c68977c7c147e1871ed05d4">&#9670;&#160;</a></span>explanation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string FlowUi::devSystems::DevDiagnosticsAdviceText::explanation {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned explanation prose; advice views are rebound to this storage. </p>
+
+</div>
+</div>
+<a id="a0e9bab7cb5fe120f5742c31afbf30003" name="a0e9bab7cb5fe120f5742c31afbf30003"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e9bab7cb5fe120f5742c31afbf30003">&#9670;&#160;</a></span>limitation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string FlowUi::devSystems::DevDiagnosticsAdviceText::limitation {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned evidence limitation prose; advice views are rebound to this storage. </p>
+
+</div>
+</div>
+<a id="af6457072d579b8e9a8af69824516b2d4" name="af6457072d579b8e9a8af69824516b2d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af6457072d579b8e9a8af69824516b2d4">&#9670;&#160;</a></span>suggested_action</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string FlowUi::devSystems::DevDiagnosticsAdviceText::suggested_action {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned suggested action prose; advice views are rebound to this storage. </p>
+
+</div>
+</div>
+<a id="ae855c9e4c575bcf3f7dc8a8fb120f321" name="ae855c9e4c575bcf3f7dc8a8fb120f321"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae855c9e4c575bcf3f7dc8a8fb120f321">&#9670;&#160;</a></span>title</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string FlowUi::devSystems::DevDiagnosticsAdviceText::title {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned title prose; advice views are rebound to this storage. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevDiagnosticsReporting_8hpp_source.html">DevDiagnosticsReporting.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -142,7 +227,7 @@ std::string&#160;</td><td class="memItemRight"><b>limitation</b> {}</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevDiagnosticsAdviceText.html">DevDiagnosticsAdviceText</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevDiagnosticsAdviceText.html">DevDiagnosticsAdviceText</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

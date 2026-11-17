@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include <limits>
 #include <optional>
 #include <string>
@@ -126,7 +128,7 @@ struct TextArea {
 			return;
 		}
 		const FSELTextFieldTheme& theme =
-			context.uiManager.theme<FSELTheme>().textAreaTheme;
+			FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().textAreaTheme;
 		context.uiManager.requestCursor(
 			context.params.cursor.value_or(theme.cursor),
 			context.params.cursorPriority.value_or(theme.cursorPriority));
@@ -138,18 +140,18 @@ struct TextArea {
 	 */
 	static void buildElement(BuildContext& context) {
 		const FSELTextFieldTheme& theme =
-			context.uiManager.theme<FSELTheme>().textAreaTheme;
+			FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().textAreaTheme;
 		const Clay_Padding padding = context.params.padding.value_or(theme.padding);
 		const Clay_BorderWidth borderWidth =
 			context.params.borderWidth.value_or(theme.borderWidth);
 		const Clay_CornerRadius cornerRadius =
 			context.params.cornerRadius.value_or(theme.cornerRadius);
 		const Clay_ElementId contentId = context.uiManager.toClayEID(
-			context.part(Parts::content));
+			FlowUi::ValueOrThrow(context.part(Parts::content)));
 		const Clay_ElementId textLayerId = context.uiManager.toClayEID(
-			context.part(Parts::text));
+			FlowUi::ValueOrThrow(context.part(Parts::text)));
 		const Clay_ElementId placeholderId = context.uiManager.toClayEID(
-			context.part(Parts::placeholder));
+			FlowUi::ValueOrThrow(context.part(Parts::placeholder)));
 		const Clay_Dimensions viewport = detail::text_field::resolveViewport(
 			contentId,
 			theme,
@@ -220,8 +222,8 @@ struct TextArea {
 					for (const VisibleTextLine& line : field.visibleLines) {
 						const std::string lineName =
 							"line-" + std::to_string(line.visualLineIndex);
-						const Clay_ElementId lineId = context.clayID(
-							RuntimeName(lineName));
+						const Clay_ElementId lineId = FlowUi::ValueOrThrow(context.clayID(
+							RuntimeName(lineName)));
 						CLAY(lineId, line.declaration) {
 							CLAY_TEXT(
 								context.uiManager.toClayString(line.text),

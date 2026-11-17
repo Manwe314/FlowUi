@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,18 +106,133 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevErrorSnapshotSink Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevErrorTypes_8hpp_source.html">DevErrorTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a1cceb4109075653a84baafc1021bf3c5" id="r_a1cceb4109075653a84baafc1021bf3c5"><td class="memItemLeft"><a id="a1cceb4109075653a84baafc1021bf3c5" name="a1cceb4109075653a84baafc1021bf3c5"></a>
-&#160;</td><td class="memItemRight"><b>DevErrorSnapshotSink</b> (<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSnapshot.html">DevErrorSnapshot</a> &amp;snapshot) noexcept</td></tr>
-<tr class="memitem:adaac8c0c209b1e29c9f9c451f5583b00" id="r_adaac8c0c209b1e29c9f9c451f5583b00"><td class="memItemLeft"><a id="adaac8c0c209b1e29c9f9c451f5583b00" name="adaac8c0c209b1e29c9f9c451f5583b00"></a>
-bool&#160;</td><td class="memItemRight"><b>append</b> (DevErrorEvidenceKey key, uint64_t value, uint16_t index=0u) noexcept</td></tr>
-<tr class="memitem:a0830043ee6ee34aa60b7fe853fbf68ec" id="r_a0830043ee6ee34aa60b7fe853fbf68ec"><td class="memItemLeft"><a id="a0830043ee6ee34aa60b7fe853fbf68ec" name="a0830043ee6ee34aa60b7fe853fbf68ec"></a>
-void&#160;</td><td class="memItemRight"><b>setCapturedRevision</b> (uint64_t revision) noexcept</td></tr>
-<tr class="memitem:ae71abc1d87341a72151c78139bbd8949" id="r_ae71abc1d87341a72151c78139bbd8949"><td class="memItemLeft"><a id="ae71abc1d87341a72151c78139bbd8949" name="ae71abc1d87341a72151c78139bbd8949"></a>
-void&#160;</td><td class="memItemRight"><b>setOutcome</b> (DevErrorSnapshotOutcome outcome) noexcept</td></tr>
+<tr class="memitem:a1cceb4109075653a84baafc1021bf3c5" id="r_a1cceb4109075653a84baafc1021bf3c5"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a1cceb4109075653a84baafc1021bf3c5">DevErrorSnapshotSink</a> (<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSnapshot.html">DevErrorSnapshot</a> &amp;snapshot) noexcept</td></tr>
+<tr class="memitem:adaac8c0c209b1e29c9f9c451f5583b00" id="r_adaac8c0c209b1e29c9f9c451f5583b00"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#adaac8c0c209b1e29c9f9c451f5583b00">append</a> (<a class="el" href="namespaceFlowUi_1_1devSystems.html#af773aff402145b2bf0d8a4af711c4fdd">DevErrorEvidenceKey</a> key, uint64_t value, uint16_t index=0u) noexcept</td></tr>
+<tr class="memitem:a0830043ee6ee34aa60b7fe853fbf68ec" id="r_a0830043ee6ee34aa60b7fe853fbf68ec"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a0830043ee6ee34aa60b7fe853fbf68ec">setCapturedRevision</a> (uint64_t revision) noexcept</td></tr>
+<tr class="memitem:ae71abc1d87341a72151c78139bbd8949" id="r_ae71abc1d87341a72151c78139bbd8949"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ae71abc1d87341a72151c78139bbd8949">setOutcome</a> (<a class="el" href="namespaceFlowUi_1_1devSystems.html#aa055a1e173dded6d4f2087ceb5fc619d">DevErrorSnapshotOutcome</a> outcome) noexcept</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Borrowed writer into one bounded snapshot. The destination must outlive this sink and its provider callback. </p>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a1cceb4109075653a84baafc1021bf3c5" name="a1cceb4109075653a84baafc1021bf3c5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1cceb4109075653a84baafc1021bf3c5">&#9670;&#160;</a></span>DevErrorSnapshotSink()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevErrorSnapshotSink::DevErrorSnapshotSink </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSnapshot.html">DevErrorSnapshot</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>snapshot</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel explicit">explicit</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Bind a writer to the borrowed snapshot destination for the duration of provider capture. </p>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="adaac8c0c209b1e29c9f9c451f5583b00" name="adaac8c0c209b1e29c9f9c451f5583b00"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adaac8c0c209b1e29c9f9c451f5583b00">&#9670;&#160;</a></span>append()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevErrorSnapshotSink::append </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#af773aff402145b2bf0d8a4af711c4fdd">DevErrorEvidenceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t</td>          <td class="paramname"><span class="paramname"><em>value</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t</td>          <td class="paramname"><span class="paramname"><em>index</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0u</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Append one tagged numeric value. Return false and mark truncation when the fixed evidence capacity is exhausted. </p>
+
+</div>
+</div>
+<a id="a0830043ee6ee34aa60b7fe853fbf68ec" name="a0830043ee6ee34aa60b7fe853fbf68ec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0830043ee6ee34aa60b7fe853fbf68ec">&#9670;&#160;</a></span>setCapturedRevision()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevErrorSnapshotSink::setCapturedRevision </td>
+          <td>(</td>
+          <td class="paramtype">uint64_t</td>          <td class="paramname"><span class="paramname"><em>revision</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Publish the actual subsystem revision observed by the snapshot callback. </p>
+
+</div>
+</div>
+<a id="ae71abc1d87341a72151c78139bbd8949" name="ae71abc1d87341a72151c78139bbd8949"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae71abc1d87341a72151c78139bbd8949">&#9670;&#160;</a></span>setOutcome()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevErrorSnapshotSink::setOutcome </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#aa055a1e173dded6d4f2087ceb5fc619d">DevErrorSnapshotOutcome</a></td>          <td class="paramname"><span class="paramname"><em>outcome</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Set the snapshot availability or revision outcome reported by the provider. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/errors/<a class="el" href="DevErrorTypes_8hpp_source.html">DevErrorTypes.hpp</a></li>
 </ul>
@@ -134,7 +249,7 @@ void&#160;</td><td class="memItemRight"><b>setOutcome</b> (DevErrorSnapshotOutco
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1DevErrorSnapshotSink.html">DevErrorSnapshotSink</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1DevErrorSnapshotSink.html">DevErrorSnapshotSink</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

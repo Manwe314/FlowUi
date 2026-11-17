@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <string_view>
 #include <type_traits>
+#include <utility>
 
 #include <FlowUi/Public/Flow.hpp>
 
@@ -163,7 +164,7 @@ template <typename Context>
 concept HasSemanticPartSurface = requires(
 	Context& context,
 	FlowUi::FlowElementPart declaration) {
-	{ context.part(declaration) } -> std::same_as<FlowUi::FlowElementPartID>;
+	{ context.part(declaration) } -> std::same_as<FlowUi::Result<FlowUi::FlowElementPartID>>;
 	context.createPart(kDrawableElement, declaration);
 };
 
@@ -312,6 +313,68 @@ static_assert(AcceptsBoundPartID<FlowUi::UiManager>);
 static_assert(!AcceptsBarePartDeclaration<FlowUi::UiManager>);
 static_assert(HasSemanticPartSurface<DrawableElement::BuildContext>);
 static_assert(HasSemanticPartSurface<DrawableElement::InteractionContext>);
+
+// Public error transport is part of the authoring contract: fluent/reference
+// operations and terminals propagate to the enclosing frame rather than wrapping
+// guaranteed objects in Result or promising a universal no-escape boundary.
+using DrawableBuilder = FlowUi::ElementBuilder<DrawableElement>;
+using ConstructibleBuilder = FlowUi::ElementBuilder<ConstructibleElement>;
+using DrawableBuildContext = FlowUi::ElementBuildContext<DrawableElement>;
+using DrawableInteractionContext = FlowUi::ElementInteractionContext<DrawableElement>;
+
+template <typename Identity>
+concept HasDirectIdentityMutation = requires(DrawableBuilder& builder, Identity identity) {
+	{ builder.withID(identity) } -> std::same_as<DrawableBuilder&>;
+};
+template <typename Context, typename OtherElement>
+concept AcceptsOtherStateType = requires(Context& context) {
+	context.template state<OtherElement>();
+};
+template <typename Context, typename OtherElement>
+concept AcceptsOtherResourcesType = requires(Context& context) {
+	context.template resources<OtherElement>();
+};
+
+static_assert(std::same_as<decltype(std::declval<DrawableBuilder&>().setParameters(
+	std::declval<const ExampleParameters&>())), DrawableBuilder&>);
+static_assert(std::same_as<decltype(std::declval<DrawableBuilder&>().setParameters(
+	std::declval<ExampleParameters&&>())), DrawableBuilder&>);
+static_assert(std::same_as<decltype(std::declval<DrawableBuilder&>().mergeParams(
+	[](ExampleParameters& parameters) { ++parameters.value; })), DrawableBuilder&>);
+static_assert(HasDirectIdentityMutation<FlowUi::LocalElementName>);
+static_assert(HasDirectIdentityMutation<FlowUi::RuntimeElementName>);
+static_assert(HasDirectIdentityMutation<FlowUi::IndexedElementName>);
+static_assert(HasDirectIdentityMutation<FlowUi::AutoElementName>);
+static_assert(HasDirectIdentityMutation<FlowUi::FlowElementID>);
+static_assert(HasDirectIdentityMutation<FlowUi::GlobalFlowID>);
+static_assert(HasDirectIdentityMutation<FlowUi::FlowElementPartID>);
+static_assert(std::same_as<decltype(std::declval<DrawableBuilder&>().draw()), void>);
+static_assert(std::same_as<decltype(std::declval<ConstructibleBuilder&>().construct()), void>);
+static_assert(!noexcept(std::declval<DrawableBuilder&>().draw()));
+static_assert(!noexcept(std::declval<ConstructibleBuilder&>().construct()));
+static_assert(!noexcept(std::declval<DrawableBuilder&>().setParameters(std::declval<const ExampleParameters&>())));
+static_assert(!noexcept(std::declval<DrawableBuilder&>().withID(FlowUi::FlowElementID{})));
+static_assert(std::same_as<decltype(std::declval<DrawableBuildContext&>().state()), ExampleState&>);
+static_assert(std::same_as<decltype(std::declval<const DrawableBuildContext&>().state()), const ExampleState&>);
+static_assert(std::same_as<decltype(std::declval<DrawableInteractionContext&>().state()), ExampleState&>);
+static_assert(std::same_as<decltype(std::declval<const DrawableInteractionContext&>().state()), const ExampleState&>);
+static_assert(std::same_as<decltype(std::declval<const DrawableBuildContext&>().resources()), const ExampleResources&>);
+static_assert(std::same_as<decltype(std::declval<const DrawableInteractionContext&>().resources()), const ExampleResources&>);
+static_assert(!AcceptsOtherStateType<DrawableBuildContext, const DrawableElement>);
+static_assert(!AcceptsOtherStateType<DrawableInteractionContext, const DrawableElement>);
+static_assert(!AcceptsOtherResourcesType<DrawableBuildContext, const DrawableElement>);
+static_assert(!AcceptsOtherResourcesType<DrawableInteractionContext, const DrawableElement>);
+static_assert(std::same_as<decltype(std::declval<const DrawableBuildContext&>().createPart(
+	kDrawableElement, DrawableElement::Parts::label)), DrawableBuilder>);
+static_assert(std::same_as<decltype(std::declval<const DrawableInteractionContext&>().createPart(
+	kDrawableElement, DrawableElement::Parts::label)), DrawableBuilder>);
+static_assert(std::same_as<decltype(std::declval<DrawableInteractionContext&>().invoke(FlowUi::ActionCall{})),
+	FlowUi::ActionInvocationStatus>);
+
+constexpr auto incrementRecipeValue = [](int& targetValue) { ++targetValue; };
+static_assert(noexcept(FlowUi::UiAction(incrementRecipeValue)));
+static_assert(noexcept(FlowUi::UiAction("tests.concepts.public-recipe", incrementRecipeValue)));
+static_assert(noexcept(std::declval<const FlowUi::ActionResult<void>&>().value()));
 
 static_assert(!FlowUi::FlowElement<MissingOutputElement>);
 static_assert(!FlowUi::FlowElement<NonEmptyElement>);

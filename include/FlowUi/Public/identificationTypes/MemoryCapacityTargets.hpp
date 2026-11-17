@@ -8,7 +8,16 @@ using MemoryCapacityTargetId = uint64_t;
  * tooling. Hashes the exact key bytes without interning or allocation; returns
  * a nonzero value even for an empty name. Registration is checked separately.
  * @param name Registered, case-sensitive capacity target key.
- * @return Stable nonzero numeric identity. */
+ * @return Stable nonzero numeric identity.
+ * @par Example
+ * @code{.cpp}
+ * constexpr auto target = FlowUi::makeMemoryCapacityTargetId(
+ *     "flowui.tuning.input_fields.registry_entries");
+ * std::string_view key = "flowui.tuning.input_fields.registry_entries";
+ * const auto runtimeTarget = FlowUi::memory_capacity_target_id(key);
+ * const bool same = target == runtimeTarget;
+ * @endcode
+ */
 [[nodiscard]] constexpr MemoryCapacityTargetId
 memory_capacity_target_id(std::string_view name) noexcept {
 	uint64_t hash = 14695981039346656037ull;
@@ -18,7 +27,17 @@ memory_capacity_target_id(std::string_view name) noexcept {
 	}
 	return hash == 0 ? 1 : hash;
 }
-/** Create a stable capacity target identity from its registered key. */
+/**
+ * Create a stable capacity target identity from its registered key.
+ * @par Example
+ * @code{.cpp}
+ * constexpr auto target = FlowUi::makeMemoryCapacityTargetId(
+ *     "flowui.tuning.input_fields.registry_entries");
+ * std::string_view key = "flowui.tuning.input_fields.registry_entries";
+ * const auto runtimeTarget = FlowUi::memory_capacity_target_id(key);
+ * const bool same = target == runtimeTarget;
+ * @endcode
+ */
 [[nodiscard]] consteval MemoryCapacityTargetId
 makeMemoryCapacityTargetId(std::string_view name) noexcept {
 	return memory_capacity_target_id(name);

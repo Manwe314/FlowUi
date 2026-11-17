@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.hpp"
 
 #if FLOW_UI_DEV_MODE
@@ -17,7 +18,7 @@ void text(Context& context, std::string_view label,
 		  Clay_Color color = interface_theme::kTextSecondary, uint16_t size = 13) {
 	const auto bounds = Clay_GetElementData(context.clayID());
 	const float width = std::max(40.0f, (bounds.found ? bounds.boundingBox.width : 320.0f) - 30);
-	const auto* face = context.params.app ? context.params.app->fonts().getFontById(0) : nullptr;
+	const auto* face = context.params.app ? FlowUi::ValueOrThrow(context.params.app->fonts()).get().getFontById(0) : nullptr;
 	if (!face) {
 		ui::text(context, label, color, size);
 		return;
@@ -65,12 +66,12 @@ void fact(Context& context, uint64_t identity, std::string_view label, std::stri
 	declaration.layout.sizing.width = CLAY_SIZING_PERCENT(1);
 	declaration.layout.padding = {0, 0, 4, 8};
 	declaration.border = {.color = interface_theme::kBorderSubtle, .width = {0, 0, 0, 1, 0}};
-	CLAY(context.clayID(Keyed("fact", identity)), declaration) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("fact", identity))), declaration) {
 		text(context, label, interface_theme::kTextMuted, 11);
 		// Preserve the entire value with display-only wrapping.
 		auto content = ui::column(0);
 		content.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-		CLAY(context.clayID(Keyed("value", identity)), content)
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("value", identity))), content)
 		text(context, value.empty() ? "Unknown" : value, interface_theme::kTextCanvas, 12);
 	}
 }
@@ -84,7 +85,7 @@ void section(Context& context, LocalElementName identity, std::string_view label
 			 Content&& build_content) {
 	auto section = ui::column(0);
 	section.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-	CLAY(context.clayID(identity), section) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(identity)), section) {
 		const auto header = Keyed("section-header", identity.token);
 		context.uiManager.createElement(ui::kControl, header)
 			.setParameters({.label = std::string(label),
@@ -101,7 +102,7 @@ void section(Context& context, LocalElementName identity, std::string_view label
 			auto content = ui::column(8);
 			content.layout.sizing.width = CLAY_SIZING_PERCENT(1);
 			content.layout.padding = {12, 12, 10, 12};
-			CLAY(context.clayID(Keyed("section-content", identity.token)), content)
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("section-content", identity.token))), content)
 			build_content();
 		}
 	}
@@ -121,12 +122,12 @@ void DevCatalogueInspector::buildElement(BuildContext& context) {
 		auto title = ui::row(36);
 		title.layout.padding = {12, 12, 0, 0};
 		title.backgroundColor = interface_theme::kDepth2Ink;
-		CLAY(context.clayID("title"), title)
+		CLAY(FlowUi::ValueOrThrow(context.clayID("title")), title)
 		ui::text(context, "Inspector", interface_theme::kTextCanvas, 14);
 		auto body = ui::column(0);
 		body.layout.sizing.width = CLAY_SIZING_PERCENT(1);
 		body.layout.sizing.height = CLAY_SIZING_GROW(0);
-		const auto viewport = context.clayID("scroll-body");
+		const auto viewport = FlowUi::ValueOrThrow(context.clayID("scroll-body"));
 		const auto scroll = Clay_GetScrollContainerData(viewport);
 		if (scroll.found && scroll.scrollPosition)
 			state.inspector_scroll = scroll.scrollPosition->y;

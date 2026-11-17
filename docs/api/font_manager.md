@@ -1,284 +1,468 @@
 # Font Manager API
 
-The facade is [FontManager.hpp](../../include/FlowUi/Public/managers/FontManager.hpp). CPU identities, descriptors, and glyph/face metadata are in [FontTypes.hpp](../../include/FlowUi/Public/managerStructs/FontTypes.hpp); native atlas data is in [interop/vulkan/FontAtlas.hpp](../../include/FlowUi/Public/interop/vulkan/FontAtlas.hpp). The native structure retains its existing allocation handle and all original fields as borrowed data; ownership remains with FlowUi.
+[Public declarations](include/FlowUi/Public/managers/FontManager.hpp) · [Font values](include/FlowUi/Public/managerStructs/FontTypes.hpp)
 
-## Aliases
+Fonts are App-shared. Register families/faces during setup, then resolve `FontId` values for Clay text. The startup family is configured by `UiConfig::defaultFontFamily`. Additional source fonts require the configured runtime-baking build support; baked `.arfont` assets work without runtime baking. Family names and face IDs are separate identities.
 
-### **FontId**
+## Acquire the manager
 
+`App` getters return `Result<std::reference_wrapper<T>>`. Check the wrapper, then name the borrowed object as a normal reference:
 
-#### `using FontId = uint16_t`
+**Example:**
 
-Stable concrete font id consumed by Clay text configuration. It identifies one loaded font face.
+```cpp
+auto result = app.fonts();
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+FlowUi::FontManager& manager = result->get();
+```
 
-### **FontFamilyId**
+The reference is borrowed; the App must outlive it, and window-owned managers must also stay within their owning window lifetime. The examples use an already acquired manager reference and existing field/window identities where needed. They choose an application policy of throwing `FlowUiException` after a failed Result; returning/reporting the error is equally possible. Include the relevant manager/value headers and `FlowUi/Public/errorManagement/Exception.hpp`.
 
+ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.
 
-#### `using FontFamilyId = uint32_t`
+For `Result<bool>`, `if (!result)` tests operational failure; `*result` is the separate operation outcome. Never treat a successful `false` as an error.
 
-Stable logical font family id returned by `FlowUi::FontManager`. It identifies a group of concrete faces used for style resolution.
+## Value helpers: FontVariantData
 
-## Enums
+### **kerningKey**
 
-### **FontStyle**
+#### `[[nodiscard]] static constexpr uint64_t kerningKey(uint32_t leftCodepoint, uint32_t rightCodepoint) noexcept`
 
+- **Returns:** `uint64_t`
+- **Arguments:** `leftCodepoint` left Unicode codepoint, `rightCodepoint` right Unicode codepoint
 
-#### `enum class FontStyle : uint8_t`
+Pack two codepoints into the kerning-table key. The left codepoint occupies the high 32 bits and the right occupies the low 32 bits.
 
-Font style requested during font resolution. Current public values distinguish normal and italic faces.
+This constexpr/noexcept helper does not validate Unicode scalar values.
 
-## Public Structs
+**Example:**
 
-### **FontFaceCreateInfo**
+```cpp
+const auto kerningKey = FlowUi::Font::FontVariantData::kerningKey(static_cast<uint32_t>(U'A'), static_cast<uint32_t>(U'V'));
+```
 
+See: [Owning header](include/FlowUi/Public/managerStructs/FontTypes.hpp).
 
-#### `struct FontFaceCreateInfo`
+### **kerningAdvance**
 
-Describes one concrete font face to load into a family. It includes source path, pixel size, weight, style, and optional name.
+#### `[[nodiscard]] float kerningAdvance(uint32_t leftCodepoint, uint32_t rightCodepoint) const noexcept`
 
-### **FontFamilyCreateInfo**
+- **Returns:** `float`
+- **Arguments:** `leftCodepoint` left Unicode codepoint, `rightCodepoint` right Unicode codepoint
 
+Read the stored horizontal kerning adjustment. Returns zero when the codepoint pair is absent.
 
-#### `struct FontFamilyCreateInfo`
+The adjustment is in this variant's metric units; this lookup neither scales nor synthesizes kerning.
 
-Describes a logical font family and its initial faces. The family name is used for lookup, while faces provide style and weight variants.
+**Example:**
 
-### **FlowUi::Font::GlyphData**
+```cpp
+const auto advance = value.kerningAdvance(static_cast<uint32_t>(U'A'), static_cast<uint32_t>(U'V'));
+```
 
+See: [Owning header](include/FlowUi/Public/managerStructs/FontTypes.hpp).
 
-#### `struct FlowUi::Font::GlyphData`
+## Value helpers: FontFaceData
 
-Baked glyph metrics and atlas coordinates loaded from font resources. It is consumed by text layout and rendering code.
+### **defaultVariant**
 
-### **FlowUi::Font::FontVariantData**
+#### `[[nodiscard]] const FontVariantData* defaultVariant() const noexcept`
 
+- **Returns:** `const FontVariantData*`
+- **Arguments:** none.
 
-#### `struct FlowUi::Font::FontVariantData`
+Borrow the selected variant of a font face. Returns nullptr when the variant list is empty or defaultVariantIndex is out of bounds.
 
-One baked variant of a font face. It stores metrics, glyphs, Unicode lookup, and kerning data.
+The pointer is invalidated by mutation/destruction of the variants or by invalidation of the containing borrowed face.
 
-### **FlowUi::Font::FontFaceData**
+**Example:**
 
+```cpp
+const auto variant = value.defaultVariant();
+```
 
-#### `struct FlowUi::Font::FontFaceData`
-
-Loaded font face and its baked variants. It exposes atlas placement, source metadata, and default variant access.
-
-### **FlowUi::Font::AtlasArrayResource**
-
-
-#### `struct FlowUi::Font::AtlasArrayResource`
-
-Vulkan resources for the font atlas array. Renderer integrations can inspect image, view, sampler, dimensions, layer counts, and binding revision.
+See: [Owning header](include/FlowUi/Public/managerStructs/FontTypes.hpp).
 
 ## Public API
 
 ### **createFamily**
 
+#### `[[nodiscard]] Result<FontFamilyId> createFamily(const FontFamilyCreateInfo& createInfo) noexcept`
 
-#### `Result<FontFamilyId> createFamily(const FontFamilyCreateInfo& createInfo)`
+- **Returns:** `Result<FontFamilyId>`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** `createInfo` family or target configuration
 
-- **Returns:** `Result<FontFamilyId>`; check success before reading the value, and use `.error()` on failure.
-- **Arguments:** `createInfo` logical family name and initial concrete faces.
+Create a font family and synchronously load its initial faces. The value is the stable family ID. Duplicate names are FontFamilyAlreadyExists errors. An empty createInfo name uses Default, which startup normally already registered. The ResourceKey overload uses its normalized key name instead of createInfo.name. A failed family registration rolls back the candidate family and faces.
 
-Creates a logical font family and immediately loads its listed faces. Family names must be unique, and face paths load baked `.arfont` files unless runtime font baking is enabled for `.ttf`.
+Faces accept baked .arfont assets or borrowed baked_data; source-font baking depends on FLOWUI_RUNTIME_FONT_BAKING. Borrowed bytes are consumed during this call. Family and face IDs remain valid for this manager's lifetime.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 
 **Example:**
 
 ```cpp
-const auto family = app.fonts().createFamily({.name = "Body"});
-if (!family) {
-    throw FlowUi::FlowUiException(family.error());
+FlowUi::FontFamilyCreateInfo createInfo{};
+createInfo.name = "Body";
+auto result = manager.createFamily(createInfo);
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
 }
-const FlowUi::FontFamilyId bodyFamily = *family;
+const auto familyId = *result;
 ```
 
-See: [Owning header](../../include/FlowUi/Public/managers/FontManager.hpp).
+See: [Owning header](include/FlowUi/Public/managers/FontManager.hpp).
+
+### **createFamily**
+
+#### `[[nodiscard]] Result<FontFamilyId> createFamily(ResourceKey key, const FontFamilyCreateInfo& createInfo) noexcept`
+
+- **Returns:** `Result<FontFamilyId>`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** `key` logical resource identity, `createInfo` family or target configuration
+
+Create a font family and synchronously load its initial faces. The value is the stable family ID. Duplicate names are FontFamilyAlreadyExists errors. An empty createInfo name uses Default, which startup normally already registered. The ResourceKey overload uses its normalized key name instead of createInfo.name. A failed family registration rolls back the candidate family and faces.
+
+Faces accept baked .arfont assets or borrowed baked_data; source-font baking depends on FLOWUI_RUNTIME_FONT_BAKING. Borrowed bytes are consumed during this call. Family and face IDs remain valid for this manager's lifetime. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+
+**Example:**
+
+```cpp
+const FlowUi::ResourceKey key{.name = "Body"};
+FlowUi::FontFamilyCreateInfo createInfo{};
+createInfo.name = "Body";
+auto result = manager.createFamily(key, createInfo);
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+const auto familyId = *result;
+```
+
+See: [Owning header](include/FlowUi/Public/managers/FontManager.hpp).
 
 ### **getFamilyId**
 
+#### `[[nodiscard]] Result<FontFamilyId> getFamilyId(std::string_view familyName) const noexcept`
 
-#### `FontFamilyId getFamilyId(std::string_view familyName) const`
+- **Returns:** `Result<FontFamilyId>`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** `familyName` registered font-family name
 
-- **Returns:** `FontFamilyId`
-- **Arguments:** `familyName` logical family name.
+Look up a family ID without loading a font. A missing family is a successful std::numeric_limits<FontFamilyId>::max() value, not an error.
 
-Looks up a previously registered family id by name. Missing families return `UINT32_MAX`. Lookup metadata may allocate.
+String family lookup is exact; ResourceKey lookup additionally validates domain and scope.
 
-**Example:**
-
-```cpp
-FlowUi::FontFamilyId bodyFamily = app.fonts().getFamilyId("Body");
-```
-
-See: [Owning header](../../include/FlowUi/Public/managers/FontManager.hpp).
-
-### **addFamilyFace** `1/2`
-
-
-#### `Result<FontId> addFamilyFace(FontFamilyId familyId, const FontFaceCreateInfo& createInfo)`
-
-- **Returns:** `Result<FontId>`; check success before reading the value, and use `.error()` on failure.
-- **Arguments:** `familyId` existing family id, `createInfo` concrete face source and style data.
-
-Adds a concrete face to an existing family by id. The new face becomes available to `resolveFont()` for its weight and style.
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 
 **Example:**
 
 ```cpp
-const auto face = app.fonts().addFamilyFace("Body", {.path = "assets/fonts/Inter-Bold.arfont", .weight = 700});
-if (!face) {
-    throw FlowUi::FlowUiException(face.error());
+auto result = manager.getFamilyId("Body");
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
 }
-const FlowUi::FontId boldFace = *face;
+const auto familyId = *result;
 ```
 
-See: [Owning header](../../include/FlowUi/Public/managers/FontManager.hpp).
+See: [Owning header](include/FlowUi/Public/managers/FontManager.hpp).
 
-### **addFamilyFace** `2/2`
+### **getFamilyId**
 
+#### `[[nodiscard]] Result<FontFamilyId> getFamilyId(ResourceKey key) const noexcept`
 
-#### `Result<FontId> addFamilyFace(std::string_view familyName, const FontFaceCreateInfo& createInfo)`
+- **Returns:** `Result<FontFamilyId>`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** `key` logical resource identity
 
-- **Returns:** `Result<FontId>`; check success before reading the value, and use `.error()` on failure.
-- **Arguments:** `familyName` existing family name, `createInfo` concrete face source and style data.
+Look up a family ID without loading a font. A missing family is a successful std::numeric_limits<FontFamilyId>::max() value, not an error.
 
-Adds a concrete face to an existing family by name. Use this when the caller has not cached the family id.
+String family lookup is exact; ResourceKey lookup additionally validates domain and scope. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 
 **Example:**
 
 ```cpp
-const auto face = app.fonts().addFamilyFace("Body", {.path = "assets/fonts/Inter-Bold.arfont", .weight = 700});
-if (!face) {
-    throw FlowUi::FlowUiException(face.error());
+const FlowUi::ResourceKey key{.name = "Body"};
+auto result = manager.getFamilyId(key);
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
 }
-const FlowUi::FontId boldFace = *face;
+const auto familyId = *result;
 ```
 
-See: [Owning header](../../include/FlowUi/Public/managers/FontManager.hpp).
+See: [Owning header](include/FlowUi/Public/managers/FontManager.hpp).
 
-### **resolveFont** `1/2`
+### **addFamilyFace**
 
+#### `[[nodiscard]] Result<FontId> addFamilyFace(FontFamilyId familyId, const FontFaceCreateInfo& createInfo) noexcept`
 
-#### `FontId resolveFont(FontFamilyId familyId, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const`
+- **Returns:** `Result<FontId>`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** `familyId` registered font-family identity, `createInfo` family or target configuration
 
-- **Returns:** `FontId`
-- **Arguments:** `familyId` existing family id, `weight` requested weight, `style` requested style.
+Synchronously load and append a face to an existing family. The value is a concrete FontId; a missing family is FontFamilyNotFound.
 
-Resolves a logical font request to the best concrete face in a family. It prefers matching style and closest weight, with fallback behavior for missing variants.
+The manager owns loaded bytes. FontFaceCreateInfo::baked_data is borrowed only for this call; adding faces can invalidate previously borrowed FontFaceData pointers.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 
 **Example:**
 
 ```cpp
-FlowUi::FontId bodyFont = app.fonts().resolveFont("Body", 400, FlowUi::FontStyle::Normal);
+FlowUi::FontFaceCreateInfo face{};
+face.path = "assets/fonts/Inter.arfont";
+auto result = manager.addFamilyFace(familyId, face);
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+const auto fontId = *result;
 ```
 
-See: [Owning header](../../include/FlowUi/Public/managers/FontManager.hpp).
+See: [Owning header](include/FlowUi/Public/managers/FontManager.hpp).
 
-### **resolveFont** `2/2`
+### **addFamilyFace**
 
+#### `[[nodiscard]] Result<FontId> addFamilyFace(std::string_view familyName, const FontFaceCreateInfo& createInfo) noexcept`
 
-#### `FontId resolveFont(std::string_view familyName, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const`
+- **Returns:** `Result<FontId>`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** `familyName` registered font-family name, `createInfo` family or target configuration
 
-- **Returns:** `FontId`
-- **Arguments:** `familyName` existing family name, `weight` requested weight, `style` requested style.
+Synchronously load and append a face to an existing family. The value is a concrete FontId; a missing family is FontFamilyNotFound.
 
-Named-family overload for resolving a concrete Clay font id. Returns `0` when the family is missing or empty.
+The manager owns loaded bytes. FontFaceCreateInfo::baked_data is borrowed only for this call; adding faces can invalidate previously borrowed FontFaceData pointers.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 
 **Example:**
 
 ```cpp
-FlowUi::FontId bodyFont = app.fonts().resolveFont("Body", 400, FlowUi::FontStyle::Normal);
+FlowUi::FontFaceCreateInfo face{};
+face.path = "assets/fonts/Inter.arfont";
+auto result = manager.addFamilyFace("Body", face);
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+const auto fontId = *result;
 ```
 
-See: [Owning header](../../include/FlowUi/Public/managers/FontManager.hpp).
+See: [Owning header](include/FlowUi/Public/managers/FontManager.hpp).
+
+### **addFamilyFace**
+
+#### `[[nodiscard]] Result<FontId> addFamilyFace(ResourceKey key, const FontFaceCreateInfo& createInfo) noexcept`
+
+- **Returns:** `Result<FontId>`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** `key` logical resource identity, `createInfo` family or target configuration
+
+Synchronously load and append a face to an existing family. The value is a concrete FontId; a missing family is FontFamilyNotFound.
+
+The manager owns loaded bytes. FontFaceCreateInfo::baked_data is borrowed only for this call; adding faces can invalidate previously borrowed FontFaceData pointers. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+
+**Example:**
+
+```cpp
+const FlowUi::ResourceKey key{.name = "Body"};
+FlowUi::FontFaceCreateInfo face{};
+face.path = "assets/fonts/Inter.arfont";
+auto result = manager.addFamilyFace(key, face);
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+const auto fontId = *result;
+```
+
+See: [Owning header](include/FlowUi/Public/managers/FontManager.hpp).
+
+### **resolveFont**
+
+#### `[[nodiscard]] Result<FontId> resolveFont(FontFamilyId familyId, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const noexcept`
+
+- **Returns:** `Result<FontId>`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** `familyId` registered font-family identity, `weight` requested font weight, `style` requested face style
+
+Select a registered face for a family, weight, and style. Success contains the nearest weight within the requested style (first registered face wins ties); if that style is absent, the first family face is used. A missing or empty family successfully resolves to fallback FontId 0.
+
+Defaults are weight 400 and FontStyle::Normal. This query does not load or bake fonts.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+
+**Example:**
+
+```cpp
+auto result = manager.resolveFont(familyId, 400, FlowUi::FontStyle::Normal);
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+const auto fontId = *result;
+```
+
+See: [Owning header](include/FlowUi/Public/managers/FontManager.hpp).
+
+### **resolveFont**
+
+#### `[[nodiscard]] Result<FontId> resolveFont(std::string_view familyName, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const noexcept`
+
+- **Returns:** `Result<FontId>`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** `familyName` registered font-family name, `weight` requested font weight, `style` requested face style
+
+Select a registered face for a family, weight, and style. Success contains the nearest weight within the requested style (first registered face wins ties); if that style is absent, the first family face is used. A missing or empty family successfully resolves to fallback FontId 0.
+
+Defaults are weight 400 and FontStyle::Normal. This query does not load or bake fonts.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+
+**Example:**
+
+```cpp
+auto result = manager.resolveFont("Body", 400, FlowUi::FontStyle::Normal);
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+const auto fontId = *result;
+```
+
+See: [Owning header](include/FlowUi/Public/managers/FontManager.hpp).
+
+### **resolveFont**
+
+#### `[[nodiscard]] Result<FontId> resolveFont(ResourceKey key, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const noexcept`
+
+- **Returns:** `Result<FontId>`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** `key` logical resource identity, `weight` requested font weight, `style` requested face style
+
+Select a registered face for a family, weight, and style. Success contains the nearest weight within the requested style (first registered face wins ties); if that style is absent, the first family face is used. A missing or empty family successfully resolves to fallback FontId 0.
+
+Defaults are weight 400 and FontStyle::Normal. This query does not load or bake fonts. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+
+**Example:**
+
+```cpp
+const FlowUi::ResourceKey key{.name = "Body"};
+auto result = manager.resolveFont(key, 400, FlowUi::FontStyle::Normal);
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+const auto fontId = *result;
+```
+
+See: [Owning header](include/FlowUi/Public/managers/FontManager.hpp).
 
 ### **getFontById**
 
-
-#### `const FlowUi::Font::FontFaceData* getFontById(FontId fontId) const`
+#### `[[nodiscard]] const FlowUi::Font::FontFaceData* getFontById(FontId fontId) const noexcept`
 
 - **Returns:** `const FlowUi::Font::FontFaceData*`
-- **Arguments:** `fontId` concrete font id.
+- **Arguments:** `fontId` registered font-face identity
 
-Returns loaded font metrics, glyphs, kerning, and atlas placement for a concrete face. Normal UI code usually only needs `resolveFont()`, but renderer or advanced layout integrations may need this data.
+Borrow a loaded face and its metrics. Returns nullptr when the concrete ID is unknown, including on a detached manager.
+
+Additional font registrations can reallocate face storage and invalidate the pointer. Reacquire it after loading fonts; do not retain it beyond the manager.
 
 **Example:**
 
 ```cpp
-const FlowUi::Font::FontFaceData* face = app.fonts().getFontById(bodyFont);
+const auto face = manager.getFontById(fontId);
 ```
 
-See: [Owning header](../../include/FlowUi/Public/managers/FontManager.hpp).
+See: [Owning header](include/FlowUi/Public/managers/FontManager.hpp).
 
 ### **getAtlasResource**
 
+#### `[[nodiscard]] Result<std::reference_wrapper<const FlowUi::Font::AtlasArrayResource>> getAtlasResource() const noexcept`
 
-#### `const FlowUi::Font::AtlasArrayResource& getAtlasResource() const`
-
-- **Returns:** `const FlowUi::Font::AtlasArrayResource&`
+- **Returns:** `Result<std::reference_wrapper<const FlowUi::Font::AtlasArrayResource>>`; check success before accessing the value; use `.error()` on failure.
 - **Arguments:** none.
 
-Returns the Vulkan atlas array resource used by FlowUi text rendering. Use `bindingRevision` to decide when external descriptors need refreshing.
+Borrow the current Vulkan font atlas resource. Success contains `std::reference_wrapper<const Font::AtlasArrayResource>`; a detached manager returns ObjectNotInitialized.
+
+Unwrap with result->get() after checking the Result. The manager owns the atlas and Vulkan handles; never destroy them. The resource reference lasts until manager destruction/reinitialization, while bindingRevision changes when descriptor bindings need refreshing.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 
 **Example:**
 
 ```cpp
-const FlowUi::Font::AtlasArrayResource& atlas = app.fonts().getAtlasResource();
+auto result = manager.getAtlasResource();
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+const FlowUi::Font::AtlasArrayResource& borrowed = result->get();
 ```
 
-See: [Owning header](../../include/FlowUi/Public/managers/FontManager.hpp).
+## Build-gated development hooks
 
-### **kerningKey**
+`FLOW_UI_DEV_MODE` and the development memory-level macros expose additional inspection/recording hooks in the header. They are development infrastructure, not the application API described here. Their existing build gates and signatures are unchanged.
 
+## Font resource values
 
-#### `static uint64_t kerningKey(uint32_t leftCodepoint, uint32_t rightCodepoint)`
+`FontFaceCreateInfo` owns its path/name and borrows optional `baked_data` only until registration returns (or until initialization completes when supplied through `UiConfig`). Nonempty baked bytes take precedence over the path. Defaults are 18 px, weight 400, normal style. `FontFamilyCreateInfo` defaults to name `Default` and the `assets/fonts/Inter.arfont` face; set the name/faces explicitly when registering an additional family.
 
-- **Returns:** `uint64_t`
-- **Arguments:** `leftCodepoint` left glyph codepoint, `rightCodepoint` right glyph codepoint.
+`Font::FontFaceData` holds face metadata, variants, and atlas placement; `Font::FontVariantData` holds metrics, glyphs, Unicode lookup, and kerning. Access through a manager-returned pointer is read-only and borrowed. `Font::GlyphData` stores codepoint, plane/image bounds, source image index, and advances.
 
-Packs two codepoints into the key used by the kerning lookup table. This is mainly useful when inspecting or extending font metric data.
+[AtlasArrayResource declaration](include/FlowUi/Public/interop/vulkan/FontAtlas.hpp) must be included when reading atlas fields; `FontManager.hpp` only forward-declares this Vulkan interop type.
+
+| Atlas field | Meaning |
+| --- | --- |
+| `image`, `allocation`, `view`, `sampler` | Borrowed Vulkan/VMA resources; never destroy them. |
+| `width`, `height` | Atlas extent in pixels. |
+| `layersUsed`, `layersCapacity` | Published and allocated array-layer counts. |
+| `bindingRevision` | Re-read binding handles and refresh descriptors when this revision changes. |
 
 **Example:**
 
 ```cpp
-uint64_t key = FlowUi::Font::FontVariantData::kerningKey(U'A', U'V');
+#include "FlowUi/Public/interop/vulkan/FontAtlas.hpp"
+auto result = fonts.getAtlasResource();
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+const FlowUi::Font::AtlasArrayResource& atlas = result->get();
+VkDescriptorImageInfo descriptor{};
+descriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+descriptor.imageView = atlas.view;
+descriptor.sampler = atlas.sampler;
 ```
 
-See: [Owning header](../../include/FlowUi/Public/managerStructs/FontTypes.hpp).
+The descriptor also borrows these handles. Rebuild it after `bindingRevision` changes and finish using it before the owning App is destroyed.
 
-### **kerningAdvance**
+## Checked development inspection examples
 
+These hooks require `FLOW_UI_DEV_MODE`; viewport hooks also require `FLOWUI_PUBLIC_VULKAN_INTEROP`. They are observation/tooling APIs. A visitor returns `true` to continue; a successful returned `false` is distinct from a failed `Result`. Callback arguments and their resource views are borrowed. The examples use the already acquired manager for the owning App/window.
 
-#### `float kerningAdvance(uint32_t leftCodepoint, uint32_t rightCodepoint) const`
+See: [Owning header](include/FlowUi/Public/managers/FontManager.hpp).
 
-- **Returns:** `float`
-- **Arguments:** `leftCodepoint` left glyph codepoint, `rightCodepoint` right glyph codepoint.
+### **visitDevFonts**
 
-Returns kerning advance for a codepoint pair. Missing pairs return `0.0f`.
+#### `Result<bool> visitDevFonts(void* userData, DevFontVisitor visitor) const noexcept`
+
+- **Returns:** `Result<bool>`; check success before accessing the value; use `.error()` on failure.
+
+Observe development catalogue entries without invoking application operations. Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a detached manager or null visitor. A failed Result is an operational/callback error, not an incomplete-visit bool.
+
+Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts loaded face rows; completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to FlowUiError. Earlier callback effects, including the counter, are not rolled back on failure.
 
 **Example:**
 
 ```cpp
-float advance = variant.kerningAdvance(U'A', U'V');
+#if FLOW_UI_DEV_MODE
+std::size_t count = 0;
+auto result = manager.visitDevFonts(&count,
+    [](void* target, const FlowUi::FontManager::DevFontView& face) {
+        auto& observedCount = *static_cast<std::size_t*>(target);
+        if (face.face != nullptr) {
+            ++observedCount;
+        }
+        return true;
+    });
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+const bool completed = *result;
+#endif
 ```
 
-See: [Owning header](../../include/FlowUi/Public/managerStructs/FontTypes.hpp).
-
-### **defaultVariant**
-
-
-#### `const FontVariantData* defaultVariant() const`
-
-- **Returns:** `const FontVariantData*`
-- **Arguments:** none.
-
-Returns the default baked variant for a loaded font face. Returns `nullptr` when the face has no variants or the default index is invalid.
-
-**Example:**
-
-```cpp
-const FlowUi::Font::FontVariantData* variant = face->defaultVariant();
-```
-
-See: [Owning header](../../include/FlowUi/Public/managerStructs/FontTypes.hpp).
+See: [Owning header](include/FlowUi/Public/managers/FontManager.hpp).

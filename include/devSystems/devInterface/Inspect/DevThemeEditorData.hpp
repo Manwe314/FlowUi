@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #pragma once
 #include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
@@ -16,7 +17,7 @@
 namespace FlowUi::devSystems::interface_elements::theme_editor {
 [[nodiscard]] inline std::vector<ThemeView> themes(App& app) {
 	std::vector<ThemeView> result;
-	result.reserve(app.themes().devThemeCount());
+	result.reserve(FlowUi::ValueOrThrow(app.themes()).get().devThemeCount());
 	const auto visitor = [](void* destination, const ThemeView& view) noexcept {
 		try {
 			static_cast<std::vector<ThemeView>*>(destination)->emplace_back(view);
@@ -25,8 +26,8 @@ namespace FlowUi::devSystems::interface_elements::theme_editor {
 			return false;
 		}
 	};
-	(void)app.themes().visitDevCatalogueThemes(&result, visitor);
-	const auto schema = app.devTooling().schemas().view();
+	(void)FlowUi::ValueOrThrow(app.themes()).get().visitDevCatalogueThemes(&result, visitor);
+	const auto schema = FlowUi::ValueOrThrow(app.devTooling()).get().schemas().view();
 	if (schema)
 		for (auto& theme : result) {
 			const auto* reflected = schema->findTheme(theme.type);
@@ -152,11 +153,11 @@ inline void text(UiManager& ui, std::string_view label, uint16_t size = 11,
 											[[maybe_unused]] std::string_view key) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	if (app) {
-		auto& icons = app->icons();
-		if (!icons.contains(key))
+		auto& icons = FlowUi::ValueOrThrow(app->icons()).get();
+		if (!FlowUi::ValueOrThrow(icons.contains(key)))
 			interface_icons::registerDevInterfaceIcons(icons);
-		if (icons.contains(key))
-			return icons.textureRef(key);
+		if (FlowUi::ValueOrThrow(icons.contains(key)))
+			return FlowUi::ValueOrThrow(icons.textureRef(key));
 	}
 #endif
 	return {};

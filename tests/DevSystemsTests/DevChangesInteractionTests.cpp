@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #include <GLFW/glfw3.h>
 #ifdef NDEBUG
 #undef NDEBUG
@@ -32,6 +33,106 @@ using namespace FlowUi::devSystems;
 using namespace FlowUi::devSystems::tooling;
 using namespace FlowUi::devSystems::interface_elements;
 namespace {
+struct AcknowledgementMember {
+	static inline bool failAssignment = false;
+	static inline unsigned assignmentCount = 0;
+	int marker = 0;
+	AcknowledgementMember() = default;
+	explicit AcknowledgementMember(int value) : marker(value) {}
+	AcknowledgementMember(const AcknowledgementMember&) = default;
+	AcknowledgementMember(AcknowledgementMember&&) = default;
+	AcknowledgementMember& operator=(const AcknowledgementMember& source) {
+		++assignmentCount;
+		marker = source.marker;
+		if (failAssignment && source.marker == 44) throw 87;
+		return *this;
+	}
+};
+struct AcknowledgementTheme {
+	AcknowledgementMember second{};
+	int first = 0;
+};
+FLOWUI_DEV_SCHEMA(AcknowledgementMember, FLOWUI_DEV_FIELD(AcknowledgementMember, marker))
+FLOWUI_DEV_SCHEMA(AcknowledgementTheme, FLOWUI_DEV_FIELD(AcknowledgementTheme, first),
+	FLOWUI_DEV_FIELD(AcknowledgementTheme, second))
+
+void verify_runtime_transaction_acknowledgement(App& app) {
+	auto& tooling = ::FlowUi::test::requireValue(app.devTooling()).get();
+	auto& themes = ::FlowUi::test::requireValue(app.themes()).get();
+	FLOWUI_CHECK(themes.registerTheme<AcknowledgementTheme>("acknowledgement", {}));
+	tooling.commitAtSafePoint(themes);
+	const auto schema = tooling.schemas().view();
+	const auto type = ::FlowUi::detail::typeHash<AcknowledgementTheme>();
+	const auto* themeSchema = schema->findTheme(type);
+	FLOWUI_CHECK(themeSchema);
+	const auto* root = schema->type(themeSchema->themeType);
+	FLOWUI_CHECK(root);
+	DevOverrideFieldKey firstField{}, secondField{};
+	for (const auto& field : schema->fieldsOf(themeSchema->themeType)) {
+		if (schema->string(field.name) == "first") firstField = {root->id, field.id};
+		if (schema->string(field.name) == "second") secondField = {root->id, field.id};
+	}
+	FLOWUI_CHECK(firstField.field && secondField.field);
+	const auto commands = [&](int first, int second) {
+		std::vector<DevOverrideCommand> result;
+		result.reserve(2);
+		DevOwnedValue firstValue, secondValue;
+		FLOWUI_CHECK(tooling.overrides().copyValue(first, firstValue) == DevValueOperationStatus::Success);
+		FLOWUI_CHECK(tooling.overrides().copyValue(AcknowledgementMember{second}, secondValue) ==
+			DevValueOperationStatus::Success);
+		result.emplace_back(DevOverrideCommand{.kind = DevOverrideCommandKind::SetThemeField,
+			.theme = {.themeType = type, .variant = "acknowledgement"}, .field = firstField,
+			.value = std::move(firstValue)});
+		result.emplace_back(DevOverrideCommand{.kind = DevOverrideCommandKind::SetThemeField,
+			.theme = {.themeType = type, .variant = "acknowledgement"}, .field = secondField,
+			.value = std::move(secondValue)});
+		return result;
+	};
+	DevInterfaceState session;
+	service_changes(app, session, false);
+	auto& state = session.changes;
+	state.pending_runtime.available = true;
+	state.pending_runtime.forward = commands(11, 22);
+	state.pending_runtime.inverse = commands(0, 0);
+	state.runtime_target_label = "two reflected theme fields";
+	state.runtime_transaction = 91001;
+	FLOWUI_CHECK(tooling.overrides().submit(DevChangeSet{
+		.transaction = state.runtime_transaction, .commands = state.pending_runtime.forward}));
+	tooling.commitAtSafePoint(themes);
+	FLOWUI_CHECK(tooling.overrides().commandResults().size() == 1);
+	service_changes(app, session, false);
+	FLOWUI_CHECK(!state.runtime_transaction && !state.runtime_message_is_error);
+	FLOWUI_CHECK(state.runtime_undo.size() == 1);
+	FLOWUI_CHECK(::FlowUi::test::requireValue(themes.getTheme<AcknowledgementTheme>("acknowledgement")).get().first == 11);
+
+	// A later two-command edit completes its first assignment, then partially
+	// changes the second before failing. The UI must stop waiting and discard
+	// undo/redo assumptions based on an atomic batch.
+	state.runtime_redo.emplace_back(state.runtime_undo.front());
+	state.pending_runtime.available = true;
+	state.pending_runtime.forward = commands(33, 44);
+	state.pending_runtime.inverse = commands(11, 22);
+	state.runtime_transaction = 91002;
+	FLOWUI_CHECK(tooling.overrides().submit(DevChangeSet{
+		.transaction = state.runtime_transaction, .commands = state.pending_runtime.forward}));
+	AcknowledgementMember::failAssignment = true;
+	tooling.commitAtSafePoint(themes);
+	AcknowledgementMember::failAssignment = false;
+	const auto assignmentCount = AcknowledgementMember::assignmentCount;
+	const auto& acknowledgement = tooling.overrides().commandResults().front();
+	FLOWUI_CHECK(!acknowledgement.applied && acknowledgement.mayHavePartialEffects);
+	FLOWUI_CHECK(acknowledgement.completedCommandCount == 1);
+	service_changes(app, session, false);
+	FLOWUI_CHECK(!state.runtime_transaction && state.runtime_message_is_error);
+	FLOWUI_CHECK(state.runtime_undo.empty() && state.runtime_redo.empty());
+	FLOWUI_CHECK(!state.pending_runtime.available);
+	FLOWUI_CHECK(state.runtime_message.find("1 commands completed") != std::string::npos);
+	const auto& actual = ::FlowUi::test::requireValue(themes.getTheme<AcknowledgementTheme>("acknowledgement")).get();
+	FLOWUI_CHECK(actual.first == 33 && actual.second.marker == 44);
+	tooling.commitAtSafePoint(themes);
+	FLOWUI_CHECK(AcknowledgementMember::assignmentCount == assignmentCount);
+}
+
 constexpr auto selector_id = Global<kDevChangesSelector>("changes.test.selector");
 constexpr auto workbench_id = Global<kDevChangesWorkbench>("changes.test.workbench");
 constexpr auto inspector_id = Global<kDevChangesInspector>("changes.test.inspector");
@@ -42,11 +143,11 @@ template <class Identity>
 	return ::FlowUi::detail::element_id::resolveLocal(parent, definition, identity.token);
 }
 void check_bounds(App& app, FlowElementID surface) {
-	const auto& snapshot = app.ui().devTreeSnapshot();
-	const auto panel = Clay_GetElementData(app.ui().toClayEID(surface));
+	const auto& snapshot = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot();
+	const auto panel = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(surface));
 	assert(panel.found && panel.boundingBox.width > 0);
 	assert(panel.boundingBox.y >= 0 && panel.boundingBox.y + panel.boundingBox.height <= 901);
-	const auto raw_scroll = app.ui().toClayEID(local(FlowElementID{workbench_id.value},
+	const auto raw_scroll = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(local(FlowElementID{workbench_id.value},
 													 DevChangesWorkbench::definitionId,
 													 LocalElementName{"raw-scroll"}));
 	for (const auto& node : snapshot.clay.nodes) {
@@ -80,7 +181,7 @@ void check_bounds(App& app, FlowElementID surface) {
 	}
 }
 void check_assigned_width(App& app, FlowElementID surface, float assigned_width) {
-	const auto panel = Clay_GetElementData(app.ui().toClayEID(surface));
+	const auto panel = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(surface));
 	assert(panel.found);
 	if (std::abs(panel.boundingBox.width - assigned_width) > 1)
 		std::cerr << "Changes panel assigned width=" << assigned_width
@@ -321,7 +422,7 @@ void verify_safe_point_service(App& app) {
 		 std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
 	std::filesystem::create_directories(directory);
 	const auto manifest = directory / "active.flowchanges";
-	app.devTooling().bakePipeline().setManifestPath(manifest);
+	::FlowUi::test::requireValue(app.devTooling()).get().bakePipeline().setManifestPath(manifest);
 	DevInterfaceState session;
 	session.activeTab = static_cast<uint64_t>(DevInterfaceTab::Changes);
 	auto& state = session.changes;
@@ -491,7 +592,7 @@ void preview_selector_references(App& app, DevInterfaceState& session) {
 	DevInterfaceState references;
 	for (int frame = 0; frame < 3; ++frame) {
 		assert(app.beginFrame());
-		const_cast<InteractionSnapshot&>(app.ui().getPreviousFramesInteraction()) = {};
+		const_cast<InteractionSnapshot&>(::FlowUi::test::requireValue(app.ui()).get().getPreviousFramesInteraction()) = {};
 		auto root = changes_ui::row(900);
 		root.layout.sizing.width = CLAY_SIZING_FIXED(1400);
 		root.layout.childGap = 0;
@@ -509,13 +610,13 @@ void preview_selector_references(App& app, DevInterfaceState& session) {
 					Clay_TextElementConfig text{};
 					text.fontSize = 12;
 					text.textColor = interface_theme::kTextCanvas;
-					CLAY_TEXT(app.ui().toClayString(title), CLAY_TEXT_CONFIG(text));
+					CLAY_TEXT(::FlowUi::test::requireValue(app.ui()).get().toClayString(title), CLAY_TEXT_CONFIG(text));
 				}
 				auto content = changes_ui::column(0);
 				content.layout.sizing.height = CLAY_SIZING_FIXED(868);
 				content.clip = {.horizontal = true, .vertical = true};
 				CLAY(CLAY_IDI("selector-reference-body", column_index), content)
-				app.ui().createElement(element, identity).setParameters({&app, &state}).draw();
+				::FlowUi::test::requireValue(app.ui()).get().createElement(element, identity).setParameters({&app, &state}).draw();
 			}
 		};
 		CLAY(CLAY_ID("selector-references"), root) {
@@ -560,14 +661,14 @@ void verify_catalogue_panel_scrolling(App& app) {
 	const auto draw = [&](bool visible = true, FlowElementID control = {}, int event = 0) {
 		assert(app.beginFrame());
 		auto& interaction =
-			const_cast<InteractionSnapshot&>(app.ui().getPreviousFramesInteraction());
+			const_cast<InteractionSnapshot&>(::FlowUi::test::requireValue(app.ui()).get().getPreviousFramesInteraction());
 		interaction = {};
-		auto& input = const_cast<FrameInput&>(app.ui().getCurrentFrameInput());
+		auto& input = const_cast<FrameInput&>(::FlowUi::test::requireValue(app.ui()).get().getCurrentFrameInput());
 		input.windowFocused = true;
 		input.mouseDown[0] = event == 1;
 		input.keyDown = {};
 		if (control.value) {
-			const auto identity = app.ui().toClayEID(control).id;
+			const auto identity = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(control).id;
 			interaction.hoveredElementIds.emplace_back(identity);
 			if (event == 1)
 				interaction.pressedElementIds.emplace_back(identity);
@@ -585,7 +686,7 @@ void verify_catalogue_panel_scrolling(App& app) {
 				declaration.clip = {.horizontal = true, .vertical = true};
 				CLAY(CLAY_IDI("catalogue-scroll-panel", panel_index), declaration) {
 					if (visible)
-						app.ui()
+						::FlowUi::test::requireValue(app.ui()).get()
 							.createElement(element, identity)
 							.setParameters({&app, &session})
 							.draw();
@@ -600,7 +701,7 @@ void verify_catalogue_panel_scrolling(App& app) {
 	};
 	const auto scroll_identity = [&](const auto& owner, FlowDefinitionID definition,
 									 const auto& identity) {
-		return app.ui().toClayEID(local(FlowElementID{owner.value}, definition, identity));
+		return ::FlowUi::test::requireValue(app.ui()).get().toClayEID(local(FlowElementID{owner.value}, definition, identity));
 	};
 	const std::array viewports{
 		scroll_identity(catalogue_selector, DevCatalogueSelector::definitionId,
@@ -622,7 +723,7 @@ void verify_catalogue_panel_scrolling(App& app) {
 		std::cout << "Changes preview=catalogue-overview" << std::endl;
 		std::this_thread::sleep_for(std::chrono::milliseconds(700));
 	}
-	auto* window = static_cast<GLFWwindow*>(app.nativeWindowHandle());
+	auto* window = static_cast<GLFWwindow*>(::FlowUi::test::requireValue(app.nativeWindowHandle()));
 	glfwFocusWindow(window);
 	for (const auto identity : viewports) {
 		const auto bounds = Clay_GetElementData(identity);
@@ -670,7 +771,7 @@ void verify_catalogue_panel_scrolling(App& app) {
 	const auto collapsed_height =
 		Clay_GetScrollContainerData(viewports.back()).contentDimensions.height;
 	assert(collapsed_height < expanded_height);
-	assert(app.ui().shortcuts().focusedElement().id == app.ui().toClayEID(overview_header).id);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().shortcuts().focusedElement()).id == ::FlowUi::test::requireValue(app.ui()).get().toClayEID(overview_header).id);
 	click(overview_header);
 	assert(Clay_GetScrollContainerData(viewports.back()).contentDimensions.height >
 		   collapsed_height);
@@ -694,14 +795,18 @@ void verify_catalogue_panel_scrolling(App& app) {
 }
 } // namespace
 
-int main() {
+int main(int argumentCount, char** arguments) {
 	AppConfig config;
 	config.window.title = "Changes complete surface verification";
 	config.window.width = 1400;
 	config.window.height = 900;
 	config.dev.excludeInternalDevElementsFromCapture = false;
 	config.vk.enableValidation = true;
-	auto app = makeApplication(config);
+	auto app = ::FlowUi::test::requireValue(makeApplication(config));
+	if (argumentCount == 2 && std::string_view(arguments[1]) == "--runtime-acknowledgement-only") {
+		verify_runtime_transaction_acknowledgement(app);
+		return 0;
+	}
 	DevInterfaceState session;
 	session.activeTab = static_cast<uint64_t>(DevInterfaceTab::Changes);
 	auto& state = session.changes;
@@ -713,9 +818,9 @@ int main() {
 						  bool shift = false) {
 		assert(app.beginFrame());
 		auto& interaction =
-			const_cast<InteractionSnapshot&>(app.ui().getPreviousFramesInteraction());
+			const_cast<InteractionSnapshot&>(::FlowUi::test::requireValue(app.ui()).get().getPreviousFramesInteraction());
 		interaction = {};
-		auto& input = const_cast<FrameInput&>(app.ui().getCurrentFrameInput());
+		auto& input = const_cast<FrameInput&>(::FlowUi::test::requireValue(app.ui()).get().getCurrentFrameInput());
 		input.windowFocused = true;
 		input.mouseDown = {};
 		input.keyDown = {};
@@ -730,7 +835,7 @@ int main() {
 		for (const auto target : {control, extra}) {
 			if (!target.value)
 				continue;
-			const auto identity = app.ui().toClayEID(target).id;
+			const auto identity = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(target).id;
 			interaction.hoveredElementIds.emplace_back(identity);
 			if (event == 1)
 				interaction.pressedElementIds.emplace_back(identity);
@@ -743,7 +848,7 @@ int main() {
 		root.backgroundColor = interface_theme::kDepth0Keel;
 		CLAY(CLAY_ID("changes-test"), root) {
 			if (draw_changes)
-				app.ui()
+				::FlowUi::test::requireValue(app.ui()).get()
 					.createElement(kDevChangesControls, controls_id)
 					.setParameters({&app, &session})
 					.draw();
@@ -758,7 +863,7 @@ int main() {
 				panel.clip = {.horizontal = true, .vertical = true};
 				CLAY(CLAY_ID("changes-test-selector"), panel)
 				if (draw_changes)
-					app.ui()
+					::FlowUi::test::requireValue(app.ui()).get()
 						.createElement(kDevChangesSelector, selector_id)
 						.setParameters({&app, &session})
 						.draw();
@@ -766,14 +871,14 @@ int main() {
 					CLAY_SIZING_FIXED(1400 - selector_width - inspector_width);
 				CLAY(CLAY_ID("changes-test-workbench"), panel)
 				if (draw_changes)
-					app.ui()
+					::FlowUi::test::requireValue(app.ui()).get()
 						.createElement(kDevChangesWorkbench, workbench_id)
 						.setParameters({&app, &session})
 						.draw();
 				panel.layout.sizing.width = CLAY_SIZING_FIXED(inspector_width);
 				CLAY(CLAY_ID("changes-test-inspector"), panel)
 				if (draw_changes)
-					app.ui()
+					::FlowUi::test::requireValue(app.ui()).get()
 						.createElement(kDevChangesInspector, inspector_id)
 						.setParameters({&app, &session})
 						.draw();
@@ -790,7 +895,7 @@ int main() {
 	};
 	const auto viewport = [&](FlowElementID parent, FlowDefinitionID definition,
 							  LocalElementName name) {
-		return app.ui().toClayEID(local(parent, definition, name));
+		return ::FlowUi::test::requireValue(app.ui()).get().toClayEID(local(parent, definition, name));
 	};
 	const auto selector_scroll =
 		viewport(FlowElementID{selector_id.value}, DevChangesSelector::definitionId, "scroll");
@@ -807,7 +912,7 @@ int main() {
 					  << " content height=" << before.contentDimensions.height
 					  << " viewport height=" << before.scrollContainerDimensions.height << '\n';
 		assert(before.contentDimensions.height > before.scrollContainerDimensions.height + 1);
-		auto* window = static_cast<GLFWwindow*>(app.nativeWindowHandle());
+		auto* window = static_cast<GLFWwindow*>(::FlowUi::test::requireValue(app.nativeWindowHandle()));
 		glfwFocusWindow(window);
 		glfwSetCursorPos(window, bounds.boundingBox.x + bounds.boundingBox.width / 2,
 						 bounds.boundingBox.y + bounds.boundingBox.height / 2);
@@ -837,13 +942,13 @@ int main() {
 	draw();
 	draw();
 	const auto has_text = [&](std::string_view description) {
-		const auto& snapshot = app.ui().devTreeSnapshot();
+		const auto& snapshot = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot();
 		return std::ranges::any_of(snapshot.clay.nodes, [&](const auto& node) {
 			return snapshot.string(node.text).find(description) != std::string_view::npos;
 		});
 	};
 	const auto surface_has_text = [&](FlowElementID surface, std::string_view description) {
-		const auto& snapshot = app.ui().devTreeSnapshot();
+		const auto& snapshot = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot();
 		for (const auto& node : snapshot.clay.nodes) {
 			if (snapshot.string(node.text).find(description) == std::string_view::npos)
 				continue;
@@ -856,8 +961,8 @@ int main() {
 		return false;
 	};
 	const auto has_element = [&](FlowElementID identity) {
-		const auto clay_id = app.ui().toClayEID(identity).id;
-		return std::ranges::any_of(app.ui().devTreeSnapshot().clay.nodes,
+		const auto clay_id = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(identity).id;
+		return std::ranges::any_of(::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot().clay.nodes,
 								   [&](const auto& node) { return node.clayId == clay_id; });
 	};
 	const auto workbench_control = [&](const auto& identity) {
@@ -871,7 +976,7 @@ int main() {
 	const auto ensure_visible = [&](FlowElementID control, Clay_ElementId scroll_id) {
 		if (!scroll_id.id)
 			return;
-		const auto bounds = Clay_GetElementData(app.ui().toClayEID(control));
+		const auto bounds = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(control));
 		const auto visible = Clay_GetElementData(scroll_id);
 		const auto scroll = Clay_GetScrollContainerData(scroll_id);
 		assert(bounds.found && visible.found && scroll.found && scroll.scrollPosition);
@@ -900,7 +1005,7 @@ int main() {
 		rebuild_changes_model(state);
 	};
 	const auto rendered_queue_count = [&] {
-		return std::ranges::count_if(app.ui().devTreeSnapshot().flow.nodes, [](const auto& node) {
+		return std::ranges::count_if(::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot().flow.nodes, [](const auto& node) {
 			return node.definition == DefinitionID("flowui.dev_interface.changes.queue-row");
 		});
 	};
@@ -932,8 +1037,8 @@ int main() {
 
 	// Momentary pointer clicks retain keyboard focus without leaving a selected-looking border.
 	const auto control_border = [&](FlowElementID control) {
-		const auto& nodes = app.ui().devTreeSnapshot().clay.nodes;
-		const auto identity = app.ui().toClayEID(control).id;
+		const auto& nodes = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot().clay.nodes;
+		const auto identity = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(control).id;
 		const auto found = std::ranges::find(nodes, identity, &DevClayNode::clayId);
 		assert(found != nodes.end());
 		return found->declaration.border.color;
@@ -946,13 +1051,13 @@ int main() {
 		const auto control =
 			local(FlowElementID{selector_id.value}, diagnostics_ui::Control::definitionId, name);
 		click(control);
-		assert(app.ui().shortcuts().focusedElement().id == app.ui().toClayEID(control).id);
+		assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().shortcuts().focusedElement()).id == ::FlowUi::test::requireValue(app.ui()).get().toClayEID(control).id);
 		assert(same_color(control_border(control), interface_theme::kBorderVisible));
-		const auto* pointer_state = app.ui().elements().getStatePointerConst(
-			diagnostics_ui::kControl, app.ui().windowId(), control);
+		const auto* pointer_state = ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().elements().getStatePointerConst(
+			diagnostics_ui::kControl, ::FlowUi::test::requireValue(app.ui()).get().windowId(), control));
 		assert(pointer_state && pointer_state->pointer_focused && !pointer_state->isArmed);
 		state.pending = DevChangesCommand::None;
-		const auto target = std::ranges::find(state.focus_targets, app.ui().toClayEID(control).id,
+		const auto target = std::ranges::find(state.focus_targets, ::FlowUi::test::requireValue(app.ui()).get().toClayEID(control).id,
 											  [](const auto& entry) { return entry.identity.id; });
 		assert(target != state.focus_targets.end());
 		const auto target_index = static_cast<std::size_t>(target - state.focus_targets.begin());
@@ -960,10 +1065,10 @@ int main() {
 								   .focus_targets[(target_index + state.focus_targets.size() - 1) %
 												  state.focus_targets.size()]
 								   .identity;
-		app.ui().shortcuts().setFocusedElement(preceding);
+		::FlowUi::test::requireValue(app.ui()).get().shortcuts().setFocusedElement(preceding);
 		draw({}, 0, GLFW_KEY_TAB);
 		draw();
-		assert(app.ui().shortcuts().focusedElement().id == app.ui().toClayEID(control).id);
+		assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().shortcuts().focusedElement()).id == ::FlowUi::test::requireValue(app.ui()).get().toClayEID(control).id);
 		assert(same_color(control_border(control), interface_theme::kAccentCurrent));
 	}
 
@@ -988,17 +1093,17 @@ int main() {
 	draw({}, 0, GLFW_KEY_ESCAPE);
 	draw();
 	assert(!state.group_decisions_open);
-	assert(app.ui().shortcuts().focusedElement().id == app.ui().toClayEID(group_decisions).id);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().shortcuts().focusedElement()).id == ::FlowUi::test::requireValue(app.ui()).get().toClayEID(group_decisions).id);
 	click(group_decisions, workbench_scroll);
 	draw({}, 0, GLFW_KEY_DOWN);
 	draw();
 	assert(state.pending == DevChangesCommand::None &&
-		   app.ui().shortcuts().focusedElement().id ==
-			   app.ui().toClayEID(workbench_control(LocalElementName{"batch-include"})).id);
+		   ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().shortcuts().focusedElement()).id ==
+			   ::FlowUi::test::requireValue(app.ui()).get().toClayEID(workbench_control(LocalElementName{"batch-include"})).id);
 	draw({}, 0, GLFW_KEY_DOWN);
 	draw();
-	assert(app.ui().shortcuts().focusedElement().id ==
-		   app.ui().toClayEID(workbench_control(LocalElementName{"batch-omit"})).id);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().shortcuts().focusedElement()).id ==
+		   ::FlowUi::test::requireValue(app.ui()).get().toClayEID(workbench_control(LocalElementName{"batch-omit"})).id);
 	draw({}, 0, GLFW_KEY_ENTER);
 	draw();
 	assert(state.pending == DevChangesCommand::Decide && state.pending_keys.size() == 30);
@@ -1017,7 +1122,7 @@ int main() {
 	assert(!has_element(local(FlowElementID{workbench_id.value}, DevChangesWorkbench::definitionId,
 							  LocalElementName{"raw-scroll"})));
 	click(workbench_control(LocalElementName{"copy-manifest"}), workbench_scroll);
-	assert(app.clipboardText() == state.review.candidate_json);
+	assert(::FlowUi::test::requireValue(app.clipboardText()) == state.review.candidate_json);
 	preview("output-summary");
 	click(workbench_control(LocalElementName{"raw-manifest"}), workbench_scroll);
 	assert(state.raw_manifest_open && state.review.candidate_json.size() > 8192);
@@ -1031,11 +1136,11 @@ int main() {
 	assert(Clay_GetScrollContainerData(workbench_scroll).scrollPosition->y == outside_raw);
 	wheel(raw_scroll, 4);
 	click(workbench_control(LocalElementName{"next-candidate"}), workbench_scroll);
-	const auto* output_state = app.ui().elements().getStatePointerConst(
-		kDevChangesWorkbench, app.ui().windowId(), FlowElementID{workbench_id.value});
+	const auto* output_state = ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().elements().getStatePointerConst(
+		kDevChangesWorkbench, ::FlowUi::test::requireValue(app.ui()).get().windowId(), FlowElementID{workbench_id.value}));
 	assert(output_state && output_state->raw_page == 1 && state.workbench_page == 0);
 	click(workbench_control(LocalElementName{"copy-manifest"}), workbench_scroll);
-	assert(app.clipboardText() == state.review.candidate_json);
+	assert(::FlowUi::test::requireValue(app.clipboardText()) == state.review.candidate_json);
 	check_bounds(app, FlowElementID{workbench_id.value});
 	preview("output-raw-paged");
 	click(workbench_control(LocalElementName{"raw-manifest"}), workbench_scroll);
@@ -1121,8 +1226,8 @@ int main() {
 	state.queue_scope_key.clear();
 	state.keyboard_active = true;
 	state.focused_identity = state.nodes[state.visible_nodes.front()].identity;
-	app.ui().shortcuts().setFocusedElement(
-		app.ui().toClayEID(selector_node(state.focused_identity)));
+	::FlowUi::test::requireValue(app.ui()).get().shortcuts().setFocusedElement(
+		::FlowUi::test::requireValue(app.ui()).get().toClayEID(selector_node(state.focused_identity)));
 	const auto next_identity = state.nodes[state.visible_nodes[1]].identity;
 	draw({}, 0, GLFW_KEY_DOWN);
 	draw();
@@ -1151,8 +1256,8 @@ int main() {
 	draw(leaf_control, 2);
 	draw();
 	assert(selected_changes_row(state) == &state.review.rows.front());
-	const auto& tree = app.ui().devTreeSnapshot();
-	const auto selected_clay_id = app.ui().toClayEID(leaf_control).id;
+	const auto& tree = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot();
+	const auto selected_clay_id = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(leaf_control).id;
 	const auto selected_row =
 		std::ranges::find(tree.clay.nodes, selected_clay_id, &DevClayNode::clayId);
 	assert(selected_row != tree.clay.nodes.end());
@@ -1167,16 +1272,16 @@ int main() {
 	draw(leaf_control);
 	const auto tooltip_identity =
 		local(leaf_control, DevChangesSelectorNode::definitionId, LocalElementName{"tooltip"});
-	const auto tooltip = Clay_GetElementData(app.ui().toClayEID(tooltip_identity));
+	const auto tooltip = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(tooltip_identity));
 	assert(tooltip.found && tooltip.boundingBox.width > 0);
-	const auto& tooltip_tree = app.ui().devTreeSnapshot();
+	const auto& tooltip_tree = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot();
 	for (const auto& node : tooltip_tree.clay.nodes) {
-		bool in_tooltip = node.clayId == app.ui().toClayEID(tooltip_identity).id;
+		bool in_tooltip = node.clayId == ::FlowUi::test::requireValue(app.ui()).get().toClayEID(tooltip_identity).id;
 		for (auto parent = node.parent;
 			 parent != InvalidClayNode && parent < tooltip_tree.clay.nodes.size();
 			 parent = tooltip_tree.clay.nodes[parent].parent)
 			in_tooltip = in_tooltip || tooltip_tree.clay.nodes[parent].clayId ==
-										   app.ui().toClayEID(tooltip_identity).id;
+										   ::FlowUi::test::requireValue(app.ui()).get().toClayEID(tooltip_identity).id;
 		if (in_tooltip && !hasFlag(node.flags, DevClayNodeFlag::BoundsUnavailable)) {
 			assert(node.bounds.x >= tooltip.boundingBox.x - 1);
 			assert(node.bounds.x + node.bounds.width <=
@@ -1197,16 +1302,16 @@ int main() {
 		check_assigned_width(app, FlowElementID{workbench_id.value},
 							 1400 - selector_width - inspector_width);
 		const auto selector_bounds =
-			Clay_GetElementData(app.ui().toClayEID(FlowElementID{selector_id.value}));
+			Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(FlowElementID{selector_id.value}));
 		if (std::abs(selector_bounds.boundingBox.width - selector_width) > 1)
 			std::cerr << "Changes selector assigned width=" << selector_width
 					  << " actual root width=" << selector_bounds.boundingBox.width << '\n';
 		assert(std::abs(selector_bounds.boundingBox.width - selector_width) <= 1);
 		const auto search = Clay_GetElementData(
-			app.ui().toClayEID(local(FlowElementID{selector_id.value},
+			::FlowUi::test::requireValue(app.ui()).get().toClayEID(local(FlowElementID{selector_id.value},
 									 DevSelectorSearch::definitionId, LocalElementName{"search"})));
 		const auto status = Clay_GetElementData(
-			app.ui().toClayEID(local(FlowElementID{selector_id.value}, FSEL::ComboBox::definitionId,
+			::FlowUi::test::requireValue(app.ui()).get().toClayEID(local(FlowElementID{selector_id.value}, FSEL::ComboBox::definitionId,
 									 LocalElementName{"status"})));
 		assert(search.found && status.found);
 		assert(std::abs(status.boundingBox.y - search.boundingBox.y) <= 1);
@@ -1266,8 +1371,8 @@ int main() {
 #else
 	assert(surface_has_text(workbench_control(Keyed("copy-value", 0)), "Copy"));
 #endif
-	const auto first_card = Clay_GetElementData(app.ui().toClayEID(first_queue_row));
-	const auto expanded_card = Clay_GetElementData(app.ui().toClayEID(
+	const auto first_card = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(first_queue_row));
+	const auto expanded_card = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(
 		local(FlowElementID{workbench_id.value}, DevChangesWorkbench::definitionId,
 			  Keyed("expanded-review", first_identity))));
 	assert(first_card.found && expanded_card.found);
@@ -1279,14 +1384,14 @@ int main() {
 		const auto& expected = column_index == 0   ? state.review.rows.front().on_disk
 							   : column_index == 1 ? state.review.rows.front().proposal
 												   : state.review.rows.front().next_value;
-		assert(app.clipboardText() == expected);
+		assert(::FlowUi::test::requireValue(app.clipboardText()) == expected);
 		assert(state.selected_key == "group:Elements");
 	}
 	ensure_visible(first_queue_row, workbench_scroll);
-	app.ui().shortcuts().setFocusedElement(app.ui().toClayEID(first_queue_row));
+	::FlowUi::test::requireValue(app.ui()).get().shortcuts().setFocusedElement(::FlowUi::test::requireValue(app.ui()).get().toClayEID(first_queue_row));
 	draw({}, 0, GLFW_KEY_DOWN);
 	draw();
-	assert(app.ui().shortcuts().focusedElement().id == app.ui().toClayEID(neighbor).id);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().shortcuts().focusedElement()).id == ::FlowUi::test::requireValue(app.ui()).get().toClayEID(neighbor).id);
 	assert(state.selected_key == "group:Elements" && state.pending == DevChangesCommand::None);
 	draw({}, 0, GLFW_KEY_ENTER);
 	draw();
@@ -1330,14 +1435,14 @@ int main() {
 	assert(state.selected_key == "group:Elements");
 	const auto expanded_value_key = "value:" + state.review.rows[5].key + ":1";
 	const auto value_is_expanded = [&] {
-		const auto* workbench = app.ui().elements().getStatePointerConst(
-			kDevChangesWorkbench, app.ui().windowId(), FlowElementID{workbench_id.value});
+		const auto* workbench = ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().elements().getStatePointerConst(
+			kDevChangesWorkbench, ::FlowUi::test::requireValue(app.ui()).get().windowId(), FlowElementID{workbench_id.value}));
 		assert(workbench);
 		return std::ranges::find(workbench->metadata_expanded, expanded_value_key) !=
 			   workbench->metadata_expanded.end();
 	};
 	assert(!value_is_expanded());
-	const auto value_identity = app.ui().toClayEID(
+	const auto value_identity = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(
 		local(FlowElementID{workbench_id.value}, DevChangesWorkbench::definitionId,
 			  Keyed("value", structured_identity * 3 + 1)));
 	const auto collapsed_value_bounds = Clay_GetElementData(value_identity);
@@ -1349,7 +1454,7 @@ int main() {
 		   expanded_value_bounds.boundingBox.height > collapsed_value_bounds.boundingBox.height);
 
 	click(workbench_control(Keyed("copy-value", 1)), workbench_scroll);
-	assert(app.clipboardText() == state.review.rows[5].proposal);
+	assert(::FlowUi::test::requireValue(app.clipboardText()) == state.review.rows[5].proposal);
 	click(workbench_control(Keyed("expand-value", 1)), workbench_scroll);
 	assert(!value_is_expanded());
 	const auto disclosure = local(structured_card, diagnostics_ui::Control::definitionId,
@@ -1375,20 +1480,20 @@ int main() {
 	const auto decision = local(FlowElementID{workbench_id.value}, FSEL::ComboBox::definitionId,
 								LocalElementName{"next-bake-decision"});
 	ensure_visible(decision, workbench_scroll);
-	app.ui().shortcuts().setFocusedElement(app.ui().toClayEID(decision));
+	::FlowUi::test::requireValue(app.ui()).get().shortcuts().setFocusedElement(::FlowUi::test::requireValue(app.ui()).get().toClayEID(decision));
 	draw({}, 0, GLFW_KEY_ENTER);
 	draw();
-	const auto* decision_state = app.ui().elements().getStatePointerConst(
-		kDevChangesWorkbench, app.ui().windowId(), FlowElementID{workbench_id.value});
+	const auto* decision_state = ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().elements().getStatePointerConst(
+		kDevChangesWorkbench, ::FlowUi::test::requireValue(app.ui()).get().windowId(), FlowElementID{workbench_id.value}));
 	assert(decision_state && decision_state->decision_open);
 	assert(
-		app.ui().shortcuts().focusedElement().id ==
-		app.ui().toClayEID(local(decision, FSEL::ComboBox::definitionId, Keyed("option", 0))).id);
+		::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().shortcuts().focusedElement()).id ==
+		::FlowUi::test::requireValue(app.ui()).get().toClayEID(local(decision, FSEL::ComboBox::definitionId, Keyed("option", 0))).id);
 	const auto exclude = local(decision, FSEL::ComboBox::definitionId, Keyed("option", 1));
 	draw({}, 0, GLFW_KEY_DOWN);
 	draw();
 	assert(state.pending == DevChangesCommand::None &&
-		   app.ui().shortcuts().focusedElement().id == app.ui().toClayEID(exclude).id);
+		   ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().shortcuts().focusedElement()).id == ::FlowUi::test::requireValue(app.ui()).get().toClayEID(exclude).id);
 	draw({}, 0, GLFW_KEY_ENTER);
 	draw();
 	assert(state.pending == DevChangesCommand::Decide);
@@ -1397,16 +1502,16 @@ int main() {
 	assert(state.review.rows[1].decision == DevChangesDecision::IncludeProposal);
 	assert(state.review.rows[1].next_value == "24");
 	state.pending = DevChangesCommand::None;
-	app.ui().shortcuts().setFocusedElement(app.ui().toClayEID(decision));
+	::FlowUi::test::requireValue(app.ui()).get().shortcuts().setFocusedElement(::FlowUi::test::requireValue(app.ui()).get().toClayEID(decision));
 	draw({}, 0, GLFW_KEY_ENTER);
 	draw();
 	draw({}, 0, GLFW_KEY_ESCAPE);
 	draw();
-	decision_state = app.ui().elements().getStatePointerConst(
-		kDevChangesWorkbench, app.ui().windowId(), FlowElementID{workbench_id.value});
+	decision_state = ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().elements().getStatePointerConst(
+		kDevChangesWorkbench, ::FlowUi::test::requireValue(app.ui()).get().windowId(), FlowElementID{workbench_id.value}));
 	assert(decision_state && !decision_state->decision_open &&
 		   state.pending == DevChangesCommand::None);
-	assert(app.ui().shortcuts().focusedElement().id == app.ui().toClayEID(decision).id);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().shortcuts().focusedElement()).id == ::FlowUi::test::requireValue(app.ui()).get().toClayEID(decision).id);
 	state.review.rows[0].validity = DevChangesValidity::Conflict;
 	state.review.rows[0].blocking = true;
 	state.review.rows[0].reason = "Saved value changed since this review.";
@@ -1441,7 +1546,7 @@ int main() {
 	state.message_is_error = false;
 	draw();
 	if (!surface_has_text(FlowElementID{workbench_id.value}, "Manifest updated.")) {
-		const auto& snapshot = app.ui().devTreeSnapshot();
+		const auto& snapshot = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot();
 		const auto feedback_id = viewport(FlowElementID{workbench_id.value},
 										  DevChangesWorkbench::definitionId, "feedback")
 									 .id;
@@ -1520,8 +1625,8 @@ int main() {
 	assert(surface_has_text(copy_identity, "Copy"));
 #endif
 	click(copy_identity, inspector_scroll);
-	assert(app.clipboardText() == state.review.rows.front().key);
-	const auto copy_clay_id = app.ui().toClayEID(copy_identity);
+	assert(::FlowUi::test::requireValue(app.clipboardText()) == state.review.rows.front().key);
+	const auto copy_clay_id = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(copy_identity);
 	const auto registered_copy =
 		std::ranges::find(state.focus_targets, copy_clay_id.id,
 						  [](const auto& target) { return target.identity.id; });
@@ -1534,14 +1639,14 @@ int main() {
 	const auto pending_before_tab = state.pending;
 	draw({}, 0, GLFW_KEY_TAB);
 	draw();
-	assert(app.ui().shortcuts().focusedElement().id == next_target.id);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().shortcuts().focusedElement()).id == next_target.id);
 	draw({}, 0, GLFW_KEY_TAB, {-1, -1}, {}, true);
 	draw();
-	assert(app.ui().shortcuts().focusedElement().id == copy_clay_id.id);
-	app.ui().setClipboardText("Keyboard copy must replace this marker.");
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().shortcuts().focusedElement()).id == copy_clay_id.id);
+	::FlowUi::test::requireValue(app.ui()).get().setClipboardText("Keyboard copy must replace this marker.");
 	draw({}, 0, GLFW_KEY_ENTER);
 	draw();
-	assert(app.clipboardText() == state.review.rows.front().key);
+	assert(::FlowUi::test::requireValue(app.clipboardText()) == state.review.rows.front().key);
 	assert(state.selected_key == selected_before_tab && state.pending == pending_before_tab);
 	const auto expand_identity = inspector_control(
 		Keyed("expand-detail", ::FlowUi::detail::identity_hash::hashBytes("Source header")));
@@ -1600,8 +1705,8 @@ int main() {
 					  << " shared=" << state.selector_scroll << ',' << state.workbench_scroll << ','
 					  << state.inspector_scroll << " content=" << restored.contentDimensions.height
 					  << " viewport=" << restored.scrollContainerDimensions.height << '\n';
-			const auto* local = app.ui().elements().getStatePointerConst(
-				kDevChangesWorkbench, app.ui().windowId(), FlowElementID{workbench_id.value});
+			const auto* local = ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().elements().getStatePointerConst(
+				kDevChangesWorkbench, ::FlowUi::test::requireValue(app.ui()).get().windowId(), FlowElementID{workbench_id.value}));
 			if (local)
 				std::cerr << "WB view=" << local->previous_view
 						  << " selected=" << local->previous_selection
@@ -1629,7 +1734,7 @@ int main() {
 		const auto selected_identity = selected_changes_node(state)->identity;
 		float first_stage_width = 0;
 		for (uint64_t column_index = 0; column_index < 3; ++column_index) {
-			const auto stage = Clay_GetElementData(app.ui().toClayEID(
+			const auto stage = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(
 				local(FlowElementID{workbench_id.value}, DevChangesWorkbench::definitionId,
 					  Keyed("value", selected_identity * 3 + column_index))));
 			assert(stage.found && stage.boundingBox.width > 0);
@@ -1650,16 +1755,16 @@ int main() {
 	draw();
 	const auto apply_live = inspector_control(LocalElementName{"apply-live-menu"});
 	click(apply_live, inspector_scroll);
-	const auto* context_state = app.ui().elements().getStatePointerConst(
-		kDevChangesInspector, app.ui().windowId(), FlowElementID{inspector_id.value});
+	const auto* context_state = ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().elements().getStatePointerConst(
+		kDevChangesInspector, ::FlowUi::test::requireValue(app.ui()).get().windowId(), FlowElementID{inspector_id.value}));
 	assert(context_state && context_state->live_menu_open);
 	assert(surface_has_text(FlowElementID{inspector_id.value}, "running application"));
 	const auto pending_before_focus = state.pending;
 	draw({}, 0, GLFW_KEY_DOWN);
 	draw();
 	assert(state.pending == pending_before_focus);
-	assert(app.ui().shortcuts().focusedElement().id ==
-		   app.ui().toClayEID(inspector_control(Keyed("live-action", 0))).id);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().shortcuts().focusedElement()).id ==
+		   ::FlowUi::test::requireValue(app.ui()).get().toClayEID(inspector_control(Keyed("live-action", 0))).id);
 	state.message = "Manifest decision remains pending.";
 	state.runtime_message = "Live edit rejected: fixture reason.";
 	state.runtime_message_is_error = true;
@@ -1677,10 +1782,10 @@ int main() {
 	state.runtime_transaction = 0;
 	draw({}, 0, GLFW_KEY_ESCAPE);
 	draw();
-	context_state = app.ui().elements().getStatePointerConst(
-		kDevChangesInspector, app.ui().windowId(), FlowElementID{inspector_id.value});
+	context_state = ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().elements().getStatePointerConst(
+		kDevChangesInspector, ::FlowUi::test::requireValue(app.ui()).get().windowId(), FlowElementID{inspector_id.value}));
 	assert(context_state && !context_state->live_menu_open);
-	assert(app.ui().shortcuts().focusedElement().id == app.ui().toClayEID(apply_live).id);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().shortcuts().focusedElement()).id == ::FlowUi::test::requireValue(app.ui()).get().toClayEID(apply_live).id);
 	state.runtime_message.clear();
 	state.message.clear();
 
@@ -1737,17 +1842,17 @@ int main() {
 	const auto set_growth = local(FlowElementID{workbench_id.value},
 								  FSEL::RadioChoice::definitionId, Keyed("growth-intent", 1));
 	click(set_growth, workbench_scroll);
-	app.ui().inputFields().requestCaret(growth_identity, CaretRequestKind::SetPrimary);
-	assert(app.ui().inputFields().replaceText(growth_identity, "-", true));
+	::FlowUi::test::requireValue(app.ui()).get().inputFields().requestCaret(growth_identity, CaretRequestKind::SetPrimary);
+	assert(::FlowUi::test::requireValue(app.ui()).get().inputFields().replaceText(growth_identity, "-", true));
 	draw();
 	draw();
-	const auto* invalid_growth = app.ui().elements().getStatePointerConst(
-		growth_input, app.ui().windowId(), growth_identity);
+	const auto* invalid_growth = ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().elements().getStatePointerConst(
+		growth_input, ::FlowUi::test::requireValue(app.ui()).get().windowId(), growth_identity));
 	assert(invalid_growth && invalid_growth->textStatus != FSEL::NumericTextStatus::Complete);
 	click(workbench_control(LocalElementName{"stage-growth"}), workbench_scroll);
 	assert(state.pending == DevChangesCommand::None);
-	assert(app.ui().inputFields().replaceText(growth_identity, "1.5", true));
-	app.ui().inputFields().requestCaret(growth_identity, CaretRequestKind::ClearAll);
+	assert(::FlowUi::test::requireValue(app.ui()).get().inputFields().replaceText(growth_identity, "1.5", true));
+	::FlowUi::test::requireValue(app.ui()).get().inputFields().requestCaret(growth_identity, CaretRequestKind::ClearAll);
 	draw();
 	draw();
 	check_centered_policy(app);
@@ -1836,7 +1941,7 @@ int main() {
 	draw();
 	draw();
 	assert(changes_queue_rows(state).size() == 1500 && rendered_queue_count() == 40);
-	assert(app.ui().devTreeSnapshot().clay.nodes.size() < 4000);
+	assert(::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot().clay.nodes.size() < 4000);
 	changes_select_key(state, state.review.rows.back().key);
 	draw();
 	draw();

@@ -47,7 +47,7 @@ std::size_t FontManager::devFontCount() const noexcept {
 	return count;
 }
 
-bool FontManager::visitDevFonts(void* userData, DevFontVisitor visitor) const {
+Result<bool> FontManager::visitDevFonts(void* userData, DevFontVisitor visitor) const noexcept try {
 	if (!controller_ || !visitor) return false;
 	for (FontFamilyId familyId = 0; familyId < controller_->families.size(); ++familyId) {
 		const auto& family = controller_->families[familyId];
@@ -63,6 +63,8 @@ bool FontManager::visitDevFonts(void* userData, DevFontVisitor visitor) const {
 		}
 	}
 	return true;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::FontLookupFamily));
 }
 
 FontManager::DevAtlasView FontManager::devAtlas() const noexcept {
@@ -208,7 +210,7 @@ std::string toLowerAscii(std::string text) {
 }
 
 bool isArfontPath(const std::filesystem::path& path) {
-	return toLowerAscii(path_to_utf8(path.extension())) == ".arfont";
+	return toLowerAscii(detail::requireApiValue(path_to_utf8(path.extension()))) == ".arfont";
 }
 
 bool supportsImageEncoding(artery_font::ImageEncoding encoding) {
@@ -445,7 +447,7 @@ void FontManager::init(storage::IStorageSystem& storageSystem, uint32_t atlasSiz
 #endif
 }
 
-Result<FontManager::FontFamilyId> FontManager::createFamily(const FontFamilyCreateInfo& createInfo) {
+Result<FontManager::FontFamilyId> FontManager::createFamily(const FontFamilyCreateInfo& createInfo) noexcept try {
 	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontRegisterFamily));
 	std::string familyName = createInfo.name.empty() ? std::string("Default") : createInfo.name;
 	if (controller_->familyIdByName.find(familyName) != controller_->familyIdByName.end()) {
@@ -463,6 +465,7 @@ Result<FontManager::FontFamilyId> FontManager::createFamily(const FontFamilyCrea
 	family.faces.reserve(std::max<uint64_t>(
 		createInfo.faces.size(), storage_->initial_memory_capacity(
 									 FlowUi::detail::InitialCapacityTarget::fonts_family_faces)));
+	storage_->noteManagerMutation(InvalidWindowId);
 	controller_->families.push_back(std::move(family));
 	try {
 		controller_->familyIdByName.emplace(controller_->families.back().name, familyId);
@@ -522,11 +525,12 @@ Result<FontManager::FontFamilyId> FontManager::createFamily(const FontFamilyCrea
 		throw;
 	}
 	++controller_->catalogRevision;
-	storage_->noteManagerMutation(InvalidWindowId);
 	return familyId;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::FontRegisterFamily));
 }
 
-Result<FontManager::FontFamilyId> FontManager::createFamily(ResourceKey key, const FontFamilyCreateInfo& createInfo) {
+Result<FontManager::FontFamilyId> FontManager::createFamily(ResourceKey key, const FontFamilyCreateInfo& createInfo) noexcept try {
 	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontRegisterFamily));
 	storage::ResourceKey normalized{};
 	try {
@@ -538,26 +542,36 @@ Result<FontManager::FontFamilyId> FontManager::createFamily(ResourceKey key, con
 	FontFamilyCreateInfo normalizedInfo = createInfo;
 	normalizedInfo.name = std::string(storage_->string(normalized.name));
 	return createFamily(normalizedInfo);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::FontRegisterFamily));
 }
 
-FontManager::FontFamilyId FontManager::getFamilyId(std::string_view familyName) const {
+Result<FontManager::FontFamilyId> FontManager::getFamilyId(std::string_view familyName) const noexcept try {
+	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontLookupFamily));
 	const auto it = controller_->familyIdByName.find(std::string(familyName));
 	return (it != controller_->familyIdByName.end()) ? it->second : std::numeric_limits<FontFamilyId>::max();
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::FontLookupFamily));
 }
 
-FontManager::FontFamilyId FontManager::getFamilyId(ResourceKey key) const {
+Result<FontManager::FontFamilyId> FontManager::getFamilyId(ResourceKey key) const noexcept try {
+	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontLookupFamily));
 	const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
 		*storage_, key, ResourceDomain::Font, key_storage::ResourceScope::AppShared);
 	return getFamilyId(storage_->string(normalized.name));
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::FontLookupFamily));
 }
 
-Result<FontManager::FontId> FontManager::addFamilyFace(FontFamilyId familyId, const FontFaceCreateInfo& createInfo) {
+Result<FontManager::FontId> FontManager::addFamilyFace(FontFamilyId familyId, const FontFaceCreateInfo& createInfo) noexcept try {
 	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontRegisterFamily));
 	if (familyId >= controller_->families.size()) {
 		return unexpectedError(makeError(ErrorCode::FontFamilyNotFound, ErrorSite::FontRegisterFamily, familyId));
 	}
 
 	controller_->families[familyId].faces.reserve(controller_->families[familyId].faces.size() + 1u);
+	if (!controller_->familyTransaction)
+		storage_->noteManagerMutation(InvalidWindowId);
 	FontId fontId = 0;
 	try {
 		fontId = loadFontFace(createInfo);
@@ -575,20 +589,25 @@ Result<FontManager::FontId> FontManager::addFamilyFace(FontFamilyId familyId, co
 	});
 	if (!controller_->familyTransaction) {
 		++controller_->catalogRevision;
-		storage_->noteManagerMutation(InvalidWindowId);
 	}
 	return fontId;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::FontRegisterFamily));
 }
 
-Result<FontManager::FontId> FontManager::addFamilyFace(std::string_view familyName, const FontFaceCreateInfo& createInfo) {
-	const FontFamilyId familyId = getFamilyId(familyName);
+Result<FontManager::FontId> FontManager::addFamilyFace(std::string_view familyName, const FontFaceCreateInfo& createInfo) noexcept try {
+	const auto familyResult = getFamilyId(familyName);
+	if (!familyResult) return unexpectedError(familyResult.error());
+	const FontFamilyId familyId = *familyResult;
 	if (familyId == std::numeric_limits<FontFamilyId>::max()) {
 		return unexpectedError(makeError(ErrorCode::FontFamilyNotFound, ErrorSite::FontRegisterFamily));
 	}
 	return addFamilyFace(familyId, createInfo);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::FontRegisterFamily));
 }
 
-Result<FontManager::FontId> FontManager::addFamilyFace(ResourceKey key, const FontFaceCreateInfo& createInfo) {
+Result<FontManager::FontId> FontManager::addFamilyFace(ResourceKey key, const FontFaceCreateInfo& createInfo) noexcept try {
 	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontRegisterFamily));
 	storage::ResourceKey normalized{};
 	try {
@@ -598,9 +617,12 @@ Result<FontManager::FontId> FontManager::addFamilyFace(ResourceKey key, const Fo
 		return unexpectedError(exception.error());
 	}
 	return addFamilyFace(storage_->string(normalized.name), createInfo);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::FontRegisterFamily));
 }
 
-FontManager::FontId FontManager::resolveFont(FontFamilyId familyId, uint32_t weight, FontStyle style) const {
+Result<FontManager::FontId> FontManager::resolveFont(FontFamilyId familyId, uint32_t weight, FontStyle style) const noexcept try {
+	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontLookupFamily));
 	if (familyId >= controller_->families.size()) {
 		return 0;
 	}
@@ -627,17 +649,28 @@ FontManager::FontId FontManager::resolveFont(FontFamilyId familyId, uint32_t wei
 		return family.faces.front().fontId;
 	}
 	return 0;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::FontLookupFamily));
 }
 
-FontManager::FontId FontManager::resolveFont(std::string_view familyName, uint32_t weight, FontStyle style) const {
-	const FontFamilyId familyId = getFamilyId(familyName);
-	return (familyId != std::numeric_limits<FontFamilyId>::max()) ? resolveFont(familyId, weight, style) : 0;
+Result<FontManager::FontId> FontManager::resolveFont(std::string_view familyName, uint32_t weight, FontStyle style) const noexcept try {
+	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontLookupFamily));
+	const auto familyResult = getFamilyId(familyName);
+	if (!familyResult) return unexpectedError(familyResult.error());
+	const FontFamilyId familyId = *familyResult;
+	if (familyId == std::numeric_limits<FontFamilyId>::max()) return FontId{0};
+	return resolveFont(familyId, weight, style);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::FontLookupFamily));
 }
 
-FontManager::FontId FontManager::resolveFont(ResourceKey key, uint32_t weight, FontStyle style) const {
+Result<FontManager::FontId> FontManager::resolveFont(ResourceKey key, uint32_t weight, FontStyle style) const noexcept try {
+	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontLookupFamily));
 	const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
 		*storage_, key, ResourceDomain::Font, key_storage::ResourceScope::AppShared);
 	return resolveFont(storage_->string(normalized.name), weight, style);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::FontLookupFamily));
 }
 
 FontManager::FontId FontManager::loadFontFace(const FontFaceCreateInfo& createInfo) {
@@ -726,7 +759,8 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 	}
 
 	const auto font_bytes = read_file_bytes(createInfo.path);
-	if (!font_bytes || font_bytes->size() > static_cast<size_t>(std::numeric_limits<int>::max())) throw FlowUiException(makeError(ErrorCode::AssetReadFailed, ErrorSite::FontLoad));
+	if (!font_bytes) throw FlowUiException(font_bytes.error());
+	if (font_bytes->size() > static_cast<size_t>(std::numeric_limits<int>::max())) throw FlowUiException(makeError(ErrorCode::AssetReadFailed, ErrorSite::FontLoad));
 	FontGuard font{};
 	font.handle = msdfgen::loadFontData(freetype.handle, font_bytes->data(), static_cast<int>(font_bytes->size()));
 	if (!font.handle) {
@@ -834,7 +868,7 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 	variant.lineHeight = static_cast<float>(metrics.lineHeight);
 	variant.underlineY = static_cast<float>(metrics.underlineY);
 	variant.underlineThickness = static_cast<float>(metrics.underlineThickness);
-	variant.name = createInfo.name.empty() ? path_to_utf8(createInfo.path.stem()) : createInfo.name;
+	variant.name = createInfo.name.empty() ? detail::requireApiValue(path_to_utf8(createInfo.path.stem())) : createInfo.name;
 	variant.metadata = "runtime-msdf";
 	variant.glyphs.reserve(glyphs.size());
 
@@ -1086,7 +1120,7 @@ FontManager::FontId FontManager::registerBakedFont(const std::filesystem::path& 
 	} else if (!fontFace.variants.empty() && !fontFace.variants[0].name.empty()) {
 		preferredName = fontFace.variants[0].name;
 	} else {
-		preferredName = path_to_utf8(path.stem());
+		preferredName = detail::requireApiValue(path_to_utf8(path.stem()));
 	}
 	fontFace.name = makeUniqueFontName(preferredName, controller_->fontIdByName);
 
@@ -1121,7 +1155,8 @@ FontManager::FontId FontManager::registerBakedFont(const std::filesystem::path& 
 	return controller_->fonts.back().id;
 }
 
-const Font::FontFaceData* FontManager::getFontById(FontId fontId) const {
+const Font::FontFaceData* FontManager::getFontById(FontId fontId) const noexcept {
+	if (!controller_) return nullptr;
 	const auto it = controller_->fontIndexById.find(fontId);
 	if (it == controller_->fontIndexById.end()) {
 		return nullptr;
@@ -1130,9 +1165,9 @@ const Font::FontFaceData* FontManager::getFontById(FontId fontId) const {
 	return (index < controller_->fonts.size()) ? &controller_->fonts[index] : nullptr;
 }
 
-const Font::AtlasArrayResource& FontManager::getAtlasResource() const {
-	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontLookupFamily));
-	return controller_->borrowedAtlas;
+Result<std::reference_wrapper<const Font::AtlasArrayResource>> FontManager::getAtlasResource() const noexcept {
+	if (!controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontLookupFamily));
+	return std::cref(controller_->borrowedAtlas);
 }
 
 manager_storage::FontFrameView FontManager::frameView(const storage::FrameToken& frame) const {

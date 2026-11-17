@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,21 +106,25 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevOverrideFieldKey Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Schema-qualified nested path ending at one reflected leaf field.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevOverrideTypes_8hpp_source.html">DevOverrideTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:ab96dfa95e44558a5d1df73f3c85cc805" id="r_ab96dfa95e44558a5d1df73f3c85cc805"><td class="memItemLeft"><a id="ab96dfa95e44558a5d1df73f3c85cc805" name="ab96dfa95e44558a5d1df73f3c85cc805"></a>
-tooling::DevTypeId&#160;</td><td class="memItemRight"><b>ownerType</b> = 0</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a22de4acaf41684da79c8c04eecfa2ed7">tooling::DevTypeId</a>&#160;</td><td class="memItemRight"><b>ownerType</b> = 0</td></tr>
+<tr class="memdesc:ab96dfa95e44558a5d1df73f3c85cc805"><td class="mdescLeft">&#160;</td><td class="mdescRight">Root owner type identity. <br /></td></tr>
 <tr class="memitem:ac6c60d0ce13eb48ebbeedd4a158cf8be" id="r_ac6c60d0ce13eb48ebbeedd4a158cf8be"><td class="memItemLeft"><a id="ac6c60d0ce13eb48ebbeedd4a158cf8be" name="ac6c60d0ce13eb48ebbeedd4a158cf8be"></a>
-tooling::DevFieldId&#160;</td><td class="memItemRight"><b>field</b> = 0</td></tr>
-<tr class="memitem:a8be8b4e0cd2d332b10025a6a808907f0" id="r_a8be8b4e0cd2d332b10025a6a808907f0"><td class="memItemLeft">std::vector&lt; tooling::DevFieldId &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a8be8b4e0cd2d332b10025a6a808907f0">nestedPath</a> {}</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:aac55f73218aafbf75ec2c01b9f404953" id="r_aac55f73218aafbf75ec2c01b9f404953"><td class="memItemLeft"><a id="aac55f73218aafbf75ec2c01b9f404953" name="aac55f73218aafbf75ec2c01b9f404953"></a>
-bool&#160;</td><td class="memItemRight"><b>operator==</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideFieldKey.html">DevOverrideFieldKey</a> &amp;, const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideFieldKey.html">DevOverrideFieldKey</a> &amp;)=default</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a65e6a4afe8c8a92eb20237f39499bf4f">tooling::DevFieldId</a>&#160;</td><td class="memItemRight"><b>field</b> = 0</td></tr>
+<tr class="memdesc:ac6c60d0ce13eb48ebbeedd4a158cf8be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leaf member identity. <br /></td></tr>
+<tr class="memitem:a8be8b4e0cd2d332b10025a6a808907f0" id="r_a8be8b4e0cd2d332b10025a6a808907f0"><td class="memItemLeft">std::vector&lt; <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a65e6a4afe8c8a92eb20237f39499bf4f">tooling::DevFieldId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a8be8b4e0cd2d332b10025a6a808907f0">nestedPath</a> {}</td></tr>
 </table>
-<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Schema-qualified nested path ending at one reflected leaf field. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a8be8b4e0cd2d332b10025a6a808907f0" name="a8be8b4e0cd2d332b10025a6a808907f0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8be8b4e0cd2d332b10025a6a808907f0">&#9670;&#160;</a></span>nestedPath</h2>
 
@@ -128,11 +132,11 @@ bool&#160;</td><td class="memItemRight"><b>operator==</b> (const <a class="el" h
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt;tooling::DevFieldId&gt; FlowUi::devSystems::tooling::DevOverrideFieldKey::nestedPath {}</td>
+          <td class="memname">std::vector&lt;<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a65e6a4afe8c8a92eb20237f39499bf4f">tooling::DevFieldId</a>&gt; FlowUi::devSystems::tooling::DevOverrideFieldKey::nestedPath {}</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Field IDs from the root owner to the leaf owner, excluding <span class="tt">field</span>. </p>
+<p>Field IDs from the root owner to the leaf owner, excluding <span class="tt"><a class="el" href="#ac6c60d0ce13eb48ebbeedd4a158cf8be" title="Leaf member identity.">field</a></span>. </p>
 
 </div>
 </div>
@@ -152,7 +156,7 @@ bool&#160;</td><td class="memItemRight"><b>operator==</b> (const <a class="el" h
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideFieldKey.html">DevOverrideFieldKey</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideFieldKey.html">DevOverrideFieldKey</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

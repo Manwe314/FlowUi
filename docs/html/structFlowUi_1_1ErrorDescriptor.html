@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,30 +111,171 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a344b6c9b5d8baec7b880c0e7ebc7ef48" id="r_a344b6c9b5d8baec7b880c0e7ebc7ef48"><td class="memItemLeft"><a id="a344b6c9b5d8baec7b880c0e7ebc7ef48" name="a344b6c9b5d8baec7b880c0e7ebc7ef48"></a>
-ErrorCode&#160;</td><td class="memItemRight"><b>code</b> = ErrorCode::None</td></tr>
-<tr class="memitem:a83a93905e0bc419882dcbbc7d157adf0" id="r_a83a93905e0bc419882dcbbc7d157adf0"><td class="memItemLeft"><a id="a83a93905e0bc419882dcbbc7d157adf0" name="a83a93905e0bc419882dcbbc7d157adf0"></a>
-ErrorDomain&#160;</td><td class="memItemRight"><b>domain</b> = ErrorDomain::None</td></tr>
-<tr class="memitem:aa14e4061734a828ab7051b40f21ea658" id="r_aa14e4061734a828ab7051b40f21ea658"><td class="memItemLeft"><a id="aa14e4061734a828ab7051b40f21ea658" name="aa14e4061734a828ab7051b40f21ea658"></a>
-ErrorCategory&#160;</td><td class="memItemRight"><b>category</b> = ErrorCategory::Local</td></tr>
-<tr class="memitem:abff24e0ab4a469a28cab2707ece638c3" id="r_abff24e0ab4a469a28cab2707ece638c3"><td class="memItemLeft"><a id="abff24e0ab4a469a28cab2707ece638c3" name="abff24e0ab4a469a28cab2707ece638c3"></a>
-ErrorBoundary&#160;</td><td class="memItemRight"><b>boundary</b> = ErrorBoundary::DirectCaller</td></tr>
-<tr class="memitem:af2c23c6da37bc02e4cb8c734a3847254" id="r_af2c23c6da37bc02e4cb8c734a3847254"><td class="memItemLeft"><a id="af2c23c6da37bc02e4cb8c734a3847254" name="af2c23c6da37bc02e4cb8c734a3847254"></a>
-ErrorResolvability&#160;</td><td class="memItemRight"><b>resolvability</b> = ErrorResolvability::CallerResolvable</td></tr>
-<tr class="memitem:a4835acbcf9002b2f97e38a8c08ebb7ae" id="r_a4835acbcf9002b2f97e38a8c08ebb7ae"><td class="memItemLeft"><a id="a4835acbcf9002b2f97e38a8c08ebb7ae" name="a4835acbcf9002b2f97e38a8c08ebb7ae"></a>
-ErrorImpact&#160;</td><td class="memItemRight"><b>impact</b> = ErrorImpact::None</td></tr>
-<tr class="memitem:a7ed3afc9b7bd40a038de8877f3ae006d" id="r_a7ed3afc9b7bd40a038de8877f3ae006d"><td class="memItemLeft"><a id="a7ed3afc9b7bd40a038de8877f3ae006d" name="a7ed3afc9b7bd40a038de8877f3ae006d"></a>
-ErrorResolutionPolicy&#160;</td><td class="memItemRight"><b>resolutionPolicy</b> = ErrorResolutionPolicy::CallerDefined</td></tr>
-<tr class="memitem:a0d768753632ec09d21a2c1b3d2b08cb8" id="r_a0d768753632ec09d21a2c1b3d2b08cb8"><td class="memItemLeft"><a id="a0d768753632ec09d21a2c1b3d2b08cb8" name="a0d768753632ec09d21a2c1b3d2b08cb8"></a>
-ErrorResolution&#160;</td><td class="memItemRight"><b>defaultResolution</b> = ErrorResolution::None</td></tr>
-<tr class="memitem:aecca8029c299bec185d826e1bb85bb25" id="r_aecca8029c299bec185d826e1bb85bb25"><td class="memItemLeft"><a id="aecca8029c299bec185d826e1bb85bb25" name="aecca8029c299bec185d826e1bb85bb25"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>name</b> = &quot;None&quot;</td></tr>
-<tr class="memitem:a47458cf0428e8a67c10515ef5b1e1449" id="r_a47458cf0428e8a67c10515ef5b1e1449"><td class="memItemLeft"><a id="a47458cf0428e8a67c10515ef5b1e1449" name="a47458cf0428e8a67c10515ef5b1e1449"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>message</b> = &quot;No FlowUi error.&quot;</td></tr>
+<tr class="memitem:a344b6c9b5d8baec7b880c0e7ebc7ef48" id="r_a344b6c9b5d8baec7b880c0e7ebc7ef48"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76">ErrorCode</a>&#160;</td><td class="memItemRight"><a class="el" href="#a344b6c9b5d8baec7b880c0e7ebc7ef48">code</a> = <a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a6adf97f83acf6453d4a6a4b1070f3754">ErrorCode::None</a></td></tr>
+<tr class="memitem:a83a93905e0bc419882dcbbc7d157adf0" id="r_a83a93905e0bc419882dcbbc7d157adf0"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818">ErrorDomain</a>&#160;</td><td class="memItemRight"><a class="el" href="#a83a93905e0bc419882dcbbc7d157adf0">domain</a> = <a class="el" href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818a6adf97f83acf6453d4a6a4b1070f3754">ErrorDomain::None</a></td></tr>
+<tr class="memitem:aa14e4061734a828ab7051b40f21ea658" id="r_aa14e4061734a828ab7051b40f21ea658"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#ab3295a2e558d81918c6a9e0b3e630e4c">ErrorCategory</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa14e4061734a828ab7051b40f21ea658">category</a> = <a class="el" href="namespaceFlowUi.html#ab3295a2e558d81918c6a9e0b3e630e4ca509820290d57f333403f490dde7316f4">ErrorCategory::Local</a></td></tr>
+<tr class="memitem:abff24e0ab4a469a28cab2707ece638c3" id="r_abff24e0ab4a469a28cab2707ece638c3"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a9eba3f8cb4940f1d85998347f4710752">ErrorBoundary</a>&#160;</td><td class="memItemRight"><a class="el" href="#abff24e0ab4a469a28cab2707ece638c3">boundary</a> = <a class="el" href="namespaceFlowUi.html#a9eba3f8cb4940f1d85998347f4710752a2f1086241b95fca782f2c60370e695a9">ErrorBoundary::DirectCaller</a></td></tr>
+<tr class="memitem:af2c23c6da37bc02e4cb8c734a3847254" id="r_af2c23c6da37bc02e4cb8c734a3847254"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#adba1f7b5d2062784fbfda2fe6cb5fedc">ErrorResolvability</a>&#160;</td><td class="memItemRight"><a class="el" href="#af2c23c6da37bc02e4cb8c734a3847254">resolvability</a> = <a class="el" href="namespaceFlowUi.html#adba1f7b5d2062784fbfda2fe6cb5fedcaded5cf71e08019d1a6d446118df8ae09">ErrorResolvability::CallerResolvable</a></td></tr>
+<tr class="memitem:a4835acbcf9002b2f97e38a8c08ebb7ae" id="r_a4835acbcf9002b2f97e38a8c08ebb7ae"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#af30f67a8b2b7589890bb6d98bd29fde9">ErrorImpact</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4835acbcf9002b2f97e38a8c08ebb7ae">impact</a> = <a class="el" href="namespaceFlowUi.html#af30f67a8b2b7589890bb6d98bd29fde9a6adf97f83acf6453d4a6a4b1070f3754">ErrorImpact::None</a></td></tr>
+<tr class="memitem:a7ed3afc9b7bd40a038de8877f3ae006d" id="r_a7ed3afc9b7bd40a038de8877f3ae006d"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a29f0f55c88e1d97d68040c8ab7823700">ErrorResolutionPolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#a7ed3afc9b7bd40a038de8877f3ae006d">resolutionPolicy</a> = <a class="el" href="namespaceFlowUi.html#a29f0f55c88e1d97d68040c8ab7823700a1c6207108dce600d2fd6dcd159e20f1a">ErrorResolutionPolicy::CallerDefined</a></td></tr>
+<tr class="memitem:a0d768753632ec09d21a2c1b3d2b08cb8" id="r_a0d768753632ec09d21a2c1b3d2b08cb8"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a94bf9fd3426ebd61a302d6b843d06837">ErrorResolution</a>&#160;</td><td class="memItemRight"><a class="el" href="#a0d768753632ec09d21a2c1b3d2b08cb8">defaultResolution</a> = <a class="el" href="namespaceFlowUi.html#a94bf9fd3426ebd61a302d6b843d06837a6adf97f83acf6453d4a6a4b1070f3754">ErrorResolution::None</a></td></tr>
+<tr class="memitem:aecca8029c299bec185d826e1bb85bb25" id="r_aecca8029c299bec185d826e1bb85bb25"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#aecca8029c299bec185d826e1bb85bb25">name</a> = &quot;None&quot;</td></tr>
+<tr class="memitem:a47458cf0428e8a67c10515ef5b1e1449" id="r_a47458cf0428e8a67c10515ef5b1e1449"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a47458cf0428e8a67c10515ef5b1e1449">message</a> = &quot;No <a class="el" href="namespaceFlowUi.html">FlowUi</a> error.&quot;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Static catalog data associated with one ErrorCode. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<div class="textblock"><p>Static catalog data associated with one <a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76">ErrorCode</a>. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="abff24e0ab4a469a28cab2707ece638c3" name="abff24e0ab4a469a28cab2707ece638c3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abff24e0ab4a469a28cab2707ece638c3">&#9670;&#160;</a></span>boundary</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a9eba3f8cb4940f1d85998347f4710752">ErrorBoundary</a> FlowUi::ErrorDescriptor::boundary = <a class="el" href="namespaceFlowUi.html#a9eba3f8cb4940f1d85998347f4710752a2f1086241b95fca782f2c60370e695a9">ErrorBoundary::DirectCaller</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Boundary intended to select or apply a resolution. </p>
+
+</div>
+</div>
+<a id="aa14e4061734a828ab7051b40f21ea658" name="aa14e4061734a828ab7051b40f21ea658"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa14e4061734a828ab7051b40f21ea658">&#9670;&#160;</a></span>category</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#ab3295a2e558d81918c6a9e0b3e630e4c">ErrorCategory</a> FlowUi::ErrorDescriptor::category = <a class="el" href="namespaceFlowUi.html#ab3295a2e558d81918c6a9e0b3e630e4ca509820290d57f333403f490dde7316f4">ErrorCategory::Local</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Transport mechanism used to reach the resolution boundary. </p>
+
+</div>
+</div>
+<a id="a344b6c9b5d8baec7b880c0e7ebc7ef48" name="a344b6c9b5d8baec7b880c0e7ebc7ef48"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a344b6c9b5d8baec7b880c0e7ebc7ef48">&#9670;&#160;</a></span>code</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76">ErrorCode</a> FlowUi::ErrorDescriptor::code = <a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a6adf97f83acf6453d4a6a4b1070f3754">ErrorCode::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Stable code described by this catalog entry. </p>
+
+</div>
+</div>
+<a id="a0d768753632ec09d21a2c1b3d2b08cb8" name="a0d768753632ec09d21a2c1b3d2b08cb8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d768753632ec09d21a2c1b3d2b08cb8">&#9670;&#160;</a></span>defaultResolution</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a94bf9fd3426ebd61a302d6b843d06837">ErrorResolution</a> FlowUi::ErrorDescriptor::defaultResolution = <a class="el" href="namespaceFlowUi.html#a94bf9fd3426ebd61a302d6b843d06837a6adf97f83acf6453d4a6a4b1070f3754">ErrorResolution::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Default catalog resolution before any configured policy is applied. </p>
+
+</div>
+</div>
+<a id="a83a93905e0bc419882dcbbc7d157adf0" name="a83a93905e0bc419882dcbbc7d157adf0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a83a93905e0bc419882dcbbc7d157adf0">&#9670;&#160;</a></span>domain</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818">ErrorDomain</a> FlowUi::ErrorDescriptor::domain = <a class="el" href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818a6adf97f83acf6453d4a6a4b1070f3754">ErrorDomain::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Subsystem that owns the code. </p>
+
+</div>
+</div>
+<a id="a4835acbcf9002b2f97e38a8c08ebb7ae" name="a4835acbcf9002b2f97e38a8c08ebb7ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4835acbcf9002b2f97e38a8c08ebb7ae">&#9670;&#160;</a></span>impact</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#af30f67a8b2b7589890bb6d98bd29fde9">ErrorImpact</a> FlowUi::ErrorDescriptor::impact = <a class="el" href="namespaceFlowUi.html#af30f67a8b2b7589890bb6d98bd29fde9a6adf97f83acf6453d4a6a4b1070f3754">ErrorImpact::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Expected effect after the default resolution. </p>
+
+</div>
+</div>
+<a id="a47458cf0428e8a67c10515ef5b1e1449" name="a47458cf0428e8a67c10515ef5b1e1449"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a47458cf0428e8a67c10515ef5b1e1449">&#9670;&#160;</a></span>message</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::ErrorDescriptor::message = &quot;No <a class="el" href="namespaceFlowUi.html">FlowUi</a> error.&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Human-readable message backed by a static string literal. </p>
+
+</div>
+</div>
+<a id="aecca8029c299bec185d826e1bb85bb25" name="aecca8029c299bec185d826e1bb85bb25"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aecca8029c299bec185d826e1bb85bb25">&#9670;&#160;</a></span>name</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::ErrorDescriptor::name = &quot;None&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Stable name backed by a static string literal. </p>
+
+</div>
+</div>
+<a id="a7ed3afc9b7bd40a038de8877f3ae006d" name="a7ed3afc9b7bd40a038de8877f3ae006d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7ed3afc9b7bd40a038de8877f3ae006d">&#9670;&#160;</a></span>resolutionPolicy</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a29f0f55c88e1d97d68040c8ab7823700">ErrorResolutionPolicy</a> FlowUi::ErrorDescriptor::resolutionPolicy = <a class="el" href="namespaceFlowUi.html#a29f0f55c88e1d97d68040c8ab7823700a1c6207108dce600d2fd6dcd159e20f1a">ErrorResolutionPolicy::CallerDefined</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Authority allowed to choose the resolution. </p>
+
+</div>
+</div>
+<a id="af2c23c6da37bc02e4cb8c734a3847254" name="af2c23c6da37bc02e4cb8c734a3847254"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af2c23c6da37bc02e4cb8c734a3847254">&#9670;&#160;</a></span>resolvability</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#adba1f7b5d2062784fbfda2fe6cb5fedc">ErrorResolvability</a> FlowUi::ErrorDescriptor::resolvability = <a class="el" href="namespaceFlowUi.html#adba1f7b5d2062784fbfda2fe6cb5fedcaded5cf71e08019d1a6d446118df8ae09">ErrorResolvability::CallerResolvable</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Available continuation/recreation options. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/errorManagement/<a class="el" href="ErrorCodeTypes_8hpp_source.html">ErrorCodeTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -150,7 +291,7 @@ std::string_view&#160;</td><td class="memItemRight"><b>message</b> = &quot;No Fl
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1ErrorDescriptor.html">ErrorDescriptor</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1ErrorDescriptor.html">ErrorDescriptor</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

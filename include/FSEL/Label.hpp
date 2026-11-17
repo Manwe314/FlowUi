@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include <algorithm>
 #include <cstdint>
 #include <optional>
@@ -61,7 +63,7 @@ struct Label {
 	 */
 	static void buildElement(BuildContext& context) {
 		const FSELLabelTheme& theme =
-			context.uiManager.theme<FSELTheme>().labelTheme;
+			FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().labelTheme;
 
 		Clay_ElementDeclaration root{};
 		root.layout.sizing = context.params.sizing;

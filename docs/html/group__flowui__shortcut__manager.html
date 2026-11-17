@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,7 +107,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Public keyboard shortcut registration and dispatch API.  
+<p>Public keyboard shortcut registration and dispatch API.
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -129,18 +129,18 @@ using&#160;</td><td class="memItemRight"><b>FlowUi::ShortcutId</b> = uint32_t</t
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:ga1b3c08a536c355e5163a7a367297bfee" id="r_ga1b3c08a536c355e5163a7a367297bfee"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#ga1b3c08a536c355e5163a7a367297bfee">FlowUi::ShortcutScope</a> : uint8_t { <a class="el" href="#gga1b3c08a536c355e5163a7a367297bfeeac39487764c47d7394c716eb92cf51694">ShortcutScope::FocusedInput</a> = 0
-, <a class="el" href="#gga1b3c08a536c355e5163a7a367297bfeeada12bd1e401dad9ceac02d871dbb34e3">ShortcutScope::FocusedElement</a> = 1
-, <a class="el" href="#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">ShortcutScope::Global</a> = 2
+<tr class="memitem:ga1b3c08a536c355e5163a7a367297bfee" id="r_ga1b3c08a536c355e5163a7a367297bfee"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#ga1b3c08a536c355e5163a7a367297bfee">FlowUi::ShortcutScope</a> : uint8_t { <a class="el" href="#gga1b3c08a536c355e5163a7a367297bfeeac39487764c47d7394c716eb92cf51694">FlowUi::ShortcutScope::FocusedInput</a> = 0
+, <a class="el" href="#gga1b3c08a536c355e5163a7a367297bfeeada12bd1e401dad9ceac02d871dbb34e3">FlowUi::ShortcutScope::FocusedElement</a> = 1
+, <a class="el" href="#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">FlowUi::ShortcutScope::Global</a> = 2
  }</td></tr>
 <tr class="memdesc:ga1b3c08a536c355e5163a7a367297bfee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scope that controls when a shortcut is eligible to run.  <a href="#ga1b3c08a536c355e5163a7a367297bfee">More...</a><br /></td></tr>
-<tr class="memitem:gad9aa94e86980abfc8ec6a69b0aacb6b1" id="r_gad9aa94e86980abfc8ec6a69b0aacb6b1"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#gad9aa94e86980abfc8ec6a69b0aacb6b1">FlowUi::ShortcutTrigger</a> : uint8_t { <a class="el" href="#ggad9aa94e86980abfc8ec6a69b0aacb6b1a0610123bdd4ffc191a3ea05a847e1307">ShortcutTrigger::Press</a> = 0
-, <a class="el" href="#ggad9aa94e86980abfc8ec6a69b0aacb6b1ab8e7b465df7c5979dc731d06e84ce2cf">ShortcutTrigger::Release</a> = 1
-, <a class="el" href="#ggad9aa94e86980abfc8ec6a69b0aacb6b1a08a38277b0309070706f6652eeae9a53">ShortcutTrigger::Down</a> = 2
+<tr class="memitem:gad9aa94e86980abfc8ec6a69b0aacb6b1" id="r_gad9aa94e86980abfc8ec6a69b0aacb6b1"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#gad9aa94e86980abfc8ec6a69b0aacb6b1">FlowUi::ShortcutTrigger</a> : uint8_t { <a class="el" href="#ggad9aa94e86980abfc8ec6a69b0aacb6b1a0610123bdd4ffc191a3ea05a847e1307">FlowUi::ShortcutTrigger::Press</a> = 0
+, <a class="el" href="#ggad9aa94e86980abfc8ec6a69b0aacb6b1ab8e7b465df7c5979dc731d06e84ce2cf">FlowUi::ShortcutTrigger::Release</a> = 1
+, <a class="el" href="#ggad9aa94e86980abfc8ec6a69b0aacb6b1a08a38277b0309070706f6652eeae9a53">FlowUi::ShortcutTrigger::Down</a> = 2
  }</td></tr>
 <tr class="memdesc:gad9aa94e86980abfc8ec6a69b0aacb6b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Input transition used to trigger a shortcut.  <a href="#gad9aa94e86980abfc8ec6a69b0aacb6b1">More...</a><br /></td></tr>
-<tr class="memitem:gaa96df297b2a302ec17595a07e88af64f" id="r_gaa96df297b2a302ec17595a07e88af64f"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#gaa96df297b2a302ec17595a07e88af64f">FlowUi::ShortcutHandling</a> : uint8_t { <b>Consume</b> = 0
-, <b>PassThrough</b>
+<tr class="memitem:gaa96df297b2a302ec17595a07e88af64f" id="r_gaa96df297b2a302ec17595a07e88af64f"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#gaa96df297b2a302ec17595a07e88af64f">FlowUi::ShortcutHandling</a> : uint8_t { <a class="el" href="#ggaa96df297b2a302ec17595a07e88af64fad2e0379c3a30439bfc1b6869af4408cc">FlowUi::ShortcutHandling::Consume</a> = 0
+, <a class="el" href="#ggaa96df297b2a302ec17595a07e88af64fae1ff6a7360e99cb46db6bb5d3ff8e2eb">FlowUi::ShortcutHandling::PassThrough</a>
  }</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
@@ -159,7 +159,7 @@ Enumerations</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Shortcut callback. </p>
-<p>Return true when the shortcut was handled. A handled shortcut stops further callbacks for the same matching chord. </p>
+<p>Return true when the shortcut was handled. A handled shortcut stops further callbacks for the same matching chord. Registration retains an owned callable; captured references must remain valid until unregistration and any in-progress invocation finish. Throwing from a callback is handled by the dispatch/frame boundary and is separate from registerShortcut() returning an error. </p>
 
 </div>
 </div>
@@ -184,6 +184,12 @@ Enumerations</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Whether a registered app action consumes a matching shortcut. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ggaa96df297b2a302ec17595a07e88af64fad2e0379c3a30439bfc1b6869af4408cc" name="ggaa96df297b2a302ec17595a07e88af64fad2e0379c3a30439bfc1b6869af4408cc"></a>Consume&#160;</td><td class="fielddoc"><p>Stop dispatch of the matching chord after the action runs. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggaa96df297b2a302ec17595a07e88af64fae1ff6a7360e99cb46db6bb5d3ff8e2eb" name="ggaa96df297b2a302ec17595a07e88af64fae1ff6a7360e99cb46db6bb5d3ff8e2eb"></a>PassThrough&#160;</td><td class="fielddoc"><p>Allow lower-priority matching shortcut registrations to run. </p>
+</td></tr>
+</table>
 
 </div>
 </div>

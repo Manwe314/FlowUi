@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
@@ -46,8 +47,8 @@ void check_diagnostics_context(const DevDiagnosticsState& state) {
 }
 
 void timing_destinations(App& app, DevInterfaceState& interface_state) {
-	auto& timing = app.devMonitoring().timing();
-	auto& reporting = app.devMonitoring().timingReporting();
+	auto& timing = ::FlowUi::test::requireValue(app.devMonitoring()).get().timing();
+	auto& reporting = ::FlowUi::test::requireValue(app.devMonitoring()).get().timingReporting();
 	const auto generation = reporting.begin_capture(100);
 	assert(generation);
 	reporting.admit_tick(100, timing.nowNs());
@@ -162,8 +163,8 @@ void timing_destinations(App& app, DevInterfaceState& interface_state) {
 }
 
 void memory_destinations(App& app, DevInterfaceState& interface_state) {
-	auto& memory = app.devMonitoring().memory();
-	auto& reporting = app.devMonitoring().memoryReporting();
+	auto& memory = ::FlowUi::test::requireValue(app.devMonitoring()).get().memory();
+	auto& reporting = ::FlowUi::test::requireValue(app.devMonitoring()).get().memoryReporting();
 	CheckpointProbe probe;
 	assert(memory.registerSource({.name = "Diagnostics navigation manager",
 								  .id = checkpoint_source,
@@ -171,7 +172,7 @@ void memory_destinations(App& app, DevInterfaceState& interface_state) {
 								  .kind = MemorySourceKind::Manager}));
 	assert(memory.registerProbe(
 		{.source = checkpoint_source, .owner = &probe, .sample = CheckpointProbe::sample}));
-	const auto timestamp = app.devMonitoring().timing().nowNs();
+	const auto timestamp = ::FlowUi::test::requireValue(app.devMonitoring()).get().timing().nowNs();
 	const MemoryOperationRecord operation{.source = checkpoint_source,
 										  .lifetime = 811,
 										  .operation = MemoryOperation::BackingGrow,
@@ -327,7 +328,7 @@ int main() {
 	config.dev.monitoring.memoryReporting.retainLifetimeEvents = true;
 	config.dev.monitoring.memoryReporting.managerSampleEveryTicks = 1;
 	config.vk.enableValidation = true;
-	auto app = makeApplication(config);
+	auto app = ::FlowUi::test::requireValue(makeApplication(config));
 	DevInterfaceState interface_state;
 	interface_state.activeTab = static_cast<uint64_t>(DevInterfaceTab::Diagnostics);
 	auto& state = interface_state.diagnostics;

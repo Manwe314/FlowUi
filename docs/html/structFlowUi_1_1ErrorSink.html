@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,21 +111,123 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:af748b4a3a56d2bdb9b970d9279a3f55c" id="r_af748b4a3a56d2bdb9b970d9279a3f55c"><td class="memItemLeft"><a id="af748b4a3a56d2bdb9b970d9279a3f55c" name="af748b4a3a56d2bdb9b970d9279a3f55c"></a>
-constexpr&#160;</td><td class="memItemRight"><b>operator bool</b> () const noexcept</td></tr>
-<tr class="memitem:a6db82867846fb9e2460a43a21142462a" id="r_a6db82867846fb9e2460a43a21142462a"><td class="memItemLeft"><a id="a6db82867846fb9e2460a43a21142462a" name="a6db82867846fb9e2460a43a21142462a"></a>
-void&#160;</td><td class="memItemRight"><b>notify</b> (const <a class="el" href="structFlowUi_1_1ErrorEventView.html">ErrorEventView</a> &amp;event) const noexcept</td></tr>
+<tr class="memitem:af748b4a3a56d2bdb9b970d9279a3f55c" id="r_af748b4a3a56d2bdb9b970d9279a3f55c"><td class="memItemLeft">constexpr&#160;</td><td class="memItemRight"><a class="el" href="#af748b4a3a56d2bdb9b970d9279a3f55c">operator bool</a> () const noexcept</td></tr>
+<tr class="memitem:a6db82867846fb9e2460a43a21142462a" id="r_a6db82867846fb9e2460a43a21142462a"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a6db82867846fb9e2460a43a21142462a">notify</a> (const <a class="el" href="structFlowUi_1_1ErrorEventView.html">ErrorEventView</a> &amp;event) const noexcept</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a349d629a9b6e959a33a541b56e3a8d54" id="r_a349d629a9b6e959a33a541b56e3a8d54"><td class="memItemLeft"><a id="a349d629a9b6e959a33a541b56e3a8d54" name="a349d629a9b6e959a33a541b56e3a8d54"></a>
-void *&#160;</td><td class="memItemRight"><b>userData</b> = nullptr</td></tr>
-<tr class="memitem:aaef0d36d489bb9c94101e6b106baea83" id="r_aaef0d36d489bb9c94101e6b106baea83"><td class="memItemLeft"><a id="aaef0d36d489bb9c94101e6b106baea83" name="aaef0d36d489bb9c94101e6b106baea83"></a>
-ErrorSinkCallback&#160;</td><td class="memItemRight"><b>callback</b> = nullptr</td></tr>
+<tr class="memitem:a349d629a9b6e959a33a541b56e3a8d54" id="r_a349d629a9b6e959a33a541b56e3a8d54"><td class="memItemLeft">void *&#160;</td><td class="memItemRight"><a class="el" href="#a349d629a9b6e959a33a541b56e3a8d54">userData</a> = nullptr</td></tr>
+<tr class="memitem:aaef0d36d489bb9c94101e6b106baea83" id="r_aaef0d36d489bb9c94101e6b106baea83"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a2dc894a3f85a5f72cbcab3c70514f96f">ErrorSinkCallback</a>&#160;</td><td class="memItemRight"><a class="el" href="#aaef0d36d489bb9c94101e6b106baea83">callback</a> = nullptr</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Non-owning application-provided destination for structured error reports. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a6db82867846fb9e2460a43a21142462a" name="a6db82867846fb9e2460a43a21142462a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6db82867846fb9e2460a43a21142462a">&#9670;&#160;</a></span>notify()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::ErrorSink::notify </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1ErrorEventView.html">ErrorEventView</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>event</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Invoke the sink synchronously if installed; event and its borrowed views expire after this call. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line">std::uint64_t errorCount = 0;</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ErrorSink.html">FlowUi::ErrorSink</a> sink{</div>
+<div class="line">    .userData = &amp;errorCount,</div>
+<div class="line">    .callback = [](<span class="keywordtype">void</span>* <a class="code hl_variable" href="#a349d629a9b6e959a33a541b56e3a8d54">userData</a>, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ErrorEventView.html">FlowUi::ErrorEventView</a>&amp;) <span class="keyword">noexcept</span> {</div>
+<div class="line">        ++*<span class="keyword">static_cast&lt;</span>std::uint64_t*<span class="keyword">&gt;</span>(<a class="code hl_variable" href="#a349d629a9b6e959a33a541b56e3a8d54">userData</a>);</div>
+<div class="line">    },</div>
+<div class="line">};</div>
+<div class="line"><span class="keywordflow">if</span> (sink)</div>
+<div class="line">    sink.<a class="code hl_function" href="#a6db82867846fb9e2460a43a21142462a">notify</a>(<a class="code hl_struct" href="structFlowUi_1_1ErrorEventView.html">FlowUi::ErrorEventView</a>{.error = error});</div>
+<div class="ttc" id="astructFlowUi_1_1ErrorEventView_html"><div class="ttname"><a href="structFlowUi_1_1ErrorEventView.html">FlowUi::ErrorEventView</a></div><div class="ttdef"><b>Definition</b> ErrorEvents.hpp:39</div></div>
+<div class="ttc" id="astructFlowUi_1_1ErrorSink_html"><div class="ttname"><a href="structFlowUi_1_1ErrorSink.html">FlowUi::ErrorSink</a></div><div class="ttdef"><b>Definition</b> ErrorPolicy.hpp:120</div></div>
+<div class="ttc" id="astructFlowUi_1_1ErrorSink_html_a349d629a9b6e959a33a541b56e3a8d54"><div class="ttname"><a href="#a349d629a9b6e959a33a541b56e3a8d54">FlowUi::ErrorSink::userData</a></div><div class="ttdeci">void * userData</div><div class="ttdef"><b>Definition</b> ErrorPolicy.hpp:122</div></div>
+<div class="ttc" id="astructFlowUi_1_1ErrorSink_html_a6db82867846fb9e2460a43a21142462a"><div class="ttname"><a href="#a6db82867846fb9e2460a43a21142462a">FlowUi::ErrorSink::notify</a></div><div class="ttdeci">void notify(const ErrorEventView &amp;event) const noexcept</div><div class="ttdef"><b>Definition</b> ErrorPolicy.hpp:158</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="af748b4a3a56d2bdb9b970d9279a3f55c" name="af748b4a3a56d2bdb9b970d9279a3f55c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af748b4a3a56d2bdb9b970d9279a3f55c">&#9670;&#160;</a></span>operator bool()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::ErrorSink::operator bool </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel explicit">explicit</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return whether a callback is installed. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line">std::uint64_t errorCount = 0;</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ErrorSink.html">FlowUi::ErrorSink</a> sink{</div>
+<div class="line">    .userData = &amp;errorCount,</div>
+<div class="line">    .callback = [](<span class="keywordtype">void</span>* <a class="code hl_variable" href="#a349d629a9b6e959a33a541b56e3a8d54">userData</a>, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ErrorEventView.html">FlowUi::ErrorEventView</a>&amp;) <span class="keyword">noexcept</span> {</div>
+<div class="line">        ++*<span class="keyword">static_cast&lt;</span>std::uint64_t*<span class="keyword">&gt;</span>(<a class="code hl_variable" href="#a349d629a9b6e959a33a541b56e3a8d54">userData</a>);</div>
+<div class="line">    },</div>
+<div class="line">};</div>
+<div class="line"><span class="keywordflow">if</span> (sink)</div>
+<div class="line">    sink.<a class="code hl_function" href="#a6db82867846fb9e2460a43a21142462a">notify</a>(<a class="code hl_struct" href="structFlowUi_1_1ErrorEventView.html">FlowUi::ErrorEventView</a>{.error = error});</div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="aaef0d36d489bb9c94101e6b106baea83" name="aaef0d36d489bb9c94101e6b106baea83"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaef0d36d489bb9c94101e6b106baea83">&#9670;&#160;</a></span>callback</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a2dc894a3f85a5f72cbcab3c70514f96f">ErrorSinkCallback</a> FlowUi::ErrorSink::callback = nullptr</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Nonthrowing callback; null disables the sink. </p>
+
+</div>
+</div>
+<a id="a349d629a9b6e959a33a541b56e3a8d54" name="a349d629a9b6e959a33a541b56e3a8d54"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a349d629a9b6e959a33a541b56e3a8d54">&#9670;&#160;</a></span>userData</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void* FlowUi::ErrorSink::userData = nullptr</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed context forwarded unchanged to callback. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/errorManagement/<a class="el" href="ErrorPolicy_8hpp_source.html">ErrorPolicy.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -141,7 +243,7 @@ ErrorSinkCallback&#160;</td><td class="memItemRight"><b>callback</b> = nullptr</
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1ErrorSink.html">ErrorSink</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1ErrorSink.html">ErrorSink</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

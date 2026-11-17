@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -118,32 +118,44 @@ $(function() {
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="keyword">struct </span>VulkanContext;</div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="keyword">namespace </span>FlowUi::devSystems {</div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi_1_1devSystems.html">FlowUi::devSystems</a> {</div>
 <div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span></div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="keyword">class </span>DevEnvironmentMemoryProbe {</div>
+<div class="foldopen" id="foldopen00016" data-start="{" data-end="};">
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html">   16</a></span><span class="keyword">class </span><a class="code hl_function" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#a468d9e17a91fdb03c59e9ce229eccfd9">DevEnvironmentMemoryProbe</a> {</div>
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    DevEnvironmentMemoryProbe();</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    ~DevEnvironmentMemoryProbe();</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    DevEnvironmentMemoryProbe(<span class="keyword">const</span> DevEnvironmentMemoryProbe&amp;) = <span class="keyword">delete</span>;</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    DevEnvironmentMemoryProbe&amp; operator=(<span class="keyword">const</span> DevEnvironmentMemoryProbe&amp;) = <span class="keyword">delete</span>;</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <span class="keywordtype">void</span> initializeVulkan(<span class="keyword">const</span> VulkanContext&amp; context) <span class="keyword">noexcept</span>;</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    <span class="keywordtype">void</span> detachVulkan() noexcept;</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    <span class="keywordtype">void</span> setConfig(const DevMemoryConfig&amp; config) noexcept;</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <span class="keywordtype">void</span> advanceVmaFrameIndex(uint32_t frameIndex) noexcept;</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    [[nodiscard]] MemoryEnvironmentSnapshot sample(</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>        uint64_t nowNs,</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>        uint64_t safelyAttributableFlowUiCpuBytes,</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>        <span class="keywordtype">bool</span> force = false) noexcept;</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>private:</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    struct Impl;</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    std::unique_ptr&lt;Impl&gt; impl_{};</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>};</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>} <span class="comment">// namespace FlowUi::devSystems</span></div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#a468d9e17a91fdb03c59e9ce229eccfd9">   19</a></span>    <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#a468d9e17a91fdb03c59e9ce229eccfd9">DevEnvironmentMemoryProbe</a>();</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#ab0d8dd8e351e5dd1e9e28eaed17b5ae7">   21</a></span>    <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#ab0d8dd8e351e5dd1e9e28eaed17b5ae7">~DevEnvironmentMemoryProbe</a>();</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#a468d9e17a91fdb03c59e9ce229eccfd9">DevEnvironmentMemoryProbe</a>(<span class="keyword">const</span> <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#a468d9e17a91fdb03c59e9ce229eccfd9">DevEnvironmentMemoryProbe</a>&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#a468d9e17a91fdb03c59e9ce229eccfd9">DevEnvironmentMemoryProbe</a>&amp; operator=(<span class="keyword">const</span> <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#a468d9e17a91fdb03c59e9ce229eccfd9">DevEnvironmentMemoryProbe</a>&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#a86dac01019a1d33ee65582da2a373c90">   26</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#a86dac01019a1d33ee65582da2a373c90">initializeVulkan</a>(<span class="keyword">const</span> VulkanContext&amp; context) <span class="keyword">noexcept</span>;</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#a4549f20a380ee294e6c879255bc07eb6">   28</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#a4549f20a380ee294e6c879255bc07eb6">detachVulkan</a>() noexcept;</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#aa9b7b2c78a55ba48579cd13d962be8ca">   30</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#aa9b7b2c78a55ba48579cd13d962be8ca">setConfig</a>(const <a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1DevMemoryConfig.html">DevMemoryConfig</a>&amp; config) noexcept;</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#ac8268bce3c81479dd5f83be9df7ecef5">   32</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#ac8268bce3c81479dd5f83be9df7ecef5">advanceVmaFrameIndex</a>(uint32_t frameIndex) noexcept;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#a2b5bab137893e75f59ebb188213a3e58">   37</a></span>    [[nodiscard]] <a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1MemoryEnvironmentSnapshot.html">MemoryEnvironmentSnapshot</a> <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#a2b5bab137893e75f59ebb188213a3e58">sample</a>(</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>        uint64_t nowNs,</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>        uint64_t safelyAttributableFlowUiCpuBytes,</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>        <span class="keywordtype">bool</span> force = false) noexcept;</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>private:</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    struct Impl;</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    std::unique_ptr&lt;Impl&gt; impl_{};</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>};</div>
+</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>} <span class="comment">// namespace FlowUi::devSystems</span></div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe_html_a2b5bab137893e75f59ebb188213a3e58"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#a2b5bab137893e75f59ebb188213a3e58">FlowUi::devSystems::DevEnvironmentMemoryProbe::sample</a></div><div class="ttdeci">MemoryEnvironmentSnapshot sample(uint64_t nowNs, uint64_t safelyAttributableFlowUiCpuBytes, bool force=false) noexcept</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe_html_a4549f20a380ee294e6c879255bc07eb6"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#a4549f20a380ee294e6c879255bc07eb6">FlowUi::devSystems::DevEnvironmentMemoryProbe::detachVulkan</a></div><div class="ttdeci">void detachVulkan() noexcept</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe_html_a468d9e17a91fdb03c59e9ce229eccfd9"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#a468d9e17a91fdb03c59e9ce229eccfd9">FlowUi::devSystems::DevEnvironmentMemoryProbe::DevEnvironmentMemoryProbe</a></div><div class="ttdeci">DevEnvironmentMemoryProbe()</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe_html_a86dac01019a1d33ee65582da2a373c90"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#a86dac01019a1d33ee65582da2a373c90">FlowUi::devSystems::DevEnvironmentMemoryProbe::initializeVulkan</a></div><div class="ttdeci">void initializeVulkan(const VulkanContext &amp;context) noexcept</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe_html_aa9b7b2c78a55ba48579cd13d962be8ca"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#aa9b7b2c78a55ba48579cd13d962be8ca">FlowUi::devSystems::DevEnvironmentMemoryProbe::setConfig</a></div><div class="ttdeci">void setConfig(const DevMemoryConfig &amp;config) noexcept</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe_html_ab0d8dd8e351e5dd1e9e28eaed17b5ae7"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#ab0d8dd8e351e5dd1e9e28eaed17b5ae7">FlowUi::devSystems::DevEnvironmentMemoryProbe::~DevEnvironmentMemoryProbe</a></div><div class="ttdeci">~DevEnvironmentMemoryProbe()</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe_html_ac8268bce3c81479dd5f83be9df7ecef5"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1DevEnvironmentMemoryProbe.html#ac8268bce3c81479dd5f83be9df7ecef5">FlowUi::devSystems::DevEnvironmentMemoryProbe::advanceVmaFrameIndex</a></div><div class="ttdeci">void advanceVmaFrameIndex(uint32_t frameIndex) noexcept</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_html"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems.html">FlowUi::devSystems</a></div><div class="ttdoc">Optional development monitoring, reporting and application extension APIs. Available when FLOW_UI_DEV...</div><div class="ttdef"><b>Definition</b> App.hpp:45</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1DevMemoryConfig_html"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1DevMemoryConfig.html">FlowUi::devSystems::DevMemoryConfig</a></div><div class="ttdoc">Memory collection and environment sampling in development builds. Requested detail is capped by FLOWU...</div><div class="ttdef"><b>Definition</b> DevConfig.hpp:111</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1MemoryEnvironmentSnapshot_html"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1MemoryEnvironmentSnapshot.html">FlowUi::devSystems::MemoryEnvironmentSnapshot</a></div><div class="ttdef"><b>Definition</b> DevMemoryTypes.hpp:380</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,22 +106,172 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::CpuTimingZone Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevTimingZone_8hpp_source.html">DevTimingZone.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a2f84d43fd5e376620dbc6977d80bc2c0" id="r_a2f84d43fd5e376620dbc6977d80bc2c0"><td class="memItemLeft"><a id="a2f84d43fd5e376620dbc6977d80bc2c0" name="a2f84d43fd5e376620dbc6977d80bc2c0"></a>
-&#160;</td><td class="memItemRight"><b>CpuTimingZone</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> &amp;recorder, const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingZoneDescriptor.html">TimingZoneDescriptor</a> &amp;descriptor, <a class="el" href="structFlowUi_1_1devSystems_1_1TimingEntityRef.html">TimingEntityRef</a> entity={}) noexcept</td></tr>
-<tr class="memitem:ac27f0c3433e4800b2c344b67389b57b4" id="r_ac27f0c3433e4800b2c344b67389b57b4"><td class="memItemLeft"><a id="ac27f0c3433e4800b2c344b67389b57b4" name="ac27f0c3433e4800b2c344b67389b57b4"></a>
-&#160;</td><td class="memItemRight"><b>CpuTimingZone</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> *recorder, const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingZoneDescriptor.html">TimingZoneDescriptor</a> &amp;descriptor, <a class="el" href="structFlowUi_1_1devSystems_1_1TimingEntityRef.html">TimingEntityRef</a> entity={}) noexcept</td></tr>
-<tr class="memitem:acd023c19acff425fcf393c43b11a81ca" id="r_acd023c19acff425fcf393c43b11a81ca"><td class="memItemLeft"><a id="acd023c19acff425fcf393c43b11a81ca" name="acd023c19acff425fcf393c43b11a81ca"></a>
-&#160;</td><td class="memItemRight"><b>CpuTimingZone</b> (const CpuTimingZone &amp;)=delete</td></tr>
+<tr class="memitem:a2f84d43fd5e376620dbc6977d80bc2c0" id="r_a2f84d43fd5e376620dbc6977d80bc2c0"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a2f84d43fd5e376620dbc6977d80bc2c0">CpuTimingZone</a> (<a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> &amp;recorder, const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingZoneDescriptor.html">TimingZoneDescriptor</a> &amp;descriptor, <a class="el" href="structFlowUi_1_1devSystems_1_1TimingEntityRef.html">TimingEntityRef</a> entity={}) noexcept</td></tr>
+<tr class="memitem:ac27f0c3433e4800b2c344b67389b57b4" id="r_ac27f0c3433e4800b2c344b67389b57b4"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ac27f0c3433e4800b2c344b67389b57b4">CpuTimingZone</a> (<a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> *recorder, const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingZoneDescriptor.html">TimingZoneDescriptor</a> &amp;descriptor, <a class="el" href="structFlowUi_1_1devSystems_1_1TimingEntityRef.html">TimingEntityRef</a> entity={}) noexcept</td></tr>
+<tr class="memitem:add9734b818bcaf88c1d2cadadb8fe3cc" id="r_add9734b818bcaf88c1d2cadadb8fe3cc"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#add9734b818bcaf88c1d2cadadb8fe3cc">~CpuTimingZone</a> () noexcept</td></tr>
+<tr class="memitem:acd023c19acff425fcf393c43b11a81ca" id="r_acd023c19acff425fcf393c43b11a81ca"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#acd023c19acff425fcf393c43b11a81ca">CpuTimingZone</a> (const CpuTimingZone &amp;)=delete</td></tr>
 <tr class="memitem:a605ede07671e516b069d35495c4b557a" id="r_a605ede07671e516b069d35495c4b557a"><td class="memItemLeft"><a id="a605ede07671e516b069d35495c4b557a" name="a605ede07671e516b069d35495c4b557a"></a>
-CpuTimingZone &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const CpuTimingZone &amp;)=delete</td></tr>
-<tr class="memitem:a0c7edc7f27548a01aa907f90392d2684" id="r_a0c7edc7f27548a01aa907f90392d2684"><td class="memItemLeft"><a id="a0c7edc7f27548a01aa907f90392d2684" name="a0c7edc7f27548a01aa907f90392d2684"></a>
-&#160;</td><td class="memItemRight"><b>CpuTimingZone</b> (CpuTimingZone &amp;&amp;)=delete</td></tr>
+<a class="el" href="#a2f84d43fd5e376620dbc6977d80bc2c0">CpuTimingZone</a> &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const <a class="el" href="#a2f84d43fd5e376620dbc6977d80bc2c0">CpuTimingZone</a> &amp;)=delete</td></tr>
+<tr class="memitem:a0c7edc7f27548a01aa907f90392d2684" id="r_a0c7edc7f27548a01aa907f90392d2684"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a0c7edc7f27548a01aa907f90392d2684">CpuTimingZone</a> (CpuTimingZone &amp;&amp;)=delete</td></tr>
 <tr class="memitem:a8a91a6016f8fbdf2230e5423bd44a26f" id="r_a8a91a6016f8fbdf2230e5423bd44a26f"><td class="memItemLeft"><a id="a8a91a6016f8fbdf2230e5423bd44a26f" name="a8a91a6016f8fbdf2230e5423bd44a26f"></a>
-CpuTimingZone &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (CpuTimingZone &amp;&amp;)=delete</td></tr>
+<a class="el" href="#a2f84d43fd5e376620dbc6977d80bc2c0">CpuTimingZone</a> &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (<a class="el" href="#a2f84d43fd5e376620dbc6977d80bc2c0">CpuTimingZone</a> &amp;&amp;)=delete</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Nonmovable lexical CPU timing scope. The descriptor text must outlive the timing service; destruction ends an admitted zone automatically. </p>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a2f84d43fd5e376620dbc6977d80bc2c0" name="a2f84d43fd5e376620dbc6977d80bc2c0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2f84d43fd5e376620dbc6977d80bc2c0">&#9670;&#160;</a></span>CpuTimingZone() <span class="overload">[1/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::CpuTimingZone::CpuTimingZone </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>recorder</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingZoneDescriptor.html">TimingZoneDescriptor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>descriptor</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1devSystems_1_1TimingEntityRef.html">TimingEntityRef</a></td>          <td class="paramname"><span class="paramname"><em>entity</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Begin the scoped timing measurement when the recorder or context admits it; null pointers disable capture. Borrowed context and descriptor text must outlive the scope. </p>
+
+</div>
+</div>
+<a id="ac27f0c3433e4800b2c344b67389b57b4" name="ac27f0c3433e4800b2c344b67389b57b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac27f0c3433e4800b2c344b67389b57b4">&#9670;&#160;</a></span>CpuTimingZone() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::CpuTimingZone::CpuTimingZone </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> *</td>          <td class="paramname"><span class="paramname"><em>recorder</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingZoneDescriptor.html">TimingZoneDescriptor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>descriptor</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1devSystems_1_1TimingEntityRef.html">TimingEntityRef</a></td>          <td class="paramname"><span class="paramname"><em>entity</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Begin the scoped timing measurement when the recorder or context admits it; null pointers disable capture. Borrowed context and descriptor text must outlive the scope. </p>
+
+</div>
+</div>
+<a id="add9734b818bcaf88c1d2cadadb8fe3cc" name="add9734b818bcaf88c1d2cadadb8fe3cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add9734b818bcaf88c1d2cadadb8fe3cc">&#9670;&#160;</a></span>~CpuTimingZone()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::CpuTimingZone::~CpuTimingZone </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>End the admitted CPU zone as completed. </p>
+
+</div>
+</div>
+<a id="acd023c19acff425fcf393c43b11a81ca" name="acd023c19acff425fcf393c43b11a81ca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acd023c19acff425fcf393c43b11a81ca">&#9670;&#160;</a></span>CpuTimingZone() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::CpuTimingZone::CpuTimingZone </td>
+          <td>(</td>
+          <td class="paramtype">const CpuTimingZone &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copying is disabled to preserve ownership and producer identity. </p>
+
+</div>
+</div>
+<a id="a0c7edc7f27548a01aa907f90392d2684" name="a0c7edc7f27548a01aa907f90392d2684"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c7edc7f27548a01aa907f90392d2684">&#9670;&#160;</a></span>CpuTimingZone() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::CpuTimingZone::CpuTimingZone </td>
+          <td>(</td>
+          <td class="paramtype">CpuTimingZone &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Moving is disabled to preserve the owner and active scope addresses. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/timing/<a class="el" href="DevTimingZone_8hpp_source.html">DevTimingZone.hpp</a></li>
 </ul>
@@ -138,7 +288,7 @@ CpuTimingZone &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (CpuTimi
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1CpuTimingZone.html">CpuTimingZone</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1CpuTimingZone.html">CpuTimingZone</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

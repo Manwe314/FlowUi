@@ -38,12 +38,30 @@ struct LocalElementName {
 	std::string_view debugName{};
 #endif
 
-	/** Construct an invalid local-name token. */
+	/**
+	 * Construct an invalid local-name token.
+	 * @par Example
+	 * @code{.cpp}
+	 * constexpr FlowUi::LocalElementName absent{};
+	 * constexpr FlowUi::LocalElementName saveButton{"toolbar/save"};
+	 * static_assert(!absent);
+	 * static_assert(static_cast<bool>(saveButton));
+	 * @endcode
+	 */
 	constexpr LocalElementName() noexcept = default;
 
 	template <std::size_t N>
-	/** Hash an authored literal at compile time; the literal label is borrowed in developer builds. */
-	consteval LocalElementName(const char (&name)[N])
+	/**
+	 * Hash an authored literal at compile time; the literal label is borrowed in developer builds.
+	 * @par Example
+	 * @code{.cpp}
+	 * constexpr FlowUi::LocalElementName absent{};
+	 * constexpr FlowUi::LocalElementName saveButton{"toolbar/save"};
+	 * static_assert(!absent);
+	 * static_assert(static_cast<bool>(saveButton));
+	 * @endcode
+	 */
+	consteval LocalElementName(const char (&name)[N]) noexcept
 		: token(detail::identity_hash::authoredNameToken(
 			detail::element_id::kLocalElementDomain,
 			detail::identity_hash::literalView(name)))
@@ -52,7 +70,16 @@ struct LocalElementName {
 #endif
 	{}
 
-	/** Return whether the name has a nonzero token. */
+	/**
+	 * Return whether the name has a nonzero token.
+	 * @par Example
+	 * @code{.cpp}
+	 * constexpr FlowUi::LocalElementName absent{};
+	 * constexpr FlowUi::LocalElementName saveButton{"toolbar/save"};
+	 * static_assert(!absent);
+	 * static_assert(static_cast<bool>(saveButton));
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return token != 0;
 	}
@@ -69,7 +96,14 @@ struct RuntimeElementName {
 	std::string_view debugName{};
 #endif
 
-	/** Return whether the name has a nonzero token. */
+	/**
+	 * Return whether the name has a nonzero token.
+	 * @par Example
+	 * @code{.cpp}
+	 * std::string_view label = "toolbar/save";
+	 * const FlowUi::RuntimeElementName name = FlowUi::RuntimeName(label);
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return token != 0;
 	}
@@ -86,12 +120,32 @@ struct IndexedElementName {
 	uint64_t index = 0;
 #endif
 
-	/** Return whether the name has a nonzero token. */
+	/**
+	 * Return whether the name has a nonzero token.
+	 * @par Example
+	 * @code{.cpp}
+	 * constexpr FlowUi::LocalElementName row{"records/row"};
+	 * const auto positional = FlowUi::Indexed(row, 0);
+	 * const std::uint64_t recordKey = 42;
+	 * const auto keyed = FlowUi::Keyed(row, recordKey);
+	 * const bool same = positional == keyed;
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return token != 0;
 	}
 
-	/** Compare hashed tokens, ignoring developer metadata. */
+	/**
+	 * Compare hashed tokens, ignoring developer metadata.
+	 * @par Example
+	 * @code{.cpp}
+	 * constexpr FlowUi::LocalElementName row{"records/row"};
+	 * const auto positional = FlowUi::Indexed(row, 0);
+	 * const std::uint64_t recordKey = 42;
+	 * const auto keyed = FlowUi::Keyed(row, recordKey);
+	 * const bool same = positional == keyed;
+	 * @endcode
+	 */
 	[[nodiscard]] friend constexpr bool operator==(IndexedElementName lhs,
 												   IndexedElementName rhs) noexcept {
 		return lhs.token == rhs.token;
@@ -104,16 +158,45 @@ public:
 	/**
 	 * Start a positional sequence for baseName at firstIndex. Use data keys instead when identity must
 	 * survive reordering.
+
+	 * @par Example
+	 * @code{.cpp}
+	 * FlowUi::IndexedElementIDSequence sequence{"records/row", 0};
+	 * const auto firstRow = sequence.next();
+	 * const auto secondRow = sequence.next();
+	 * const auto nextIndex = sequence.nextIndex();
+	 * auto continued = FlowUi::IndexedIDs("records/row", nextIndex);
+	 * @endcode
 	 */
 	constexpr explicit IndexedElementIDSequence(
 		LocalElementName baseName,
 		uint64_t firstIndex = 0) noexcept
 		: baseName_(baseName), nextIndex_(firstIndex) {}
 
-	/** Return the next positional name and increment the local counter. */
+	/**
+	 * Return the next positional name and increment the local counter.
+	 * @par Example
+	 * @code{.cpp}
+	 * FlowUi::IndexedElementIDSequence sequence{"records/row", 0};
+	 * const auto firstRow = sequence.next();
+	 * const auto secondRow = sequence.next();
+	 * const auto nextIndex = sequence.nextIndex();
+	 * auto continued = FlowUi::IndexedIDs("records/row", nextIndex);
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr IndexedElementName next() noexcept;
 
-	/** Return the numeric index that next() will consume. */
+	/**
+	 * Return the numeric index that next() will consume.
+	 * @par Example
+	 * @code{.cpp}
+	 * FlowUi::IndexedElementIDSequence sequence{"records/row", 0};
+	 * const auto firstRow = sequence.next();
+	 * const auto secondRow = sequence.next();
+	 * const auto nextIndex = sequence.nextIndex();
+	 * auto continued = FlowUi::IndexedIDs("records/row", nextIndex);
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr uint64_t nextIndex() const noexcept {
 		return nextIndex_;
 	}
@@ -136,13 +219,26 @@ struct AutoElementName {
 	uint32_t column = 0;
 #endif
 
-	/** Return whether the name has a nonzero token. */
+	/**
+	 * Return whether the name has a nonzero token.
+	 * @par Example
+	 * @code{.cpp}
+	 * const auto automatic = FlowUi::AutoID();
+	 * constexpr auto explicitLocation = FlowUi::AutoIDAt("screens/editor.cpp", 120, 8);
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return token != 0;
 	}
 };
 
-/** Create a strong definition ID from a stable authored literal. */
+/**
+ * Create a strong definition ID from a stable authored literal.
+ * @par Example
+ * @code{.cpp}
+ * constexpr FlowUi::FlowDefinitionID definition = FlowUi::DefinitionID("example.editor");
+ * @endcode
+ */
 template <std::size_t N>
 [[nodiscard]] consteval FlowDefinitionID DefinitionID(const char (&name)[N]) noexcept {
 	return FlowDefinitionID{detail::identity_hash::authoredNameToken(
@@ -152,7 +248,13 @@ template <std::size_t N>
 
 /** Hash a runtime local name; an empty name produces an invalid token.
  * @param name UTF-8/name bytes; developer builds borrow this view.
- * @return Name token later combined with the current parent and definition. */
+ * @return Name token later combined with the current parent and definition.
+ * @par Example
+ * @code{.cpp}
+ * std::string_view label = "toolbar/save";
+ * const FlowUi::RuntimeElementName name = FlowUi::RuntimeName(label);
+ * @endcode
+ */
 [[nodiscard]] constexpr RuntimeElementName RuntimeName(std::string_view name) noexcept {
 	return RuntimeElementName{
 		.token = detail::identity_hash::authoredNameToken(
@@ -164,7 +266,17 @@ template <std::size_t N>
 	};
 }
 
-/** Create a stable numeric positional local-name token. */
+/**
+ * Create a stable numeric positional local-name token.
+ * @par Example
+ * @code{.cpp}
+ * constexpr FlowUi::LocalElementName row{"records/row"};
+ * const auto positional = FlowUi::Indexed(row, 0);
+ * const std::uint64_t recordKey = 42;
+ * const auto keyed = FlowUi::Keyed(row, recordKey);
+ * const bool same = positional == keyed;
+ * @endcode
+ */
 [[nodiscard]] constexpr IndexedElementName Indexed(
 	LocalElementName name,
 	uint64_t index) noexcept {
@@ -181,18 +293,49 @@ template <std::size_t N>
 	};
 }
 
-/** Create a stable numeric data-keyed local-name token. */
+/**
+ * Create a stable numeric data-keyed local-name token.
+ * @par Example
+ * @code{.cpp}
+ * constexpr FlowUi::LocalElementName row{"records/row"};
+ * const auto positional = FlowUi::Indexed(row, 0);
+ * const std::uint64_t recordKey = 42;
+ * const auto keyed = FlowUi::Keyed(row, recordKey);
+ * const bool same = positional == keyed;
+ * @endcode
+ */
 [[nodiscard]] constexpr IndexedElementName Keyed(
 	LocalElementName name,
 	uint64_t key) noexcept {
 	return Indexed(name, key);
 }
 
+/**
+ * @brief Generate the next positional name and advance its counter.
+ * @par Example
+ * @code{.cpp}
+ * FlowUi::IndexedElementIDSequence sequence{"records/row", 0};
+ * const auto firstRow = sequence.next();
+ * const auto secondRow = sequence.next();
+ * const auto nextIndex = sequence.nextIndex();
+ * auto continued = FlowUi::IndexedIDs("records/row", nextIndex);
+ * @endcode
+ */
 inline constexpr IndexedElementName IndexedElementIDSequence::next() noexcept {
 	return Indexed(baseName_, nextIndex_++);
 }
 
-/** Create a local positional sequence; state follows sequence position. */
+/**
+ * Create a local positional sequence; state follows sequence position.
+ * @par Example
+ * @code{.cpp}
+ * FlowUi::IndexedElementIDSequence sequence{"records/row", 0};
+ * const auto firstRow = sequence.next();
+ * const auto secondRow = sequence.next();
+ * const auto nextIndex = sequence.nextIndex();
+ * auto continued = FlowUi::IndexedIDs("records/row", nextIndex);
+ * @endcode
+ */
 [[nodiscard]] constexpr IndexedElementIDSequence IndexedIDs(
 	LocalElementName baseName,
 	uint64_t firstIndex = 0) noexcept {
@@ -201,11 +344,17 @@ inline constexpr IndexedElementName IndexedElementIDSequence::next() noexcept {
 
 /** Hash file, line, and column into an automatic callsite token. An empty
  * fileName returns an invalid token. Developer builds borrow fileName; do not
- * use the same callsite repeatedly under one parent without an index/key. */
+ * use the same callsite repeatedly under one parent without an index/key.
+ * @par Example
+ * @code{.cpp}
+ * const auto automatic = FlowUi::AutoID();
+ * constexpr auto explicitLocation = FlowUi::AutoIDAt("screens/editor.cpp", 120, 8);
+ * @endcode
+ */
 [[nodiscard]] constexpr AutoElementName AutoIDAt(
 	std::string_view fileName,
 	uint32_t line,
-	uint32_t column) {
+	uint32_t column) noexcept {
 	if (fileName.empty()) return {};
 	return AutoElementName{
 		.token = detail::identity_hash::compose(
@@ -229,21 +378,45 @@ inline constexpr IndexedElementName IndexedElementIDSequence::next() noexcept {
  * Literal/direct uses remain valid constant expressions.
  */
 #if defined(FLOWUI_ELEMENT_ID_HAS_STD_SOURCE_LOCATION)
+/**
+ * @brief Capture the caller location as an automatic identity token.
+ * @par Example
+ * @code{.cpp}
+ * const auto automatic = FlowUi::AutoID();
+ * constexpr auto explicitLocation = FlowUi::AutoIDAt("screens/editor.cpp", 120, 8);
+ * @endcode
+ */
 [[nodiscard]] constexpr AutoElementName AutoID(
-	std::source_location location = std::source_location::current()) {
+	std::source_location location = std::source_location::current()) noexcept {
 	return AutoIDAt(location.file_name(), location.line(), location.column());
 }
 #else
+/**
+ * @brief Capture the caller location as an automatic identity token.
+ * @par Example
+ * @code{.cpp}
+ * const auto automatic = FlowUi::AutoID();
+ * constexpr auto explicitLocation = FlowUi::AutoIDAt("screens/editor.cpp", 120, 8);
+ * @endcode
+ */
 [[nodiscard]] constexpr AutoElementName AutoID(
 	const char* fileName = __builtin_FILE(),
 	uint32_t line = __builtin_LINE(),
-	uint32_t column = 0) {
+	uint32_t column = 0) noexcept {
 	return AutoIDAt(fileName ? std::string_view{fileName} : std::string_view{}, line, column);
 }
 #endif
 
 /** Hash a stable literal declaring one definition-owned semantic part.
- * Bind the declaration to an instance with PartID() or ElementBuildContext::part(). */
+ * Bind the declaration to an instance with PartID() or ElementBuildContext::part().
+ * @par Example
+ * @code{.cpp}
+ * constexpr auto label = FlowUi::Part("label");
+ * const auto localPart = FlowUi::PartID(FlowUi::kButton, localOwner, label);
+ * constexpr auto globalOwner = FlowUi::Global<FlowUi::kButton>("toolbar/save");
+ * const auto globalPart = FlowUi::PartID(FlowUi::kButton, globalOwner, label);
+ * @endcode
+ */
 template <std::size_t N>
 [[nodiscard]] consteval FlowElementPart Part(const char (&name)[N]) noexcept {
 	const std::string_view view = detail::identity_hash::literalView(name);
@@ -262,6 +435,13 @@ template <std::size_t N>
  *
  * The value is parent-independent but remains window-local when used as an
  * element address because WindowId is the outer storage/interaction scope.
+
+ * @par Example
+ * @code{.cpp}
+ * constexpr auto saveButton = FlowUi::Global<FlowUi::kButton>("toolbar/save");
+ * constexpr auto sameButton = FlowUi::GlobalID<FlowUi::kButton>("toolbar/save");
+ * static_assert(saveButton == sameButton);
+ * @endcode
  */
 template <auto& Element, std::size_t N>
 	requires detail::element_id::HasIdentityDefinition<decltype(Element)>
@@ -281,7 +461,15 @@ template <auto& Element, std::size_t N>
 	};
 }
 
-/** Long-form alias for Global(), useful in declarations that emphasize identity. */
+/**
+ * Long-form alias for Global(), useful in declarations that emphasize identity.
+ * @par Example
+ * @code{.cpp}
+ * constexpr auto saveButton = FlowUi::Global<FlowUi::kButton>("toolbar/save");
+ * constexpr auto sameButton = FlowUi::GlobalID<FlowUi::kButton>("toolbar/save");
+ * static_assert(saveButton == sameButton);
+ * @endcode
+ */
 template <auto& Element, std::size_t N>
 	requires detail::element_id::HasIdentityDefinition<decltype(Element)>
 [[nodiscard]] consteval GlobalFlowID GlobalID(const char (&name)[N]) noexcept {
@@ -290,7 +478,15 @@ template <auto& Element, std::size_t N>
 
 /** Resolve a semantic part from its owner definition, local instance, and
  * declaration. Any invalid owner, declaration, or definition returns an invalid
- * part ID; the element argument supplies its type and is not retained. */
+ * part ID; the element argument supplies its type and is not retained.
+ * @par Example
+ * @code{.cpp}
+ * constexpr auto label = FlowUi::Part("label");
+ * const auto localPart = FlowUi::PartID(FlowUi::kButton, localOwner, label);
+ * constexpr auto globalOwner = FlowUi::Global<FlowUi::kButton>("toolbar/save");
+ * const auto globalPart = FlowUi::PartID(FlowUi::kButton, globalOwner, label);
+ * @endcode
+ */
 template <typename OwnerElement>
 	requires detail::element_id::HasIdentityDefinition<OwnerElement>
 [[nodiscard]] constexpr FlowElementPartID PartID(
@@ -312,7 +508,15 @@ template <typename OwnerElement>
 }
 
 /** Resolve a semantic part from a global owner using the same definition and
- * part hashing rules as the local overload. Invalid input returns an invalid ID. */
+ * part hashing rules as the local overload. Invalid input returns an invalid ID.
+ * @par Example
+ * @code{.cpp}
+ * constexpr auto label = FlowUi::Part("label");
+ * const auto localPart = FlowUi::PartID(FlowUi::kButton, localOwner, label);
+ * constexpr auto globalOwner = FlowUi::Global<FlowUi::kButton>("toolbar/save");
+ * const auto globalPart = FlowUi::PartID(FlowUi::kButton, globalOwner, label);
+ * @endcode
+ */
 template <typename OwnerElement>
 	requires detail::element_id::HasIdentityDefinition<OwnerElement>
 [[nodiscard]] constexpr FlowElementPartID PartID(
@@ -333,24 +537,57 @@ template <typename OwnerElement>
 
 
 /** Deterministically fold a local Flow identity into Clay's 32-bit domain.
- * The result is a layout identifier, not a reversible encoding of the Flow ID. */
+ * The result is a layout identifier, not a reversible encoding of the Flow ID.
+ * @par Example
+ * @code{.cpp}
+ * const std::uint32_t localClayId = FlowUi::FlowIDToClayID(local);
+ * const std::uint32_t globalClayId = FlowUi::FlowIDToClayID(global);
+ * const std::uint32_t partClayId = FlowUi::FlowIDToClayID(part);
+ * @endcode
+ */
 [[nodiscard]] constexpr uint32_t FlowIDToClayID(FlowElementID id) noexcept {
 	return detail::element_id::toClayValue(id.value);
 }
 
-/** Fold a global Flow identity into the Clay layout identifier domain. */
+/**
+ * Fold a global Flow identity into the Clay layout identifier domain.
+ * @par Example
+ * @code{.cpp}
+ * const std::uint32_t localClayId = FlowUi::FlowIDToClayID(local);
+ * const std::uint32_t globalClayId = FlowUi::FlowIDToClayID(global);
+ * const std::uint32_t partClayId = FlowUi::FlowIDToClayID(part);
+ * @endcode
+ */
 [[nodiscard]] constexpr uint32_t FlowIDToClayID(GlobalFlowID id) noexcept {
 	return detail::element_id::toClayValue(id.value);
 }
 
-/** Fold a resolved part identity into the Clay layout identifier domain. */
+/**
+ * Fold a resolved part identity into the Clay layout identifier domain.
+ * @par Example
+ * @code{.cpp}
+ * const std::uint32_t localClayId = FlowUi::FlowIDToClayID(local);
+ * const std::uint32_t globalClayId = FlowUi::FlowIDToClayID(global);
+ * const std::uint32_t partClayId = FlowUi::FlowIDToClayID(part);
+ * @endcode
+ */
 [[nodiscard]] constexpr uint32_t FlowIDToClayID(FlowElementPartID id) noexcept {
 	return detail::element_id::toClayValue(id.value);
 }
 
 /** Hash adapter for FlowDefinitionID; developer labels do not affect hashing. */
 struct FlowDefinitionIDHash {
-	/** Return a container hash of the numeric identity. */
+	/**
+	 * Return a container hash of the numeric identity.
+	 * @par Example
+	 * @code{.cpp}
+	 * constexpr auto first = FlowUi::DefinitionID("editor.document");
+	 * constexpr auto second = FlowUi::DefinitionID("editor.document");
+	 * const bool valid = static_cast<bool>(first);
+	 * const bool same = first == second;
+	 * const std::size_t hash = FlowUi::FlowDefinitionIDHash{}(first);
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr std::size_t operator()(FlowDefinitionID id) const noexcept {
 		return static_cast<std::size_t>(id.value);
 	}
@@ -358,7 +595,15 @@ struct FlowDefinitionIDHash {
 
 /** Hash adapter for FlowElementID; developer labels do not affect hashing. */
 struct FlowElementIDHash {
-	/** Return a container hash of the numeric identity. */
+	/**
+	 * Return a container hash of the numeric identity.
+	 * @par Example
+	 * @code{.cpp}
+	 * const bool valid = static_cast<bool>(first);
+	 * const bool same = first == second;
+	 * const std::size_t hash = FlowUi::FlowElementIDHash{}(first);
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr std::size_t operator()(FlowElementID id) const noexcept {
 		return static_cast<std::size_t>(id.value);
 	}
@@ -366,7 +611,15 @@ struct FlowElementIDHash {
 
 /** Hash adapter for GlobalFlowID; developer labels do not affect hashing. */
 struct GlobalFlowIDHash {
-	/** Return a container hash of the numeric identity. */
+	/**
+	 * Return a container hash of the numeric identity.
+	 * @par Example
+	 * @code{.cpp}
+	 * const bool valid = static_cast<bool>(first);
+	 * const bool same = first == second;
+	 * const std::size_t hash = FlowUi::GlobalFlowIDHash{}(first);
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr std::size_t operator()(GlobalFlowID id) const noexcept {
 		return static_cast<std::size_t>(id.value);
 	}
@@ -374,7 +627,15 @@ struct GlobalFlowIDHash {
 
 /** Hash adapter for FlowElementPartID; developer labels do not affect hashing. */
 struct FlowElementPartIDHash {
-	/** Return a container hash of the numeric identity. */
+	/**
+	 * Return a container hash of the numeric identity.
+	 * @par Example
+	 * @code{.cpp}
+	 * const bool valid = static_cast<bool>(first);
+	 * const bool same = first == second;
+	 * const std::size_t hash = FlowUi::FlowElementPartIDHash{}(first);
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr std::size_t operator()(FlowElementPartID id) const noexcept {
 		return static_cast<std::size_t>(id.value);
 	}

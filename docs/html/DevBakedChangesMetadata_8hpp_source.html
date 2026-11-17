@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -113,27 +113,24 @@ $(function() {
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="keyword">namespace </span>FlowUi::baked {</div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span></div>
-<div class="foldopen" id="foldopen00009" data-start="{" data-end="};">
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno"><a class="line" href="structFlowUi_1_1baked_1_1CompiledChangeEntry.html">    9</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1baked_1_1CompiledChangeEntry.html">CompiledChangeEntry</a> {</div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>    std::string_view field_path{};</div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>    std::string_view owner_cpp_type{};</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    std::string_view source_header{};</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    std::string_view cpp_value{};</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    std::string_view theme_variant{};</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    std::string_view instance_debug_label{};</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    std::string_view value_json{};</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    std::uint64_t definition_id = 0;</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    std::uint64_t theme_type = 0;</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    std::uint64_t instance_key = 0;</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    std::uint64_t field_id = 0;</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    std::uint64_t value_type = 0;</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    <span class="keywordtype">bool</span> theme = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <span class="keywordtype">bool</span> exact_instance = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>};</div>
-</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>} <span class="comment">// namespace FlowUi::baked</span></div>
-<div class="ttc" id="astructFlowUi_1_1baked_1_1CompiledChangeEntry_html"><div class="ttname"><a href="structFlowUi_1_1baked_1_1CompiledChangeEntry.html">FlowUi::baked::CompiledChangeEntry</a></div><div class="ttdef"><b>Definition</b> DevBakedChangesMetadata.hpp:9</div></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="keyword">struct </span>CompiledChangeEntry {</div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>    std::string_view field_path{};</div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    std::string_view owner_cpp_type{};</div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    std::string_view source_header{};</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    std::string_view cpp_value{};</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    std::string_view theme_variant{};</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    std::string_view instance_debug_label{};</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    std::string_view value_json{};</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    std::uint64_t definition_id = 0;</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    std::uint64_t theme_type = 0;</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    std::uint64_t instance_key = 0;</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    std::uint64_t field_id = 0;</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    std::uint64_t value_type = 0;</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    <span class="keywordtype">bool</span> theme = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <span class="keywordtype">bool</span> exact_instance = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>};</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>} <span class="comment">// namespace FlowUi::baked</span></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

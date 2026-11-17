@@ -31,12 +31,12 @@ void testResourceKeySurface() {
 
 	using Image = FlowUi::ImageManager;
 	static_assert(std::is_same_v<
-		decltype(static_cast<FlowUi::TextureRef (Image::*)(ResourceKey) const>(&Image::getTexture)),
-		FlowUi::TextureRef (Image::*)(ResourceKey) const>);
+		decltype(static_cast<FlowUi::Result<FlowUi::TextureRef> (Image::*)(ResourceKey) const noexcept>(&Image::getTexture)),
+		FlowUi::Result<FlowUi::TextureRef> (Image::*)(ResourceKey) const noexcept>);
 	using Font = FlowUi::FontManager;
 	static_assert(std::is_same_v<
-		decltype(static_cast<FlowUi::FontFamilyId (Font::*)(ResourceKey) const>(&Font::getFamilyId)),
-		FlowUi::FontFamilyId (Font::*)(ResourceKey) const>);
+		decltype(static_cast<FlowUi::Result<FlowUi::FontFamilyId> (Font::*)(ResourceKey) const noexcept>(&Font::getFamilyId)),
+		FlowUi::Result<FlowUi::FontFamilyId> (Font::*)(ResourceKey) const noexcept>);
 	using Input = FlowUi::InputFieldManager;
 	static_assert(std::is_same_v<
 		decltype(static_cast<bool (Input::*)(ResourceKey)>(&Input::removeField)),
@@ -44,8 +44,8 @@ void testResourceKeySurface() {
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 	using Viewports = FlowUi::ViewPortManager;
 	static_assert(std::is_same_v<
-		decltype(static_cast<FlowUi::Result<bool> (Viewports::*)(ResourceKey, const FlowUi::ViewPortCreateInfo&)>(&Viewports::create)),
-		FlowUi::Result<bool> (Viewports::*)(ResourceKey, const FlowUi::ViewPortCreateInfo&)>);
+		decltype(static_cast<FlowUi::Result<bool> (Viewports::*)(ResourceKey, const FlowUi::ViewPortCreateInfo&) noexcept>(&Viewports::create)),
+		FlowUi::Result<bool> (Viewports::*)(ResourceKey, const FlowUi::ViewPortCreateInfo&) noexcept>);
 #endif
 }
 

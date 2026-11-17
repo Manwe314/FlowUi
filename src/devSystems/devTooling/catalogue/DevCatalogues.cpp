@@ -1,3 +1,4 @@
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "devSystems/devTooling/catalogue/DevCatalogues.hpp"
 
 #if FLOW_UI_DEV_MODE
@@ -174,14 +175,14 @@ void DevCatalogues::rebuildImageCache() {
 	cachedImages_.clear();
 	if (!imageManager_) return;
 	cachedImages_.reserve(imageManager_->devImageCount());
-	imageManager_->visitDevImages(&cachedImages_, [](void* context, const ImageManager::DevImageView& image) {
+	FlowUi::detail::requireApiValue(imageManager_->visitDevImages(&cachedImages_, [](void* context, const ImageManager::DevImageView& image) {
 		auto& entries = *static_cast<std::vector<DevImageCatalogEntry>*>(context);
 		entries.push_back(DevImageCatalogEntry{
 			.key = ResourceKey{.name = image.key, .domain = ResourceDomain::Image},
 			.sourcePathOrDebugName = image.sourcePath,
 			.textureHandle = image.texture,});
 		return true;
-	});
+	}));
 	for (DevImageCatalogEntry& entry : cachedImages_) {
 		const storage::DevTextureMetadata devMetadata = storage_
 			? storage_->devTextureMetadata(entry.textureHandle) : storage::DevTextureMetadata{};
@@ -204,7 +205,7 @@ void DevCatalogues::rebuildIconCache() {
 	cachedIcons_.clear();
 	if (!iconManager_) return;
 	cachedIcons_.reserve(iconManager_->devIconCount());
-	iconManager_->visitDevIcons(&cachedIcons_, [](void* context, const IconManager::DevIconView& icon) {
+	FlowUi::detail::requireApiValue(iconManager_->visitDevIcons(&cachedIcons_, [](void* context, const IconManager::DevIconView& icon) {
 		auto& entries = *static_cast<std::vector<DevIconCatalogEntry>*>(context);
 		entries.push_back(DevIconCatalogEntry{
 			.iconKey = ResourceKey{.name = icon.key, .domain = ResourceDomain::Icon},
@@ -220,7 +221,7 @@ void DevCatalogues::rebuildIconCache() {
 			.atlasLayer = icon.atlasPage,
 		});
 		return true;
-	});
+	}));
 	std::ranges::sort(cachedIcons_, {}, [](const auto& entry) { return entry.iconName; });
 }
 
@@ -255,7 +256,7 @@ void DevCatalogues::rebuildAtlasCache() {
 		}
 	}
 	if (iconManager_) {
-		iconManager_->visitDevAtlases(&cachedAtlases_, [](void* context, const IconManager::DevAtlasView& atlas) {
+		FlowUi::detail::requireApiValue(iconManager_->visitDevAtlases(&cachedAtlases_, [](void* context, const IconManager::DevAtlasView& atlas) {
 			auto& entries = *static_cast<std::vector<DevAtlasCatalogEntry>*>(context);
 			const std::uint64_t area = static_cast<std::uint64_t>(atlas.width) * atlas.height;
 			entries.push_back(DevAtlasCatalogEntry{
@@ -271,7 +272,7 @@ void DevCatalogues::rebuildAtlasCache() {
 				.gpuMemoryBytes = area * 4u,
 			});
 			return true;
-		});
+		}));
 	}
 	if (storage_) {
 		for (DevAtlasCatalogEntry& entry : cachedAtlases_) {
@@ -290,7 +291,7 @@ void DevCatalogues::rebuildFontCache() {
 	cachedFonts_.clear();
 	if (!fontManager_) return;
 	cachedFonts_.reserve(fontManager_->devFontCount());
-	fontManager_->visitDevFonts(&cachedFonts_, [](void* context, const FontManager::DevFontView& font) {
+	FlowUi::detail::requireApiValue(fontManager_->visitDevFonts(&cachedFonts_, [](void* context, const FontManager::DevFontView& font) {
 		auto& entries = *static_cast<std::vector<DevFontCatalogEntry>*>(context);
 		const Font::FontVariantData* variant = font.face ? font.face->defaultVariant() : nullptr;
 		entries.push_back(DevFontCatalogEntry{
@@ -309,7 +310,7 @@ void DevCatalogues::rebuildFontCache() {
 			.atlasLayer = font.face ? font.face->atlasLayer : 0,
 		});
 		return true;
-	});
+	}));
 	std::ranges::sort(cachedFonts_, {}, [](const auto& entry) { return entry.fontHandle; });
 }
 

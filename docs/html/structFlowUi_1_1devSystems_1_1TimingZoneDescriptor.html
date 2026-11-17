@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,22 +106,111 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::TimingZoneDescriptor Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevTimingTypes_8hpp_source.html">DevTimingTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a7768540af72ae4747c535d991ad5dc87" id="r_a7768540af72ae4747c535d991ad5dc87"><td class="memItemLeft"><a id="a7768540af72ae4747c535d991ad5dc87" name="a7768540af72ae4747c535d991ad5dc87"></a>
-TimingZoneTypeId&#160;</td><td class="memItemRight"><b>typeId</b> = 0u</td></tr>
-<tr class="memitem:a013dbe2ac9a8e619704804dbfd4b3d0b" id="r_a013dbe2ac9a8e619704804dbfd4b3d0b"><td class="memItemLeft"><a id="a013dbe2ac9a8e619704804dbfd4b3d0b" name="a013dbe2ac9a8e619704804dbfd4b3d0b"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>name</b> {}</td></tr>
-<tr class="memitem:ae9c727c34eb1eaf97c22cd6afec78b61" id="r_ae9c727c34eb1eaf97c22cd6afec78b61"><td class="memItemLeft"><a id="ae9c727c34eb1eaf97c22cd6afec78b61" name="ae9c727c34eb1eaf97c22cd6afec78b61"></a>
-TimingCategory&#160;</td><td class="memItemRight"><b>category</b> = TimingCategory::User</td></tr>
-<tr class="memitem:a2c900afc888090d3aad96b4790e3d8fe" id="r_a2c900afc888090d3aad96b4790e3d8fe"><td class="memItemLeft"><a id="a2c900afc888090d3aad96b4790e3d8fe" name="a2c900afc888090d3aad96b4790e3d8fe"></a>
-TimingZoneRole&#160;</td><td class="memItemRight"><b>role</b> = TimingZoneRole::Work</td></tr>
-<tr class="memitem:a4e1d8e2de0fa256cab979bdd0481d78d" id="r_a4e1d8e2de0fa256cab979bdd0481d78d"><td class="memItemLeft"><a id="a4e1d8e2de0fa256cab979bdd0481d78d" name="a4e1d8e2de0fa256cab979bdd0481d78d"></a>
-CpuTimingLevel&#160;</td><td class="memItemRight"><b>minimumCpuLevel</b> = CpuTimingLevel::Summary</td></tr>
-<tr class="memitem:a2eb23d03d40f65eebaf688884c32ae2b" id="r_a2eb23d03d40f65eebaf688884c32ae2b"><td class="memItemLeft"><a id="a2eb23d03d40f65eebaf688884c32ae2b" name="a2eb23d03d40f65eebaf688884c32ae2b"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1TimingSourceLocation.html">TimingSourceLocation</a>&#160;</td><td class="memItemRight"><b>source</b> {}</td></tr>
+<tr class="memitem:a7768540af72ae4747c535d991ad5dc87" id="r_a7768540af72ae4747c535d991ad5dc87"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#aee40fe9c5b34c98f32ee1493a5d69bfa">TimingZoneTypeId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a7768540af72ae4747c535d991ad5dc87">typeId</a> = 0u</td></tr>
+<tr class="memitem:a013dbe2ac9a8e619704804dbfd4b3d0b" id="r_a013dbe2ac9a8e619704804dbfd4b3d0b"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a013dbe2ac9a8e619704804dbfd4b3d0b">name</a> {}</td></tr>
+<tr class="memitem:ae9c727c34eb1eaf97c22cd6afec78b61" id="r_ae9c727c34eb1eaf97c22cd6afec78b61"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a0dd820ba8509977053881217ec59379e">TimingCategory</a>&#160;</td><td class="memItemRight"><a class="el" href="#ae9c727c34eb1eaf97c22cd6afec78b61">category</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a0dd820ba8509977053881217ec59379ea8f9bfe9d1345237cb3b2b205864da075">TimingCategory::User</a></td></tr>
+<tr class="memitem:a2c900afc888090d3aad96b4790e3d8fe" id="r_a2c900afc888090d3aad96b4790e3d8fe"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a57468be477f9ae5a8d9d2e0bd80e1f96">TimingZoneRole</a>&#160;</td><td class="memItemRight"><a class="el" href="#a2c900afc888090d3aad96b4790e3d8fe">role</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a57468be477f9ae5a8d9d2e0bd80e1f96a0f9263536b9fc61ada745644735bfd8f">TimingZoneRole::Work</a></td></tr>
+<tr class="memitem:a4e1d8e2de0fa256cab979bdd0481d78d" id="r_a4e1d8e2de0fa256cab979bdd0481d78d"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ae4b4976afd5dc620023f7520cabbd768">CpuTimingLevel</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4e1d8e2de0fa256cab979bdd0481d78d">minimumCpuLevel</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ae4b4976afd5dc620023f7520cabbd768a290612199861c31d1036b185b4e69b75">CpuTimingLevel::Summary</a></td></tr>
+<tr class="memitem:a2eb23d03d40f65eebaf688884c32ae2b" id="r_a2eb23d03d40f65eebaf688884c32ae2b"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1TimingSourceLocation.html">TimingSourceLocation</a>&#160;</td><td class="memItemRight"><a class="el" href="#a2eb23d03d40f65eebaf688884c32ae2b">source</a> {}</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Immutable zone metadata. Names and source strings are borrowed and must outlive the timing service that registers them. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="ae9c727c34eb1eaf97c22cd6afec78b61" name="ae9c727c34eb1eaf97c22cd6afec78b61"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae9c727c34eb1eaf97c22cd6afec78b61">&#9670;&#160;</a></span>category</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a0dd820ba8509977053881217ec59379e">TimingCategory</a> FlowUi::devSystems::TimingZoneDescriptor::category = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a0dd820ba8509977053881217ec59379ea8f9bfe9d1345237cb3b2b205864da075">TimingCategory::User</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Subsystem category used for filtering and presentation. </p>
+
+</div>
+</div>
+<a id="a4e1d8e2de0fa256cab979bdd0481d78d" name="a4e1d8e2de0fa256cab979bdd0481d78d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4e1d8e2de0fa256cab979bdd0481d78d">&#9670;&#160;</a></span>minimumCpuLevel</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ae4b4976afd5dc620023f7520cabbd768">CpuTimingLevel</a> FlowUi::devSystems::TimingZoneDescriptor::minimumCpuLevel = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ae4b4976afd5dc620023f7520cabbd768a290612199861c31d1036b185b4e69b75">CpuTimingLevel::Summary</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Lowest runtime CPU capture level that admits this descriptor. </p>
+
+</div>
+</div>
+<a id="a013dbe2ac9a8e619704804dbfd4b3d0b" name="a013dbe2ac9a8e619704804dbfd4b3d0b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a013dbe2ac9a8e619704804dbfd4b3d0b">&#9670;&#160;</a></span>name</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::devSystems::TimingZoneDescriptor::name {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Display name for this source, track or descriptor. </p>
+
+</div>
+</div>
+<a id="a2c900afc888090d3aad96b4790e3d8fe" name="a2c900afc888090d3aad96b4790e3d8fe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c900afc888090d3aad96b4790e3d8fe">&#9670;&#160;</a></span>role</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a57468be477f9ae5a8d9d2e0bd80e1f96">TimingZoneRole</a> FlowUi::devSystems::TimingZoneDescriptor::role = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a57468be477f9ae5a8d9d2e0bd80e1f96a0f9263536b9fc61ada745644735bfd8f">TimingZoneRole::Work</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether the timing span represents work, waiting, a gap or tool overhead. </p>
+
+</div>
+</div>
+<a id="a2eb23d03d40f65eebaf688884c32ae2b" name="a2eb23d03d40f65eebaf688884c32ae2b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2eb23d03d40f65eebaf688884c32ae2b">&#9670;&#160;</a></span>source</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1TimingSourceLocation.html">TimingSourceLocation</a> FlowUi::devSystems::TimingZoneDescriptor::source {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed source coordinates and text; storage must outlive registration. </p>
+
+</div>
+</div>
+<a id="a7768540af72ae4747c535d991ad5dc87" name="a7768540af72ae4747c535d991ad5dc87"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7768540af72ae4747c535d991ad5dc87">&#9670;&#160;</a></span>typeId</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#aee40fe9c5b34c98f32ee1493a5d69bfa">TimingZoneTypeId</a> FlowUi::devSystems::TimingZoneDescriptor::typeId = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Stable timing descriptor identity; zero is unassigned. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/timing/<a class="el" href="DevTimingTypes_8hpp_source.html">DevTimingTypes.hpp</a></li>
 </ul>
@@ -138,7 +227,7 @@ CpuTimingLevel&#160;</td><td class="memItemRight"><b>minimumCpuLevel</b> = CpuTi
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1TimingZoneDescriptor.html">TimingZoneDescriptor</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1TimingZoneDescriptor.html">TimingZoneDescriptor</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

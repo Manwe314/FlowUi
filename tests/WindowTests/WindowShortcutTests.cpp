@@ -1,5 +1,6 @@
 #include "FlowUi/Public/Flow.hpp"
 #include "TestHarness.hpp"
+#include "AppTestSupport.hpp"
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -40,7 +41,7 @@ void empty_frame(App& application, WindowId window_id) {
 }
 
 void inject_key(App& application, WindowId window_id, int key, int action, int modifiers = 0) {
-	auto* native_window = static_cast<GLFWwindow*>(application.nativeWindowHandle(window_id));
+	auto* native_window = static_cast<GLFWwindow*>(::FlowUi::test::requireValue(application.nativeWindowHandle(window_id)));
 	const GLFWkeyfun callback = glfwSetKeyCallback(native_window, nullptr);
 	FLOWUI_CHECK(callback);
 	glfwSetKeyCallback(native_window, callback);
@@ -50,7 +51,7 @@ void inject_key(App& application, WindowId window_id, int key, int action, int m
 #if FLOW_UI_DEV_MODE
 [[nodiscard]] std::size_t global_shortcut_count(const App& application, WindowId window_id) {
 	std::size_t count = 0;
-	FLOWUI_CHECK(application.ui(window_id).shortcuts().visitDevShortcuts(
+	FLOWUI_CHECK(::FlowUi::test::requireValue(application.ui(window_id)).get().shortcuts().visitDevShortcuts(
 		&count, [](void* context, const ShortcutManager::DevShortcutView& shortcut) {
 			if (shortcut.scope == ShortcutScope::Global)
 				++*static_cast<std::size_t*>(context);
@@ -70,7 +71,7 @@ void test_window_shortcut_dispatch() {
 			if (event.error.code == ErrorCode::WindowOperationUnsupported)
 				*static_cast<FlowUiError*>(context) = event.error;
 		}};
-	auto original_application = makeApplication(configuration);
+	auto original_application = ::FlowUi::test::requireValue(makeApplication(configuration));
 	const auto secondary_result = original_application.createWindow(
 		WindowConfigOverrides{.width = 640, .height = 400, .title = "FlowUi shortcuts secondary"});
 	FLOWUI_CHECK(secondary_result);
@@ -87,22 +88,22 @@ void test_window_shortcut_dispatch() {
 	inject_key(application, secondary_window, GLFW_KEY_LEFT_SHIFT, GLFW_PRESS, GLFW_MOD_SHIFT);
 	inject_key(application, secondary_window, GLFW_KEY_F8, GLFW_PRESS, GLFW_MOD_SHIFT);
 	empty_frame(application, secondary_window);
-	FLOWUI_CHECK(!application.shouldClose(secondary_window));
+	FLOWUI_CHECK(!::FlowUi::test::requireValue(application.shouldClose(secondary_window)));
 	inject_key(application, secondary_window, GLFW_KEY_F8, GLFW_RELEASE);
 	inject_key(application, secondary_window, GLFW_KEY_LEFT_SHIFT, GLFW_RELEASE);
 	empty_frame(application, secondary_window);
 	inject_key(application, secondary_window, GLFW_KEY_F8, GLFW_PRESS);
 	empty_frame(application, secondary_window);
-	FLOWUI_CHECK(application.shouldClose(secondary_window));
-	FLOWUI_CHECK(!application.shouldClose());
+	FLOWUI_CHECK(::FlowUi::test::requireValue(application.shouldClose(secondary_window)));
+	FLOWUI_CHECK(!::FlowUi::test::requireValue(application.shouldClose()));
 	application.setShouldClose(secondary_window, 0);
 	empty_frame(application, secondary_window);
-	FLOWUI_CHECK(!application.shouldClose(secondary_window));
+	FLOWUI_CHECK(!::FlowUi::test::requireValue(application.shouldClose(secondary_window)));
 	inject_key(application, secondary_window, GLFW_KEY_F8, GLFW_RELEASE);
 	empty_frame(application, secondary_window);
 
 	auto* secondary_native =
-		static_cast<GLFWwindow*>(application.nativeWindowHandle(secondary_window));
+		static_cast<GLFWwindow*>(::FlowUi::test::requireValue(application.nativeWindowHandle(secondary_window)));
 	inject_key(application, secondary_window, GLFW_KEY_F11, GLFW_PRESS);
 	empty_frame(application, secondary_window);
 	FLOWUI_CHECK(!glfwGetWindowMonitor(secondary_native));
@@ -126,7 +127,7 @@ void test_window_shortcut_dispatch() {
 	empty_frame(application, secondary_window);
 	FLOWUI_CHECK(application.pollEvents());
 	FLOWUI_CHECK(!glfwGetWindowMonitor(secondary_native));
-	FLOWUI_CHECK(!glfwGetWindowMonitor(static_cast<GLFWwindow*>(application.nativeWindowHandle())));
+	FLOWUI_CHECK(!glfwGetWindowMonitor(static_cast<GLFWwindow*>(::FlowUi::test::requireValue(application.nativeWindowHandle()))));
 
 	FLOWUI_CHECK(application.beginFrame());
 	FLOWUI_CHECK(application.toggle_window_fullscreen(secondary_window));
@@ -135,7 +136,7 @@ void test_window_shortcut_dispatch() {
 	FLOWUI_CHECK(application.destroyWindow(secondary_window));
 	FLOWUI_CHECK(application.pollEvents());
 	FLOWUI_CHECK(!application.hasWindow(secondary_window));
-	FLOWUI_CHECK(!application.shouldClose());
+	FLOWUI_CHECK(!::FlowUi::test::requireValue(application.shouldClose()));
 	const auto stale_capabilities = application.window_operation_capabilities(secondary_window);
 	FLOWUI_CHECK(!stale_capabilities);
 	FLOWUI_CHECK(stale_capabilities.error().code == ErrorCode::InvalidWindowId);
@@ -150,7 +151,7 @@ void test_window_configuration_validation() {
 		auto configuration = shortcut_configuration();
 		configuration.ui.shortcuts.window.enabled = false;
 		configuration.ui.shortcuts.window.close_window.chord = ShortcutChord{.key = -1};
-		auto application = makeApplication(configuration);
+		auto application = ::FlowUi::test::requireValue(makeApplication(configuration));
 #if FLOW_UI_DEV_MODE
 		FLOWUI_CHECK(global_shortcut_count(application, application.mainWindowId()) == 0);
 #endif
@@ -160,7 +161,7 @@ void test_window_configuration_validation() {
 		configuration.vk.enableValidation = false;
 		configuration.ui.shortcuts.window.enabled = true;
 		configuration.ui.shortcuts.window.maximize_restore.chord = ShortcutChord{.key = -1};
-		auto application = makeApplication(configuration);
+		auto application = ::FlowUi::test::requireValue(makeApplication(configuration));
 #if FLOW_UI_DEV_MODE && !defined(__APPLE__)
 		FLOWUI_CHECK(global_shortcut_count(application, application.mainWindowId()) == 0);
 #endif
@@ -174,13 +175,9 @@ void test_window_configuration_validation() {
 		else
 			configuration.ui.shortcuts.window.close_window.chord =
 				ShortcutChord{.key = GLFW_KEY_F8, .trigger = ShortcutTrigger::Down};
-		bool rejected = false;
-		try {
-			auto application = makeApplication(configuration);
-		} catch (const FlowUiException& exception) {
-			rejected = exception.error().code == ErrorCode::ShortcutInvalid;
-		}
-		FLOWUI_CHECK(rejected);
+		const auto application = makeApplication(configuration);
+		FLOWUI_CHECK(!application);
+		FLOWUI_CHECK(application.error().code == ErrorCode::ShortcutInvalid);
 	}
 }
 
@@ -202,7 +199,7 @@ struct Fixture {
 
 void draw_fixture_window(App& application, WindowFixture& fixture) {
 	FLOWUI_CHECK(application.beginFrame(fixture.window_id));
-	auto& ui = application.ui(fixture.window_id);
+	auto& ui = ::FlowUi::test::requireValue(application.ui(fixture.window_id)).get();
 	constexpr auto observe_history =
 		UiAction("tests.window-shortcuts.observe-history",
 				 [](std::uint64_t& request_count) { ++request_count; });
@@ -249,7 +246,7 @@ void draw_fixture_window(App& application, WindowFixture& fixture) {
 
 [[nodiscard]] agentic::Json window_state(App& application, const WindowFixture& fixture) {
 	auto* native_window =
-		static_cast<GLFWwindow*>(application.nativeWindowHandle(fixture.window_id));
+		static_cast<GLFWwindow*>(::FlowUi::test::requireValue(application.nativeWindowHandle(fixture.window_id)));
 	int position_x = 0;
 	int position_y = 0;
 	int width = 0;
@@ -258,7 +255,7 @@ void draw_fixture_window(App& application, WindowFixture& fixture) {
 	glfwGetWindowSize(native_window, &width, &height);
 	return agentic::Json::make_object(
 		{{"window_id", agentic::decimal(fixture.window_id)},
-		 {"close_requested", application.shouldClose(fixture.window_id)},
+		 {"close_requested", ::FlowUi::test::requireValue(application.shouldClose(fixture.window_id))},
 		 {"fullscreen", glfwGetWindowMonitor(native_window) != nullptr},
 		 {"maximized", glfwGetWindowAttrib(native_window, GLFW_MAXIMIZED) == GLFW_TRUE},
 		 {"minimized", glfwGetWindowAttrib(native_window, GLFW_ICONIFIED) == GLFW_TRUE},
@@ -271,7 +268,7 @@ void draw_fixture_window(App& application, WindowFixture& fixture) {
 }
 
 void register_fixture_actions(App& application, Fixture& fixture) {
-	const auto runtime = application.agentic_workflow().interaction_runtime();
+	const auto runtime = ::FlowUi::test::requireValue(application.agentic_workflow()).get().interaction_runtime();
 	FLOWUI_CHECK(runtime);
 	for (const bool reset : {false, true}) {
 		agentic::AgenticActionDeclaration declaration{};
@@ -329,19 +326,19 @@ int run_agentic_fixture(const std::filesystem::path& store_path) {
 	configuration.agentic_workflow.visual_capture_enabled = true;
 	configuration.agentic_workflow.application_id = "flowui.window-shortcuts.fixture";
 	configuration.agentic_workflow.store_path = store_path;
-	auto application = makeApplication(configuration);
+	auto application = ::FlowUi::test::requireValue(makeApplication(configuration));
 #if FLOW_UI_DEV_MODE
-	application.devTooling().bakePipeline().setManifestPath(store_path / "fixture.flowchanges");
+	::FlowUi::test::requireValue(application.devTooling()).get().bakePipeline().setManifestPath(store_path / "fixture.flowchanges");
 #endif
 	FLOWUI_CHECK(
-		application.themes().registerTheme<FSEL::FSELTheme>("default", FSEL::FSELTheme{}, true));
+		::FlowUi::test::requireValue(application.themes()).get().registerTheme<FSEL::FSELTheme>("default", FSEL::FSELTheme{}, true));
 	Fixture fixture{};
 	fixture.windows[0].window_id = application.mainWindowId();
 	const auto secondary = application.createWindow(
 		WindowConfigOverrides{.width = 640, .height = 400, .title = "FlowUi shortcuts secondary"});
 	FLOWUI_CHECK(secondary);
 	fixture.windows[1].window_id = *secondary;
-	FLOWUI_CHECK(application.ui().shortcuts().registerShortcut(
+	FLOWUI_CHECK(::FlowUi::test::requireValue(application.ui()).get().shortcuts().registerShortcut(
 		ShortcutChord{.key = GLFW_KEY_Z, .ctrl = true}, ShortcutScope::Global, 0,
 		[&fixture](ShortcutContext&) {
 			++fixture.manual_history_count;
@@ -354,7 +351,7 @@ int run_agentic_fixture(const std::filesystem::path& store_path) {
 			for (const auto& window_fixture : fixture.windows) {
 				application.setShouldClose(window_fixture.window_id, 0);
 				auto* native_window = static_cast<GLFWwindow*>(
-					application.nativeWindowHandle(window_fixture.window_id));
+					::FlowUi::test::requireValue(application.nativeWindowHandle(window_fixture.window_id)));
 				if (glfwGetWindowAttrib(native_window, GLFW_ICONIFIED) == GLFW_TRUE)
 					glfwRestoreWindow(native_window);
 			}
@@ -376,6 +373,9 @@ int main(int argument_count, char* arguments[]) {
 #endif
 		if (argument_count != 1)
 			return 2;
+		const int environmentStatus = FlowUi::test::applicationEnvironmentStatus();
+		if (environmentStatus != 0)
+			return environmentStatus;
 		FlowUi::test::Runner runner;
 		runner.run(
 			"window shortcut routing, exact modifiers, Press, App move and deferred lifetime",

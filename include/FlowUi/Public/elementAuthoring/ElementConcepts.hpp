@@ -45,11 +45,12 @@ using ResourcesOf = typename decltype(
 	detail::element::resourcesTypeIdentity<Element>())::type;
 
 /**
- * Compile-time contract for an empty element definition tag with a nonzero
- * constexpr FlowDefinitionID and at least one build or construct hook.
+ * Compile-time contract for a complete, empty, trivially default-constructible
+ * and trivially copyable element definition tag with a nonzero constexpr
+ * FlowDefinitionID and at least one build or construct hook.
  *
- * Optional Parameters must be default constructible. State must also be nothrow
- * destructible; Resources must be default constructible or constructible from
+ * Optional Parameters must be default constructible. State must be default
+ * constructible and nothrow destructible; Resources must be default constructible or constructible from
  * App&, and nothrow destructible. Parts must be a complete class type. Named
  * hooks must accept their corresponding context and return void, except
  * constructElement(), which returns Clay_ElementDeclaration. Optional
@@ -59,12 +60,9 @@ template <typename Element>
 concept FlowElement = detail::element::FinalFlowElementContract<Element>;
 
 /**
- * Validate a FlowElement contract with descriptive compile-time assertions.
- * Use static_assert(FlowUi::validate_flow_element<MyElement>()) after defining
- * the complete element and payloads. Successful validation returns true.
- * The instantiation trace includes a constant debugName when its characters
- * can be evaluated at compile time; assertion text uses portable literals.
- * FlowElement remains a query-only concept for overload resolution.
+ * @brief Validate the complete element definition at compile time with descriptive assertions; returns true when valid. Use static_assert after the complete definition.
+ *
+ * @see docs/api/elements.md
  */
 template <typename Element>
 [[nodiscard]] consteval bool validate_flow_element() noexcept {

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,30 +106,115 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevErrorMemoryCorrelation Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevErrorReporting_8hpp_source.html">DevErrorReporting.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:accb88f86a9edf73014d17f8ba28c7cca" id="r_accb88f86a9edf73014d17f8ba28c7cca"><td class="memItemLeft"><a id="accb88f86a9edf73014d17f8ba28c7cca" name="accb88f86a9edf73014d17f8ba28c7cca"></a>
-MemoryEventSequence&#160;</td><td class="memItemRight"><b>eventSequence</b> = 0u</td></tr>
-<tr class="memitem:a96d1eb23eca8a45c711555e4169e0768" id="r_a96d1eb23eca8a45c711555e4169e0768"><td class="memItemLeft"><a id="a96d1eb23eca8a45c711555e4169e0768" name="a96d1eb23eca8a45c711555e4169e0768"></a>
-MemorySourceId&#160;</td><td class="memItemRight"><b>source</b> = 0u</td></tr>
-<tr class="memitem:a4b5b2f0b39462d3cbf24276857c54393" id="r_a4b5b2f0b39462d3cbf24276857c54393"><td class="memItemLeft"><a id="a4b5b2f0b39462d3cbf24276857c54393" name="a4b5b2f0b39462d3cbf24276857c54393"></a>
-AppTickId&#160;</td><td class="memItemRight"><b>checkpointTick</b> = 0u</td></tr>
-<tr class="memitem:ad48c4f219fef6ddb6d1d0697c10e5fa9" id="r_ad48c4f219fef6ddb6d1d0697c10e5fa9"><td class="memItemLeft"><a id="ad48c4f219fef6ddb6d1d0697c10e5fa9" name="ad48c4f219fef6ddb6d1d0697c10e5fa9"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>storageMutationSequence</b> = 0u</td></tr>
-<tr class="memitem:a1c0e83affb285e61ca40c6b35a10fa10" id="r_a1c0e83affb285e61ca40c6b35a10fa10"><td class="memItemLeft"><a id="a1c0e83affb285e61ca40c6b35a10fa10" name="a1c0e83affb285e61ca40c6b35a10fa10"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>history_generation</b> = 0</td></tr>
-<tr class="memitem:af498f80f0c421d09edb918c44be9b832" id="r_af498f80f0c421d09edb918c44be9b832"><td class="memItemLeft"><a id="af498f80f0c421d09edb918c44be9b832" name="af498f80f0c421d09edb918c44be9b832"></a>
-DevErrorCorrelationState&#160;</td><td class="memItemRight"><b>state</b> = DevErrorCorrelationState::NotCaptured</td></tr>
-<tr class="memitem:af33d93717fa80ee6e725a44d12d88e70" id="r_af33d93717fa80ee6e725a44d12d88e70"><td class="memItemLeft"><a id="af33d93717fa80ee6e725a44d12d88e70" name="af33d93717fa80ee6e725a44d12d88e70"></a>
-DevErrorCorrelationConfidence&#160;</td><td class="memItemRight"><b>confidence</b> = DevErrorCorrelationConfidence::None</td></tr>
-<tr class="memitem:a3d1e703ace42d5a2f0bca96fd9bc8a83" id="r_a3d1e703ace42d5a2f0bca96fd9bc8a83"><td class="memItemLeft"><a id="a3d1e703ace42d5a2f0bca96fd9bc8a83" name="a3d1e703ace42d5a2f0bca96fd9bc8a83"></a>
-MemoryOperation&#160;</td><td class="memItemRight"><b>operation</b> = MemoryOperation::LogicalAllocate</td></tr>
+<tr class="memitem:accb88f86a9edf73014d17f8ba28c7cca" id="r_accb88f86a9edf73014d17f8ba28c7cca"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a4df4ff66f0aa0b1a9ea326c1947b3810">MemoryEventSequence</a>&#160;</td><td class="memItemRight"><a class="el" href="#accb88f86a9edf73014d17f8ba28c7cca">eventSequence</a> = 0u</td></tr>
+<tr class="memitem:a96d1eb23eca8a45c711555e4169e0768" id="r_a96d1eb23eca8a45c711555e4169e0768"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad77f8008bc1cd25d210f535c630fb739">MemorySourceId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a96d1eb23eca8a45c711555e4169e0768">source</a> = 0u</td></tr>
+<tr class="memitem:a4b5b2f0b39462d3cbf24276857c54393" id="r_a4b5b2f0b39462d3cbf24276857c54393"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4b5b2f0b39462d3cbf24276857c54393">checkpointTick</a> = 0u</td></tr>
+<tr class="memitem:ad48c4f219fef6ddb6d1d0697c10e5fa9" id="r_ad48c4f219fef6ddb6d1d0697c10e5fa9"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ad48c4f219fef6ddb6d1d0697c10e5fa9">storageMutationSequence</a> = 0u</td></tr>
+<tr class="memitem:a1c0e83affb285e61ca40c6b35a10fa10" id="r_a1c0e83affb285e61ca40c6b35a10fa10"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a1c0e83affb285e61ca40c6b35a10fa10">history_generation</a> = 0</td></tr>
+<tr class="memitem:af498f80f0c421d09edb918c44be9b832" id="r_af498f80f0c421d09edb918c44be9b832"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a479db3ebbaabbfc900e247edfb40dbce">DevErrorCorrelationState</a>&#160;</td><td class="memItemRight"><a class="el" href="#af498f80f0c421d09edb918c44be9b832">state</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a479db3ebbaabbfc900e247edfb40dbceaa644888fecd95f34b5c883342b9f920b">DevErrorCorrelationState::NotCaptured</a></td></tr>
+<tr class="memitem:af33d93717fa80ee6e725a44d12d88e70" id="r_af33d93717fa80ee6e725a44d12d88e70"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#afc67249d178fe41faa67cba612238563">DevErrorCorrelationConfidence</a>&#160;</td><td class="memItemRight"><a class="el" href="#af33d93717fa80ee6e725a44d12d88e70">confidence</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#afc67249d178fe41faa67cba612238563a6adf97f83acf6453d4a6a4b1070f3754">DevErrorCorrelationConfidence::None</a></td></tr>
+<tr class="memitem:a3d1e703ace42d5a2f0bca96fd9bc8a83" id="r_a3d1e703ace42d5a2f0bca96fd9bc8a83"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a9c683d8e7a1d3a5bcfbc52628ba0964d">MemoryOperation</a>&#160;</td><td class="memItemRight"><a class="el" href="#a3d1e703ace42d5a2f0bca96fd9bc8a83">operation</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a9c683d8e7a1d3a5bcfbc52628ba0964da1f00fb9902edb9f8397591a3fc5b5410">MemoryOperation::LogicalAllocate</a></td></tr>
 <tr class="memitem:a97dc3ead6893b6a6e1585c57dfea96e7" id="r_a97dc3ead6893b6a6e1585c57dfea96e7"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a97dc3ead6893b6a6e1585c57dfea96e7">sealed</a> = false</td></tr>
-<tr class="memitem:a2ddeddb3a565ce7434cc17ce7099cbcf" id="r_a2ddeddb3a565ce7434cc17ce7099cbcf"><td class="memItemLeft"><a id="a2ddeddb3a565ce7434cc17ce7099cbcf" name="a2ddeddb3a565ce7434cc17ce7099cbcf"></a>
-bool&#160;</td><td class="memItemRight"><b>incomplete</b> = false</td></tr>
+<tr class="memitem:a2ddeddb3a565ce7434cc17ce7099cbcf" id="r_a2ddeddb3a565ce7434cc17ce7099cbcf"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a2ddeddb3a565ce7434cc17ce7099cbcf">incomplete</a> = false</td></tr>
 </table>
-<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Compact attribution of an occurrence to retained memory evidence and its history generation. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a4b5b2f0b39462d3cbf24276857c54393" name="a4b5b2f0b39462d3cbf24276857c54393"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b5b2f0b39462d3cbf24276857c54393">&#9670;&#160;</a></span>checkpointTick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> FlowUi::devSystems::DevErrorMemoryCorrelation::checkpointTick = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Application tick of the selected memory checkpoint. </p>
+
+</div>
+</div>
+<a id="af33d93717fa80ee6e725a44d12d88e70" name="af33d93717fa80ee6e725a44d12d88e70"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af33d93717fa80ee6e725a44d12d88e70">&#9670;&#160;</a></span>confidence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#afc67249d178fe41faa67cba612238563">DevErrorCorrelationConfidence</a> FlowUi::devSystems::DevErrorMemoryCorrelation::confidence = <a class="el" href="namespaceFlowUi_1_1devSystems.html#afc67249d178fe41faa67cba612238563a6adf97f83acf6453d4a6a4b1070f3754">DevErrorCorrelationConfidence::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Strength or basis of the available supporting evidence. </p>
+
+</div>
+</div>
+<a id="accb88f86a9edf73014d17f8ba28c7cca" name="accb88f86a9edf73014d17f8ba28c7cca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#accb88f86a9edf73014d17f8ba28c7cca">&#9670;&#160;</a></span>eventSequence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a4df4ff66f0aa0b1a9ea326c1947b3810">MemoryEventSequence</a> FlowUi::devSystems::DevErrorMemoryCorrelation::eventSequence = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Retained memory operation sequence associated with the occurrence. </p>
+
+</div>
+</div>
+<a id="a1c0e83affb285e61ca40c6b35a10fa10" name="a1c0e83affb285e61ca40c6b35a10fa10"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1c0e83affb285e61ca40c6b35a10fa10">&#9670;&#160;</a></span>history_generation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorMemoryCorrelation::history_generation = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Generation of the memory history used for correlation. </p>
+
+</div>
+</div>
+<a id="a2ddeddb3a565ce7434cc17ce7099cbcf" name="a2ddeddb3a565ce7434cc17ce7099cbcf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ddeddb3a565ce7434cc17ce7099cbcf">&#9670;&#160;</a></span>incomplete</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevErrorMemoryCorrelation::incomplete = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether some expected measurement or evidence failed to arrive. </p>
+
+</div>
+</div>
+<a id="a3d1e703ace42d5a2f0bca96fd9bc8a83" name="a3d1e703ace42d5a2f0bca96fd9bc8a83"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3d1e703ace42d5a2f0bca96fd9bc8a83">&#9670;&#160;</a></span>operation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a9c683d8e7a1d3a5bcfbc52628ba0964d">MemoryOperation</a> FlowUi::devSystems::DevErrorMemoryCorrelation::operation = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a9c683d8e7a1d3a5bcfbc52628ba0964da1f00fb9902edb9f8397591a3fc5b5410">MemoryOperation::LogicalAllocate</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Kind of correlated memory operation. </p>
+
+</div>
+</div>
 <a id="a97dc3ead6893b6a6e1585c57dfea96e7" name="a97dc3ead6893b6a6e1585c57dfea96e7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a97dc3ead6893b6a6e1585c57dfea96e7">&#9670;&#160;</a></span>sealed</h2>
 
@@ -141,7 +226,53 @@ bool&#160;</td><td class="memItemRight"><b>incomplete</b> = false</td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Correlation closes after the configured evidence window, independently of retention. </p>
+<p>Correlation closes after the configured evidence window, independently of retention.</p>
+<p>Whether this capture or correlation is finalized against further evidence admission. </p>
+
+</div>
+</div>
+<a id="a96d1eb23eca8a45c711555e4169e0768" name="a96d1eb23eca8a45c711555e4169e0768"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a96d1eb23eca8a45c711555e4169e0768">&#9670;&#160;</a></span>source</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad77f8008bc1cd25d210f535c630fb739">MemorySourceId</a> FlowUi::devSystems::DevErrorMemoryCorrelation::source = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Snapshot source or evidence identity associated with this record. </p>
+
+</div>
+</div>
+<a id="af498f80f0c421d09edb918c44be9b832" name="af498f80f0c421d09edb918c44be9b832"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af498f80f0c421d09edb918c44be9b832">&#9670;&#160;</a></span>state</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a479db3ebbaabbfc900e247edfb40dbce">DevErrorCorrelationState</a> FlowUi::devSystems::DevErrorMemoryCorrelation::state = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a479db3ebbaabbfc900e247edfb40dbceaa644888fecd95f34b5c883342b9f920b">DevErrorCorrelationState::NotCaptured</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Retention, correlation or collection state of this record. </p>
+
+</div>
+</div>
+<a id="ad48c4f219fef6ddb6d1d0697c10e5fa9" name="ad48c4f219fef6ddb6d1d0697c10e5fa9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad48c4f219fef6ddb6d1d0697c10e5fa9">&#9670;&#160;</a></span>storageMutationSequence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorMemoryCorrelation::storageMutationSequence = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Storage mutation sequence associated with the selected memory evidence. </p>
 
 </div>
 </div>
@@ -161,7 +292,7 @@ bool&#160;</td><td class="memItemRight"><b>incomplete</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorMemoryCorrelation.html">DevErrorMemoryCorrelation</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorMemoryCorrelation.html">DevErrorMemoryCorrelation</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

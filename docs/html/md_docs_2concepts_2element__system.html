@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -123,7 +123,7 @@ $(function() {
 <div class="line">    <span class="keyword">using </span>BuildContext = <a class="code hl_struct" href="structFlowUi_1_1ElementBuildContext.html">FlowUi::ElementBuildContext&lt;Disclosure&gt;</a>;</div>
 <div class="line">    <span class="keyword">using </span>InteractionContext = <a class="code hl_struct" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext&lt;Disclosure&gt;</a>;</div>
 <div class="line"> </div>
-<div class="line">    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">auto</span> definitionId = FlowUi::DefinitionID(<span class="stringliteral">&quot;example.disclosure&quot;</span>);</div>
+<div class="line">    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">auto</span> definitionId = <a class="code hl_function" href="namespaceFlowUi.html#ab2fb588d55085807dcef2fe103c169ce">FlowUi::DefinitionID</a>(<span class="stringliteral">&quot;example.disclosure&quot;</span>);</div>
 <div class="line">    <span class="keyword">static</span> <span class="keyword">constexpr</span> std::string_view debugName = <span class="stringliteral">&quot;Disclosure&quot;</span>;</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">static</span> <span class="keywordtype">void</span> onPressed(InteractionContext&amp; context) {</div>
@@ -136,16 +136,18 @@ $(function() {
 <div class="line">            .width = CLAY_SIZING_FIXED(240.0f),</div>
 <div class="line">            .height = CLAY_SIZING_FIXED(context.state().expanded ? 160.0f : 40.0f),</div>
 <div class="line">        };</div>
-<div class="line">        root.backgroundColor = FlowUi::Flow_Color(<span class="stringliteral">&quot;#354052ff&quot;</span>);</div>
+<div class="line">        root.backgroundColor = <a class="code hl_function" href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">FlowUi::Flow_Color</a>(<span class="stringliteral">&quot;#354052ff&quot;</span>);</div>
 <div class="line">        CLAY(context.clayID(), root) {}</div>
 <div class="line">    }</div>
 <div class="line">};</div>
 <div class="line"> </div>
 <div class="line"><span class="keyword">inline</span> <span class="keyword">constexpr</span> Disclosure kDisclosure{};</div>
 <div class="line"><span class="keyword">static_assert</span>(<a class="code hl_concept" href="conceptFlowUi_1_1FlowElement.html">FlowUi::FlowElement&lt;Disclosure&gt;</a>);</div>
-<div class="ttc" id="aconceptFlowUi_1_1FlowElement_html"><div class="ttname"><a href="conceptFlowUi_1_1FlowElement.html">FlowUi::FlowElement</a></div><div class="ttdef"><b>Definition</b> ElementConcepts.hpp:44</div></div>
-<div class="ttc" id="astructFlowUi_1_1ElementBuildContext_html"><div class="ttname"><a href="structFlowUi_1_1ElementBuildContext.html">FlowUi::ElementBuildContext</a></div><div class="ttdoc">Context passed to constructElement and buildElement callbacks.</div><div class="ttdef"><b>Definition</b> ElementContexts.hpp:53</div></div>
-<div class="ttc" id="astructFlowUi_1_1ElementInteractionContext_html"><div class="ttname"><a href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a></div><div class="ttdoc">Context passed to event and logic callbacks.</div><div class="ttdef"><b>Definition</b> ElementContexts.hpp:157</div></div>
+<div class="ttc" id="aconceptFlowUi_1_1FlowElement_html"><div class="ttname"><a href="conceptFlowUi_1_1FlowElement.html">FlowUi::FlowElement</a></div><div class="ttdef"><b>Definition</b> ElementConcepts.hpp:60</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a5efb614726ef3592ac7dda2318b6bbe0"><div class="ttname"><a href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">FlowUi::Flow_Color</a></div><div class="ttdeci">consteval Clay_Color Flow_Color(const char(&amp;hexRgba)[Size]) noexcept</div><div class="ttdoc">Convert a literal #RRGGBB or #RRGGBBAA color into a Clay_Color at compile time.</div><div class="ttdef"><b>Definition</b> Color.hpp:37</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_ab2fb588d55085807dcef2fe103c169ce"><div class="ttname"><a href="namespaceFlowUi.html#ab2fb588d55085807dcef2fe103c169ce">FlowUi::DefinitionID</a></div><div class="ttdeci">consteval FlowDefinitionID DefinitionID(const char(&amp;name)[N]) noexcept</div><div class="ttdef"><b>Definition</b> ElementID.hpp:243</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementBuildContext_html"><div class="ttname"><a href="structFlowUi_1_1ElementBuildContext.html">FlowUi::ElementBuildContext</a></div><div class="ttdoc">Context passed to constructElement and buildElement callbacks.</div><div class="ttdef"><b>Definition</b> ElementContexts.hpp:55</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementInteractionContext_html"><div class="ttname"><a href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a></div><div class="ttdoc">Context passed to event and logic callbacks.</div><div class="ttdef"><b>Definition</b> ElementContexts.hpp:315</div></div>
 </div><!-- fragment --><p>Declare only capabilities the element uses. An element without parameters receives <span class="tt">NoElementParameters</span>. An element without state or resources omits those aliases; <span class="tt">context.state()</span> and <span class="tt">context.resources()</span> are then unavailable at compile time. <span class="tt">ParametersOf</span>, <span class="tt">StateOf</span>, <span class="tt">ResourcesOf</span>, <span class="tt">HasState</span>, <span class="tt">HasResources</span>, and <span class="tt">HasParts</span> expose these contracts to generic code.</p>
 <h1>Invocation and callbacks</h1>
 <div class="fragment"><div class="line">ui.createElement(kDisclosure, <span class="stringliteral">&quot;sidebar/details&quot;</span>)</div>
@@ -169,7 +171,7 @@ $(function() {
 <p><span class="tt">context.resources()</span> lazily constructs immutable app-wide resources from either a default constructor or <span class="tt">Resources(App&amp;)</span>. Resources are shared by all instances of the definition within the application and released with its storage ownership.</p>
 <p>Outside a callback, use the typed <span class="tt">ElementManager::getStatePointer()</span>/<span class="tt">getStatePointerConst()</span> APIs with the element tag, window, and resolved identity. They query existing state without creating it. Do not retain transient-state pointers across frame boundaries; explicit erase, collection, or window destruction can invalidate them. Prefer explicit borrowed application data in parameters when related controls share an authoritative value.</p>
 <h1>Developer integration</h1>
-<p>With <span class="tt">FLOW_UI_DEV_MODE</span>, normal invocation discovers element schemas, captures effective parameters, and correlates Flow and Clay trees. Describe editable structs and enums with <span class="tt">FLOWUI_DEV_SCHEMA</span>, <span class="tt">FLOWUI_DEV_FIELD</span>, and <span class="tt">FLOWUI_DEV_ENUM_SCHEMA</span>; the descriptor and registry types live in <span class="tt">FlowUi::devSystems::tooling</span>. Overrides apply to the parameter draft and commit through the modern engine at application safe points.</p>
+<p>With <span class="tt">FLOW_UI_DEV_MODE</span>, normal invocation discovers element schemas, captures effective parameters, and correlates Flow and Clay trees. Describe editable structs and enums with <span class="tt">FLOWUI_DEV_SCHEMA</span>, <span class="tt">FLOWUI_DEV_FIELD</span>, and <span class="tt">FLOWUI_DEV_ENUM_SCHEMA</span>; the descriptor and registry types live in <span class="tt"><a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html" title="Reflection, live editing, catalogues and immutable UI tree extension APIs.">FlowUi::devSystems::tooling</a></span>. Overrides apply to the parameter draft and commit through the modern engine at application safe points.</p>
 <p>See <a class="el" href="md_docs_2tutorials_2developer__mode.html" title="Developer Systems">Developer Systems</a>, <a class="el" href="md_docs_2tutorials_2custom__elements.html" title="Custom Elements">custom elements</a>, and the <a class="el" href="md_docs_2api_2elements.html" title="Element API">element API</a>. The <a href="../../include/FlowUi/Public/elementAuthoring/ElementConcepts.hpp">current element concepts</a>, <a href="../../include/FlowUi/Public/elementAuthoring/ElementContexts.hpp">contexts</a>, and <a href="../../include/FlowUi/Public/elementAuthoring/ElementBuilder.hpp">builder</a> define the supported signatures. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->

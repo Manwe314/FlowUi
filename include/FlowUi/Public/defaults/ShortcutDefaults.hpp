@@ -32,6 +32,14 @@ struct TextShortcutDefaults {
  * Auto selects Command on Apple platforms and Control elsewhere. Disabled
  * configurations produce an empty plan; an invalid enabled platform returns
  * ShortcutInvalid. Scope and priority remain the installer's responsibility.
+ * @par Example
+ * @code{.cpp}
+ * FlowUi::DefaultTextShortcutConfig configuration{};
+ * auto result = FlowUi::defaults::text_shortcuts(configuration);
+ * if (!result)
+ *     throw FlowUi::FlowUiException(result.error());
+ * FlowUi::defaults::TextShortcutDefaults plan = std::move(*result);
+ * @endcode
  */
 [[nodiscard]] Result<TextShortcutDefaults>
 text_shortcuts(const DefaultTextShortcutConfig& configuration) noexcept;

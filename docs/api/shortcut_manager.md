@@ -1,210 +1,246 @@
 # Shortcut Manager API
 
-## Default registrations and migration
+[Public declarations](include/FlowUi/Public/managers/ShortcutManager.hpp) · [Shortcut values](include/FlowUi/Public/managerStructs/ShortcutTypes.hpp)
 
-`AppConfig::ui.shortcuts.textEditing` enables FlowUi's complete focused-input
-operations: select all, clipboard editing, word navigation/deletion, and movement
-to the beginning/end of field text. Read-only fields retain selection, copy, and
-navigation while rejecting text mutations. Disable individual families or the
-whole text group to supply different bindings through `registerShortcut()`.
+Shortcuts are window-owned. A `ShortcutChord` uses a backend key code (use `keyCode(Key::C)`), exact Ctrl/Shift/Alt/Super requirements, and a Press/Release/Down trigger. Eligible scopes dispatch in order: FocusedInput, FocusedElement, Global. Within a scope, higher priority precedes lower priority, then registration order breaks ties. A callback's returned bool decides consumption; it is independent of registration's Result success.
 
-Automatic Undo/Redo registrations have been removed because history belongs to
-the application. `DefaultTextShortcutConfig::undoRedoRequests` no longer exists;
-remove assignments to it and review positional aggregate initializers. This is a
-source/ABI change, so rebuild callers. Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, and Ctrl+Y
-remain available for explicit application registrations. Low-level
-`TextCommand::RequestUndo` and `RequestRedo` remain available for those handlers.
+`ShortcutContext` borrows the active UI manager and current/previous frame input only during dispatch. Do not retain these references. Capture application state by value or with a lifetime that exceeds registration; unregister before destroying borrowed targets.
 
-`AppConfig::ui.shortcuts.window` separately enables native-window operations and
-is disabled by default. Each entry has an `enabled` flag and optional `chord`;
-an absent chord inherits the target platform's binding. Supported enabled
-operations run for the window receiving the press. Close/minimize inherit Cmd+W
-and Cmd+M on macOS; Windows/Linux use native desktop handling without extra
-bindings. Maximize/restore requires an explicit mapping. Fullscreen separately
-requires opt-in and inherits F11 on Windows/Linux or Ctrl+Cmd+F on macOS. Enabled
-replacement chords must use valid keys and Press transitions; duplicate window
-chords reject initialization. Unsupported backend operations install nothing.
+## Acquire the manager
+
+`App` getters return `Result<std::reference_wrapper<T>>`. Check the wrapper, then name the borrowed object as a normal reference:
+
+**Example:**
 
 ```cpp
-FlowUi::AppConfig config{};
-config.ui.shortcuts.window.enabled = true;
-config.ui.shortcuts.window.toggle_fullscreen.enabled = true;
-config.ui.shortcuts.window.maximize_restore.enabled = true;
-config.ui.shortcuts.window.maximize_restore.chord = FlowUi::ShortcutChord{
-    .key = GLFW_KEY_F10,
-    .ctrl = true,
-    .shift = true,
-};
+auto result = app.ui();
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+FlowUi::UiManager& manager = result->get();
 ```
 
-See the [configuration header](../../include/FlowUi/Public/configurationStructs/ShortcutManagerConfig.hpp).
+Call `ui.shortcuts()` on that `UiManager&` to obtain the direct manager reference. The reference is borrowed; the App must outlive it, and window-owned managers must also stay within their owning window lifetime. The examples use an already acquired manager reference and existing field/window identities where needed. They choose an application policy of throwing `FlowUiException` after a failed Result; returning/reporting the error is equally possible. Include the relevant manager/value headers and `FlowUi/Public/errorManagement/Exception.hpp`.
 
-## Aliases
-
-### **ShortcutCallback**
-
-
-#### `using ShortcutCallback = std::function<bool(ShortcutContext&)>`
-
-Callback invoked when a shortcut chord matches. Return true to mark the shortcut handled and stop later callbacks for the same chord.
-
-### **ShortcutId**
-
-
-#### `using ShortcutId = uint32_t`
-
-Opaque shortcut registration id returned by registerShortcut. Value 0 is reserved as invalid.
-
-## Enums
-
-### **ShortcutScope**
-
-
-#### `enum class ShortcutScope : uint8_t`
-
-Scope controlling when a shortcut is eligible to run. Focused input and focused element scopes run before global shortcuts.
-
-### **ShortcutTrigger**
-
-
-#### `enum class ShortcutTrigger : uint8_t`
-
-Input transition used to trigger a shortcut. It supports press, release, and every-frame down behavior.
-
-### **ShortcutHandling**
-
-Explicit consumption policy for the `AppActionCall` registration overload. `Consume` stops later matches after successful invocation; `PassThrough` continues dispatch. Disabled and unbound actions fall through.
-
-## Public Structs
-
-### **ShortcutChord**
-
-
-#### `struct ShortcutChord`
-
-Keyboard chord registered with ShortcutManager. It stores backend key code, modifier requirements, and trigger mode.
-
-### **ShortcutContext**
-
-
-#### `struct ShortcutContext`
-
-Runtime data passed to shortcut callbacks. It exposes UiManager, current and previous input, and the focused element id.
+For `Result<bool>`, `if (!result)` tests operational failure; `*result` is the separate operation outcome. Never treat a successful `false` as an error.
 
 ## Public API
 
 ### **registerShortcut**
 
+#### `[[nodiscard]] Result<ShortcutId> registerShortcut(const ShortcutChord& chord, ShortcutScope scope, int32_t priority, ShortcutCallback callback) noexcept`
 
-#### `Result<ShortcutId> registerShortcut(const ShortcutChord& chord, ShortcutScope scope, int32_t priority, ShortcutCallback callback)`
+- **Returns:** `Result<ShortcutId>`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** `chord` key, modifiers and transition, `scope` shortcut eligibility scope, `priority` higher values dispatch first, `callback` retained callable
 
-- **Returns:** `Result<ShortcutId>`; check success before reading the value, and use `.error()` on failure.
-- **Arguments:** `chord` key/modifier/trigger match, `scope` eligibility scope, `priority` ordering value, `callback` handler.
+Register a keyboard chord and return its window-local registration ID. Success contains a nonzero ShortcutId; invalid manager/chord/callback/action or allocation failures are errors.
 
-Registers a keyboard shortcut and returns an opaque id. Matching callbacks run by scope and priority, and a callback returning `true` stops later handlers for the same chord.
+Matching uses exact modifier requirements and the trigger transition. FocusedInput precedes FocusedElement, then Global; higher priority first, then registration order. Callbacks are owned by the registration, so captured references must outlive it. A callback returning true consumes the chord; false allows subsequent matches. Callback exceptions follow the dispatch/frame boundary policy, not the registration call.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 
 **Example:**
 
 ```cpp
-const auto shortcut = app.ui().shortcuts().registerShortcut({.key = GLFW_KEY_S, .ctrl = true}, FlowUi::ShortcutScope::Global, 100, saveCallback);
-if (!shortcut) {
-    throw FlowUi::FlowUiException(shortcut.error());
+const FlowUi::ShortcutChord chord{.key = FlowUi::keyCode(FlowUi::Key::S), .ctrl = true};
+bool saveRequested = false;
+FlowUi::ShortcutCallback callback = [&saveRequested](const FlowUi::ShortcutContext&) {
+    saveRequested = true;
+    return true;
+};
+auto result = manager.registerShortcut(chord, FlowUi::ShortcutScope::Global, 100, std::move(callback));
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
 }
-const FlowUi::ShortcutId saveShortcut = *shortcut;
+const auto shortcutId = *result;
 ```
 
-See: [Owning header](../../include/FlowUi/Public/managers/ShortcutManager.hpp).
+See: [Owning header](include/FlowUi/Public/managers/ShortcutManager.hpp).
 
-#### `Result<ShortcutId> registerShortcut(const ShortcutChord& chord, ShortcutScope scope, int32_t priority, AppActionCall action, ShortcutHandling handling = ShortcutHandling::Consume)`
+### **registerShortcut**
 
-Registers a semantic app action without retaining a local UI recipe or arbitrary callback. Return values never determine consumption.
+#### `[[nodiscard]] Result<ShortcutId> registerShortcut(const ShortcutChord& chord, ShortcutScope scope, int32_t priority, AppActionCall action, ShortcutHandling handling = ShortcutHandling::Consume) noexcept`
+
+- **Returns:** `Result<ShortcutId>`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** `chord` key, modifiers and transition, `scope` shortcut eligibility scope, `priority` higher values dispatch first, `action` retained application action, `handling` consume or pass through
+
+Register a retained semantic app action for a keyboard chord. Success contains a nonzero ShortcutId; invalid manager/chord/callback/action or allocation failures are errors.
+
+The action is resolved at dispatch; unbound/disabled actions are skipped. handling defaults to Consume; PassThrough allows later matching shortcuts. Referenced action resources follow AppActions::bind() lifetime rules. Scope, priority, and chord matching match callback registration.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+
+**Example:**
+
+```cpp
+const FlowUi::ShortcutChord chord{.key = FlowUi::keyCode(FlowUi::Key::S), .ctrl = true};
+auto result = manager.registerShortcut(chord, FlowUi::ShortcutScope::Global, 100, action, FlowUi::ShortcutHandling::Consume);
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+const auto shortcutId = *result;
+```
+
+See: [Owning header](include/FlowUi/Public/managers/ShortcutManager.hpp).
 
 ### **unregisterShortcut**
 
+#### `[[nodiscard]] Result<bool> unregisterShortcut(ShortcutId id) noexcept`
 
-#### `bool unregisterShortcut(ShortcutId id)`
+- **Returns:** `Result<bool>`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** `id` window-scoped identity
 
-- **Returns:** `bool`
-- **Arguments:** `id` shortcut id returned by `registerShortcut()`.
+Remove a shortcut registration. Success contains true if removed or false for zero/unknown IDs.
 
-Removes a registered shortcut. It is valid to unregister a shortcut from inside a shortcut callback.
+It is valid to unregister from inside a shortcut callback. Callback-owned captures are released when their retained registration is no longer needed by dispatch.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 
 **Example:**
 
 ```cpp
-const bool removed = app.ui().shortcuts().unregisterShortcut(saveShortcut);
+auto result = manager.unregisterShortcut(shortcutId);
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+const auto removed = *result;
 ```
 
-See: [Owning header](../../include/FlowUi/Public/managers/ShortcutManager.hpp).
+See: [Owning header](include/FlowUi/Public/managers/ShortcutManager.hpp).
 
 ### **clear**
 
+#### `[[nodiscard]] Status clear() noexcept`
 
-#### `void clear()`
-
-- **Returns:** `void`
+- **Returns:** `Status`; check success before accessing the value; use `.error()` on failure.
 - **Arguments:** none.
 
-Removes every registered shortcut and resets focused-element shortcut state. Use this for app-level shortcut reloads or teardown.
+Remove every shortcut and clear the focused-element marker. Success means the reset completed.
+
+Stored callbacks/actions are released and the registration epoch advances; the monotonic ID counter is not reset. Discard IDs for cleared registrations.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 
 **Example:**
 
 ```cpp
-app.ui().shortcuts().clear();
+auto result = manager.clear();
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
 ```
 
-See: [Owning header](../../include/FlowUi/Public/managers/ShortcutManager.hpp).
+See: [Owning header](include/FlowUi/Public/managers/ShortcutManager.hpp).
 
 ### **setFocusedElement**
 
+#### `[[nodiscard]] Status setFocusedElement(Clay_ElementId elementId) noexcept`
 
-#### `void setFocusedElement(Clay_ElementId elementId)`
+- **Returns:** `Status`; check success before accessing the value; use `.error()` on failure.
+- **Arguments:** `elementId` Clay focus marker
 
-- **Returns:** `void`
-- **Arguments:** `elementId` Clay element id to treat as shortcut-focused.
+Set the lightweight Clay focus marker used by FocusedElement shortcuts. Success means the marker was stored; a zero element ID represents no focused element.
 
-Sets the focused element marker used by `ShortcutScope::FocusedElement`. Application or element code decides when an element should become shortcut-focused.
+This does not assign input-field focus or decide when your application considers an element focused.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 
 **Example:**
 
 ```cpp
-app.ui().shortcuts().setFocusedElement(context.uiManager.toClayEID(context.elementID));
+auto result = manager.setFocusedElement(elementId);
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
 ```
 
-See: [Owning header](../../include/FlowUi/Public/managers/ShortcutManager.hpp).
+See: [Owning header](include/FlowUi/Public/managers/ShortcutManager.hpp).
 
 ### **clearFocusedElement**
 
+#### `[[nodiscard]] Status clearFocusedElement() noexcept`
 
-#### `void clearFocusedElement()`
-
-- **Returns:** `void`
+- **Returns:** `Status`; check success before accessing the value; use `.error()` on failure.
 - **Arguments:** none.
 
-Clears the focused element marker. After this, focused-element shortcuts are not eligible until another element id is set.
+Clear the Clay focus marker. Success means FocusedElement registrations are ineligible until a nonzero marker is set.
+
+Input-field focus is independent.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 
 **Example:**
 
 ```cpp
-app.ui().shortcuts().clearFocusedElement();
+auto result = manager.clearFocusedElement();
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
 ```
 
-See: [Owning header](../../include/FlowUi/Public/managers/ShortcutManager.hpp).
+See: [Owning header](include/FlowUi/Public/managers/ShortcutManager.hpp).
 
 ### **focusedElement**
 
+#### `[[nodiscard]] Result<Clay_ElementId> focusedElement() const noexcept`
 
-#### `Clay_ElementId focusedElement() const`
-
-- **Returns:** `Clay_ElementId`
+- **Returns:** `Result<Clay_ElementId>`; check success before accessing the value; use `.error()` on failure.
 - **Arguments:** none.
 
-Returns the currently focused Clay element id for shortcut dispatch. A zero id means no shortcut-focused element is active.
+Read the current lightweight Clay focus marker. Success contains the tracked Clay_ElementId; id == 0 means no marker, not an error.
+
+The returned ID is a value, not a borrowed element pointer.
+
+Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 
 **Example:**
 
 ```cpp
-Clay_ElementId focused = app.ui().shortcuts().focusedElement();
+auto result = manager.focusedElement();
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+const auto focusedElement = *result;
 ```
 
-See: [Owning header](../../include/FlowUi/Public/managers/ShortcutManager.hpp).
+## Build-gated development hooks
+
+`FLOW_UI_DEV_MODE` and the development memory-level macros expose additional inspection/recording hooks in the header. They are development infrastructure, not the application API described here. Their existing build gates and signatures are unchanged.
+
+## Checked development inspection examples
+
+These hooks require `FLOW_UI_DEV_MODE`; viewport hooks also require `FLOWUI_PUBLIC_VULKAN_INTEROP`. They are observation/tooling APIs. A visitor returns `true` to continue; a successful returned `false` is distinct from a failed `Result`. Callback arguments and their resource views are borrowed. The examples use the already acquired manager for the owning App/window.
+
+See: [Owning header](include/FlowUi/Public/managers/ShortcutManager.hpp).
+
+### **visitDevShortcuts**
+
+#### `[[nodiscard]] Result<bool> visitDevShortcuts(void* target, DevShortcutVisitor visitor) const noexcept`
+
+- **Returns:** `Result<bool>`; check success before accessing the value; use `.error()` on failure.
+
+Observe development catalogue entries without invoking application operations. Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a detached manager or null visitor. A failed Result is an operational/callback error, not an incomplete-visit bool.
+
+Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts live shortcut registrations; completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to FlowUiError. Earlier callback effects, including the counter, are not rolled back on failure.
+
+**Example:**
+
+```cpp
+#if FLOW_UI_DEV_MODE
+std::size_t count = 0;
+auto result = manager.visitDevShortcuts(&count,
+    [](void* target, const FlowUi::ShortcutManager::DevShortcutView& shortcut) {
+        auto& observedCount = *static_cast<std::size_t*>(target);
+        if (shortcut.id != 0) {
+            ++observedCount;
+        }
+        return true;
+    });
+if (!result) {
+    throw FlowUi::FlowUiException(result.error());
+}
+const bool completed = *result;
+#endif
+```
+
+See: [Owning header](include/FlowUi/Public/managers/ShortcutManager.hpp).

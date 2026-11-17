@@ -14,11 +14,23 @@ namespace FlowUi {
  * InteractionSnapshot records the Clay elements that were hovered, pressed,
  * held, or released when FlowUi finalized a frame. Element callbacks receive
  * the previous completed snapshot so they can query stable interaction results
- * while constructing the next frame.
+ * while constructing the next frame. References obtained from UiManager borrow its
+ * snapshot and should not be retained as immutable history across later frames.
+ * Each observer accepts Clay_ElementId, FlowElementID, GlobalFlowID and
+ * FlowElementPartID directly and returns a plain bool without a Result wrapper.
  *
  * Press, hold, and release currently describe the primary pointer button over
  * hovered elements. The same element can appear in more than one list if the
  * underlying interaction state makes that true for the snapshot.
+
+ *
+ * @par Example
+ * @code{.cpp}
+ * const bool hovered = snapshot.isHovered(clayId);
+ * const bool pressed = snapshot.isPressed(localId);
+ * const bool held = snapshot.isHeld(globalId);
+ * const bool released = snapshot.isReleased(partId);
+ * @endcode
  */
 struct InteractionSnapshot {
 	/**
@@ -72,17 +84,17 @@ public:
 	 * @retval true The element appears in hoveredElementIds.
 	 * @retval false The element does not appear in hoveredElementIds.
 	 */
-	bool isHovered(Clay_ElementId id) const { return contains(hoveredElementIds, id.id); }
+	[[nodiscard]] bool isHovered(Clay_ElementId id) const noexcept { return contains(hoveredElementIds, id.id); }
 	/** Return whether the folded Flow identity appears in the hovered list of this snapshot. */
-bool isHovered(FlowElementID id) const {
+	[[nodiscard]] bool isHovered(FlowElementID id) const noexcept {
 		return contains(hoveredElementIds, FlowIDToClayID(id));
 	}
 	/** Return whether the folded Flow identity appears in the hovered list of this snapshot. */
-bool isHovered(GlobalFlowID id) const {
+	[[nodiscard]] bool isHovered(GlobalFlowID id) const noexcept {
 		return contains(hoveredElementIds, FlowIDToClayID(id));
 	}
 	/** Return whether the folded Flow identity appears in the hovered list of this snapshot. */
-bool isHovered(FlowElementPartID id) const {
+	[[nodiscard]] bool isHovered(FlowElementPartID id) const noexcept {
 		return contains(hoveredElementIds, FlowIDToClayID(id));
 	}
 
@@ -92,17 +104,17 @@ bool isHovered(FlowElementPartID id) const {
 	 * @retval true The element appears in pressedElementIds.
 	 * @retval false The element does not appear in pressedElementIds.
 	 */
-	bool isPressed(Clay_ElementId id) const { return contains(pressedElementIds, id.id); }
+	[[nodiscard]] bool isPressed(Clay_ElementId id) const noexcept { return contains(pressedElementIds, id.id); }
 	/** Return whether the folded Flow identity appears in the pressed list of this snapshot. */
-bool isPressed(FlowElementID id) const {
+	[[nodiscard]] bool isPressed(FlowElementID id) const noexcept {
 		return contains(pressedElementIds, FlowIDToClayID(id));
 	}
 	/** Return whether the folded Flow identity appears in the pressed list of this snapshot. */
-bool isPressed(GlobalFlowID id) const {
+	[[nodiscard]] bool isPressed(GlobalFlowID id) const noexcept {
 		return contains(pressedElementIds, FlowIDToClayID(id));
 	}
 	/** Return whether the folded Flow identity appears in the pressed list of this snapshot. */
-bool isPressed(FlowElementPartID id) const {
+	[[nodiscard]] bool isPressed(FlowElementPartID id) const noexcept {
 		return contains(pressedElementIds, FlowIDToClayID(id));
 	}
 
@@ -112,17 +124,17 @@ bool isPressed(FlowElementPartID id) const {
 	 * @retval true The element appears in heldElementIds.
 	 * @retval false The element does not appear in heldElementIds.
 	 */
-	bool isHeld(Clay_ElementId id) const { return contains(heldElementIds, id.id); }
+	[[nodiscard]] bool isHeld(Clay_ElementId id) const noexcept { return contains(heldElementIds, id.id); }
 	/** Return whether the folded Flow identity appears in the held list of this snapshot. */
-bool isHeld(FlowElementID id) const {
+	[[nodiscard]] bool isHeld(FlowElementID id) const noexcept {
 		return contains(heldElementIds, FlowIDToClayID(id));
 	}
 	/** Return whether the folded Flow identity appears in the held list of this snapshot. */
-bool isHeld(GlobalFlowID id) const {
+	[[nodiscard]] bool isHeld(GlobalFlowID id) const noexcept {
 		return contains(heldElementIds, FlowIDToClayID(id));
 	}
 	/** Return whether the folded Flow identity appears in the held list of this snapshot. */
-bool isHeld(FlowElementPartID id) const {
+	[[nodiscard]] bool isHeld(FlowElementPartID id) const noexcept {
 		return contains(heldElementIds, FlowIDToClayID(id));
 	}
 
@@ -132,17 +144,17 @@ bool isHeld(FlowElementPartID id) const {
 	 * @retval true The element appears in releasedElementIds.
 	 * @retval false The element does not appear in releasedElementIds.
 	 */
-	bool isReleased(Clay_ElementId id) const { return contains(releasedElementIds, id.id); }
+	[[nodiscard]] bool isReleased(Clay_ElementId id) const noexcept { return contains(releasedElementIds, id.id); }
 	/** Return whether the folded Flow identity appears in the released list of this snapshot. */
-bool isReleased(FlowElementID id) const {
+	[[nodiscard]] bool isReleased(FlowElementID id) const noexcept {
 		return contains(releasedElementIds, FlowIDToClayID(id));
 	}
 	/** Return whether the folded Flow identity appears in the released list of this snapshot. */
-bool isReleased(GlobalFlowID id) const {
+	[[nodiscard]] bool isReleased(GlobalFlowID id) const noexcept {
 		return contains(releasedElementIds, FlowIDToClayID(id));
 	}
 	/** Return whether the folded Flow identity appears in the released list of this snapshot. */
-bool isReleased(FlowElementPartID id) const {
+	[[nodiscard]] bool isReleased(FlowElementPartID id) const noexcept {
 		return contains(releasedElementIds, FlowIDToClayID(id));
 	}
 };

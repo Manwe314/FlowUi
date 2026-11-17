@@ -1,74 +1,46 @@
-# Public API Index
+# Public API index
 
-This page maps the supported public surfaces to their maintained references and owning headers. The individual references describe signatures, result handling, and lifetimes; source Doxygen comments remain the authority for exact overloads.
+These references describe the current application-facing API, including overloads, constness, build gates, error contracts and lifetimes. Result-returning operations include concrete checked examples in their references and public Doxygen comments. Start with [result handling](docs/api/result_handling.md) for extracting `Result<std::reference_wrapper<T>>` into `T&` or `const T&`.
 
-## Application and managers
+| Surface | Reference | Owning public header |
+| --- | --- | --- |
+| App ownership, windows, frames, manager access and optional developer facades | [App](docs/api/app.md) | [App.hpp](include/FlowUi/Public/App.hpp), [element windows](include/FlowUi/Public/AppElementWindows.hpp) |
+| Startup and operation configuration, capacities and build settings | [Configuration](docs/api/config.md), [field glossary](docs/api/configuration-glossary.md) | [configurationStructs](include/FlowUi/Public/configurationStructs/) |
+| Results, errors, identities, hashing and texture references | [Values and errors](docs/api/values.md), [handling results](docs/api/result_handling.md) | [errorManagement](include/FlowUi/Public/errorManagement/), [identificationTypes](include/FlowUi/Public/identificationTypes/), [TextureRef.hpp](include/FlowUi/Public/TextureRef.hpp) |
+| Filesystem resources and default helpers | [Resources](docs/api/resources.md) | [Resources.hpp](include/FlowUi/Public/Resources.hpp), [defaults](include/FlowUi/Public/defaults/) |
+| Color parsing, ValueOrThrow and shared configuration values | [Configuration](docs/api/config.md), [result propagation](docs/api/result_handling.md#propagate-a-checked-result-with-valueorthrow) | [Color.hpp](include/FlowUi/Public/Color.hpp), [FlowUiTheme.hpp](include/FlowUi/Public/FlowUiTheme.hpp) |
+| InputSink, translators, semantic events and key conversions | [Input translation](docs/api/input.md) | [InputTranslation.hpp](include/FlowUi/Public/input/InputTranslation.hpp) |
+| Clay data, IDs, frame data and interaction snapshots | [UI manager](docs/api/ui_manager.md) | [UiManager.hpp](include/FlowUi/Public/managers/UiManager.hpp) |
+| ElementManager, typed definitions, builders, contexts, state/resources and semantic parts | [Elements](docs/api/elements.md) | [ElementManager.hpp](include/FlowUi/Public/managers/ElementManager.hpp), [elementAuthoring](include/FlowUi/Public/elementAuthoring/) |
+| Actions, bindings, UI recipes, invocation, availability and typed results | [Actions](docs/api/action_manager.md) | [ActionManager.hpp](include/FlowUi/Public/managers/ActionManager.hpp), [ActionTypes.hpp](include/FlowUi/Public/managerStructs/ActionTypes.hpp) |
+| Theme registration, variants, staged changes and FlowUiTheme factories | [Themes](docs/api/theme_manager.md) | [ThemeManager.hpp](include/FlowUi/Public/managers/ThemeManager.hpp) |
+| Standard element resource constructors and slider visibility helpers | [Standard elements](docs/api/standard_elements.md) | [FSEL.hpp](include/FSEL.hpp) |
+| Fonts, faces and Vulkan atlas views | [Fonts](docs/api/font_manager.md) | [FontManager.hpp](include/FlowUi/Public/managers/FontManager.hpp) |
+| Images and texture lookup | [Images](docs/api/image_manager.md) | [ImageManager.hpp](include/FlowUi/Public/managers/ImageManager.hpp) |
+| SVG resources and icon atlas variants | [Icons](docs/api/icon_manager.md) | [IconManager.hpp](include/FlowUi/Public/managers/IconManager.hpp) |
+| Text fields, transactions, views, focus, carets and selection | [Input fields](docs/api/input_field_manager.md) | [InputFieldManager.hpp](include/FlowUi/Public/managers/InputFieldManager.hpp) |
+| Shortcuts, scopes, dispatch and retained app actions | [Shortcuts](docs/api/shortcut_manager.md) | [ShortcutManager.hpp](include/FlowUi/Public/managers/ShortcutManager.hpp) |
+| Popup measurement, placement, dismissal and stacking | [Popups](docs/api/popup_manager.md) | [PopupManager.hpp](include/FlowUi/Public/managers/PopupManager.hpp) |
+| Offscreen targets, Vulkan callbacks and capture/target values | [Viewports](docs/api/viewport_manager.md) | [ViewPortManager.hpp](include/FlowUi/Public/managers/ViewPortManager.hpp) |
 
-| Surface | Common operations | Reference | Owning header |
-| --- | --- | --- | --- |
-| `App` | `makeApplication`, window creation/destruction, `beginFrame`, `endFrame`, `drawFrame`, `pollEvents`, manager access | [Application](app.md) | [App.hpp](../../include/FlowUi/Public/App.hpp) |
-| Configuration | `AppConfig`, `WindowConfig`, `VulkanConfig`, `UiConfig`, `DevToolsConfig` | [Configuration](config.md) | [AppConfig.hpp](../../include/FlowUi/Public/configurationStructs/AppConfig.hpp), [configuration leaves](../../include/FlowUi/Public/configurationStructs/) |
-| Identities and handles | element/window/action IDs, resource keys, texture handles, capacity target IDs | [Elements](elements.md), [Configuration](config.md) | [identificationTypes](../../include/FlowUi/Public/identificationTypes/) |
-| Shared values | `TextureRef`, `TextureFitMode`, `FlowUiTheme` | [Configuration](config.md) | [TextureRef.hpp](../../include/FlowUi/Public/TextureRef.hpp), [FlowUiTheme.hpp](../../include/FlowUi/Public/FlowUiTheme.hpp) |
-| `UiManager` | Clay strings/IDs, `imageData`, builders, themes, input, popups, frame state | [UI Manager](ui_manager.md) | [UiManager.hpp](../../include/FlowUi/Public/managers/UiManager.hpp) |
-| `ElementManager` and builders | typed definitions, invocation, window-scoped state, app-wide resources, semantic parts | [Elements](elements.md) | [ElementManager.hpp](../../include/FlowUi/Public/managers/ElementManager.hpp), [builder](../../include/FlowUi/Public/elementAuthoring/ElementBuilder.hpp) |
-| `ActionManager` | app action binding, local UI recipes, invocation and availability | [Actions](action_manager.md) | [ActionManager.hpp](../../include/FlowUi/Public/managers/ActionManager.hpp) |
-| `ThemeManager` | registration, named variants, staged frame-boundary updates | [Themes](theme_manager.md) | [ThemeManager.hpp](../../include/FlowUi/Public/managers/ThemeManager.hpp) |
-| `FontManager` | families, faces, font and atlas resolution | [Fonts](font_manager.md) | [FontManager.hpp](../../include/FlowUi/Public/managers/FontManager.hpp) |
-| `ImageManager` | stable image registration and texture lookup | [Images](image_manager.md) | [ImageManager.hpp](../../include/FlowUi/Public/managers/ImageManager.hpp) |
-| `IconManager` | SVG registration, raster/atlas variants, texture lookup | [Icons](icon_manager.md) | [IconManager.hpp](../../include/FlowUi/Public/managers/IconManager.hpp) |
-| `InputFieldManager` | typed field requests, transactions, text views, focus/carets/selection | [Input fields](input_field_manager.md) | [InputFieldManager.hpp](../../include/FlowUi/Public/managers/InputFieldManager.hpp) |
-| `ShortcutManager` | chord registration, scoped dispatch, retained app actions | [Shortcuts](shortcut_manager.md) | [ShortcutManager.hpp](../../include/FlowUi/Public/managers/ShortcutManager.hpp) |
-| `PopupManager` | placement, measurement, overflow, dismissal, stacking | [Popups](popup_manager.md) | [PopupManager.hpp](../../include/FlowUi/Public/managers/PopupManager.hpp) |
-| `ViewPortManager` and `ViewPort` | offscreen targets and Vulkan callbacks | [Viewports](viewport_manager.md) | [ViewPortManager.hpp](../../include/FlowUi/Public/managers/ViewPortManager.hpp) |
+## Borrowing and frame boundaries
 
-## Strong identities and shared values
-
-`FlowDefinitionID`, `FlowElementID`, `GlobalFlowID`, and `FlowElementPartID` represent distinct element addresses. Use `DefinitionID`, local literal names, `RuntimeName`, `Indexed`, `Keyed`, `Global`, and semantic `Part` declarations according to the intended scope. See [the identity reference](elements.md#identity) and [ElementID.hpp](../../include/FlowUi/Public/identificationTypes/ElementID.hpp).
-
-Resource names use `ResourceKey`; textures use generation-checked `TextureHandle`/`TextureRef`. `TextureRef::fromStable(domain, key, fit, tint)` describes a stable lookup. Fit and tint are per-reference settings; filtering belongs to the logical texture's sampler.
-
-`Flow_Color("#RRGGBB")` and `Flow_Color("#RRGGBBAA")` decode literal colors at compile time. The runtime `std::string_view` overload validates its input and can throw for invalid color text.
-
-`Result<T>` and `Status` describe recoverable failures. Check success before dereferencing a result, and inspect `.error()` on failure. Queries, factories, and result-returning operations use `[[nodiscard]]`; callers should handle the outcome or explicitly discard it when the behavior is intentional. Only operations whose implementation supports a nonthrowing contract carry `noexcept`.
-
-## Frame and resource lifetimes
+App manager getters return checked results and borrowed references. `UiManager::actions()` and `elements()` are direct borrowed references; `ActionManager::uiActions()` also returns a direct borrowed reference. Builders and fluent methods are direct authoring operations and can throw; `draw()` returns `void`. Use a frame boundary to contain UI build failures:
 
 ```cpp
-if (const auto status = application.beginFrame(); !status) {
+const auto status = application.runFrame([](FlowUi::UiManager& ui, FlowUi::WindowId) {
+    ui.createElement(FlowUi::kButton, "toolbar/save")
+        .setParameters({.label = "Save"})
+        .draw();
+});
+if (!status)
     application.reportError(status.error());
-    return 1;
-}
-auto& ui = application.ui();
-ui.createElement(FlowUi::kButton, "toolbar/save")
-    .setParameters({.onActivate = save_action, .label = "Save"})
-    .draw();
-if (const auto status = application.endFrame(); !status) {
-    application.reportError(status.error());
-    return 1;
-}
-if (const auto status = application.drawFrame(); !status) {
-    application.reportError(status.error());
-    return 1;
-}
 ```
 
-`ui.toClayString()` and `ui.imageData()` return frame-owned payloads. GPU texture ownership and in-flight retirement remain with storage. `FieldTextView` borrows manager text and is invalidated by field mutation: choose `contiguous()` for a confirmed contiguous view, `copy()` for owned text, or `forEachChunk()` for traversal. Use `FieldConfig::mode` with `TextFieldMode::SingleLine`/`MultiLine` for line behavior.
+`UiManager::toClayString()` and `imageData()` return direct frame-owned values and throw on operational failure. Root context `clayID()` is direct; named identity helpers remain checked. Use public `FlowUi::ValueOrThrow` for retained Results when the enclosing operation deliberately propagates failure. `FieldTextView` borrows field storage and is invalidated by mutation: `copy()` creates owned text, `contiguous()` can return no contiguous view, and `forEachChunk()` propagates visitor exceptions. Copying a texture reference or UI action never acquires its GPU resource or borrowed application data.
 
-See [frame lifecycle](../concepts/frame_lifecycle.md) and [manager ownership](../concepts/managers.md) for complete lifetime boundaries.
+## Optional developer access
 
-## Modern developer systems
+Developer App accessors are documented with their checked types in [App](docs/api/app.md). They require `FLOW_UI_DEV_MODE`; runtime activation is controlled by `AppConfig::dev.enabled`. Agentic support also requires `AGENTIC_WORKFLOW`/`FLOW_UI_AGENTIC_WORKFLOW` and its explicit configuration. The extracted facade remains App-owned. Internal storage, platform providers and backend helpers are implementation APIs.
 
-Compile `FLOW_UI_DEV_MODE` and activate `AppConfig::dev.enabled` to use the dedicated developer interface. [Developer Systems](../tutorials/developer_mode.md) describes the supported workflow.
-
-| Service | Access | Contract |
-| --- | --- | --- |
-| `DevTooling` | `application.devTooling()` | App-owned schema, catalogue, overrides, overlays, and baking services. |
-| `DevSchemaRegistry` | `devTooling().schemas()` | Queue roots; publish immutable schema generations at safe points. |
-| `DevCatalogues` | `devTooling().catalogues()` | Typed element/theme/action/image/icon/font/atlas metadata. |
-| `DevOverrideEngine` | `devTooling().overrides()` | Typed changes, constraint validation, safe-point commit, effective-value capture. |
-| `DevBakePipeline` | `devTooling().bakePipeline()` | Revision-checked review and durable `.flowchanges` manifests. |
-| Monitoring | `application.devMonitoring()` | Timing, memory, error collection and retained reporting. |
-| Window tree | `application.ui(window).devTreeSnapshot()` | Completed Flow/Clay tree and identity correlation. |
-
-Schema descriptors, registry, catalogues, and override types live in `FlowUi::devSystems::tooling`. Current headers are under [devSystems](../../include/devSystems/); the obsolete developer subsystem has been removed completely. Optional agentic evidence APIs require the additional `AGENTIC_WORKFLOW` build option and explicit runtime configuration; see [agentic workflow](../agentic-workflow.md).
+See [developer workflow](docs/tutorials/developer_mode.md), [agentic workflow](docs/agentic-workflow.md), [frame lifecycle](docs/concepts/frame_lifecycle.md) and [manager ownership](docs/concepts/managers.md) for broader workflows.

@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Changes/Inspector/DevChangesInspector.hpp"
 #include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE
@@ -60,7 +61,7 @@ void local_button(Context& context, const Identity& identity, std::string label,
 		context.id, diagnostics_ui::Control::definitionId, identity.token);
 	ui::register_focus_target(context, context.uiManager.toClayEID(element), enabled);
 }
-[[nodiscard]] float assigned_width(Context& context) noexcept {
+[[nodiscard]] float assigned_width(Context& context) {
 	const auto parent = Clay_GetElementData(Clay_ElementId{.id = Clay_GetOpenElementId()});
 	const auto panel = Clay_GetElementData(context.clayID());
 	return parent.found	 ? parent.boundingBox.width
@@ -99,7 +100,7 @@ void notice(Context& context, LocalElementName identity, std::string_view descri
 	surface.layout.padding = {8, 8, 8, 8};
 	surface.backgroundColor = interface_theme::kDepth0Keel;
 	surface.border = {.color = marker, .width = {2, 0, 0, 0, 0}};
-	CLAY(context.clayID(identity), surface)
+	CLAY(FlowUi::ValueOrThrow(context.clayID(identity)), surface)
 	ui::text(context, description, interface_theme::kTextCanvas, 12);
 }
 void detail(Context& context, std::string_view field, std::string_view value,
@@ -119,12 +120,12 @@ void detail(Context& context, std::string_view field, std::string_view value,
 	if (one_line) {
 		auto item = ui::row(28);
 		item.layout.childGap = 4;
-		CLAY(context.clayID(Keyed("detail", identity)), item) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("detail", identity))), item) {
 			auto caption_box = ui::row(28);
 			caption_box.layout.sizing.width = CLAY_SIZING_FIXED(90);
-			CLAY(context.clayID(Keyed("detail-caption", identity)), caption_box)
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("detail-caption", identity))), caption_box)
 			inline_text(context, field_caption, interface_theme::kTextSecondary, 11);
-			CLAY(context.clayID(Keyed("detail-value", identity)), ui::row(28))
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("detail-value", identity))), ui::row(28))
 			inline_text(context, value, interface_theme::kTextCanvas, 12);
 			copy_detail(context, identity, field, value);
 		}
@@ -132,14 +133,14 @@ void detail(Context& context, std::string_view field, std::string_view value,
 	}
 	auto item = ui::column(3);
 	item.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-	CLAY(context.clayID(Keyed("detail", identity)), item) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("detail", identity))), item) {
 		auto heading = ui::row(28);
 		heading.layout.childGap = 4;
-		CLAY(context.clayID(Keyed("detail-label", identity)), heading) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("detail-label", identity))), heading) {
 			auto label = ui::column(0);
 			label.layout.sizing.height = CLAY_SIZING_GROW(0);
 			label.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
-			CLAY(context.clayID(Keyed("detail-caption", identity)), label)
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("detail-caption", identity))), label)
 			ui::text(context, field_caption, interface_theme::kTextSecondary, 11);
 			if (long_value)
 				local_button(context, Keyed("expand-detail", identity), expanded ? "Less" : "Full",
@@ -173,7 +174,7 @@ void section(Context& context, std::size_t index, std::string_view title, const 
 	auto body = ui::column(8);
 	body.layout.sizing.width = CLAY_SIZING_PERCENT(1);
 	body.layout.padding = {12, 12, 10, 12};
-	CLAY(context.clayID(Keyed("section-body", index)), body)
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("section-body", index))), body)
 	draw_body();
 }
 [[nodiscard]] std::string_view domain_label(tooling::DevChangesDomain domain) noexcept {
@@ -350,12 +351,12 @@ void runtime_option(Context& context, const tooling::DevChangesReviewRow& row,
 	static constexpr std::array<ui::Icon, 4> icons{ui::Icon::Check, ui::Icon::History,
 												   ui::Icon::Close, ui::Icon::Refresh};
 	auto& changes = context.params.interfaceState->changes;
-	const auto schema = context.params.app ? context.params.app->devTooling().schemas().view()
+	const auto schema = context.params.app ? FlowUi::ValueOrThrow(context.params.app->devTooling()).get().schemas().view()
 										   : tooling::DevSchemaView{};
 	tooling::DevChangesRuntimeEdit draft{};
 	if (schema)
 		draft = tooling::prepare_changes_runtime_edit(
-			*schema, context.params.app->devTooling().overrides(), context.params.app->themes(),
+			*schema, FlowUi::ValueOrThrow(context.params.app->devTooling()).get().overrides(), FlowUi::ValueOrThrow(context.params.app->themes()).get(),
 			row, context.params.interfaceState->selectedWindowId,
 			static_cast<tooling::DevChangesRuntimeAction>(action_index));
 	const bool enabled = draft.available && !changes.runtime_transaction;
@@ -380,8 +381,8 @@ void live_tools(Context& context, const tooling::DevChangesReviewRow& row) {
 				  : LocalElementName{"reset-live-menu"}.token);
 	};
 	if (local.restore_apply_focus || local.restore_reset_focus) {
-		context.uiManager.shortcuts().setFocusedElement(
-			context.uiManager.toClayEID(menu_trigger(local.restore_apply_focus)));
+		FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(
+			context.uiManager.toClayEID(menu_trigger(local.restore_apply_focus))));
 		local.restore_apply_focus = local.restore_reset_focus = false;
 	}
 	const bool next_option = current.keyDown[FlowUi::keyCode(FlowUi::Key::Down)] &&
@@ -398,7 +399,7 @@ void live_tools(Context& context, const tooling::DevChangesReviewRow& row) {
 			::FlowUi::detail::element_id::resolveLocal(
 				context.id, diagnostics_ui::Control::definitionId,
 				Keyed("live-action", first_action + 1).token)};
-		const auto focused = context.uiManager.shortcuts().focusedElement().id;
+		const auto focused = FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id;
 		const auto first_id = context.uiManager.toClayEID(options[0]).id;
 		const auto last_id = context.uiManager.toClayEID(options[1]).id;
 		if (focused == first_id || focused == last_id ||
@@ -407,8 +408,8 @@ void live_tools(Context& context, const tooling::DevChangesReviewRow& row) {
 											: focused == last_id ? 0
 											: next_option		 ? 0
 																 : 1;
-			context.uiManager.shortcuts().setFocusedElement(
-				context.uiManager.toClayEID(options[destination]));
+			FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(
+				context.uiManager.toClayEID(options[destination])));
 		}
 	}
 	if ((local.live_menu_open || local.reset_menu_open) &&
@@ -419,7 +420,7 @@ void live_tools(Context& context, const tooling::DevChangesReviewRow& row) {
 			local.live_menu_open ? LocalElementName{"apply-live-menu"}.token
 								 : LocalElementName{"reset-live-menu"}.token);
 		local.live_menu_open = local.reset_menu_open = false;
-		context.uiManager.shortcuts().setFocusedElement(context.uiManager.toClayEID(trigger));
+		FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(context.uiManager.toClayEID(trigger)));
 	}
 	ui::text(
 		context,
@@ -448,7 +449,7 @@ void live_tools(Context& context, const tooling::DevChangesReviewRow& row) {
 										 context.resources().texture(ui::Icon::Redo).handle;
 	if (!toolbar_icons_available)
 		history.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
-	CLAY(context.clayID("live-history"), history) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("live-history")), history) {
 		local_button(context, LocalElementName{"apply-live-menu"}, "Apply to live…", ToggleApply, 0,
 					 !changes.runtime_transaction,
 					 "Apply to live: choose a proposal or already baked value for the running "
@@ -479,7 +480,7 @@ void live_tools(Context& context, const tooling::DevChangesReviewRow& row) {
 											context.resources().texture(ui::Icon::Refresh).handle;
 		if (!option_icons_available)
 			options.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
-		CLAY(context.clayID("live-options"), options) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("live-options")), options) {
 			const std::size_t first_action = local.live_menu_open ? 0 : 2;
 			runtime_option(context, row, first_action);
 			runtime_option(context, row, first_action + 1);
@@ -564,22 +565,22 @@ void DevChangesInspector::buildElement(BuildContext& context) {
 		auto heading = ui::row(36);
 		heading.layout.padding = {12, 12, 0, 0};
 		heading.backgroundColor = interface_theme::kDepth2Ink;
-		CLAY(context.clayID("heading"), heading)
+		CLAY(FlowUi::ValueOrThrow(context.clayID("heading")), heading)
 		ui::text(context, "Inspector", interface_theme::kTextCanvas, 14);
 		auto viewport =
 			ui::viewport(context, "scroll-body", changes.inspector_scroll, &local.scroll_restore);
 		viewport.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-		CLAY(context.clayID("scroll-body"), viewport) {
-			ui::FocusViewportScope focus_scope{changes, context.clayID("scroll-body")};
+		CLAY(FlowUi::ValueOrThrow(context.clayID("scroll-body")), viewport) {
+			ui::FocusViewportScope focus_scope{changes, FlowUi::ValueOrThrow(context.clayID("scroll-body"))};
 			ui::restore_viewport_scroll(context, LocalElementName{"scroll-body"},
 										changes.inspector_scroll);
 			auto content = ui::column(0);
 			content.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-			CLAY(context.clayID("sections"), content) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("sections")), content) {
 				if (selected) {
 					auto summary = ui::column(5);
 					summary.layout.padding = {12, 12, 10, 12};
-					CLAY(context.clayID("context-summary"), summary) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("context-summary")), summary) {
 						ui::text(context,
 								 ui::ellipsize(context, row ? row->target_name : selected->label,
 											   width - 24, 12),
@@ -589,7 +590,7 @@ void DevChangesInspector::buildElement(BuildContext& context) {
 							operation.layout.sizing.width = CLAY_SIZING_FIT(0);
 							operation.layout.padding = {6, 6, 0, 0};
 							operation.backgroundColor = interface_theme::kDepth0Keel;
-							CLAY(context.clayID("operation"), operation)
+							CLAY(FlowUi::ValueOrThrow(context.clayID("operation")), operation)
 							inline_text(context,
 										std::string(domain_label(row->domain)) + " · " +
 											std::string(ui::operation_label(row->operation)),
@@ -601,7 +602,7 @@ void DevChangesInspector::buildElement(BuildContext& context) {
 					auto guidance = ui::column();
 					guidance.layout.sizing.width = CLAY_SIZING_PERCENT(1);
 					guidance.layout.padding = {12, 12, 16, 16};
-					CLAY(context.clayID("empty-context"), guidance)
+					CLAY(FlowUi::ValueOrThrow(context.clayID("empty-context")), guidance)
 					ui::text(context, "Select a change to see its scope and evidence.",
 							 interface_theme::kTextSecondary, 12);
 				} else if (!row) {

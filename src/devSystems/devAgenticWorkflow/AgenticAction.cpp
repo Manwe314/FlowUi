@@ -1,3 +1,4 @@
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticAction.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
 #include "FlowUi/Public/App.hpp"
@@ -12,6 +13,14 @@ namespace {
 }
 [[nodiscard]] bool bounded_json(const Json& value, std::size_t maximum_bytes = 1024u * 1024u) {
 	return write_json(value).size() <= maximum_bytes;
+}
+void recordObservationFailure(AgenticActionReceipt& receipt, std::string_view reason) noexcept {
+	receipt.completionObservationFailed = true;
+	try {
+		receipt.reason = reason;
+	} catch (...) {
+		// The mandatory fact survives even when diagnostic text cannot be retained.
+	}
 }
 [[nodiscard]] Json declaration_json(const AgenticActionDeclaration& declaration, bool enabled,
 									bool bound) {
@@ -115,10 +124,12 @@ Result<Json> AgenticActionRegistry::list(App& application, std::size_t limit,
 			const auto entry = entries_[index];
 			bool enabled = false;
 			if (entry.bound)
-				enabled = application.actions().availability(ActionCall(entry.bound)).enabled;
+				enabled = FlowUi::detail::requireApiValue(application.actions()).get().availability(ActionCall(entry.bound)).enabled;
 			else if (entry.adapter.available) {
 				auto availability = entry.adapter.available(application);
-				enabled = availability && *availability;
+				if (!availability)
+					return unexpectedError(availability.error());
+				enabled = *availability;
 			} else
 				enabled = true;
 			rows.array.emplace_back(
@@ -130,7 +141,7 @@ Result<Json> AgenticActionRegistry::list(App& application, std::size_t limit,
 								  {"total", decimal(entries_.size())},
 								  {"catalogue_actions_are_not_exports", true}});
 	} catch (...) {
-		return unexpectedError(agentic_error(AgenticError::invalid_request));
+		return unexpectedError(FlowUi::detail::currentExceptionError(ErrorSite::AgenticCommand));
 	}
 }
 Result<AgenticActionReceipt>
@@ -163,12 +174,12 @@ AgenticActionRegistry::invoke(App& application,
 		if (entry->bound) {
 			if (!invocation.arguments.object.empty())
 				return unexpectedError(agentic_error(AgenticError::invalid_request));
-			if (!application.actions().appActions().isBound(entry->bound) ||
-				!application.actions().availability(ActionCall(entry->bound)).enabled)
+			if (!FlowUi::detail::requireApiValue(application.actions()).get().appActions().isBound(entry->bound) ||
+				!FlowUi::detail::requireApiValue(application.actions()).get().availability(ActionCall(entry->bound)).enabled)
 				return unexpectedError(agentic_error(AgenticError::unavailable));
 			receipt.dispatched_monotonic_ns = monotonic_nanoseconds();
 			try {
-				const auto status = application.actions().invoke(
+				const auto status = FlowUi::detail::requireApiValue(application.actions()).get().invoke(
 					ActionCall(entry->bound),
 					{.kind = ActionInvocationSourceKind::Agentic,
 					 .window = static_cast<WindowId>(invocation.window_id),
@@ -180,10 +191,10 @@ AgenticActionRegistry::invoke(App& application,
 					receipt.reason = "binding_unavailable_at_dispatch";
 			} catch (...) {
 				receipt.dispatched = true;
-				receipt.completed = true;
-				receipt.reason = "application_callback_failed";
+				recordObservationFailure(receipt, "application_callback_failed");
 			}
-			receipt.completed_monotonic_ns = monotonic_nanoseconds();
+			if (receipt.completed)
+				receipt.completed_monotonic_ns = monotonic_nanoseconds();
 			return receipt;
 		}
 		auto decoded = entry->adapter.decode_arguments(invocation.arguments);
@@ -198,48 +209,44 @@ AgenticActionRegistry::invoke(App& application,
 		const auto callback = entry->adapter.invoke;
 		const bool asynchronous = entry->declaration.asynchronous;
 		receipt.dispatched_monotonic_ns = monotonic_nanoseconds();
+		receipt.dispatched = true;
 		try {
 			auto invoked = callback(application, invocation, *decoded);
 			if (!invoked) {
 				receipt.dispatched = true;
-				receipt.completed = true;
-				receipt.reason = "application_adapter_failed";
-				receipt.completed_monotonic_ns = monotonic_nanoseconds();
+				recordObservationFailure(receipt, "application_adapter_failed");
 				return receipt;
 			}
-			invoked->invocation = invocation;
-			invoked->dispatched = true;
-			invoked->dispatched_monotonic_ns = receipt.dispatched_monotonic_ns;
-			if (!bounded_json(invoked->result) || !bounded_json(invoked->completion_token, 65536)) {
-				receipt.dispatched = true;
-				receipt.completed = true;
-				receipt.reason = "application_result_budget_exhausted";
+			receipt.completed = invoked->completed;
+			receipt.completion_succeeded = invoked->completed && invoked->completion_succeeded;
+			receipt.completionObservationFailed = invoked->completionObservationFailed;
+			receipt.result = std::move(invoked->result);
+			receipt.completion_token = std::move(invoked->completion_token);
+			receipt.reason = std::move(invoked->reason);
+			if (receipt.completed)
 				receipt.completed_monotonic_ns = monotonic_nanoseconds();
-				return receipt;
+			if (!bounded_json(receipt.result) || !bounded_json(receipt.completion_token, 65536)) {
+				receipt.result = Json{};
+				receipt.completion_token = Json{};
+				recordObservationFailure(receipt, "application_result_budget_exhausted");
 			}
-			if (!asynchronous && !invoked->completed) {
-				invoked->completed = true;
-				invoked->completion_succeeded = false;
-				invoked->reason = "synchronous_completion_missing";
+			if (!asynchronous && !receipt.completed) {
+				recordObservationFailure(receipt, "synchronous_completion_missing");
 			}
-			if (invoked->completed)
-				invoked->completed_monotonic_ns = monotonic_nanoseconds();
-			return invoked;
+			return receipt;
 		} catch (...) {
 			receipt.dispatched = true;
-			receipt.completed = true;
-			receipt.reason = "application_callback_failed";
-			receipt.completed_monotonic_ns = monotonic_nanoseconds();
+			recordObservationFailure(receipt, "application_callback_failed");
 			return receipt;
 		}
 	} catch (...) {
-		return unexpectedError(agentic_error(AgenticError::budget_exhausted));
+		return unexpectedError(FlowUi::detail::currentExceptionError(ErrorSite::AgenticCommand));
 	}
 }
 Result<AgenticActionReceipt>
 AgenticActionRegistry::poll(App& application, const AgenticActionReceipt& receipt) noexcept {
 	try {
-		if (receipt.completed)
+		if (receipt.completed || receipt.completionObservationFailed)
 			return receipt;
 		const auto* entry = find(receipt.invocation.action_id);
 		if (!entry || entry->declaration.revision != receipt.invocation.revision)
@@ -249,25 +256,36 @@ AgenticActionRegistry::poll(App& application, const AgenticActionReceipt& receip
 		if (receipt.invocation.deadline_monotonic_ns &&
 			monotonic_nanoseconds() >= receipt.invocation.deadline_monotonic_ns) {
 			auto expired = receipt;
-			expired.completed = true;
-			expired.completion_succeeded = false;
-			expired.reason = "application_completion_timeout";
-			expired.completed_monotonic_ns = monotonic_nanoseconds();
+			recordObservationFailure(expired, "application_completion_timeout");
 			return expired;
 		}
 		const auto callback = entry->adapter.poll_completion;
-		auto observed = callback(application, receipt);
-		if (!observed)
-			return unexpectedError(observed.error());
-		if (!bounded_json(observed->result) || !bounded_json(observed->completion_token, 65536))
-			return unexpectedError(agentic_error(AgenticError::budget_exhausted));
-		observed->invocation = receipt.invocation;
-		observed->dispatched = receipt.dispatched;
-		observed->dispatched_monotonic_ns = receipt.dispatched_monotonic_ns;
-		observed->completed_monotonic_ns = observed->completed ? monotonic_nanoseconds() : 0;
-		return observed;
+		auto retained = receipt;
+		try {
+			auto observed = callback(application, receipt);
+			if (!observed) {
+				recordObservationFailure(retained, errorName(observed.error().code));
+				return retained;
+			}
+			retained.completed = observed->completed;
+			retained.completion_succeeded = observed->completed && observed->completion_succeeded;
+			retained.completionObservationFailed = observed->completionObservationFailed;
+			retained.result = std::move(observed->result);
+			retained.completion_token = std::move(observed->completion_token);
+			retained.reason = std::move(observed->reason);
+			retained.completed_monotonic_ns = retained.completed ? monotonic_nanoseconds() : 0;
+			if (!bounded_json(retained.result) || !bounded_json(retained.completion_token, 65536)) {
+				retained.result = Json{};
+				retained.completion_token = Json{};
+				recordObservationFailure(retained, "application_result_budget_exhausted");
+			}
+			return retained;
+		} catch (...) {
+			recordObservationFailure(retained, "completion_callback_failed");
+			return retained;
+		}
 	} catch (...) {
-		return unexpectedError(agentic_error(AgenticError::invalid_request));
+		return unexpectedError(FlowUi::detail::currentExceptionError(ErrorSite::AgenticCommand));
 	}
 }
 Status AgenticActionRegistry::cancel(App& application,
@@ -283,7 +301,7 @@ Status AgenticActionRegistry::cancel(App& application,
 		const auto callback = entry->adapter.cancel;
 		return callback(application, receipt);
 	} catch (...) {
-		return rejected(AgenticError::invalid_request);
+		return unexpectedError(FlowUi::detail::currentExceptionError(ErrorSite::AgenticCommand));
 	}
 }
 Json AgenticActionRegistry::describe(const AgenticActionReceipt& receipt) {
@@ -299,6 +317,7 @@ Json AgenticActionRegistry::describe(const AgenticActionReceipt& receipt) {
 		 {"dispatched", receipt.dispatched},
 		 {"completed", receipt.completed},
 		 {"completion_succeeded", receipt.completion_succeeded},
+		 {"completion_observation_failed", receipt.completionObservationFailed},
 		 {"reason", receipt.reason},
 		 {"result", receipt.result},
 		 {"dispatched_monotonic_ns", decimal(receipt.dispatched_monotonic_ns)},

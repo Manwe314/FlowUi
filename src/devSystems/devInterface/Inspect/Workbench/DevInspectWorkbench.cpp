@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.hpp"
 
 #if FLOW_UI_DEV_MODE
@@ -134,7 +135,7 @@ void drawStateStamp(
 		.color = active ? activeColor : interface_theme::kBorderPrimary,
 		.width = Clay_BorderWidth{1, 1, 1, 1, 0},
 	};
-	CLAY(context.clayID(id), stamp) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(id)), stamp) {
 		CLAY_TEXT(context.uiManager.toClayString(label),
 			CLAY_TEXT_CONFIG(textConfig(
 				active ? activeColor : interface_theme::kTextMuted, 8)));
@@ -160,7 +161,7 @@ void drawTelemetry(
 		.color = interface_theme::kBorderPrimary,
 		.width = Clay_BorderWidth{1, 1, 1, 1, 0},
 	};
-	CLAY(context.clayID(id), telemetry) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(id)), telemetry) {
 		CLAY_TEXT(context.uiManager.toClayString(label),
 			CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextMuted, 8)));
 		const std::string count = std::to_string(value);
@@ -246,8 +247,8 @@ PreviewSelection resolvePreviewSelection(const DevInspectContentParameters& para
 	PreviewSelection result{};
 	if (!params.app || !params.interfaceState ||
 		!params.app->hasWindow(params.interfaceState->selectedWindowId)) return result;
-	result.snapshot = &params.app->ui(
-		params.interfaceState->selectedWindowId).devTreeSnapshot();
+	result.snapshot = &FlowUi::ValueOrThrow(params.app->ui(
+		params.interfaceState->selectedWindowId)).get().devTreeSnapshot();
 
 #if FLOW_UI_DEV_CAPTURE_CLAY
 	if (params.interfaceState->inspectSelectedNodeKind == kDevInterfaceClayNodeKind &&
@@ -408,7 +409,7 @@ void drawPreviewToolbarSeparator(
 	line.layout.sizing = {
 		.width = CLAY_SIZING_FIXED(1), .height = CLAY_SIZING_FIXED(14)};
 	line.backgroundColor = interface_theme::kBorderVisible;
-	CLAY(context.clayID(id), line) {}
+	CLAY(FlowUi::ValueOrThrow(context.clayID(id)), line) {}
 }
 
 Clay_ElementDeclaration previewToolbarGroup() {
@@ -666,7 +667,7 @@ void populateFrameStatistics(
 }
 
 uint64_t definitionSchemaBytes(const App& app, FlowDefinitionID definition) {
-	const tooling::DevSchemaView schema = app.devTooling().schemas().view();
+	const tooling::DevSchemaView schema = FlowUi::ValueOrThrow(app.devTooling()).get().schemas().view();
 	if (!schema) return 0u;
 	const tooling::DevElementSchema* element = schema->findElement(definition);
 	if (!element) return 0u;
@@ -809,7 +810,7 @@ OverviewTelemetry collectOverviewTelemetry(
 	if (schemaBytes > 0u) telemetry.schemaMemory = formatBytes(schemaBytes);
 
 	const DevTimingReporting& reporting =
-		parameters.app->devMonitoring().timingReporting();
+		FlowUi::ValueOrThrow(parameters.app->devMonitoring()).get().timingReporting();
 	const TimingReportingStatus timingStatus = reporting.status();
 	std::vector<uint64_t> invokeSamples{};
 	std::vector<uint64_t> subtreeSamples{};
@@ -869,7 +870,7 @@ OverviewTelemetry collectOverviewTelemetry(
 	const uint32_t compiledLevel = FLOWUI_DEV_TIMING_LEVEL;
 	uint32_t activeLevel = compiledLevel;
 	if (parameters.app) {
-		const DevTimingConfig config = parameters.app->devMonitoring().timing().config();
+		const DevTimingConfig config = FlowUi::ValueOrThrow(parameters.app->devMonitoring()).get().timing().config();
 		activeLevel = std::min<uint32_t>(compiledLevel, static_cast<uint32_t>(config.cpuLevel));
 	}
 	std::string levelName = "BALANCED";
@@ -901,7 +902,7 @@ OverviewTelemetry collectOverviewTelemetry(
 	}
 
 	const auto environment =
-		parameters.app->devMonitoring().memoryReporting().environmentSnapshot();
+		FlowUi::ValueOrThrow(parameters.app->devMonitoring()).get().memoryReporting().environmentSnapshot();
 	if (environment) {
 		telemetry.engineMemory = formatBytes(
 			environment->safelyAttributableFlowUiCpuBytes);
@@ -948,7 +949,7 @@ void drawOverviewMetric(Context& context, IndexedElementName id, std::string_vie
 	row.layout.childGap = 1;
 	row.layout.padding = {0, 0, 2, 3};
 	row.clip = {.horizontal = compact_identity, .vertical = false, .scrollInputDisabled = true};
-	CLAY(context.clayID(id), row) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(id)), row) {
 		auto label_style = textConfig(interface_theme::kTextSecondary, 9);
 		label_style.wrapMode = CLAY_TEXT_WRAP_WORDS;
 		CLAY_TEXT(context.uiManager.toClayString(label), CLAY_TEXT_CONFIG(label_style));
@@ -956,13 +957,13 @@ void drawOverviewMetric(Context& context, IndexedElementName id, std::string_vie
 		value_box.layout.sizing = {CLAY_SIZING_PERCENT(1), CLAY_SIZING_FIT(0)};
 		value_box.clip = {
 			.horizontal = compact_identity, .vertical = false, .scrollInputDisabled = true};
-		CLAY(context.clayID(Keyed("metric-value", id.token)), value_box) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("metric-value", id.token))), value_box) {
 			auto value_style = textConfig(valueColor, 11);
 			value_style.wrapMode = CLAY_TEXT_WRAP_WORDS;
 			CLAY_TEXT(context.uiManager.toClayString(value), CLAY_TEXT_CONFIG(value_style));
 		}
 	}
-	if (context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID(id)))
+	if (context.uiManager.getPreviousFramesInteraction().isHovered(FlowUi::ValueOrThrow(context.clayID(id))))
 		diagnostics_ui::pointer_tooltip(context, Keyed("metric-detail", id.token),
 										std::string(label) + ": " + std::string(value));
 }
@@ -1193,8 +1194,8 @@ DevChangeAndIssuePanelData queryChangeAndIssueData(
 	const tooling::DevTreeSnapshot& snapshot = *selection.snapshot;
 	const tooling::DevFlowNode& flow = *selection.flow;
 	const WindowId window = parameters.interfaceState->selectedWindowId;
-	const auto& apply = parameters.app->devTooling().overrides().appliedOverrides();
-	const tooling::DevSchemaView schema = parameters.app->devTooling().schemas().view();
+	const auto& apply = FlowUi::ValueOrThrow(parameters.app->devTooling()).get().overrides().appliedOverrides();
+	const tooling::DevSchemaView schema = FlowUi::ValueOrThrow(parameters.app->devTooling()).get().schemas().view();
 	if (schema) {
 		for (const tooling::DevOverrideApply::Record& record : apply.records()) {
 			if (!record.schemaValid || !record.value ||
@@ -1278,7 +1279,7 @@ DevChangeAndIssuePanelData queryChangeAndIssueData(
 #endif
 
 	for (const auto& occurrence :
-		 parameters.app->devMonitoring().errorReporting().occurrence_summaries()) {
+		 FlowUi::ValueOrThrow(parameters.app->devMonitoring()).get().errorReporting().occurrence_summaries()) {
 		const std::optional<tooling::DevOverrideScope> scope =
 			resolve_occurrence_scope(occurrence, flow.definition, flow.instance.value, window);
 		if (!scope) continue;
@@ -1392,19 +1393,19 @@ void drawIssueCard(
 		.width = Clay_BorderWidth{2, 1, 1, 1, 0},
 	};
 	card.clip = {.horizontal = true, .vertical = true};
-	CLAY(context.clayID(id), card) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(id)), card) {
 		Clay_ElementDeclaration header{};
 		header.layout.sizing = {
 			.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(12)};
 		header.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		header.layout.childGap = 5;
 		IndexedElementIDSequence textIds{kIssueText};
-		CLAY(context.clayID(textIds.next()), header) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(textIds.next())), header) {
 			CLAY_TEXT(context.uiManager.toClayString(issueLabel(issue.severity)),
 				CLAY_TEXT_CONFIG(textConfig(accent, 8)));
 			CLAY_TEXT(context.uiManager.toClayString(compactMiddle(issue.title, 34u)),
 				CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextCanvas, 9)));
-			CLAY(context.clayID(textIds.next()), {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(textIds.next())), {
 				.layout = {.sizing = {
 					.width = CLAY_SIZING_GROW(0),
 					.height = CLAY_SIZING_GROW(0)}}}) {}
@@ -1434,10 +1435,10 @@ DevPreview::Resources::Resources(App& app) {
 	viewportRenderer = std::make_shared<DevPreviewViewPortRenderer>();
 #endif
 #if FLOWUI_INCLUDE_ICON_MANAGER
-	IconManager& icons = app.icons();
+	IconManager& icons = FlowUi::ValueOrThrow(app.icons()).get();
 	interface_icons::registerDevInterfaceIcons(icons);
 	auto resolve = [&icons](std::string_view key) -> TextureRef {
-		return icons.contains(key) ? icons.textureRef(key) : TextureRef{};
+		return FlowUi::ValueOrThrow(icons.contains(key)) ? FlowUi::ValueOrThrow(icons.textureRef(key)) : TextureRef{};
 	};
 	panIcon = resolve(interface_icons::kPreviewPanKey);
 	resetIcon = resolve(interface_icons::kPreviewResetKey);
@@ -1468,7 +1469,7 @@ void DevInspectWorkbenchHeader::buildElement(BuildContext& context) {
 		nameArea.layout.sizing = {.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
 		nameArea.layout.childAlignment = {.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 		nameArea.clip = {.horizontal = true, .vertical = false};
-		CLAY(context.clayID(kHeaderName), nameArea) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kHeaderName)), nameArea) {
 			auto name_style = textConfig(interface_theme::kTextCanvas, 14);
 			name_style.wrapMode = CLAY_TEXT_WRAP_WORDS;
 			CLAY_TEXT(context.uiManager.toClayString(context.params.instanceName.empty()
@@ -1480,7 +1481,7 @@ void DevInspectWorkbenchHeader::buildElement(BuildContext& context) {
 		telemetry.layout.sizing = {CLAY_SIZING_PERCENT(1), CLAY_SIZING_FIXED(22)};
 		telemetry.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		telemetry.layout.childGap = 7;
-		CLAY(context.clayID(kHeaderTelemetry), telemetry) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kHeaderTelemetry)), telemetry) {
 			drawStateStamp(context, kConstructedStamp, "CONSTRUCTED", context.params.constructed,
 						   interface_theme::kStatusGreen);
 			drawStateStamp(context, kDrawnStamp, "DRAWN", context.params.drawn,
@@ -1492,7 +1493,7 @@ void DevInspectWorkbenchHeader::buildElement(BuildContext& context) {
 															 : interface_theme::kAccentSignalCoral);
 		}
 	}
-	if (context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID(kHeaderName)))
+	if (context.uiManager.getPreviousFramesInteraction().isHovered(FlowUi::ValueOrThrow(context.clayID(kHeaderName))))
 		diagnostics_ui::pointer_tooltip(context, LocalElementName{"instance-name-detail"},
 										context.params.instanceName);
 }
@@ -1613,7 +1614,7 @@ void DevPreviewControl::buildElement(BuildContext& context) {
 				.width = CLAY_SIZING_FIXED(12), .height = CLAY_SIZING_FIXED(12)};
 			image.backgroundColor = foreground;
 			image.image.imageData = context.uiManager.imageData(icon);
-			CLAY(context.clayID("icon"), image) {}
+			CLAY(FlowUi::ValueOrThrow(context.clayID("icon")), image) {}
 		} else {
 			CLAY_TEXT(context.uiManager.toClayString(context.params.label),
 					  CLAY_TEXT_CONFIG(textConfig(foreground, 8)));
@@ -1797,7 +1798,7 @@ void drawPreviewRect(
 	primitive.cornerRadius = radius;
 	primitive.border = {.color = border, .width = borderWidth};
 	primitive.floating = previewFloating(clippedX, clippedY, zIndex);
-	CLAY(context.clayID(ids.next()), primitive) {}
+	CLAY(FlowUi::ValueOrThrow(context.clayID(ids.next())), primitive) {}
 }
 
 void drawPreviewLabel(
@@ -1827,7 +1828,7 @@ void drawPreviewLabel(
 		.width = Clay_BorderWidth{1, 1, 1, 1, 0},
 	};
 	badge.floating = previewFloating(clampedX, clampedY, 0);
-	CLAY(context.clayID(ids.next()), badge) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(ids.next())), badge) {
 		CLAY_TEXT(context.uiManager.toClayString(label),
 			CLAY_TEXT_CONFIG(textConfig(color, 8)));
 	}
@@ -1874,7 +1875,7 @@ void drawCapturedSubtree(
 		if (node.pointerPresence.imageData && primitive.backgroundColor.a <= 0.0f) {
 			primitive.backgroundColor = Flow_Color("#263D4A");
 		}
-		CLAY(context.clayID(ids.next()), primitive) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(ids.next())), primitive) {
 			if (tooling::hasFlag(node.flags, tooling::DevClayNodeFlag::Text)) {
 				Clay_TextElementConfig captured = node.textConfig;
 				captured.fontSize = scaledU16(
@@ -2046,20 +2047,20 @@ void DevPreviewCanvas::buildElement(BuildContext& context) {
 			const VkFormat desiredFormat = initialReplay.renderer
 				? initialReplay.renderer->devReplayTargetFormat()
 				: VK_FORMAT_R8G8B8A8_UNORM;
-			ViewPortManager& viewPorts = context.params.inspect.app->viewPorts(
-				context.uiManager.windowId());
-			if (viewPorts.contains(kPreviewViewportKey) &&
+			ViewPortManager& viewPorts = FlowUi::ValueOrThrow(context.params.inspect.app->viewPorts(
+				context.uiManager.windowId())).get();
+			if (FlowUi::ValueOrThrow(viewPorts.contains(kPreviewViewportKey)) &&
 				state->viewportColorFormat != static_cast<uint32_t>(desiredFormat)) {
 				(void)viewPorts.remove(kPreviewViewportKey);
 			}
-			if (!viewPorts.contains(kPreviewViewportKey)) {
+			if (!FlowUi::ValueOrThrow(viewPorts.contains(kPreviewViewportKey))) {
 				(void)viewPorts.create(kPreviewViewportKey, ViewPortCreateInfo{
 					.colorFormat = desiredFormat,
 					.clearColor = {0.0f, 0.0f, 0.0f, 1.0f},
 					.clearEveryFrame = true,
 				});
-				if (ViewPort* viewport = viewPorts.getViewPort(kPreviewViewportKey)) {
-					viewport->setRenderCallback(
+				if (ViewPort* viewport = FlowUi::ValueOrThrow(viewPorts.getViewPort(kPreviewViewportKey))) {
+					FlowUi::ValueOrThrow(viewport->setRenderCallback(
 						context.params.viewportRenderer,
 						[inspect = context.params.inspect, state](
 							const ViewPortRenderContext& renderContext,
@@ -2071,12 +2072,12 @@ void DevPreviewCanvas::buildElement(BuildContext& context) {
 								? inspect.app->devUiReplaySource(sourceWindow)
 								: DevUiReplaySource{};
 							renderer.record(renderContext, *state, replay);
-						});
+						}));
 					state->viewportColorFormat = static_cast<uint32_t>(desiredFormat);
 				}
 			}
-			texture = viewPorts.getTexture(kPreviewViewportKey);
-			if (const ViewPort* viewport = viewPorts.getViewPort(kPreviewViewportKey);
+			texture = FlowUi::ValueOrThrow(viewPorts.getTexture(kPreviewViewportKey));
+			if (const ViewPort* viewport = FlowUi::ValueOrThrow(viewPorts.getViewPort(kPreviewViewportKey));
 				viewport && viewport->hasValidSize()) {
 				const VkExtent2D activeSize = viewport->getSize();
 				state->canvasWidth = static_cast<float>(activeSize.width);
@@ -2089,7 +2090,7 @@ void DevPreviewCanvas::buildElement(BuildContext& context) {
 			.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
 		texture.fitMode = TextureFitMode::Stretch;
 		image.image.imageData = context.uiManager.imageData(texture);
-		CLAY(context.clayID(kPreviewViewportImage), image) {}
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kPreviewViewportImage)), image) {}
 #if FLOW_UI_DEV_CAPTURE_CLAY
 		const PreviewSelection selection = resolvePreviewSelection(context.params.inspect);
 		if (selection) {
@@ -2106,7 +2107,7 @@ void DevPreviewCanvas::buildElement(BuildContext& context) {
 		fallback.layout.childGap = 5;
 		fallback.layout.childAlignment = {
 			.x = CLAY_ALIGN_X_CENTER, .y = CLAY_ALIGN_Y_CENTER};
-		CLAY(context.clayID("interop-unavailable"), fallback) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("interop-unavailable")), fallback) {
 			CLAY_TEXT(context.uiManager.toClayString(
 				"Unavailable: compile Vulkan interop"),
 				CLAY_TEXT_CONFIG(textConfig(interface_theme::kStatusAmber, 11)));
@@ -2128,11 +2129,11 @@ void DevPreview::buildElement(BuildContext& context) {
 	}
 	if (context.params.app && context.params.interfaceState) {
 		const std::vector<uint32_t> commandIds = previewReplayCommandIds(selection);
-		context.params.app->requestDevUiReplay(
+		FlowUi::ValueOrThrow(context.params.app->requestDevUiReplay(
 			context.params.interfaceState->selectedWindowId,
 			selection.flow ? selection.flow->instance.value : 0u,
 			commandIds,
-			selection.clay ? selection.clay->bounds : Clay_BoundingBox{});
+			selection.clay ? selection.clay->bounds : Clay_BoundingBox{}));
 	}
 #endif
 	if (selection.flow && state.lastSelectedNodeKey != selection.flow->instance.value) {
@@ -2162,11 +2163,11 @@ void DevPreview::buildElement(BuildContext& context) {
 			.width = Clay_BorderWidth{0, 0, 0, 1, 0},
 		};
 		toolbar.clip = {.horizontal = true, .vertical = true};
-		CLAY(context.clayID(kPreviewToolbar), toolbar) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kPreviewToolbar)), toolbar) {
 			IndexedElementIDSequence controls{kPreviewControl};
 			IndexedElementIDSequence separators{kPreviewSeparator};
 			const Clay_ElementDeclaration group = previewToolbarGroup();
-			CLAY(context.clayID(kPreviewCameraGroup), group) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(kPreviewCameraGroup)), group) {
 				drawPreviewControl(context, controls.next(), state,
 					DevPreviewControlCommand::ZoomOut, "Zoom out", false,
 					context.resources().zoom_out_icon);
@@ -2179,7 +2180,7 @@ void DevPreview::buildElement(BuildContext& context) {
 				readout.cornerRadius = CLAY_CORNER_RADIUS(3);
 				readout.clip = {
 					.horizontal = true, .vertical = true, .scrollInputDisabled = true};
-				CLAY(context.clayID(kPreviewZoomReadout), readout) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID(kPreviewZoomReadout)), readout) {
 					context.uiManager.createElement(FSEL::kNumberInputFloat, kPreviewZoom)
 						.setParameters(FSEL::NumberInputParameters<float>{
 							.placeholder = "100",
@@ -2201,7 +2202,7 @@ void DevPreview::buildElement(BuildContext& context) {
 						.width = CLAY_SIZING_FIT(0), .height = CLAY_SIZING_GROW(0)};
 					suffix.layout.childAlignment = {
 						.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
-					CLAY(context.clayID(kPreviewZoomSuffix), suffix) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID(kPreviewZoomSuffix)), suffix) {
 						CLAY_TEXT(context.uiManager.toClayString("%"),
 							CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextMuted, 8)));
 					}
@@ -2216,7 +2217,7 @@ void DevPreview::buildElement(BuildContext& context) {
 			}
 
 			drawPreviewToolbarSeparator(context, separators.next());
-			CLAY(context.clayID(kPreviewSidecarGroup), group) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(kPreviewSidecarGroup)), group) {
 				const auto enabled = [&state](tooling::DevOverlayModeFlags flag) {
 					return tooling::hasFlag(state.sidecarFlags, flag);
 				};
@@ -2241,7 +2242,7 @@ void DevPreview::buildElement(BuildContext& context) {
 			}
 
 			drawPreviewToolbarSeparator(context, separators.next());
-			CLAY(context.clayID(kPreviewToolGroup), group) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(kPreviewToolGroup)), group) {
 				drawPreviewControl(context, controls.next(), state,
 					DevPreviewControlCommand::SelectPan, "Pan",
 					state.activeTool == DevPreviewToolMode::PanInspect,
@@ -2300,10 +2301,10 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 			.color = interface_theme::kBorderPrimary,
 			.width = Clay_BorderWidth{0, 0, 0, 1, 0},
 		};
-		CLAY(context.clayID(kOverviewHeader), header) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kOverviewHeader)), header) {
 			CLAY_TEXT(context.uiManager.toClayString("OVERVIEW & PERFORMANCE"),
 				CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextCanvas, 10)));
-			CLAY(context.clayID("header-spacer"), {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("header-spacer")), {
 				.layout = {.sizing = {
 					.width = CLAY_SIZING_GROW(0),
 					.height = CLAY_SIZING_GROW(0)}}}) {}
@@ -2322,16 +2323,16 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 		body.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		body.layout.childGap = 7;
 		const Clay_ScrollContainerData scroll =
-			Clay_GetScrollContainerData(context.clayID(kOverviewBody));
+			Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID(kOverviewBody)));
 		body.clip = {
 			.horizontal = true,
 			.vertical = true,
 			.childOffset = scroll.found && scroll.scrollPosition
 				? *scroll.scrollPosition : Clay_Vector2{},
 		};
-		CLAY(context.clayID(kOverviewBody), body) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kOverviewBody)), body) {
 			IndexedElementIDSequence metrics{kOverviewMetric};
-			CLAY(context.clayID(kOverviewIdentity), overviewPanel()) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(kOverviewIdentity)), overviewPanel()) {
 				drawOverviewPanelTitle(context, "ELEMENT IDENTITY & ANCESTRY");
 				drawOverviewMetric(context, metrics.next(), "Definition",
 					telemetry.definition + "  /  " + telemetry.definitionId,
@@ -2343,7 +2344,7 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 					interface_theme::kTextSecondary);
 			}
 
-			CLAY(context.clayID(kOverviewStructure), overviewPanel()) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(kOverviewStructure)), overviewPanel()) {
 				drawOverviewPanelTitle(context, "TREE STRUCTURE & SOLVED GEOMETRY");
 				Clay_ElementDeclaration columns{};
 				columns.layout.sizing = {
@@ -2351,14 +2352,14 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 				columns.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 				columns.layout.childGap = 10;
 				IndexedElementIDSequence columnIds{kOverviewColumn};
-				CLAY(context.clayID("structure-columns"), columns) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("structure-columns")), columns) {
 					Clay_ElementDeclaration column{};
 					column.layout.sizing = {
 						.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
 					column.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 					column.layout.childGap = 2;
 					column.clip = {.horizontal = true, .vertical = true};
-					CLAY(context.clayID(columnIds.next()), column) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID(columnIds.next())), column) {
 						drawOverviewMetric(context, metrics.next(), "Flow children",
 							telemetry.flowChildren + "  / subtree " + telemetry.flowSubtree);
 						drawOverviewMetric(context, metrics.next(), "Clay children",
@@ -2368,7 +2369,7 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 						drawOverviewMetric(context, metrics.next(), "Flags", telemetry.flags,
 							interface_theme::kStatusGreen);
 					}
-					CLAY(context.clayID(columnIds.next()), column) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID(columnIds.next())), column) {
 						drawOverviewMetric(context, metrics.next(), "Position", telemetry.position);
 						drawOverviewMetric(context, metrics.next(), "Dimensions", telemetry.dimensions);
 						drawOverviewMetric(context, metrics.next(), "Layout", telemetry.layout);
@@ -2379,7 +2380,7 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 				}
 			}
 
-			CLAY(context.clayID(kOverviewPerformance), overviewPanel()) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(kOverviewPerformance)), overviewPanel()) {
 				Clay_ElementDeclaration perfHeader{};
 				perfHeader.layout.sizing = {
 					.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
@@ -2388,9 +2389,9 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 					.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 				perfHeader.clip = {.horizontal = true, .vertical = true};
 
-				CLAY(context.clayID("perf-header-row"), perfHeader) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("perf-header-row")), perfHeader) {
 					drawOverviewPanelTitle(context, "ELEMENT & DEFINITION TIMING");
-					CLAY(context.clayID("perf-header-spacer"), {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("perf-header-spacer")), {
 						.layout = {.sizing = {
 							.width = CLAY_SIZING_GROW(0),
 							.height = CLAY_SIZING_GROW(0)}}}) {}
@@ -2409,7 +2410,7 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 				selector.clip = {.horizontal = true, .vertical = true};
 				IndexedElementIDSequence choices{kOverviewPercentile};
 				const Clay_SizingAxis choice5Sizing = CLAY_SIZING_PERCENT(0.2f);
-				CLAY(context.clayID("percentile-selector"), selector) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("percentile-selector")), selector) {
 					drawPercentileChoice(context, choices.next(), state, 50u, "P50", choice5Sizing);
 					drawPercentileChoice(context, choices.next(), state, 90u, "P90", choice5Sizing);
 					drawPercentileChoice(context, choices.next(), state, 95u, "P95", choice5Sizing);
@@ -2428,7 +2429,7 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 				instanceRow.clip = {.horizontal = true, .vertical = true};
 				const Clay_SizingAxis col2Sizing = CLAY_SIZING_PERCENT(0.5f);
 
-				CLAY(context.clayID("instance-hero-row"), instanceRow) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("instance-hero-row")), instanceRow) {
 					drawOverviewMetric(context, metrics.next(), "Instance " + percentileLabel + " (Self)",
 						telemetry.instanceTiming, interface_theme::kAccentSeaGlass, col2Sizing);
 					drawOverviewMetric(context, metrics.next(), "Subtree " + percentileLabel + " (Total)",
@@ -2438,7 +2439,7 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 				Clay_ElementDeclaration definitionRow = instanceRow;
 				const Clay_SizingAxis col3Sizing = CLAY_SIZING_PERCENT(1.0f / 3.0f);
 
-				CLAY(context.clayID("definition-grid-row"), definitionRow) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("definition-grid-row")), definitionRow) {
 					drawOverviewMetric(context, metrics.next(), "Definition " + percentileLabel + " Avg",
 						telemetry.definitionTiming, interface_theme::kTextCanvas, col3Sizing);
 					drawOverviewMetric(context, metrics.next(), "Definition Peak",
@@ -2449,7 +2450,7 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 				}
 			}
 
-			CLAY(context.clayID(kOverviewMemory), overviewPanel()) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(kOverviewMemory)), overviewPanel()) {
 				drawOverviewPanelTitle(context, "MEMORY ATTRIBUTION");
 				Clay_ElementDeclaration memoryRow{};
 				memoryRow.layout.sizing = {
@@ -2458,7 +2459,7 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 				memoryRow.layout.childGap = 8;
 				memoryRow.clip = {.horizontal = true, .vertical = true};
 				const Clay_SizingAxis col3Sizing = CLAY_SIZING_PERCENT(1.0f / 3.0f);
-				CLAY(context.clayID("memory-row-local"), memoryRow) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("memory-row-local")), memoryRow) {
 					drawOverviewMetric(context, metrics.next(), "Instance structures",
 						telemetry.instanceMemory, interface_theme::kTextCanvas, col3Sizing);
 					drawOverviewMetric(context, metrics.next(), "Subtree strings",
@@ -2466,7 +2467,7 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 					drawOverviewMetric(context, metrics.next(), "Definition schema",
 						telemetry.schemaMemory, interface_theme::kTextCanvas, col3Sizing);
 				}
-				CLAY(context.clayID("memory-row-system"), memoryRow) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("memory-row-system")), memoryRow) {
 					drawOverviewMetric(context, metrics.next(), "FlowUi CPU live",
 						telemetry.engineMemory, interface_theme::kAccentSeaGlass, col3Sizing);
 					drawOverviewMetric(context, metrics.next(), "Process RSS",
@@ -2530,10 +2531,10 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 			.color = interface_theme::kBorderPrimary,
 			.width = Clay_BorderWidth{0, 0, 0, 1, 0},
 		};
-		CLAY(context.clayID(kChangesHeader), header) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kChangesHeader)), header) {
 			CLAY_TEXT(context.uiManager.toClayString("CHANGES & ISSUES"),
 				CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextCanvas, 10)));
-			CLAY(context.clayID("changes-header-spacer"), {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("changes-header-spacer")), {
 				.layout = {.sizing = {
 					.width = CLAY_SIZING_GROW(0),
 					.height = CLAY_SIZING_GROW(0)}}}) {}
@@ -2555,14 +2556,14 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 		body.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		body.layout.childGap = 7;
 		const Clay_ScrollContainerData scroll =
-			Clay_GetScrollContainerData(context.clayID(kChangesBody));
+			Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID(kChangesBody)));
 		body.clip = {
 			.horizontal = true,
 			.vertical = true,
 			.childOffset = scroll.found && scroll.scrollPosition
 				? *scroll.scrollPosition : Clay_Vector2{},
 		};
-		CLAY(context.clayID(kChangesBody), body) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kChangesBody)), body) {
 			Clay_ElementDeclaration changes{};
 			changes.layout.sizing = {
 				.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
@@ -2575,17 +2576,17 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 				.width = Clay_BorderWidth{1, 1, 1, 1, 0},
 			};
 			changes.clip = {.horizontal = true, .vertical = true};
-			CLAY(context.clayID(kChangesSummary), changes) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(kChangesSummary)), changes) {
 				Clay_ElementDeclaration summaryRow{};
 				summaryRow.layout.sizing = {
 					.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
 				summaryRow.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 				summaryRow.layout.childAlignment = {
 					.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
-				CLAY(context.clayID("change-summary-title"), summaryRow) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("change-summary-title")), summaryRow) {
 					CLAY_TEXT(context.uiManager.toClayString("ACTIVE CHANGES · READ ONLY"),
 						CLAY_TEXT_CONFIG(textConfig(interface_theme::kAccentSeaGlass, 8)));
-					CLAY(context.clayID("change-summary-spacer"), {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("change-summary-spacer")), {
 						.layout = {.sizing = {
 							.width = CLAY_SIZING_GROW(0),
 							.height = CLAY_SIZING_GROW(0)}}}) {}
@@ -2606,10 +2607,10 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 					.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 				tableRow.backgroundColor = interface_theme::kDepth3Elevated;
 				tableRow.clip = {.horizontal = true, .vertical = true};
-				CLAY(context.clayID("change-table-header"), tableRow) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("change-table-header")), tableRow) {
 					CLAY_TEXT(context.uiManager.toClayString("FIELD PATH"),
 						CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextMuted, 8)));
-					CLAY(context.clayID("field-header-space"), {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("field-header-space")), {
 						.layout = {.sizing = {
 							.width = CLAY_SIZING_GROW(0),
 							.height = CLAY_SIZING_GROW(0)}}}) {}
@@ -2621,7 +2622,7 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 					empty.backgroundColor = interface_theme::kDepth2Ink;
 					empty.layout.childAlignment = {
 						.x = CLAY_ALIGN_X_CENTER, .y = CLAY_ALIGN_Y_CENTER};
-					CLAY(context.clayID("no-active-changes"), empty) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("no-active-changes")), empty) {
 						CLAY_TEXT(context.uiManager.toClayString(
 							"No active overrides affect this element"),
 							CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextMuted, 8)));
@@ -2640,7 +2641,7 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 						row.backgroundColor = index % 2u == 0u ? interface_theme::kDepth1Panel
 															   : interface_theme::kDepth2Ink;
 						const auto row_id = rows.next();
-						CLAY(context.clayID(row_id), row) {
+						CLAY(FlowUi::ValueOrThrow(context.clayID(row_id)), row) {
 							auto path_style = textConfig(interface_theme::kTextCanvas, 10);
 							path_style.wrapMode = CLAY_TEXT_WRAP_WORDS;
 							CLAY_TEXT(context.uiManager.toClayString(item.fieldPath),
@@ -2657,7 +2658,7 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 								CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextSecondary, 9)));
 						}
 						if (context.uiManager.getPreviousFramesInteraction().isHovered(
-								context.clayID(row_id)))
+								FlowUi::ValueOrThrow(context.clayID(row_id))))
 							diagnostics_ui::pointer_tooltip(
 								context, Keyed("winning-value-detail", row_id.token),
 								item.fieldPath + "\n" + item.valueSummary);
@@ -2677,7 +2678,7 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 				.width = Clay_BorderWidth{1, 1, 1, 1, 0},
 			};
 			issues.clip = {.horizontal = true, .vertical = true};
-			CLAY(context.clayID(kIssuesConsole), issues) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(kIssuesConsole)), issues) {
 				CLAY_TEXT(context.uiManager.toClayString("DIAGNOSTICS & ISSUES CONSOLE"),
 					CLAY_TEXT_CONFIG(textConfig(interface_theme::kAccentSeaGlass, 8)));
 				Clay_ElementDeclaration filters{};
@@ -2686,7 +2687,7 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 				filters.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 				filters.layout.childGap = 3;
 				IndexedElementIDSequence filterIds{kIssueFilter};
-				CLAY(context.clayID("issue-filters"), filters) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("issue-filters")), filters) {
 					drawIssueFilterChoice(context, filterIds.next(), state, 0u, "ALL",
 						static_cast<uint32_t>(data.resolvedIssues.size()));
 					drawIssueFilterChoice(context, filterIds.next(), state, 1u, "ERRORS",
@@ -2704,7 +2705,7 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 					empty.layout.childGap = 4;
 					empty.layout.childAlignment = {
 						.x = CLAY_ALIGN_X_CENTER, .y = CLAY_ALIGN_Y_CENTER};
-					CLAY(context.clayID("no-element-issues"), empty) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("no-element-issues")), empty) {
 						CLAY_TEXT(context.uiManager.toClayString("● No matching issues"),
 							CLAY_TEXT_CONFIG(textConfig(interface_theme::kStatusGreen, 10)));
 						CLAY_TEXT(context.uiManager.toClayString(
@@ -2751,7 +2752,7 @@ void DevClaySubTree::buildElement(BuildContext& context) {
 		};
 		fallback.layout.padding = Clay_Padding{16, 16, 16, 16};
 		fallback.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
-		CLAY(context.clayID("fallback"), fallback) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("fallback")), fallback) {
 			CLAY_TEXT(
 				context.uiManager.toClayString(
 					"Unavailable: compile with FLOW_UI_DEV_CAPTURE_CLAY=1 to enable Clay subtree inspection."),
@@ -2764,7 +2765,7 @@ void DevClaySubTree::buildElement(BuildContext& context) {
 		tooling::DevFlowNodeIndex selectedFlowIndex = tooling::InvalidFlowNode;
 
 		if (state && state->selectedElementId && app && app->hasWindow(state->selectedWindowId)) {
-			snapshot = &app->ui(state->selectedWindowId).devTreeSnapshot();
+			snapshot = &FlowUi::ValueOrThrow(app->ui(state->selectedWindowId)).get().devTreeSnapshot();
 			for (std::size_t i = 0; i < snapshot->flow.nodes.size(); ++i) {
 				if (snapshot->flow.nodes[i].instance.value == state->selectedElementId.value) {
 					selectedFlowIndex = static_cast<tooling::DevFlowNodeIndex>(i);
@@ -2781,7 +2782,7 @@ void DevClaySubTree::buildElement(BuildContext& context) {
 			};
 			empty.layout.padding = Clay_Padding{16, 16, 16, 16};
 			empty.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
-			CLAY(context.clayID("no-selection"), empty) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("no-selection")), empty) {
 				CLAY_TEXT(
 					context.uiManager.toClayString(
 						"Select an element from the left tree selector to view its Clay subtree layout primitives."),
@@ -2808,7 +2809,7 @@ void DevClaySubTree::buildElement(BuildContext& context) {
 			const std::string name = std::string(nameView);
 			const std::string msg = "Flow element '" + (name.empty() ? "?" : name) +
 				"' did not emit any Clay layout nodes.";
-			CLAY(context.clayID("no-clay"), noClay) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("no-clay")), noClay) {
 				CLAY_TEXT(
 					context.uiManager.toClayString(msg),
 					CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextMuted, 11)));
@@ -2839,7 +2840,7 @@ void DevClaySubTree::buildElement(BuildContext& context) {
 			"  |  Total Nodes: " + std::to_string(subtree.size()) +
 			"  |  Direct Emitted: " + std::to_string(directClay.size());
 
-		CLAY(context.clayID("summary-bar"), summaryBar) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("summary-bar")), summaryBar) {
 			CLAY_TEXT(
 				context.uiManager.toClayString(summaryText),
 				CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextCanvas, 11)));
@@ -2852,14 +2853,14 @@ void DevClaySubTree::buildElement(BuildContext& context) {
 			.height = CLAY_SIZING_GROW(0),
 		};
 		treeList.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
-		const Clay_ScrollContainerData scroll = Clay_GetScrollContainerData(context.clayID("tree-list"));
+		const Clay_ScrollContainerData scroll = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("tree-list")));
 		treeList.clip = {
 			.vertical = true,
 			.childOffset = scroll.found && scroll.scrollPosition
 				? *scroll.scrollPosition : Clay_Vector2{},
 		};
 
-		CLAY(context.clayID("tree-list"), treeList) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("tree-list")), treeList) {
 			Clay_ElementDeclaration treeContent{};
 			treeContent.layout.sizing = {
 				.width = CLAY_SIZING_GROW(0),
@@ -2867,7 +2868,7 @@ void DevClaySubTree::buildElement(BuildContext& context) {
 			};
 			treeContent.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 
-			CLAY(context.clayID("tree-content"), treeContent) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("tree-content")), treeContent) {
 				const uint32_t rootDepth = subtree[0].depthWithinRoot;
 				uint32_t collapsedDepth = std::numeric_limits<uint32_t>::max();
 
@@ -3027,7 +3028,7 @@ void DevInspectWorkbenchContent::buildElement(BuildContext& context) {
 				.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
 			empty.layout.childAlignment = {
 				.x = CLAY_ALIGN_X_CENTER, .y = CLAY_ALIGN_Y_CENTER};
-			CLAY(context.clayID("empty-selection"), empty) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("empty-selection")), empty) {
 				CLAY_TEXT(context.uiManager.toClayString(
 					"Select a Flow element to open its workbench"),
 					CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextMuted, 12)));
@@ -3048,12 +3049,12 @@ void DevInspectWorkbenchContent::buildElement(BuildContext& context) {
 			row.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 			row.layout.childGap = kWorkbenchGap;
 
-			CLAY(context.clayID(kTopRow), row) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(kTopRow)), row) {
 				drawWorkbenchCard(context, kPreview, DevWorkbenchSection::Preview);
 				drawWorkbenchCard(context, kOverviewAndPerformance,
 					DevWorkbenchSection::OverviewAndPerformance);
 			}
-			CLAY(context.clayID(kBottomRow), row) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(kBottomRow)), row) {
 				drawWorkbenchCard(context, kChangesAndDiagnostics,
 					DevWorkbenchSection::ChangesAndDiagnostics);
 				drawWorkbenchCard(context, kClaySubTree, DevWorkbenchSection::ClaySubTree);
@@ -3090,7 +3091,7 @@ void DevInspectWorkbench::buildElement(BuildContext& context) {
 	const tooling::DevTreeSnapshot* snapshot = nullptr;
 	const tooling::DevFlowNode* selected = nullptr;
 	if (state && state->selectedElementId && app && app->hasWindow(state->selectedWindowId)) {
-		snapshot = &app->ui(state->selectedWindowId).devTreeSnapshot();
+		snapshot = &FlowUi::ValueOrThrow(app->ui(state->selectedWindowId)).get().devTreeSnapshot();
 		const auto found = std::ranges::find_if(snapshot->flow.nodes,
 			[state](const tooling::DevFlowNode& node) {
 				return node.instance.value == state->selectedElementId.value;
@@ -3126,7 +3127,7 @@ void DevInspectWorkbench::buildElement(BuildContext& context) {
 		directClayNodes = selected->directClayCount;
 #endif
 		for (const tooling::DevOverrideApply::Record& record :
-			app->devTooling().overrides().appliedOverrides().records()) {
+			FlowUi::ValueOrThrow(app->devTooling()).get().overrides().appliedOverrides().records()) {
 			if (record.layer == tooling::DevOverrideLayer::EphemeralPreview ||
 				record.target.definition != selected->definition) continue;
 			if (record.target.scope == tooling::DevOverrideScope::Definition ||

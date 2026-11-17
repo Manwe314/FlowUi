@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,19 +106,33 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevTreeDiagnostic Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Copied tree-capture validation failure with optional owner and numeric evidence.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevTreeTypes_8hpp_source.html">DevTreeTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a7442da0e1ca7cdc94e00ebf1e1c08ef0" id="r_a7442da0e1ca7cdc94e00ebf1e1c08ef0"><td class="memItemLeft"><a id="a7442da0e1ca7cdc94e00ebf1e1c08ef0" name="a7442da0e1ca7cdc94e00ebf1e1c08ef0"></a>
-DevTreeDiagnosticCode&#160;</td><td class="memItemRight"><b>code</b> {}</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#ab40501061c07083743587e3b26c37536">DevTreeDiagnosticCode</a>&#160;</td><td class="memItemRight"><b>code</b> {}</td></tr>
+<tr class="memdesc:a7442da0e1ca7cdc94e00ebf1e1c08ef0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Machine-readable capture/ownership failure. <br /></td></tr>
 <tr class="memitem:a776c1384fe07a796b12f7600c7a4657c" id="r_a776c1384fe07a796b12f7600c7a4657c"><td class="memItemLeft"><a id="a776c1384fe07a796b12f7600c7a4657c" name="a776c1384fe07a796b12f7600c7a4657c"></a>
-DevFlowNodeIndex&#160;</td><td class="memItemRight"><b>flow</b> = InvalidFlowNode</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#abb7cf1ac228b98e4820b58c51b6e7802">DevFlowNodeIndex</a>&#160;</td><td class="memItemRight"><b>flow</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#aaacca7b3acfa78ccd87e067c0b4c31d3">InvalidFlowNode</a></td></tr>
+<tr class="memdesc:a776c1384fe07a796b12f7600c7a4657c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Associated Flow node, or InvalidFlowNode. <br /></td></tr>
+<tr class="memitem:a2e3eb6094449566126425fa88b2e76cc" id="r_a2e3eb6094449566126425fa88b2e76cc"><td class="memItemLeft"><a id="a2e3eb6094449566126425fa88b2e76cc" name="a2e3eb6094449566126425fa88b2e76cc"></a>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a2c74085ff8b13f4561aa50312a65adad">DevClayNodeIndex</a>&#160;</td><td class="memItemRight"><b>clay</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a72353abadd66c3881cba5dccf5466d18">InvalidClayNode</a></td></tr>
+<tr class="memdesc:a2e3eb6094449566126425fa88b2e76cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Associated Clay node, or InvalidClayNode. <br /></td></tr>
 <tr class="memitem:ad82571d7b7f3a1815f401abcefb426b4" id="r_ad82571d7b7f3a1815f401abcefb426b4"><td class="memItemLeft"><a id="ad82571d7b7f3a1815f401abcefb426b4" name="ad82571d7b7f3a1815f401abcefb426b4"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>expected</b> = 0</td></tr>
+<tr class="memdesc:ad82571d7b7f3a1815f401abcefb426b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Expected identity/count/relationship encoded for the diagnostic. <br /></td></tr>
 <tr class="memitem:a011ef4c057278c6eef6a2a935d3be300" id="r_a011ef4c057278c6eef6a2a935d3be300"><td class="memItemLeft"><a id="a011ef4c057278c6eef6a2a935d3be300" name="a011ef4c057278c6eef6a2a935d3be300"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>observed</b> = 0</td></tr>
+<tr class="memdesc:a011ef4c057278c6eef6a2a935d3be300"><td class="mdescLeft">&#160;</td><td class="mdescRight">Observed identity/count/relationship encoded for the diagnostic. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Copied tree-capture validation failure with optional owner and numeric evidence. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/tree/<a class="el" href="DevTreeTypes_8hpp_source.html">DevTreeTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -134,7 +148,7 @@ uint64_t&#160;</td><td class="memItemRight"><b>observed</b> = 0</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeDiagnostic.html">DevTreeDiagnostic</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeDiagnostic.html">DevTreeDiagnostic</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

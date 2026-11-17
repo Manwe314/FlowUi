@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,27 +106,42 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevTimingConfig Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>CPU/GPU timing collection and producer buffer sizes in development builds. Requested detail is capped by FLOWUI_DEV_TIMING_LEVEL; capacities count records or query slots.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevConfig_8hpp_source.html">DevConfig.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a0e6e9916ff2bce070a981d02fab0623d" id="r_a0e6e9916ff2bce070a981d02fab0623d"><td class="memItemLeft"><a id="a0e6e9916ff2bce070a981d02fab0623d" name="a0e6e9916ff2bce070a981d02fab0623d"></a>
 <a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a>&#160;</td><td class="memItemRight"><b>selectedElementInstance</b> {}</td></tr>
+<tr class="memdesc:a0e6e9916ff2bce070a981d02fab0623d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optional element instance selected for detailed timing; zero selects no instance. <br /></td></tr>
 <tr class="memitem:ad868aa6095b5fdaa33492060a81946fb" id="r_ad868aa6095b5fdaa33492060a81946fb"><td class="memItemLeft"><a id="ad868aa6095b5fdaa33492060a81946fb" name="ad868aa6095b5fdaa33492060a81946fb"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>balancedElementRetentionThresholdNs</b> = 50'000u</td></tr>
+<tr class="memdesc:ad868aa6095b5fdaa33492060a81946fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Minimum element scope duration retained by Balanced timing, in nanoseconds. <br /></td></tr>
 <tr class="memitem:a94fabb73e9e63f9bdb84afebdb8ab4f7" id="r_a94fabb73e9e63f9bdb84afebdb8ab4f7"><td class="memItemLeft"><a id="a94fabb73e9e63f9bdb84afebdb8ab4f7" name="a94fabb73e9e63f9bdb84afebdb8ab4f7"></a>
 <a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a>&#160;</td><td class="memItemRight"><b>selectedElementDefinition</b> {}</td></tr>
+<tr class="memdesc:a94fabb73e9e63f9bdb84afebdb8ab4f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optional definition selected for detailed timing; zero selects no definition. <br /></td></tr>
 <tr class="memitem:a845f27a76ff425ab989233ea8595a842" id="r_a845f27a76ff425ab989233ea8595a842"><td class="memItemLeft"><a id="a845f27a76ff425ab989233ea8595a842" name="a845f27a76ff425ab989233ea8595a842"></a>
-CpuTimingLevel&#160;</td><td class="memItemRight"><b>cpuLevel</b> = CpuTimingLevel::Summary</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems.html#ae4b4976afd5dc620023f7520cabbd768">CpuTimingLevel</a>&#160;</td><td class="memItemRight"><b>cpuLevel</b> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ae4b4976afd5dc620023f7520cabbd768a290612199861c31d1036b185b4e69b75">CpuTimingLevel::Summary</a></td></tr>
+<tr class="memdesc:a845f27a76ff425ab989233ea8595a842"><td class="mdescLeft">&#160;</td><td class="mdescRight">CPU detail requested up to the compiled FLOWUI_DEV_TIMING_LEVEL. <br /></td></tr>
 <tr class="memitem:aaf4eb5a52b1cc6c7660b16849ee8cbbf" id="r_aaf4eb5a52b1cc6c7660b16849ee8cbbf"><td class="memItemLeft"><a id="aaf4eb5a52b1cc6c7660b16849ee8cbbf" name="aaf4eb5a52b1cc6c7660b16849ee8cbbf"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>enabledCategoryMask</b> = 0xFFFFFFFFu</td></tr>
+<tr class="memdesc:aaf4eb5a52b1cc6c7660b16849ee8cbbf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bitmask of timing categories admitted by collection. <br /></td></tr>
 <tr class="memitem:aad20999842adbc1e5d313cffe64c8f83" id="r_aad20999842adbc1e5d313cffe64c8f83"><td class="memItemLeft"><a id="aad20999842adbc1e5d313cffe64c8f83" name="aad20999842adbc1e5d313cffe64c8f83"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>gpuQueryCapacityPerFrame</b> = 512u</td></tr>
+<tr class="memdesc:aad20999842adbc1e5d313cffe64c8f83"><td class="mdescLeft">&#160;</td><td class="mdescRight">Timestamp query slots reserved per GPU frame. <br /></td></tr>
 <tr class="memitem:aebf791b1ca06d81857b538a610b2f9b9" id="r_aebf791b1ca06d81857b538a610b2f9b9"><td class="memItemLeft"><a id="aebf791b1ca06d81857b538a610b2f9b9" name="aebf791b1ca06d81857b538a610b2f9b9"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>producerRecordCapacity</b> = 8192u</td></tr>
+<tr class="memdesc:aebf791b1ca06d81857b538a610b2f9b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum records buffered by each producer before draining. <br /></td></tr>
 <tr class="memitem:a895a99d20b96074203e56050c45bb866" id="r_a895a99d20b96074203e56050c45bb866"><td class="memItemLeft"><a id="a895a99d20b96074203e56050c45bb866" name="a895a99d20b96074203e56050c45bb866"></a>
 bool&#160;</td><td class="memItemRight"><b>gpuTimingEnabled</b> = true</td></tr>
+<tr class="memdesc:a895a99d20b96074203e56050c45bb866"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether GPU timestamp collection is requested. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>CPU/GPU timing collection and producer buffer sizes in development builds. Requested detail is capped by FLOWUI_DEV_TIMING_LEVEL; capacities count records or query slots. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/<a class="el" href="DevConfig_8hpp_source.html">DevConfig.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -142,7 +157,7 @@ bool&#160;</td><td class="memItemRight"><b>gpuTimingEnabled</b> = true</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevTimingConfig.html">DevTimingConfig</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevTimingConfig.html">DevTimingConfig</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

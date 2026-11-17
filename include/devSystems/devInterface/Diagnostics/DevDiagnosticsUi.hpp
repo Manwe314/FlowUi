@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #pragma once
 
 #include "FlowUi/Public/BuildConfig.hpp"
@@ -63,7 +64,7 @@ void pointer_tooltip(Context& context, const Identity& identity, std::string_vie
 	if (input.mouseX < 0 || input.mouseY < 0)
 		return;
 	const auto dimensions = Clay_GetLayoutDimensions();
-	const auto previous = Clay_GetElementData(context.clayID(identity));
+	const auto previous = Clay_GetElementData(FlowUi::ValueOrThrow(context.clayID(identity)));
 	const float maximum_width = std::max(1.0f, std::min(300.0f, dimensions.width - 16));
 	const float maximum_height = std::max(1.0f, std::min(200.0f, dimensions.height - 16));
 	const float width = previous.found ? previous.boundingBox.width : maximum_width;
@@ -85,20 +86,20 @@ void pointer_tooltip(Context& context, const Identity& identity, std::string_vie
 	tooltip.floating.zIndex = 140;
 	tooltip.floating.clipTo = CLAY_CLIP_TO_NONE;
 	tooltip.floating.pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_PASSTHROUGH;
-	CLAY(context.clayID(identity), tooltip) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(identity)), tooltip) {
 		Clay_ElementDeclaration content{};
 		content.layout.sizing = {CLAY_SIZING_FIT(0, std::max(1.0f, maximum_width - 22)),
 								 CLAY_SIZING_FIT(0, std::max(1.0f, maximum_height - 20))};
 		// Clay's floating and clip scopes must close independently so following
 		// timeline surfaces keep their own clipping ancestors while help is visible.
 		content.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
-		CLAY(context.clayID(Keyed("tooltip-content", identity.token)), content) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("tooltip-content", identity.token))), content) {
 			// Clay leaves clipped children at their intrinsic width. Constrain an
 			// unclipped parent so prose wraps before the outer viewport clips it.
 			Clay_ElementDeclaration textContainer{};
 			textContainer.layout.sizing = {CLAY_SIZING_GROW(0, std::max(1.0f, maximum_width - 22)),
 										   CLAY_SIZING_FIT(0)};
-			CLAY(context.clayID(Keyed("tooltip-text", identity.token)), textContainer)
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("tooltip-text", identity.token))), textContainer)
 			text(context, description, interface_theme::kTextCanvas, 11);
 		}
 	}
@@ -118,7 +119,7 @@ void icon_with_identity(Context& context, const Identity& identity,
 	image.layout.sizing = {.width = CLAY_SIZING_FIXED(size), .height = CLAY_SIZING_FIXED(size)};
 	image.backgroundColor = color;
 	image.image.imageData = context.uiManager.imageData(texture);
-	CLAY(context.clayID(identity), image) {}
+	CLAY(FlowUi::ValueOrThrow(context.clayID(identity)), image) {}
 #else
 	text(context, diagnostics_icons::fallback(semantic), color, static_cast<uint16_t>(size));
 #endif
@@ -165,9 +166,9 @@ struct Control {
 	static void activate(InteractionContext& context) {
 		if (!context.params.enabled)
 			return;
-		context.uiManager.shortcuts().setFocusedElement(context.clayID());
+		FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(context.clayID()));
 		if (!context.params.clipboard_text.empty() && context.uiManager.hasClipboardAccess())
-			context.uiManager.setClipboardText(context.params.clipboard_text);
+			FlowUi::ValueOrThrow(context.uiManager.setClipboardText(context.params.clipboard_text));
 		if (context.params.activate) {
 			context.params.activate(context.params.target, context.params.action,
 									context.params.value);
@@ -182,12 +183,12 @@ struct Control {
 		const auto& current = context.uiManager.getCurrentFrameInput();
 		const auto& previous = context.uiManager.getPreviousFrameInput();
 		if ((!context.state().isArmed &&
-			 context.uiManager.shortcuts().focusedElement().id != context.clayID().id) ||
+			 FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id != context.clayID().id) ||
 			(current.keyDown[FlowUi::keyCode(FlowUi::Key::Tab)] &&
 			 !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Tab)]))
 			context.state().pointer_focused = false;
 		if (context.params.keyboard_activation &&
-			context.uiManager.shortcuts().focusedElement().id == context.clayID().id &&
+			FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id == context.clayID().id &&
 			!context.uiManager.inputFields().hasPrimaryFieldFocus() &&
 			((current.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)] &&
 			  !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)]) ||
@@ -214,7 +215,7 @@ struct Control {
 				hovered ? interface_theme::kHoverSurface : interface_theme::kDepth2Ink;
 			const bool focused =
 				parameters.focused ||
-				(context.uiManager.shortcuts().focusedElement().id == context.clayID().id &&
+				(FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id == context.clayID().id &&
 				 !context.state().pointer_focused);
 			surface.border = {.color = focused ? interface_theme::kAccentCurrent
 											   : interface_theme::kBorderPrimary,
@@ -260,7 +261,7 @@ struct Control {
 														 : interface_theme::kDepth3Elevated;
 		const bool focused =
 			parameters.focused ||
-			(context.uiManager.shortcuts().focusedElement().id == context.clayID().id &&
+			(FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id == context.clayID().id &&
 			 !context.state().pointer_focused);
 		surface.border = {.color = focused				  ? interface_theme::kAccentCurrent
 								   : parameters.issue_row ? interface_theme::kBorderSubtle
@@ -278,7 +279,7 @@ struct Control {
 				auto headline = row(16);
 				if (parameters.flexible)
 					headline.layout.sizing.height = CLAY_SIZING_FIT(16);
-				CLAY(context.clayID("headline"), headline) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("headline")), headline) {
 					icon(context, "marker",
 						 parameters.icon == diagnostics_icons::Icon::None
 							 ? diagnostics_icons::Icon::Issue
@@ -289,7 +290,7 @@ struct Control {
 						parameters.flexible ? CLAY_SIZING_FIT(0) : CLAY_SIZING_GROW(0);
 					label.clip.horizontal = true;
 					label.clip.scrollInputDisabled = true;
-					CLAY(context.clayID("label"), label) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("label")), label) {
 						Clay_TextElementConfig configuration{};
 						configuration.fontSize = 12;
 						configuration.textColor = interface_theme::kTextCanvas;
@@ -307,7 +308,7 @@ struct Control {
 					summary.layout.sizing.height = CLAY_SIZING_FIXED(14);
 					summary.clip.horizontal = true;
 					summary.clip.scrollInputDisabled = true;
-					CLAY(context.clayID("summary"), summary) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("summary")), summary) {
 						Clay_TextElementConfig configuration{};
 						configuration.fontSize = 11;
 						configuration.textColor = interface_theme::kTextSecondary;

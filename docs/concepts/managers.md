@@ -2,7 +2,7 @@
 
 ## Introduction
 
-FlowUi managers are compact subsystem objects owned by the main `FlowUi::App`. They are "singleton-like" within one app instance: there is one action manager, one font manager, one image manager, one viewport manager, and so on for that running application. A `UiManager` remains window-specific and owns its input-field, shortcut, and popup services. Users do not create, initialize, destroy, or synchronize these managers manually. `App` owns them, wires them to the window, Vulkan context, renderer, texture registry, and frame lifecycle, then exposes references through accessors such as `app.ui()`, `app.actions()`, `app.fonts()`, `app.images()`, and `app.viewPorts()`.
+FlowUi managers are compact subsystem objects owned by the main `FlowUi::App`. They are "singleton-like" within one app instance: there is one action manager, one font manager, one image manager, one viewport manager, and so on for that running application. A `UiManager` remains window-specific and owns its input-field, shortcut, and popup services. Users do not create, initialize, destroy, or synchronize these managers manually. `App` owns them, wires them to the window, Vulkan context, renderer, texture registry, and frame lifecycle, then exposes checked borrowed references through accessors such as `app.ui()`, `app.actions()`, `app.fonts()`, `app.images()`, and `app.viewPorts()`.
 
 ## TL;DR
 
@@ -11,10 +11,10 @@ Managers exist because Clay is a layout library, not a full desktop application 
 You normally access a manager by reference and pass that reference around:
 
 ```cpp
-FlowUi::UiManager& ui = app.ui();
-FlowUi::ActionManager& actions = app.actions();
-FlowUi::FontManager& fonts = app.fonts();
-FlowUi::ImageManager& images = app.images();
+FlowUi::UiManager& ui = FlowUi::ValueOrThrow(app.ui()).get();
+FlowUi::ActionManager& actions = FlowUi::ValueOrThrow(app.actions()).get();
+FlowUi::FontManager& fonts = FlowUi::ValueOrThrow(app.fonts()).get();
+FlowUi::ImageManager& images = FlowUi::ValueOrThrow(app.images()).get();
 ```
 
 The manager object carries the relevant internal logic and lifetime rules for its subsystem. User code asks it to do useful work; `App` handles ownership and frame integration.
@@ -43,15 +43,15 @@ Managers are owned by `FlowUi::App`. They are initialized during `makeApplicatio
 This is why the public API returns references:
 
 ```cpp
-FlowUi::UiManager& ui = app.ui();
-FlowUi::ImageManager& images = app.images();
+FlowUi::UiManager& ui = FlowUi::ValueOrThrow(app.ui()).get();
+FlowUi::ImageManager& images = FlowUi::ValueOrThrow(app.images()).get();
 ```
 
 Those references are convenient handles into app-owned subsystems. They can be passed into helper functions:
 
 ```cpp
 void drawToolbar(FlowUi::UiManager& ui, FlowUi::ImageManager& images) {
-    FlowUi::TextureRef logo = images.getTexture("toolbar/logo");
+    FlowUi::TextureRef logo = FlowUi::ValueOrThrow(images.getTexture("toolbar/logo"));
     (void)logo;
     ui.createElement(kToolbar, "toolbar").draw();
 }
@@ -61,7 +61,7 @@ The references should not outlive the `App` that owns them. They are not indepen
 
 ## ActionManager
 
-`ActionManager` is app-owned and exposed through every `UiManager`. Its `appActions()` surface stores semantic bindings in `StorageSystem`; the application still owns every pointer or `reference_wrapper` supplied as a resource. Its `uiActions()` surface creates allocation-free transient calls from stateless recipes and local lvalues. See the [Action Manager API](../api/action_manager.md) for lifetime rules and examples.
+`ActionManager` is app-owned and exposed through every `UiManager`. Its `appActions()` surface stores semantic bindings in `StorageSystem`; the application still owns every pointer or `reference_wrapper` supplied as a resource. Its `uiActions()` surface creates allocation-free transient calls from stateless recipes and local lvalues. See the [Action Manager API](docs/api/action_manager.md) for lifetime rules and examples.
 
 ## UiManager
 
@@ -72,7 +72,7 @@ It owns the Clay context, frame-local string arenas, frame-local texture referen
 Common use cases:
 
 ```cpp
-FlowUi::UiManager& ui = app.ui();
+FlowUi::UiManager& ui = FlowUi::ValueOrThrow(app.ui()).get();
 
 ui.createElement(kButton, "toolbar/save")
     .setParameters(ButtonParams{.label = "Save"})
@@ -81,8 +81,8 @@ ui.createElement(kButton, "toolbar/save")
 
 ```cpp
 Clay_String label = ui.toClayString(dynamicLabel);
-Clay_ElementId rootId = ui.toClayEID("settings/root");
-FlowUi::TextureRef* texture = ui.imageData(app.images().getTexture("avatar"));
+Clay_ElementId rootId = ui.toClaySID("settings/root");
+FlowUi::TextureRef* texture = ui.imageData(FlowUi::ValueOrThrow(images.getTexture("avatar")));
 ```
 
 `UiManager` is frame-sensitive. Functions like `toClayString()` and `imageData()` use frame-local arena memory, so their returned pointers are only valid for the current frame. Storage independently retains each resolved logical GPU texture through submission.
@@ -94,12 +94,12 @@ FlowUi::TextureRef* texture = ui.imageData(app.images().getTexture("avatar"));
 The common workflow is:
 
 ```cpp
-FlowUi::FontFamilyId body = app.fonts().createFamily({
+FlowUi::FontFamilyId body = FlowUi::ValueOrThrow(fonts.createFamily({
     .name = "Body",
     .faces = {{.path = "assets/fonts/Inter.arfont", .pixelSize = 18.0f}},
-});
+}));
 
-FlowUi::FontId bodyFont = app.fonts().resolveFont(body, 400, FlowUi::FontStyle::Normal);
+FlowUi::FontId bodyFont = FlowUi::ValueOrThrow(fonts.resolveFont(body, 400, FlowUi::FontStyle::Normal));
 ```
 
 Users generally think in terms of families, weights, and styles. The renderer needs a concrete `FontId`. `FlowUi::FontManager` bridges that gap and keeps the loaded font data and atlas resources alive.
@@ -107,7 +107,7 @@ Users generally think in terms of families, weights, and styles. The renderer ne
 It also supports adding more faces to a family:
 
 ```cpp
-app.fonts().addFamilyFace("Body", {.path = "assets/fonts/Inter-Bold.arfont", .weight = 700});
+(void)FlowUi::ValueOrThrow(fonts.addFamilyFace("Body", {.path = "assets/fonts/Inter-Bold.arfont", .weight = 700}));
 ```
 
 This lets UI code ask for "Body, weight 700" without caring which exact baked face was loaded internally.
@@ -119,8 +119,8 @@ This lets UI code ask for "Body, weight 700" without caring which exact baked fa
 Typical usage:
 
 ```cpp
-app.images().registerImage("profile/avatar", "assets/avatar.png");
-FlowUi::TextureRef avatar = app.images().getTexture("profile/avatar");
+(void)FlowUi::ValueOrThrow(images.registerImage("profile/avatar", "assets/avatar.png"));
+FlowUi::TextureRef avatar = FlowUi::ValueOrThrow(images.getTexture("profile/avatar"));
 ```
 
 Internally, the image manager decodes the file, uploads it as a Vulkan texture, registers it with the UI texture registry, and gives user code a compact texture reference. The returned `TextureRef` can then be passed through an element params struct or stored into Clay image data with `UiManager::imageData()`.
@@ -128,7 +128,7 @@ Internally, the image manager decodes the file, uploads it as a Vulkan texture, 
 The image manager also owns replacement and removal behavior:
 
 ```cpp
-app.images().removeImage("profile/avatar");
+(void)FlowUi::ValueOrThrow(images.removeImage("profile/avatar"));
 ```
 
 That matters because GPU resources cannot always be destroyed immediately while frames are still in flight. The manager hides those frame-safe lifetime details from user code.
@@ -140,8 +140,9 @@ That matters because GPU resources cannot always be destroyed immediately while 
 Typical usage:
 
 ```cpp
-app.icons().registerFromFile("toolbar/save", "assets/icons/save.svg");
-FlowUi::TextureRef saveIcon = app.icons().textureRef("toolbar/save");
+auto& icons = FlowUi::ValueOrThrow(app.icons()).get();
+(void)FlowUi::ValueOrThrow(icons.registerFromFile("toolbar/save", "assets/icons/save.svg"));
+FlowUi::TextureRef saveIcon = FlowUi::ValueOrThrow(icons.textureRef("toolbar/save"));
 ```
 
 SVG icons are different from normal images because the useful raster size depends on where the icon is drawn. FlowUi stores the SVG document under a key, then during frame preparation it rasterizes and caches atlas variants sized for the rendered UI area.
@@ -153,7 +154,7 @@ This means app code can work with stable icon keys and texture refs while the ma
 `InputFieldManager` owns editable text field state. It is reached through `UiManager`:
 
 ```cpp
-FlowUi::InputFieldManager& inputFields = app.ui().inputFields();
+FlowUi::InputFieldManager& inputFields = FlowUi::ValueOrThrow(app.ui()).get().inputFields();
 ```
 
 Clay can lay out text and boxes, but editable input needs persistent text, focus, carets, selections, pointer hit testing, keyboard edits, key repeat, copy/paste support, and caret/selection rendering. `InputFieldManager` owns that behavior so custom input elements can be written as reusable visual wrappers instead of full text editor implementations.
@@ -181,20 +182,20 @@ The field's text lives in the manager, not in the element's params. That lets th
 `ShortcutManager` owns keyboard shortcut registration and dispatch. It is also reached through `UiManager`:
 
 ```cpp
-FlowUi::ShortcutManager& shortcuts = app.ui().shortcuts();
+FlowUi::ShortcutManager& shortcuts = FlowUi::ValueOrThrow(app.ui()).get().shortcuts();
 ```
 
 Shortcuts are registered as chords with a scope, priority, and callback:
 
 ```cpp
-FlowUi::ShortcutId saveShortcut = shortcuts.registerShortcut(
+FlowUi::ShortcutId saveShortcut = FlowUi::ValueOrThrow(shortcuts.registerShortcut(
     {.key = GLFW_KEY_S, .ctrl = true},
     FlowUi::ShortcutScope::Global,
     100,
     [](FlowUi::ShortcutContext&) {
         saveDocument();
         return true;
-    });
+    }));
 ```
 
 Each frame, the shortcut manager compares current and previous `FrameInput`, detects press/release/down transitions, checks scope, orders callbacks by priority, and stops dispatch when a callback returns `true`.
@@ -206,12 +207,12 @@ Scopes let local behavior handle a chord before global fallback behavior. For ex
 `PopupManager` is the window-scoped behavior service for floating popup roots. It is reached through `UiManager`:
 
 ```cpp
-FlowUi::PopupManager& popups = app.ui().popups();
+FlowUi::PopupManager& popups = FlowUi::ValueOrThrow(app.ui()).get().popups();
 ```
 
 Custom elements submit a stable popup identity and `PopupRequest` each visible frame. The manager resolves parent, element, pointer, position, or viewport anchors; translates the requested nine-point attachment into Clay floating configuration; corrects viewport overflow once a size is known; assigns a z-index from the chosen popup layer; and reports automatic outside-press or Escape dismissal. Outside presses can be ignored, can dismiss while blocking only the popup anchor, or can dismiss while consuming the complete pointer gesture.
 
-The manager does not prescribe visual styling, content, modal backdrops, focus trapping, or application-owned open state. `FlowUi::FSEL::kPopupSurface` is one convenience element built on this general service. See the [Popup Manager API](../api/popup_manager.md) for the request contract, first-frame measurement behavior, and custom-element example.
+The manager does not prescribe visual styling, content, modal backdrops, focus trapping, or application-owned open state. `FlowUi::FSEL::kPopupSurface` is one convenience element built on this general service. See the [Popup Manager API](docs/api/popup_manager.md) for the request contract, first-frame measurement behavior, and custom-element example.
 
 ## ViewPortManager
 
@@ -220,9 +221,10 @@ The manager does not prescribe visual styling, content, modal backdrops, focus t
 Typical usage:
 
 ```cpp
-app.viewPorts().create("preview", {.clearColor = {0.02f, 0.02f, 0.03f, 1.0f}});
+auto& viewPorts = FlowUi::ValueOrThrow(app.viewPorts()).get();
+(void)FlowUi::ValueOrThrow(viewPorts.create("preview", {.clearColor = {0.02f, 0.02f, 0.03f, 1.0f}}));
 
-if (FlowUi::ViewPort* preview = app.viewPorts().getViewPort("preview")) {
+if (FlowUi::ViewPort* preview = FlowUi::ValueOrThrow(viewPorts.getViewPort("preview"))) {
     preview->setRenderCallback([](const FlowUi::ViewPortRenderContext& context) {
         recordPreviewCommands(context);
     });
@@ -232,7 +234,7 @@ if (FlowUi::ViewPort* preview = app.viewPorts().getViewPort("preview")) {
 Then UI can display it through a texture ref:
 
 ```cpp
-FlowUi::TextureRef previewTexture = app.viewPorts().getTexture("preview");
+FlowUi::TextureRef previewTexture = FlowUi::ValueOrThrow(viewPorts.getTexture("preview"));
 ```
 
 The manager handles per-frame render target images, size tracking from UI image bounds, command resources, texture registry slots, and invoking render callbacks. User code records custom Vulkan work into the callback context, but the manager owns the target and frame integration.
@@ -246,19 +248,20 @@ This is the subsystem to use for scene previews, graph views, custom renderers, 
 Typical usage:
 
 ```cpp
-app.themes().registerTheme<AppTheme>("dark", darkTheme, true);
-app.themes().registerTheme<AppTheme>("light", lightTheme, false);
+auto& themes = FlowUi::ValueOrThrow(app.themes()).get();
+(void)FlowUi::ValueOrThrow(themes.registerTheme<AppTheme>("dark", darkTheme, true));
+(void)FlowUi::ValueOrThrow(themes.registerTheme<AppTheme>("light", lightTheme, false));
 
 // In UI element code:
-const auto& theme = context.uiManager.theme<AppTheme>();
+const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<AppTheme>()).get();
 ```
 
 Staged theme mutations take effect at frame boundaries (`app.pollEvents()` / `beginFrame()`):
 
 ```cpp
-app.themes().updateActiveTheme<AppTheme>([](AppTheme& t) {
+(void)FlowUi::ValueOrThrow(themes.updateActiveTheme<AppTheme>([](AppTheme& t) {
     t.brandAccent = Flow_Color("#ff0055ff");
-});
+}));
 ```
 
 `ThemeManager` integrates persistent storage (`FlowStorageSystem`) with lock-free reading, allowing immediate-mode elements to query design tokens safely and efficiently.
@@ -311,13 +314,13 @@ The point is that managers are not just containers. They are subsystems that kno
 
 ## What to Read Next
 
-- [Core Mental Model](mental_model.md)
-- [Frame Lifecycle](frame_lifecycle.md)
-- [Element System](element_system.md)
-- [API: UI Manager](../api/ui_manager.md)
-- [API: Font Manager](../api/font_manager.md)
-- [API: Image Manager](../api/image_manager.md)
-- [API: Icon Manager](../api/icon_manager.md)
-- [API: Input Field Manager](../api/input_field_manager.md)
-- [API: Shortcut Manager](../api/shortcut_manager.md)
-- [API: Viewport Manager](../api/viewport_manager.md)
+- [Core Mental Model](docs/concepts/mental_model.md)
+- [Frame Lifecycle](docs/concepts/frame_lifecycle.md)
+- [Element System](docs/concepts/element_system.md)
+- [API: UI Manager](docs/api/ui_manager.md)
+- [API: Font Manager](docs/api/font_manager.md)
+- [API: Image Manager](docs/api/image_manager.md)
+- [API: Icon Manager](docs/api/icon_manager.md)
+- [API: Input Field Manager](docs/api/input_field_manager.md)
+- [API: Shortcut Manager](docs/api/shortcut_manager.md)
+- [API: Viewport Manager](docs/api/viewport_manager.md)

@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.hpp"
 #include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE
@@ -81,7 +82,7 @@ struct AssetCard {
 			if (context.params.selection_focus_id.id &&
 				!context.uiManager.inputFields().hasPrimaryFieldFocus() &&
 				!context.uiManager.popups().has_open_popups())
-				context.uiManager.shortcuts().setFocusedElement(context.params.selection_focus_id);
+				FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(context.params.selection_focus_id));
 		}
 	}
 	static void runLogic(InteractionContext& context) {
@@ -90,14 +91,14 @@ struct AssetCard {
 		const auto& previous = context.uiManager.getPreviousFrameInput();
 		if (context.params.catalogue && !context.uiManager.inputFields().hasPrimaryFieldFocus() &&
 			!context.uiManager.popups().has_open_popups() &&
-			context.uiManager.shortcuts().focusedElement().id == context.clayID().id &&
+			FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id == context.clayID().id &&
 			((current.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)] &&
 			  !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)]) ||
 			 (current.keyDown[FlowUi::keyCode(FlowUi::Key::Space)] &&
 			  !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Space)]))) {
 			select_catalogue_asset(*context.params.catalogue, context.params.identity);
 			if (context.params.selection_focus_id.id)
-				context.uiManager.shortcuts().setFocusedElement(context.params.selection_focus_id);
+				FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(context.params.selection_focus_id));
 		}
 	}
 	[[nodiscard]] static Clay_ElementDeclaration constructElement(BuildContext& context) {
@@ -106,7 +107,7 @@ struct AssetCard {
 		card.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
 		if (context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID()))
 			card.backgroundColor = interface_theme::kHoverSurface;
-		if (context.uiManager.shortcuts().focusedElement().id == context.clayID().id)
+		if (FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id == context.clayID().id)
 			card.border.color = interface_theme::kAccentCurrent;
 		return card;
 	}
@@ -270,7 +271,7 @@ void button(Context& context, IndexedElementName key, std::string label, uint64_
 	return mode == 1 ? Clay_Color{238, 240, 242, 255} : interface_theme::kDepth0Keel;
 }
 [[nodiscard]] float framebuffer_scale(Context& context) {
-	const auto framebuffer = context.params.app->framebufferSize(context.uiManager.windowId());
+	const auto framebuffer = FlowUi::ValueOrThrow(context.params.app->framebufferSize(context.uiManager.windowId()));
 	const auto layout = Clay_GetLayoutDimensions();
 	return layout.width > 0 ? std::max(.01f, static_cast<float>(framebuffer.first) / layout.width)
 							: 1;
@@ -290,7 +291,7 @@ void picture(Context& context, IndexedElementName key, TextureRef texture, float
 	image.image.imageData = context.uiManager.imageData(texture);
 	if (texture.tintEnabled)
 		image.backgroundColor = context.state().tint_color;
-	CLAY(context.clayID(key), image) {}
+	CLAY(FlowUi::ValueOrThrow(context.clayID(key)), image) {}
 }
 [[nodiscard]] TextureRef icon_texture(const tooling::DevIconCatalogEntry& icon,
 									  bool tint = false) noexcept {
@@ -314,8 +315,8 @@ void specimen_text(Context& context, const DevCatalogueAsset& asset, std::string
 	CLAY_TEXT(context.uiManager.toClayString(text), CLAY_TEXT_CONFIG(configuration));
 }
 [[nodiscard]] const tooling::DevSchemaRegistry::ElementPreview*
-element_adapter(Context& context, const DevCatalogueAsset& asset) noexcept {
-	const auto adapters = context.params.app->devTooling().schemas().elementPreviews();
+element_adapter(Context& context, const DevCatalogueAsset& asset) {
+	const auto adapters = FlowUi::ValueOrThrow(context.params.app->devTooling()).get().schemas().elementPreviews();
 	const auto found = std::ranges::find(adapters, asset.element.definition,
 										 &tooling::DevSchemaRegistry::ElementPreview::definition);
 	return found == adapters.end() ? nullptr : &*found;
@@ -349,7 +350,7 @@ void theme_tokens(Context& context, const DevCatalogueAsset& asset, size_t maxim
 				 interface_theme::kTextMuted, 11);
 		return;
 	}
-	const auto schema = context.params.app->devTooling().schemas().view();
+	const auto schema = FlowUi::ValueOrThrow(context.params.app->devTooling()).get().schemas().view();
 	std::string_view previous_group{};
 	const auto field_count =
 		std::min({maximum, presentation->fields.size(), presentation->values.size()});
@@ -362,7 +363,7 @@ void theme_tokens(Context& context, const DevCatalogueAsset& asset, size_t maxim
 		if (index == 0 || group != previous_group) {
 			auto heading = ui::row(32);
 			heading.layout.padding = {4, 4, 8, 0};
-			CLAY(context.clayID(Keyed("token-group", index)), heading)
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("token-group", index))), heading)
 			ui::text(context, group, interface_theme::kAccentSeaGlass, 13);
 			previous_group = group;
 		}
@@ -374,7 +375,7 @@ void theme_tokens(Context& context, const DevCatalogueAsset& asset, size_t maxim
 		token.backgroundColor =
 			index % 2 ? interface_theme::kDepth2Ink : interface_theme::kDepth3Elevated;
 		token.border = {.color = interface_theme::kBorderVisible, .width = {0, 0, 0, 1, 0}};
-		CLAY(context.clayID(Keyed("token", asset.identity ^ (index + 1))), token) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("token", asset.identity ^ (index + 1)))), token) {
 			auto label = ui::column(2);
 			label.layout.sizing.width = CLAY_SIZING_PERCENT(.42f);
 			std::string display_name;
@@ -386,7 +387,7 @@ void theme_tokens(Context& context, const DevCatalogueAsset& asset, size_t maxim
 					display_name += " / ";
 				else
 					display_name += character;
-			CLAY(context.clayID(Keyed("token-label", index)), label) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("token-label", index))), label) {
 				ui::text(context, display_name, interface_theme::kTextCanvas, 12);
 				if (field.field && schema) {
 					const auto hint = schema->string(field.field->hint);
@@ -418,7 +419,7 @@ void theme_tokens(Context& context, const DevCatalogueAsset& asset, size_t maxim
 				} else
 					visible = false;
 				if (visible)
-					CLAY(context.clayID(Keyed("swatch", asset.identity ^ (index + 1))), preview) {}
+					CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("swatch", asset.identity ^ (index + 1)))), preview) {}
 			}
 			std::string display_value = presentation->values[index].live_display;
 			if (type && field.live) {
@@ -466,7 +467,7 @@ void theme_tokens(Context& context, const DevCatalogueAsset& asset, size_t maxim
 			auto value = ui::column(0);
 			value.layout.sizing.width = CLAY_SIZING_GROW(0);
 			value.layout.childAlignment.x = CLAY_ALIGN_X_RIGHT;
-			CLAY(context.clayID(Keyed("token-value", index)), value)
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("token-value", index))), value)
 			ui::text(context, display_value, interface_theme::kTextSecondary, 12);
 		}
 	}
@@ -481,10 +482,10 @@ void theme_components(Context& context, const DevCatalogueAsset& asset) {
 	UiManager::DevPassivePreviewScope passive(context.uiManager);
 	bool rendered = false;
 	size_t scene_index = 0;
-	context.params.app->themes().visitDevPreviews(asset.theme.themeTypeId, [&](const auto& scene) {
+	FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(context.params.app->themes()).get().visitDevPreviews(asset.theme.themeTypeId, [&](const auto& scene) {
 		auto example = ui::card(16);
 		example.layout.padding = {18, 18, 16, 16};
-		CLAY(context.clayID(Keyed("theme-scene", scene_index++)), example) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("theme-scene", scene_index++))), example) {
 			ui::text(context, scene.debug_name, interface_theme::kTextCanvas, 14);
 			if (!scene.uses_local_theme && !presentation->source.active) {
 				ui::text(context,
@@ -500,11 +501,11 @@ void theme_components(Context& context, const DevCatalogueAsset& asset) {
 				}
 			}
 		}
-	});
+	}));
 	if (!rendered && asset.theme.themeTypeId == ::FlowUi::detail::typeHash<FSEL::FSELTheme>()) {
 		auto examples = ui::card(18);
 		examples.layout.padding = {20, 20, 18, 18};
-		CLAY(context.clayID("fsel-components"), examples) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("fsel-components")), examples) {
 			ui::text(context, "Controls", interface_theme::kTextCanvas, 14);
 			draw_fsel_theme_specimens(context, *context.params.app, context.state().specimens);
 		}
@@ -517,7 +518,7 @@ void icon_controls(Context& context, const DevCatalogueAsset& asset, bool compac
 	auto& state = context.params.interfaceState->catalogue;
 	const auto step = std::min<size_t>(state.domains[state.domain].raster_step, 6);
 	if (compact) {
-		CLAY(context.clayID(Keyed("card-controls", asset.identity)), ui::row(28)) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("card-controls", asset.identity))), ui::row(28)) {
 			if (asset.icons.empty())
 				button(context, Keyed("rasterize-card", asset.identity), "Rasterize", Raster + step,
 					   asset.identity, true,
@@ -532,7 +533,7 @@ void icon_controls(Context& context, const DevCatalogueAsset& asset, bool compac
 		return;
 	}
 	for (size_t first = 0; first < catalogue_icon_steps.size(); first += 4)
-		CLAY(context.clayID(Keyed("raster-steps", first)), ui::row(30)) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("raster-steps", first))), ui::row(30)) {
 			for (size_t index = first; index < std::min(first + 4, catalogue_icon_steps.size());
 				 ++index)
 				button(context, Keyed("rasterize", index),
@@ -552,7 +553,7 @@ void thumbnail(Context& context, const DevCatalogueAsset& asset, float width) {
 	stage.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
 	stage.backgroundColor = interface_theme::kDepth0Keel;
 	stage.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
-	CLAY(context.clayID(Keyed("thumbnail", asset.identity)), stage) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("thumbnail", asset.identity))), stage) {
 		switch (asset.domain) {
 		case Domain::Icons:
 			if (asset.icon.atlasTexture)
@@ -582,7 +583,7 @@ void thumbnail(Context& context, const DevCatalogueAsset& asset, float width) {
 			break;
 		case Domain::Themes: {
 			const auto* presentation = theme_presentation(context, asset);
-			const auto schema = context.params.app->devTooling().schemas().view();
+			const auto schema = FlowUi::ValueOrThrow(context.params.app->devTooling()).get().schemas().view();
 			std::vector<Clay_Color> palette;
 			palette.reserve(8);
 			if (presentation && schema)
@@ -603,18 +604,18 @@ void thumbnail(Context& context, const DevCatalogueAsset& asset, float width) {
 				}
 			auto preview = ui::column(10);
 			preview.layout.padding = {12, 12, 12, 12};
-			CLAY(context.clayID(Keyed("theme-preview", asset.identity)), preview) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("theme-preview", asset.identity))), preview) {
 				if (!palette.empty()) {
 					auto colors = ui::row(36);
 					colors.layout.childGap = 3;
-					CLAY(context.clayID(Keyed("theme-palette", asset.identity)), colors)
+					CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("theme-palette", asset.identity))), colors)
 					for (size_t index = 0; index < palette.size(); ++index) {
 						Clay_ElementDeclaration swatch{};
 						swatch.layout.sizing = {CLAY_SIZING_GROW(0), CLAY_SIZING_GROW(0)};
 						swatch.backgroundColor = palette[index];
 						swatch.cornerRadius = CLAY_CORNER_RADIUS(4);
-						CLAY(context.clayID(
-								 Keyed("theme-preview-color", asset.identity ^ (index + 1))),
+						CLAY(FlowUi::ValueOrThrow(context.clayID(
+								 Keyed("theme-preview-color", asset.identity ^ (index + 1)))),
 							 swatch) {}
 					}
 				} else
@@ -673,7 +674,7 @@ void thumbnail(Context& context, const DevCatalogueAsset& asset, float width) {
 	}
 }
 [[nodiscard]] std::string card_label(Context& context, std::string_view label, float width) {
-	const auto* face = context.params.app->fonts().getFontById(0);
+	const auto* face = FlowUi::ValueOrThrow(context.params.app->fonts()).get().getFontById(0);
 	if (!face)
 		return std::string(label);
 	const ::FlowUi::detail::text::CurrentTextShaper shaper;
@@ -726,7 +727,7 @@ void gallery(Context& context, float width, float height) {
 		static_cast<size_t>(std::clamp(std::floor((width - 20) / 208), 1.0f, 6.0f));
 	const size_t row_count = (state.visible_assets.size() + columns - 1) / columns;
 	constexpr float row_height = 242;
-	const auto viewport = context.clayID("gallery-scroll");
+	const auto viewport = FlowUi::ValueOrThrow(context.clayID("gallery-scroll"));
 	auto scroll = Clay_GetScrollContainerData(viewport);
 	if (scroll.found && scroll.scrollPosition && context.state().last_domain != state.domain)
 		scroll.scrollPosition->y = view.workbench_scroll;
@@ -748,14 +749,14 @@ void gallery(Context& context, float width, float height) {
 				return;
 			Clay_ElementDeclaration declaration{};
 			declaration.layout.sizing = {CLAY_SIZING_FIXED(1), CLAY_SIZING_FIXED(extent)};
-			CLAY(context.clayID(key), declaration) {}
+			CLAY(FlowUi::ValueOrThrow(context.clayID(key)), declaration) {}
 		};
 		spacer(Keyed("gallery-spacer", 0), first_row * row_height);
 		for (size_t row_index = first_row; row_index < end_row; ++row_index) {
 			auto row = ui::row(row_height);
 			row.layout.padding = {10, 10, 8, 8};
 			row.layout.childGap = 10;
-			CLAY(context.clayID(Keyed("gallery-row", row_index)), row) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("gallery-row", row_index))), row) {
 				for (size_t column = 0; column < columns; ++column) {
 					const auto index = row_index * columns + column;
 					if (index >= state.visible_assets.size())
@@ -764,10 +765,10 @@ void gallery(Context& context, float width, float height) {
 					const float card_width = (width - 20 - (columns - 1) * 10) / columns;
 					context.uiManager.createElement(kAssetCard, Keyed("asset-card", asset.identity))
 						.setParameters({.actions_id = asset.domain == Domain::Icons
-														  ? context.clayID(Keyed("card-controls",
-																				 asset.identity))
+														  ? FlowUi::ValueOrThrow(context.clayID(Keyed("card-controls",
+																				 asset.identity)))
 														  : Clay_ElementId{},
-										.selection_focus_id = context.clayID("focused-scroll"),
+										.selection_focus_id = FlowUi::ValueOrThrow(context.clayID("focused-scroll")),
 										.catalogue = &state,
 										.identity = asset.identity,
 										.width = std::max(140.0f, card_width)})
@@ -785,7 +786,7 @@ void gallery(Context& context, float width, float height) {
 															   asset.domain == Domain::Images)
 								? std::string_view(asset.name).substr(separator + 1)
 								: std::string_view(asset.name);
-						CLAY(context.clayID(Keyed("card-title", asset.identity)), title)
+						CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("card-title", asset.identity))), title)
 						ui::text(context,
 								 card_label(context,
 											asset.domain == Domain::Themes
@@ -796,7 +797,7 @@ void gallery(Context& context, float width, float height) {
 						auto status = ui::column(0);
 						status.layout.sizing = {CLAY_SIZING_FIXED(std::max(1.0f, card_width - 22)),
 												CLAY_SIZING_FIXED(34)};
-						CLAY(context.clayID(Keyed("card-status", asset.identity)), status)
+						CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("card-status", asset.identity))), status)
 						ui::text(context,
 								 asset.domain == Domain::Themes ? asset.name + " · " + asset.status
 																: asset.status,
@@ -832,7 +833,7 @@ void canvas(Context& context, const DevCatalogueAsset& asset, float width, float
 		return;
 	}
 	state.visible_textures.emplace_back(texture.handle);
-	const auto canvas_id = context.clayID("asset-canvas");
+	const auto canvas_id = FlowUi::ValueOrThrow(context.clayID("asset-canvas"));
 	const auto bounds = Clay_GetElementData(canvas_id);
 	const auto& current = context.uiManager.getCurrentFrameInput();
 	const auto& previous = context.uiManager.getPreviousFrameInput();
@@ -885,14 +886,14 @@ void canvas(Context& context, const DevCatalogueAsset& asset, float width, float
 			for (size_t row_index = 0; row_index < rows; ++row_index) {
 				auto row = ui::row(24);
 				row.layout.childGap = 0;
-				CLAY(context.clayID(Keyed("checker-row", row_index)), row) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("checker-row", row_index))), row) {
 					for (size_t column = 0; column < columns; ++column) {
 						Clay_ElementDeclaration tile{};
 						tile.layout.sizing = {CLAY_SIZING_FIXED(24), CLAY_SIZING_FIXED(24)};
 						tile.backgroundColor = (row_index + column) % 2
 												   ? Clay_Color{29, 41, 48, 255}
 												   : Clay_Color{40, 54, 63, 255};
-						CLAY(context.clayID(Keyed("checker-tile", row_index * 64 + column)), tile) {
+						CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("checker-tile", row_index * 64 + column))), tile) {
 						}
 					}
 				}
@@ -909,7 +910,7 @@ void canvas(Context& context, const DevCatalogueAsset& asset, float width, float
 		if (texture.tintEnabled)
 			image.backgroundColor = context.state().tint_color;
 		image.border = {.color = interface_theme::kBorderVisible, .width = {1, 1, 1, 1, 0}};
-		CLAY(context.clayID("canvas-image"), image) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("canvas-image")), image) {
 			if (asset.domain == Domain::Atlases &&
 				asset.atlas.kind == tooling::DevAtlasKind::IconVectorAtlas && view.view == 1) {
 				size_t region_index = 0;
@@ -930,7 +931,7 @@ void canvas(Context& context, const DevCatalogueAsset& asset, float width, float
 						region.floating.pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_PASSTHROUGH;
 						region.border = {.color = interface_theme::kAccentSeaGlass,
 										 .width = {1, 1, 1, 1, 0}};
-						CLAY(context.clayID(Keyed("atlas-region", region_index++)), region) {}
+						CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("atlas-region", region_index++))), region) {}
 					}
 				}
 			}
@@ -985,7 +986,7 @@ void font_focus(Context& context, const DevCatalogueAsset& asset) {
 	input.sizing = Clay_Sizing{CLAY_SIZING_GROW(0), CLAY_SIZING_FIXED(38)};
 	auto sample_editor = ui::card(8);
 	sample_editor.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-	CLAY(context.clayID("font-sample-editor"), sample_editor) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("font-sample-editor")), sample_editor) {
 		ui::text(context, "Sample text", interface_theme::kTextCanvas, 12);
 		context.uiManager.createElement(FSEL::kTextInput, "font-sample")
 			.setParameters(input)
@@ -994,7 +995,7 @@ void font_focus(Context& context, const DevCatalogueAsset& asset) {
 	}
 	catalogue_focus::register_element(context, state, FSEL::TextInput::definitionId,
 									  LocalElementName{"font-sample"}, true, true);
-	const auto* face = context.params.app->fonts().getFontById(asset.font.fontHandle);
+	const auto* face = FlowUi::ValueOrThrow(context.params.app->fonts()).get().getFontById(asset.font.fontHandle);
 	const auto* variant = face ? face->defaultVariant() : nullptr;
 	if (!variant) {
 		ui::text(context, "Loaded glyph metadata unavailable");
@@ -1033,20 +1034,20 @@ void font_focus(Context& context, const DevCatalogueAsset& asset) {
 			specimen.layout.padding = {12, 12, 12, 12};
 			specimen.layout.childGap = 16;
 			specimen.border = {.color = interface_theme::kBorderSubtle, .width = {0, 0, 0, 1, 0}};
-			CLAY(context.clayID(Keyed("font-specimen-row", size)), specimen) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("font-specimen-row", size))), specimen) {
 				auto label = ui::column(0);
 				label.layout.sizing.width = CLAY_SIZING_FIXED(42);
-				CLAY(context.clayID(Keyed("font-specimen-size", size)), label)
+				CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("font-specimen-size", size))), label)
 				ui::text(context, std::to_string(size) + " pt", interface_theme::kTextMuted, 11);
 				auto sample = ui::column(0);
-				CLAY(context.clayID(Keyed("font-specimen-text", size)), sample)
+				CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("font-specimen-text", size))), sample)
 				specimen_text(context, asset, state.specimen_text, size);
 			}
 		}
 	} else if (view.view == 1) {
 		auto paragraph = ui::card(12);
 		paragraph.layout.padding = {20, 20, 20, 20};
-		CLAY(context.clayID("font-paragraph"), paragraph) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("font-paragraph")), paragraph) {
 			ui::text(context, "Paragraph · 16 pt", interface_theme::kTextMuted, 11);
 			specimen_text(context, asset,
 						  state.specimen_text +
@@ -1094,7 +1095,7 @@ void font_focus(Context& context, const DevCatalogueAsset& asset) {
 		const size_t per_page = columns * 4;
 		const size_t pages = std::max<size_t>(1, (codepoints.size() + per_page - 1) / per_page);
 		view.page = std::min<uint64_t>(view.page, pages - 1);
-		CLAY(context.clayID("glyph-pages"), ui::row()) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("glyph-pages")), ui::row()) {
 			button(context, "glyph-previous", "Previous", PreviousPage, 0, view.page > 0);
 			ui::text(context,
 					 "Page " + std::to_string(view.page + 1) + " / " + std::to_string(pages),
@@ -1106,7 +1107,7 @@ void font_focus(Context& context, const DevCatalogueAsset& asset) {
 			 row_start += columns) {
 			auto row = ui::row(108);
 			row.layout.childGap = 8;
-			CLAY(context.clayID(Keyed("glyph-row", row_start)), row) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("glyph-row", row_start))), row) {
 				for (size_t index = row_start;
 					 index < std::min(row_start + columns, codepoints.size()); ++index) {
 					const auto codepoint = codepoints[index];
@@ -1124,7 +1125,7 @@ void font_focus(Context& context, const DevCatalogueAsset& asset) {
 					cell.layout.sizing = {CLAY_SIZING_FIXED(cell_width), CLAY_SIZING_FIXED(94)};
 					cell.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
 					cell.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
-					CLAY(context.clayID(Keyed("glyph-cell", codepoint)), cell) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("glyph-cell", codepoint))), cell) {
 						specimen_text(context, asset, glyph_text(codepoint), 26);
 						ui::text(context, unicode_name(codepoint), interface_theme::kTextMuted, 10);
 					}
@@ -1139,7 +1140,7 @@ void font_focus(Context& context, const DevCatalogueAsset& asset) {
 		if (selected != variant->unicodeToGlyphIndex.end() &&
 			selected->second < variant->glyphs.size()) {
 			const auto& glyph = variant->glyphs[selected->second];
-			CLAY(context.clayID("selected-glyph"), ui::card()) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("selected-glyph")), ui::card()) {
 				ui::text(context,
 						 unicode_name(static_cast<uint32_t>(view.selected_glyph)) +
 							 " · exact face " + std::to_string(asset.font.fontHandle),
@@ -1176,7 +1177,7 @@ void shortcut_focus(Context& context, const DevCatalogueAsset& asset) {
 	auto& view = state.domains[state.domain];
 	static constexpr std::array contexts{"None", "Text input", "Element", "Both"};
 	static constexpr std::array transitions{"Press", "Release", "Down"};
-	CLAY(context.clayID("shortcut-registration"), ui::card(10)) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("shortcut-registration")), ui::card(10)) {
 		ui::text(context, asset.name, interface_theme::kAccentSeaGlass, 22);
 		ui::text(context, asset.status, interface_theme::kTextCanvas, 12);
 		for (size_t fact_index = 0; fact_index < asset.facts.size(); ++fact_index) {
@@ -1185,12 +1186,12 @@ void shortcut_focus(Context& context, const DevCatalogueAsset& asset) {
 			fact_row.layout.sizing.height = CLAY_SIZING_FIT(26);
 			fact_row.layout.padding = {0, 0, 4, 4};
 			fact_row.border = {.color = interface_theme::kBorderSubtle, .width = {0, 0, 0, 1, 0}};
-			CLAY(context.clayID(Keyed("shortcut-fact", fact_index)), fact_row) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("shortcut-fact", fact_index))), fact_row) {
 				auto label = ui::column(0);
 				label.layout.sizing.width = CLAY_SIZING_PERCENT(.38f);
-				CLAY(context.clayID(Keyed("shortcut-fact-label", fact_index)), label)
+				CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("shortcut-fact-label", fact_index))), label)
 				ui::text(context, fact.first, interface_theme::kTextMuted, 11);
-				CLAY(context.clayID(Keyed("shortcut-fact-value", fact_index)), ui::column(0))
+				CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("shortcut-fact-value", fact_index))), ui::column(0))
 				ui::text(context, fact.second, interface_theme::kTextCanvas, 12);
 			}
 		}
@@ -1217,16 +1218,16 @@ void shortcut_focus(Context& context, const DevCatalogueAsset& asset) {
 			.draw();
 		catalogue_focus::register_element(context, state, ui::Control::definitionId, identity);
 	};
-	CLAY(context.clayID("shortcut-experiment"), ui::card(8)) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("shortcut-experiment")), ui::card(8)) {
 		ui::text(context, "Dispatch preview", interface_theme::kTextCanvas, 14);
 		ui::text(context, "Focus context", interface_theme::kTextMuted, 11);
-		CLAY(context.clayID("shortcut-context-choices"), ui::row(32)) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("shortcut-context-choices")), ui::row(32)) {
 			for (size_t choice_index = 0; choice_index < contexts.size(); ++choice_index)
 				choice(Keyed("shortcut-context", choice_index), contexts[choice_index],
 					   choice_index, false);
 		}
 		ui::text(context, "Key transition", interface_theme::kTextMuted, 11);
-		CLAY(context.clayID("shortcut-transition-choices"), ui::row(32)) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("shortcut-transition-choices")), ui::row(32)) {
 			for (size_t choice_index = 0; choice_index < transitions.size(); ++choice_index)
 				choice(Keyed("shortcut-transition", choice_index), transitions[choice_index],
 					   choice_index, true);
@@ -1250,7 +1251,7 @@ void shortcut_focus(Context& context, const DevCatalogueAsset& asset) {
 	ui::text(context, "Matching registrations · " + std::to_string(candidates.size()),
 			 interface_theme::kTextCanvas, 14);
 	if (candidates.empty())
-		CLAY(context.clayID("shortcut-no-candidates"), ui::card())
+		CLAY(FlowUi::ValueOrThrow(context.clayID("shortcut-no-candidates")), ui::card())
 	ui::text(context, "No registration matches this focus context and key transition.",
 			 interface_theme::kTextMuted, 12);
 	for (size_t rank = 0; rank < candidates.size(); ++rank) {
@@ -1258,7 +1259,7 @@ void shortcut_focus(Context& context, const DevCatalogueAsset& asset) {
 		auto candidate_card = ui::card(8);
 		if (candidate.identity == asset.identity)
 			candidate_card.border.color = interface_theme::kAccentSeaGlass;
-		CLAY(context.clayID(Keyed("candidate", candidate.identity)), candidate_card) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("candidate", candidate.identity))), candidate_card) {
 			ui::text(context,
 					 std::to_string(rank + 1) + ". " + candidate.group + " · " + candidate.name,
 					 interface_theme::kAccentSeaGlass, 13);
@@ -1314,7 +1315,7 @@ void focused(Context& context, const DevCatalogueAsset& asset, float width, floa
 			ui::text(context, asset.status);
 			return;
 		}
-		CLAY(context.clayID("image-presentation"), ui::row(30)) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("image-presentation")), ui::row(30)) {
 			button(context, "image-canvas", "Canvas", View, 0);
 			button(context, "image-layout-fit", "Layout fit", View, view.view ? view.view : 1);
 		}
@@ -1324,7 +1325,7 @@ void focused(Context& context, const DevCatalogueAsset& asset, float width, floa
 							  .sourceWidth = static_cast<int32_t>(asset.image.width),
 							  .sourceHeight = static_cast<int32_t>(asset.image.height)});
 		} else {
-			CLAY(context.clayID("image-fit-modes"), ui::row(30)) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("image-fit-modes")), ui::row(30)) {
 				button(context, "image-contain", "Contain", View, 1);
 				button(context, "image-cover", "Cover", View, 2);
 				button(context, "image-stretch", "Stretch", View, 3);
@@ -1349,14 +1350,14 @@ void focused(Context& context, const DevCatalogueAsset& asset, float width, floa
 			frame.backgroundColor = background(view.background);
 			frame.border = {.color = interface_theme::kBorderVisible, .width = {1, 1, 1, 1, 0}};
 			frame.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
-			CLAY(context.clayID("layout-fit-frame"), frame) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("layout-fit-frame")), frame) {
 				if (view.background == 0) {
 					for (size_t row_index = 0;
 						 row_index < static_cast<size_t>(std::ceil(preset.height / 24));
 						 ++row_index) {
 						auto row = ui::row(24);
 						row.layout.childGap = 0;
-						CLAY(context.clayID(Keyed("fit-checker-row", row_index)), row) {
+						CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("fit-checker-row", row_index))), row) {
 							for (size_t column = 0;
 								 column < static_cast<size_t>(std::ceil(frame_width / 24));
 								 ++column) {
@@ -1365,8 +1366,8 @@ void focused(Context& context, const DevCatalogueAsset& asset, float width, floa
 								tile.backgroundColor = (row_index + column) % 2
 														   ? Clay_Color{29, 41, 48, 255}
 														   : Clay_Color{40, 54, 63, 255};
-								CLAY(context.clayID(
-										 Keyed("fit-checker-tile", row_index * 16 + column)),
+								CLAY(FlowUi::ValueOrThrow(context.clayID(
+										 Keyed("fit-checker-tile", row_index * 16 + column))),
 									 tile) {}
 							}
 						}
@@ -1387,7 +1388,7 @@ void focused(Context& context, const DevCatalogueAsset& asset, float width, floa
 							   .sourceWidth = static_cast<int32_t>(asset.image.width),
 							   .sourceHeight = static_cast<int32_t>(asset.image.height)});
 				state.visible_textures.emplace_back(asset.image.textureHandle);
-				CLAY(context.clayID("layout-fit-image"), image) {}
+				CLAY(FlowUi::ValueOrThrow(context.clayID("layout-fit-image")), image) {}
 			}
 		}
 	} else if (asset.domain == Domain::Icons) {
@@ -1405,7 +1406,7 @@ void focused(Context& context, const DevCatalogueAsset& asset, float width, floa
 			raster_rows * raster_row_height + (raster_rows - 1) * raster_row_gap;
 		const float raster_toolbar_height =
 			std::min(raster_content_height, std::max(raster_row_height, height * .35f));
-		const auto raster_toolbar_id = context.clayID("cached-raster-toolbar");
+		const auto raster_toolbar_id = FlowUi::ValueOrThrow(context.clayID("cached-raster-toolbar"));
 		const auto raster_scroll = Clay_GetScrollContainerData(raster_toolbar_id);
 		auto raster_toolbar = ui::column(static_cast<uint16_t>(raster_row_gap));
 		raster_toolbar.layout.sizing = {CLAY_SIZING_PERCENT(1),
@@ -1420,7 +1421,7 @@ void focused(Context& context, const DevCatalogueAsset& asset, float width, floa
 			for (size_t row_index = 0; row_index < raster_rows; ++row_index) {
 				auto raster_row = ui::row(raster_row_height);
 				raster_row.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-				CLAY(context.clayID(Keyed("cached-raster-row", row_index)), raster_row) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("cached-raster-row", row_index))), raster_row) {
 					if (row_index == 0)
 						ui::text(context, "Cached sizes", interface_theme::kTextMuted, 11);
 					const size_t row_end =
@@ -1452,7 +1453,7 @@ void focused(Context& context, const DevCatalogueAsset& asset, float width, floa
 			return raster.targetWidth == catalogue_icon_steps[step] &&
 				   raster.targetHeight == catalogue_icon_steps[step];
 		});
-		CLAY(context.clayID("raster-actions"), ui::row(30)) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("raster-actions")), ui::row(30)) {
 			button(context, "create-icon-raster",
 				   cached ? "Size cached"
 						  : "Rasterize " + std::to_string(catalogue_icon_steps[step]) + "px",
@@ -1467,7 +1468,7 @@ void focused(Context& context, const DevCatalogueAsset& asset, float width, floa
 			auto empty = ui::card();
 			empty.layout.sizing.height = CLAY_SIZING_GROW(0);
 			empty.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
-			CLAY(context.clayID("uncached-icon"), empty)
+			CLAY(FlowUi::ValueOrThrow(context.clayID("uncached-icon")), empty)
 			ui::text(context, "Choose a raster size in the header, then Rasterize to preview.");
 		} else {
 			auto found = std::ranges::find_if(asset.icons, [&](const auto& raster) {
@@ -1490,7 +1491,7 @@ void focused(Context& context, const DevCatalogueAsset& asset, float width, floa
 		auto area = ui::column(0);
 		area.layout.sizing = {CLAY_SIZING_GROW(0), CLAY_SIZING_GROW(0)};
 		area.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
-		CLAY(context.clayID("element-preview-area"), area) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("element-preview-area")), area) {
 			auto stage = ui::column();
 			stage.layout.sizing = {
 				CLAY_SIZING_FIXED(std::max(1.0f, host_size.width > 0
@@ -1504,7 +1505,7 @@ void focused(Context& context, const DevCatalogueAsset& asset, float width, floa
 			stage.backgroundColor = interface_theme::kDepth0Keel;
 			stage.border = {.color = interface_theme::kBorderVisible, .width = {1, 1, 1, 1, 0}};
 			stage.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
-			CLAY(context.clayID("element-stage"), stage) element_preview(context, asset, true);
+			CLAY(FlowUi::ValueOrThrow(context.clayID("element-stage")), stage) element_preview(context, asset, true);
 		}
 	} else if (asset.domain == Domain::Themes) {
 		if (view.view == 0)
@@ -1520,8 +1521,8 @@ void focused(Context& context, const DevCatalogueAsset& asset, float width, floa
 						  .sourceWidth = static_cast<int32_t>(asset.atlas.width),
 						  .sourceHeight = static_cast<int32_t>(asset.atlas.height)});
 	} else
-		CLAY(context.clayID("contract"), ui::card()) {
-			CLAY(context.clayID("registration-summary"), ui::row(46)) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("contract")), ui::card()) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("registration-summary")), ui::row(46)) {
 				ui::text(context, asset.status, interface_theme::kAccentSeaGlass, 17);
 				if (asset.domain == Domain::Actions)
 					ui::text(context,
@@ -1539,13 +1540,13 @@ void focused(Context& context, const DevCatalogueAsset& asset, float width, floa
 					fact_index % 2 ? interface_theme::kDepth1Panel : interface_theme::kDepth0Keel;
 				fact_row.border = {.color = interface_theme::kBorderSubtle,
 								   .width = {0, 0, 0, 1, 0}};
-				CLAY(context.clayID(Keyed("registration-fact", fact_index)), fact_row) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("registration-fact", fact_index))), fact_row) {
 					auto label = ui::column(0);
 					label.layout.sizing.width = CLAY_SIZING_PERCENT(.36f);
-					CLAY(context.clayID(Keyed("fact-label", fact_index)), label)
+					CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("fact-label", fact_index))), label)
 					ui::text(context, fact.first, interface_theme::kTextMuted, 11);
 					auto value = ui::column(0);
-					CLAY(context.clayID(Keyed("fact-value", fact_index)), value)
+					CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("fact-value", fact_index))), value)
 					ui::text(context, fact.second, interface_theme::kTextCanvas, 12);
 				}
 			}
@@ -1575,7 +1576,7 @@ void DevCatalogueWorkbench::buildElement(BuildContext& context) {
 	const float width = std::max(80.0f, parent.found ? parent.boundingBox.width - 24 : 480);
 	const float available_height =
 		std::max(80.0f, parent.found ? parent.boundingBox.height - 20 : 500);
-	const auto content_bounds = Clay_GetElementData(context.clayID("focused-scroll"));
+	const auto content_bounds = Clay_GetElementData(FlowUi::ValueOrThrow(context.clayID("focused-scroll")));
 	const float height = std::max(40.0f, content_bounds.found ? content_bounds.boundingBox.height
 															  : available_height - 104);
 	auto root = ui::column(8);
@@ -1587,14 +1588,14 @@ void DevCatalogueWorkbench::buildElement(BuildContext& context) {
 		title.layout.sizing.width = CLAY_SIZING_PERCENT(1);
 		title.layout.childGap = 8;
 		title.border = {.color = interface_theme::kBorderSubtle, .width = {0, 0, 0, 1, 0}};
-		CLAY(context.clayID("title"), title) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("title")), title) {
 			button(context, "all",
 				   std::string(catalogue_domain_name(static_cast<Domain>(state.domain))), All, 0,
 				   true, "Return to this collection");
 			auto name = ui::row(30);
 			name.layout.sizing.width = CLAY_SIZING_GROW(0);
 			name.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
-			CLAY(context.clayID("selection-title"), name) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("selection-title")), name) {
 				const std::string title_text =
 					selected ? (selected->domain == Domain::Themes ? selected->group + " / " : "") +
 								   selected->name
@@ -1609,7 +1610,7 @@ void DevCatalogueWorkbench::buildElement(BuildContext& context) {
 						 interface_theme::kTextCanvas, 13);
 			}
 			if (selected && context.uiManager.getPreviousFramesInteraction().isHovered(
-								context.clayID("selection-title")))
+								FlowUi::ValueOrThrow(context.clayID("selection-title"))))
 				ui::pointer_tooltip(context, LocalElementName{"selection-title-help"},
 									asset_hint(*selected));
 			if (selected && selected->domain == Domain::Elements)
@@ -1650,7 +1651,7 @@ void DevCatalogueWorkbench::buildElement(BuildContext& context) {
 			toolbar.layout.sizing.width = CLAY_SIZING_PERCENT(1);
 			toolbar.layout.childGap = 5;
 			toolbar.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
-			CLAY(context.clayID("toolbar"), toolbar) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("toolbar")), toolbar) {
 				if (selected && selected->domain == Domain::Themes) {
 					button(context, "tokens", "Tokens", View, 0);
 					button(context, "components", "Components", View, 1);
@@ -1685,7 +1686,7 @@ void DevCatalogueWorkbench::buildElement(BuildContext& context) {
 					auto color_width = ui::row(30);
 					color_width.layout.sizing.width =
 						CLAY_SIZING_FIXED(std::min(174.0f, width * .27f));
-					CLAY(context.clayID("tint-color"), color_width) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("tint-color")), color_width) {
 						local.tint_editor.app = context.params.app;
 						local.tint_editor.interfaceState = context.params.interfaceState;
 						local.tint_editor.editValue = &local.tint_color;
@@ -1731,7 +1732,7 @@ void DevCatalogueWorkbench::buildElement(BuildContext& context) {
 		if (compact_icon_toolbar) {
 			auto canvas_controls = ui::row(32);
 			canvas_controls.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-			CLAY(context.clayID("icon-canvas-controls"), canvas_controls) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("icon-canvas-controls")), canvas_controls) {
 				button(context, "fit", "Fit", Fit);
 				button(context, "native", "1:1", Native);
 				button(context, "background",
@@ -1748,7 +1749,7 @@ void DevCatalogueWorkbench::buildElement(BuildContext& context) {
 			ui::text(context, "Asset no longer registered: " + state.selected_name,
 					 interface_theme::kStatusAmber);
 		else if (selected) {
-			const auto scroll_id = context.clayID("focused-scroll");
+			const auto scroll_id = FlowUi::ValueOrThrow(context.clayID("focused-scroll"));
 			auto scroll = Clay_GetScrollContainerData(scroll_id);
 			if (scroll.found && scroll.scrollPosition &&
 				(local.last_domain != state.domain ||
@@ -1785,7 +1786,7 @@ void DevCatalogueWorkbench::buildElement(BuildContext& context) {
 		auto footer = ui::row(24);
 		footer.layout.sizing.width = CLAY_SIZING_PERCENT(1);
 		footer.border = {.color = interface_theme::kBorderSubtle, .width = {0, 0, 1, 0, 0}};
-		CLAY(context.clayID("footer"), footer)
+		CLAY(FlowUi::ValueOrThrow(context.clayID("footer")), footer)
 		ui::text(context,
 				 std::to_string(state.visible_assets.size()) + " / " +
 					 std::to_string(state.counts[state.domain]) +

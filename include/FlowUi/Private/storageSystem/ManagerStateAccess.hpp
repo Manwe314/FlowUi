@@ -39,7 +39,7 @@ template <typename State>
 State* state(
 	storage::IStorageSystem* storageSystem,
 	storage::ManagerRecordHandle handle,
-	storage::ResourceKind kind) noexcept {
+	storage::ResourceKind kind) {
 	return storageSystem
 		? static_cast<State*>(storageSystem->managerRecordData(handle, kind))
 		: nullptr;
@@ -49,7 +49,7 @@ template <typename State>
 const State* state(
 	const storage::IStorageSystem* storageSystem,
 	storage::ManagerRecordHandle handle,
-	storage::ResourceKind kind) noexcept {
+	storage::ResourceKind kind) {
 	return storageSystem
 		? static_cast<const State*>(storageSystem->managerRecordData(handle, kind))
 		: nullptr;

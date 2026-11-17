@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,16 +107,15 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Loaded font face and its baked variants.  
+<p>Loaded font face and its baked variants.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="FontTypes_8hpp_source.html">FontTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a61a9c59721076328a059c72829bb4d1b" id="r_a61a9c59721076328a059c72829bb4d1b"><td class="memItemLeft"><a id="a61a9c59721076328a059c72829bb4d1b" name="a61a9c59721076328a059c72829bb4d1b"></a>
-const <a class="el" href="structFlowUi_1_1Font_1_1FontVariantData.html">FontVariantData</a> *&#160;</td><td class="memItemRight"><b>defaultVariant</b> () const noexcept</td></tr>
-<tr class="memdesc:a61a9c59721076328a059c72829bb4d1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the default variant, or nullptr if unavailable. <br /></td></tr>
+<tr class="memitem:a61a9c59721076328a059c72829bb4d1b" id="r_a61a9c59721076328a059c72829bb4d1b"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1Font_1_1FontVariantData.html">FontVariantData</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a61a9c59721076328a059c72829bb4d1b">defaultVariant</a> () const noexcept</td></tr>
+<tr class="memdesc:a61a9c59721076328a059c72829bb4d1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the selected variant of a font face.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -133,8 +132,8 @@ std::string&#160;</td><td class="memItemRight"><b>metadata</b></td></tr>
 std::vector&lt; <a class="el" href="structFlowUi_1_1Font_1_1FontVariantData.html">FontVariantData</a> &gt;&#160;</td><td class="memItemRight"><b>variants</b></td></tr>
 <tr class="memdesc:ad1d2da0bbb280296314966b2c3025744"><td class="mdescLeft">&#160;</td><td class="mdescRight">Baked variants for this face. <br /></td></tr>
 <tr class="memitem:a4c1de9da9e577e7d2314f606703f5adc" id="r_a4c1de9da9e577e7d2314f606703f5adc"><td class="memItemLeft"><a id="a4c1de9da9e577e7d2314f606703f5adc" name="a4c1de9da9e577e7d2314f606703f5adc"></a>
-FontId&#160;</td><td class="memItemRight"><b>id</b> = 0</td></tr>
-<tr class="memdesc:a4c1de9da9e577e7d2314f606703f5adc"><td class="mdescLeft">&#160;</td><td class="mdescRight">FlowUi font id. <br /></td></tr>
+<a class="el" href="namespaceFlowUi.html#a45ed3353542a8e69aead84b91e7d88ed">FontId</a>&#160;</td><td class="memItemRight"><b>id</b> = 0</td></tr>
+<tr class="memdesc:a4c1de9da9e577e7d2314f606703f5adc"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceFlowUi.html">FlowUi</a> font id. <br /></td></tr>
 <tr class="memitem:a44a4be320d492fd4ff591ab22b7565c3" id="r_a44a4be320d492fd4ff591ab22b7565c3"><td class="memItemLeft"><a id="a44a4be320d492fd4ff591ab22b7565c3" name="a44a4be320d492fd4ff591ab22b7565c3"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>atlasLayer</b> = 0</td></tr>
 <tr class="memdesc:a44a4be320d492fd4ff591ab22b7565c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Atlas layer used by this font face. <br /></td></tr>
@@ -165,8 +164,39 @@ uint32_t&#160;</td><td class="memItemRight"><b>defaultVariantIndex</b> = 0</td><
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Loaded font face and its baked variants. </p>
-<p><a class="el" href="structFlowUi_1_1Font_1_1FontFaceData.html" title="Loaded font face and its baked variants.">FontFaceData</a> is returned by <a class="el" href="structFlowUi_1_1FontManager.html#ad67d18ee896d36b0cd0b4567cf79c311" title="Return loaded font data by concrete font id.">FlowUi::FontManager::getFontById()</a> for applications that need direct access to loaded font metrics or atlas placement data. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<p><a class="el" href="structFlowUi_1_1Font_1_1FontFaceData.html" title="Loaded font face and its baked variants.">FontFaceData</a> is returned by <a class="el" href="structFlowUi_1_1FontManager.html#aba3f4682e51fad1002c7ab9c7d049a9f" title="Borrow a loaded face and its metrics.">FlowUi::FontManager::getFontById()</a> for applications that need direct access to loaded font metrics or atlas placement data. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a61a9c59721076328a059c72829bb4d1b" name="a61a9c59721076328a059c72829bb4d1b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a61a9c59721076328a059c72829bb4d1b">&#9670;&#160;</a></span>defaultVariant()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="structFlowUi_1_1Font_1_1FontVariantData.html">FontVariantData</a> * FlowUi::Font::FontFaceData::defaultVariant </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Borrow the selected variant of a font face. </p>
+<p>The pointer is invalidated by mutation/destruction of the variants or by invalidation of the containing borrowed face.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns nullptr when the variant list is empty or defaultVariantIndex is out of bounds.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> variant = value.defaultVariant();</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="FontTypes_8hpp_source.html">FontTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -182,7 +212,7 @@ uint32_t&#160;</td><td class="memItemRight"><b>defaultVariantIndex</b> = 0</td><
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>Font</b></li><li class="navelem"><a href="structFlowUi_1_1Font_1_1FontFaceData.html">FontFaceData</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><b>Font</b></li><li class="navelem"><a href="structFlowUi_1_1Font_1_1FontFaceData.html">FontFaceData</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

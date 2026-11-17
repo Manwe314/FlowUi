@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,44 +106,66 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevFieldOptions Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Compile-time field visibility, editor hints, and validation constraints.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevSchemaDescriptor_8hpp_source.html">DevSchemaDescriptor.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ae7a0336c1e775fe064afe93e68b9033d" id="r_ae7a0336c1e775fe064afe93e68b9033d"><td class="memItemLeft"><a id="ae7a0336c1e775fe064afe93e68b9033d" name="ae7a0336c1e775fe064afe93e68b9033d"></a>
 consteval <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldOptions.html">DevFieldOptions</a>&#160;</td><td class="memItemRight"><b>withHint</b> (std::string_view value) const</td></tr>
+<tr class="memdesc:ae7a0336c1e775fe064afe93e68b9033d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a copy of these options with borrowed static help text; publication copies the text. <br /></td></tr>
 <tr class="memitem:ab3d0cfa0b3a19628b64cdce64dbefea4" id="r_ab3d0cfa0b3a19628b64cdce64dbefea4"><td class="memItemLeft"><a id="ab3d0cfa0b3a19628b64cdce64dbefea4" name="ab3d0cfa0b3a19628b64cdce64dbefea4"></a>
 consteval <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldOptions.html">DevFieldOptions</a>&#160;</td><td class="memItemRight"><b>readOnly</b> () const</td></tr>
+<tr class="memdesc:ab3d0cfa0b3a19628b64cdce64dbefea4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a copy explicitly forbidding ordinary field edits. <br /></td></tr>
 <tr class="memitem:af5fd2802a1a2685e56d6e20d1fec79ce" id="r_af5fd2802a1a2685e56d6e20d1fec79ce"><td class="memItemLeft"><a id="af5fd2802a1a2685e56d6e20d1fec79ce" name="af5fd2802a1a2685e56d6e20d1fec79ce"></a>
 consteval <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldOptions.html">DevFieldOptions</a>&#160;</td><td class="memItemRight"><b>hidden</b> () const</td></tr>
+<tr class="memdesc:af5fd2802a1a2685e56d6e20d1fec79ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a copy excluding the field from visible editors. <br /></td></tr>
 <tr class="memitem:a3c3f78a5a034099cbb223dfa7c56468a" id="r_a3c3f78a5a034099cbb223dfa7c56468a"><td class="memItemLeft"><a id="a3c3f78a5a034099cbb223dfa7c56468a" name="a3c3f78a5a034099cbb223dfa7c56468a"></a>
-consteval <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldOptions.html">DevFieldOptions</a>&#160;</td><td class="memItemRight"><b>withEditor</b> (DevEditorKind value) const</td></tr>
+consteval <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldOptions.html">DevFieldOptions</a>&#160;</td><td class="memItemRight"><b>withEditor</b> (<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a555c8e5884c6c456ab128183dba97dff">DevEditorKind</a> value) const</td></tr>
+<tr class="memdesc:a3c3f78a5a034099cbb223dfa7c56468a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a copy selecting an explicit semantic editor. <br /></td></tr>
 <tr class="memitem:ae114268a88bc3bc57abb19b800dc2a43" id="r_ae114268a88bc3bc57abb19b800dc2a43"><td class="memItemLeft"><a id="ae114268a88bc3bc57abb19b800dc2a43" name="ae114268a88bc3bc57abb19b800dc2a43"></a>
-consteval <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldOptions.html">DevFieldOptions</a>&#160;</td><td class="memItemRight"><b>withChoiceDomain</b> (DevChoiceDomain value) const</td></tr>
+consteval <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldOptions.html">DevFieldOptions</a>&#160;</td><td class="memItemRight"><b>withChoiceDomain</b> (<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#aab8240214fe77f44f6777713783ca1dd">DevChoiceDomain</a> value) const</td></tr>
+<tr class="memdesc:ae114268a88bc3bc57abb19b800dc2a43"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a copy selecting the resource/font/action catalogue used by the editor. <br /></td></tr>
 <tr class="memitem:a77191f6b7fb41a83f0c74e78e7a72624" id="r_a77191f6b7fb41a83f0c74e78e7a72624"><td class="memItemLeft"><a id="a77191f6b7fb41a83f0c74e78e7a72624" name="a77191f6b7fb41a83f0c74e78e7a72624"></a>
 consteval <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldOptions.html">DevFieldOptions</a>&#160;</td><td class="memItemRight"><b>numericRange</b> (double minimum, double maximum) const</td></tr>
+<tr class="memdesc:a77191f6b7fb41a83f0c74e78e7a72624"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a copy declaring inclusive numeric bounds; incompatible member types are diagnosed at publication. <br /></td></tr>
 <tr class="memitem:aff5c2473a49adb63e98f1703a1aa782b" id="r_aff5c2473a49adb63e98f1703a1aa782b"><td class="memItemLeft"><a id="aff5c2473a49adb63e98f1703a1aa782b" name="aff5c2473a49adb63e98f1703a1aa782b"></a>
 consteval <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldOptions.html">DevFieldOptions</a>&#160;</td><td class="memItemRight"><b>withStep</b> (double value) const</td></tr>
+<tr class="memdesc:aff5c2473a49adb63e98f1703a1aa782b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a copy declaring an explicit numeric editor increment. <br /></td></tr>
 <tr class="memitem:aae20865c13400e1dad09a8a7f96a8d66" id="r_aae20865c13400e1dad09a8a7f96a8d66"><td class="memItemLeft"><a id="aae20865c13400e1dad09a8a7f96a8d66" name="aae20865c13400e1dad09a8a7f96a8d66"></a>
 consteval <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldOptions.html">DevFieldOptions</a>&#160;</td><td class="memItemRight"><b>textLimit</b> (std::uint32_t value) const</td></tr>
+<tr class="memdesc:aae20865c13400e1dad09a8a7f96a8d66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a copy declaring a maximum text length; incompatible member types are diagnosed at publication. <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a509e4124a134f43f9e83186f9337da7c" id="r_a509e4124a134f43f9e83186f9337da7c"><td class="memItemLeft"><a id="a509e4124a134f43f9e83186f9337da7c" name="a509e4124a134f43f9e83186f9337da7c"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevNumericConstraint.html">DevNumericConstraint</a>&#160;</td><td class="memItemRight"><b>numeric</b> {}</td></tr>
+<tr class="memdesc:a509e4124a134f43f9e83186f9337da7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optional numeric min/max/step metadata. <br /></td></tr>
 <tr class="memitem:a7263d520692bb24e820f528869363fdd" id="r_a7263d520692bb24e820f528869363fdd"><td class="memItemLeft"><a id="a7263d520692bb24e820f528869363fdd" name="a7263d520692bb24e820f528869363fdd"></a>
 std::string_view&#160;</td><td class="memItemRight"><b>hint</b> {}</td></tr>
+<tr class="memdesc:a7263d520692bb24e820f528869363fdd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed static help text copied into published schema metadata. <br /></td></tr>
 <tr class="memitem:a63c6f0fcfdeadfb1e9f695a075fe8feb" id="r_a63c6f0fcfdeadfb1e9f695a075fe8feb"><td class="memItemLeft"><a id="a63c6f0fcfdeadfb1e9f695a075fe8feb" name="a63c6f0fcfdeadfb1e9f695a075fe8feb"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>textMaximum</b> = 0</td></tr>
+<tr class="memdesc:a63c6f0fcfdeadfb1e9f695a075fe8feb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Text maximum applied when hasTextMaximum is true. <br /></td></tr>
 <tr class="memitem:a6919967e73fdb03753077b1ea7fde838" id="r_a6919967e73fdb03753077b1ea7fde838"><td class="memItemLeft"><a id="a6919967e73fdb03753077b1ea7fde838" name="a6919967e73fdb03753077b1ea7fde838"></a>
-DevFieldAccess&#160;</td><td class="memItemRight"><b>access</b> = DevFieldAccess::Inherit</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a68503b749978b224c76d029deefb1dee">DevFieldAccess</a>&#160;</td><td class="memItemRight"><b>access</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a68503b749978b224c76d029deefb1deeac49484faf79e2388b580e49444d6ac11">DevFieldAccess::Inherit</a></td></tr>
+<tr class="memdesc:a6919967e73fdb03753077b1ea7fde838"><td class="mdescLeft">&#160;</td><td class="mdescRight">Declared access policy, or Inherit for the role/type default. <br /></td></tr>
 <tr class="memitem:a33e48b2b3a8dec7582e49ff51bc05d45" id="r_a33e48b2b3a8dec7582e49ff51bc05d45"><td class="memItemLeft"><a id="a33e48b2b3a8dec7582e49ff51bc05d45" name="a33e48b2b3a8dec7582e49ff51bc05d45"></a>
-DevEditorKind&#160;</td><td class="memItemRight"><b>editor</b> = DevEditorKind::None</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a555c8e5884c6c456ab128183dba97dff">DevEditorKind</a>&#160;</td><td class="memItemRight"><b>editor</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a555c8e5884c6c456ab128183dba97dffa6adf97f83acf6453d4a6a4b1070f3754">DevEditorKind::None</a></td></tr>
+<tr class="memdesc:a33e48b2b3a8dec7582e49ff51bc05d45"><td class="mdescLeft">&#160;</td><td class="mdescRight">Explicit editor choice, or None for adapter inference. <br /></td></tr>
 <tr class="memitem:a2d336da2caf69d696a400f1d61c07894" id="r_a2d336da2caf69d696a400f1d61c07894"><td class="memItemLeft"><a id="a2d336da2caf69d696a400f1d61c07894" name="a2d336da2caf69d696a400f1d61c07894"></a>
-DevChoiceDomain&#160;</td><td class="memItemRight"><b>choiceDomain</b> = DevChoiceDomain::None</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#aab8240214fe77f44f6777713783ca1dd">DevChoiceDomain</a>&#160;</td><td class="memItemRight"><b>choiceDomain</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#aab8240214fe77f44f6777713783ca1dda6adf97f83acf6453d4a6a4b1070f3754">DevChoiceDomain::None</a></td></tr>
+<tr class="memdesc:a2d336da2caf69d696a400f1d61c07894"><td class="mdescLeft">&#160;</td><td class="mdescRight">Catalogue domain for semantic resource/action/font editors. <br /></td></tr>
 <tr class="memitem:a508d2c2f1abea9f5f6a763cbf9b2c6f6" id="r_a508d2c2f1abea9f5f6a763cbf9b2c6f6"><td class="memItemLeft"><a id="a508d2c2f1abea9f5f6a763cbf9b2c6f6" name="a508d2c2f1abea9f5f6a763cbf9b2c6f6"></a>
 bool&#160;</td><td class="memItemRight"><b>hasTextMaximum</b> = false</td></tr>
+<tr class="memdesc:a508d2c2f1abea9f5f6a763cbf9b2c6f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether a text-length maximum was explicitly supplied. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Compile-time field visibility, editor hints, and validation constraints. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/schema/<a class="el" href="DevSchemaDescriptor_8hpp_source.html">DevSchemaDescriptor.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -159,7 +181,7 @@ bool&#160;</td><td class="memItemRight"><b>hasTextMaximum</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldOptions.html">DevFieldOptions</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldOptions.html">DevFieldOptions</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

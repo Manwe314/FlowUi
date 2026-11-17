@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,22 +111,145 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a9ac04f6230112e2cf209d6b979c23f08" id="r_a9ac04f6230112e2cf209d6b979c23f08"><td class="memTemplParams" colspan="2"><a id="a9ac04f6230112e2cf209d6b979c23f08" name="a9ac04f6230112e2cf209d6b979c23f08"></a>
-template&lt;std::size_t N&gt; </td></tr>
-<tr class="memitem:a9ac04f6230112e2cf209d6b979c23f08 template"><td class="memItemLeft">consteval&#160;</td><td class="memItemRight"><b>LocalElementName</b> (const char(&amp;name)[N])</td></tr>
-<tr class="memitem:a3e62b100db85f8dbfa31b3589d03f929" id="r_a3e62b100db85f8dbfa31b3589d03f929"><td class="memItemLeft"><a id="a3e62b100db85f8dbfa31b3589d03f929" name="a3e62b100db85f8dbfa31b3589d03f929"></a>
-constexpr&#160;</td><td class="memItemRight"><b>operator bool</b> () const noexcept</td></tr>
+<tr class="memitem:abd44d2771ed7196de7511b88231ab797" id="r_abd44d2771ed7196de7511b88231ab797"><td class="memItemLeft">constexpr&#160;</td><td class="memItemRight"><a class="el" href="#abd44d2771ed7196de7511b88231ab797">LocalElementName</a> () noexcept=default</td></tr>
+<tr class="memitem:a3bb4c18403d04216cf0a46b21504cf3f" id="r_a3bb4c18403d04216cf0a46b21504cf3f"><td class="memTemplParams" colspan="2">template&lt;std::size_t N&gt; </td></tr>
+<tr class="memitem:a3bb4c18403d04216cf0a46b21504cf3f template"><td class="memItemLeft">consteval&#160;</td><td class="memItemRight"><a class="el" href="#a3bb4c18403d04216cf0a46b21504cf3f">LocalElementName</a> (const char(&amp;name)[N]) noexcept</td></tr>
+<tr class="memitem:a3e62b100db85f8dbfa31b3589d03f929" id="r_a3e62b100db85f8dbfa31b3589d03f929"><td class="memItemLeft">constexpr&#160;</td><td class="memItemRight"><a class="el" href="#a3e62b100db85f8dbfa31b3589d03f929">operator bool</a> () const noexcept</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a2fe908ff81ee56e70e70fbe077309550" id="r_a2fe908ff81ee56e70e70fbe077309550"><td class="memItemLeft"><a id="a2fe908ff81ee56e70e70fbe077309550" name="a2fe908ff81ee56e70e70fbe077309550"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>token</b> = 0</td></tr>
-<tr class="memitem:af89bdf7d13563b33e19fc916239eb463" id="r_af89bdf7d13563b33e19fc916239eb463"><td class="memItemLeft"><a id="af89bdf7d13563b33e19fc916239eb463" name="af89bdf7d13563b33e19fc916239eb463"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>debugName</b> {}</td></tr>
+<tr class="memitem:a2fe908ff81ee56e70e70fbe077309550" id="r_a2fe908ff81ee56e70e70fbe077309550"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a2fe908ff81ee56e70e70fbe077309550">token</a> = 0</td></tr>
+<tr class="memitem:af89bdf7d13563b33e19fc916239eb463" id="r_af89bdf7d13563b33e19fc916239eb463"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#af89bdf7d13563b33e19fc916239eb463">debugName</a> {}</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Compile-time prehashed local name accepted by the typed element builder. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="abd44d2771ed7196de7511b88231ab797" name="abd44d2771ed7196de7511b88231ab797"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abd44d2771ed7196de7511b88231ab797">&#9670;&#160;</a></span>LocalElementName() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::LocalElementName::LocalElementName </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel constexpr">constexpr</span><span class="mlabel default">default</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Construct an invalid local-name token. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1LocalElementName.html">FlowUi::LocalElementName</a> absent{};</div>
+<div class="line"><span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1LocalElementName.html">FlowUi::LocalElementName</a> saveButton{<span class="stringliteral">&quot;toolbar/save&quot;</span>};</div>
+<div class="line"><span class="keyword">static_assert</span>(!absent);</div>
+<div class="line"><span class="keyword">static_assert</span>(<span class="keyword">static_cast&lt;</span><span class="keywordtype">bool</span><span class="keyword">&gt;</span>(saveButton));</div>
+<div class="ttc" id="astructFlowUi_1_1LocalElementName_html"><div class="ttname"><a href="structFlowUi_1_1LocalElementName.html">FlowUi::LocalElementName</a></div><div class="ttdef"><b>Definition</b> ElementID.hpp:33</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="a3bb4c18403d04216cf0a46b21504cf3f" name="a3bb4c18403d04216cf0a46b21504cf3f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3bb4c18403d04216cf0a46b21504cf3f">&#9670;&#160;</a></span>LocalElementName() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t N&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::LocalElementName::LocalElementName </td>
+          <td>(</td>
+          <td class="paramtype">const char(&amp;)</td>          <td class="paramname"><span class="paramname"><em>name</em></span>[N]</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel consteval">consteval</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Hash an authored literal at compile time; the literal label is borrowed in developer builds. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1LocalElementName.html">FlowUi::LocalElementName</a> absent{};</div>
+<div class="line"><span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1LocalElementName.html">FlowUi::LocalElementName</a> saveButton{<span class="stringliteral">&quot;toolbar/save&quot;</span>};</div>
+<div class="line"><span class="keyword">static_assert</span>(!absent);</div>
+<div class="line"><span class="keyword">static_assert</span>(<span class="keyword">static_cast&lt;</span><span class="keywordtype">bool</span><span class="keyword">&gt;</span>(saveButton));</div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a3e62b100db85f8dbfa31b3589d03f929" name="a3e62b100db85f8dbfa31b3589d03f929"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e62b100db85f8dbfa31b3589d03f929">&#9670;&#160;</a></span>operator bool()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::LocalElementName::operator bool </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel explicit">explicit</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return whether the name has a nonzero token. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1LocalElementName.html">FlowUi::LocalElementName</a> absent{};</div>
+<div class="line"><span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1LocalElementName.html">FlowUi::LocalElementName</a> saveButton{<span class="stringliteral">&quot;toolbar/save&quot;</span>};</div>
+<div class="line"><span class="keyword">static_assert</span>(!absent);</div>
+<div class="line"><span class="keyword">static_assert</span>(<span class="keyword">static_cast&lt;</span><span class="keywordtype">bool</span><span class="keyword">&gt;</span>(saveButton));</div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="af89bdf7d13563b33e19fc916239eb463" name="af89bdf7d13563b33e19fc916239eb463"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af89bdf7d13563b33e19fc916239eb463">&#9670;&#160;</a></span>debugName</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::LocalElementName::debugName {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed authored label retained in developer builds; backing storage must outlive its uses. </p>
+
+</div>
+</div>
+<a id="a2fe908ff81ee56e70e70fbe077309550" name="a2fe908ff81ee56e70e70fbe077309550"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2fe908ff81ee56e70e70fbe077309550">&#9670;&#160;</a></span>token</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::LocalElementName::token = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Prehashed identity token; zero is invalid. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/identificationTypes/<a class="el" href="ElementID_8hpp_source.html">ElementID.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -142,7 +265,7 @@ std::string_view&#160;</td><td class="memItemRight"><b>debugName</b> {}</td></tr
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1LocalElementName.html">LocalElementName</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1LocalElementName.html">LocalElementName</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

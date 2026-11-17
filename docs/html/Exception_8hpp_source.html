@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,26 +111,33 @@ $(function() {
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &quot;FlowUi/Public/errorManagement/ErrorValue.hpp&quot;</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;exception&gt;</span></div>
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="keyword">namespace </span>FlowUi {</div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi.html">FlowUi</a> {</div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span></div>
 <div class="foldopen" id="foldopen00009" data-start="{" data-end="};">
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno"><a class="line" href="classFlowUi_1_1FlowUiException.html">    9</a></span><span class="keyword">class </span>FlowUiException final : <span class="keyword">public</span> std::exception {</div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno"><a class="line" href="classFlowUi_1_1FlowUiException.html">    9</a></span><span class="keyword">class </span><a class="code hl_function" href="classFlowUi_1_1FlowUiException.html#a18f5f16bdb33b953d9ae209dd66d5143">FlowUiException</a> final : <span class="keyword">public</span> std::exception {</div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>    <span class="keyword">explicit</span> FlowUiException(<a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> error) noexcept : error_(error) {}</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>&amp; error() <span class="keyword">const</span> <span class="keyword">noexcept</span> { <span class="keywordflow">return</span> error_; }</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span> </div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    [[nodiscard]] <span class="keyword">const</span> <span class="keywordtype">char</span>* what() <span class="keyword">const</span> <span class="keyword">noexcept</span> <span class="keyword">override</span> {</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>        <span class="comment">// All descriptor messages are null-terminated string literals.</span></div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>        <span class="keywordflow">return</span> errorMessage(error_.code).data();</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    }</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> error_{};</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>};</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="classFlowUi_1_1FlowUiException.html#a18f5f16bdb33b953d9ae209dd66d5143">   18</a></span>    <span class="keyword">explicit</span> <a class="code hl_function" href="classFlowUi_1_1FlowUiException.html#a18f5f16bdb33b953d9ae209dd66d5143">FlowUiException</a>(<a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> <a class="code hl_function" href="classFlowUi_1_1FlowUiException.html#a93f688ab8c447806806899caf495d0f6">error</a>) noexcept : error_(<a class="code hl_function" href="classFlowUi_1_1FlowUiException.html#a93f688ab8c447806806899caf495d0f6">error</a>) {}</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno"><a class="line" href="classFlowUi_1_1FlowUiException.html#a93f688ab8c447806806899caf495d0f6">   27</a></span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>&amp; <a class="code hl_function" href="classFlowUi_1_1FlowUiException.html#a93f688ab8c447806806899caf495d0f6">error</a>() const noexcept { <span class="keywordflow">return</span> error_; }</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span></div>
+<div class="foldopen" id="foldopen00036" data-start="{" data-end="}">
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno"><a class="line" href="classFlowUi_1_1FlowUiException.html#a1f525bc15854763e80e106db565331d7">   36</a></span>    [[nodiscard]] <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code hl_function" href="classFlowUi_1_1FlowUiException.html#a1f525bc15854763e80e106db565331d7">what</a>() const noexcept<span class="keyword"> override </span>{</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>        <span class="comment">// All descriptor messages are null-terminated string literals.</span></div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>        <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceFlowUi.html#af29b5831837a5668cbfd5c9502c337f1">errorMessage</a>(error_.code).data();</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    }</div>
 </div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> error_{};</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>};</div>
+</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html_a18f5f16bdb33b953d9ae209dd66d5143"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html#a18f5f16bdb33b953d9ae209dd66d5143">FlowUi::FlowUiException::FlowUiException</a></div><div class="ttdeci">FlowUiException(FlowUiError error) noexcept</div><div class="ttdef"><b>Definition</b> Exception.hpp:18</div></div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html_a1f525bc15854763e80e106db565331d7"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html#a1f525bc15854763e80e106db565331d7">FlowUi::FlowUiException::what</a></div><div class="ttdeci">const char * what() const noexcept override</div><div class="ttdef"><b>Definition</b> Exception.hpp:36</div></div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html_a93f688ab8c447806806899caf495d0f6"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html#a93f688ab8c447806806899caf495d0f6">FlowUi::FlowUiException::error</a></div><div class="ttdeci">const FlowUiError &amp; error() const noexcept</div><div class="ttdef"><b>Definition</b> Exception.hpp:27</div></div>
+<div class="ttc" id="anamespaceFlowUi_html"><div class="ttname"><a href="namespaceFlowUi.html">FlowUi</a></div><div class="ttdef"><b>Definition</b> App.hpp:29</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_af29b5831837a5668cbfd5c9502c337f1"><div class="ttname"><a href="namespaceFlowUi.html#af29b5831837a5668cbfd5c9502c337f1">FlowUi::errorMessage</a></div><div class="ttdeci">constexpr std::string_view errorMessage(ErrorCode code) noexcept</div><div class="ttdef"><b>Definition</b> ErrorCodes.hpp:873</div></div>
 <div class="ttc" id="astructFlowUi_1_1FlowUiError_html"><div class="ttname"><a href="structFlowUi_1_1FlowUiError.html">FlowUi::FlowUiError</a></div><div class="ttdef"><b>Definition</b> ErrorValue.hpp:16</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->

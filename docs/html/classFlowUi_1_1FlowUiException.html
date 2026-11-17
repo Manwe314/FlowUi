@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -117,16 +117,99 @@ Inheritance diagram for FlowUi::FlowUiException:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a18f5f16bdb33b953d9ae209dd66d5143" id="r_a18f5f16bdb33b953d9ae209dd66d5143"><td class="memItemLeft"><a id="a18f5f16bdb33b953d9ae209dd66d5143" name="a18f5f16bdb33b953d9ae209dd66d5143"></a>
-&#160;</td><td class="memItemRight"><b>FlowUiException</b> (<a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> error) noexcept</td></tr>
-<tr class="memitem:a93f688ab8c447806806899caf495d0f6" id="r_a93f688ab8c447806806899caf495d0f6"><td class="memItemLeft"><a id="a93f688ab8c447806806899caf495d0f6" name="a93f688ab8c447806806899caf495d0f6"></a>
-const <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> &amp;&#160;</td><td class="memItemRight"><b>error</b> () const noexcept</td></tr>
-<tr class="memitem:a1f525bc15854763e80e106db565331d7" id="r_a1f525bc15854763e80e106db565331d7"><td class="memItemLeft"><a id="a1f525bc15854763e80e106db565331d7" name="a1f525bc15854763e80e106db565331d7"></a>
-const char *&#160;</td><td class="memItemRight"><b>what</b> () const noexcept override</td></tr>
+<tr class="memitem:a18f5f16bdb33b953d9ae209dd66d5143" id="r_a18f5f16bdb33b953d9ae209dd66d5143"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a18f5f16bdb33b953d9ae209dd66d5143">FlowUiException</a> (<a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> <a class="el" href="#a93f688ab8c447806806899caf495d0f6">error</a>) noexcept</td></tr>
+<tr class="memitem:a93f688ab8c447806806899caf495d0f6" id="r_a93f688ab8c447806806899caf495d0f6"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a93f688ab8c447806806899caf495d0f6">error</a> () const noexcept</td></tr>
+<tr class="memitem:a1f525bc15854763e80e106db565331d7" id="r_a1f525bc15854763e80e106db565331d7"><td class="memItemLeft">const char *&#160;</td><td class="memItemRight"><a class="el" href="#a1f525bc15854763e80e106db565331d7">what</a> () const noexcept override</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Typed distant-unwind carrier for a FlowUi-authored error. </p>
-</div><hr/>The documentation for this class was generated from the following file:<ul>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a18f5f16bdb33b953d9ae209dd66d5143" name="a18f5f16bdb33b953d9ae209dd66d5143"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a18f5f16bdb33b953d9ae209dd66d5143">&#9670;&#160;</a></span>FlowUiException()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::FlowUiException::FlowUiException </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a></td>          <td class="paramname"><span class="paramname"><em>error</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel explicit">explicit</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy the compact error into a typed exception without allocating. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a> exception(<a class="code hl_function" href="#a93f688ab8c447806806899caf495d0f6">error</a>);</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html_a93f688ab8c447806806899caf495d0f6"><div class="ttname"><a href="#a93f688ab8c447806806899caf495d0f6">FlowUi::FlowUiException::error</a></div><div class="ttdeci">const FlowUiError &amp; error() const noexcept</div><div class="ttdef"><b>Definition</b> Exception.hpp:27</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a93f688ab8c447806806899caf495d0f6" name="a93f688ab8c447806806899caf495d0f6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a93f688ab8c447806806899caf495d0f6">&#9670;&#160;</a></span>error()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> &amp; FlowUi::FlowUiException::error </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Borrow the stored error for the lifetime of this exception. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUi::FlowUiError</a>&amp; <a class="code hl_function" href="#a93f688ab8c447806806899caf495d0f6">error</a> = exception.error();</div>
+<div class="ttc" id="astructFlowUi_1_1FlowUiError_html"><div class="ttname"><a href="structFlowUi_1_1FlowUiError.html">FlowUi::FlowUiError</a></div><div class="ttdef"><b>Definition</b> ErrorValue.hpp:16</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="a1f525bc15854763e80e106db565331d7" name="a1f525bc15854763e80e106db565331d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1f525bc15854763e80e106db565331d7">&#9670;&#160;</a></span>what()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char * FlowUi::FlowUiException::what </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel override">override</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return the static, null-terminated message for the stored error code. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">char</span>* message = exception.what();</div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/FlowUi/Public/errorManagement/<a class="el" href="Exception_8hpp_source.html">Exception.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -142,7 +225,7 @@ const char *&#160;</td><td class="memItemRight"><b>what</b> () const noexcept ov
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

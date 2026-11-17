@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include <cstdint>
 #include <limits>
 #include <optional>
@@ -130,7 +132,7 @@ struct TextInput {
 			return;
 		}
 		const FSELTextFieldTheme& theme =
-			context.uiManager.theme<FSELTheme>().textInputTheme;
+			FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().textInputTheme;
 		context.uiManager.requestCursor(
 			context.params.cursor.value_or(theme.cursor),
 			context.params.cursorPriority.value_or(theme.cursorPriority));
@@ -142,18 +144,18 @@ struct TextInput {
 	 */
 	static void buildElement(BuildContext& context) {
 		const FSELTextFieldTheme& theme =
-			context.uiManager.theme<FSELTheme>().textInputTheme;
+			FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().textInputTheme;
 		const Clay_Padding padding = context.params.padding.value_or(theme.padding);
 		const Clay_BorderWidth borderWidth =
 			context.params.borderWidth.value_or(theme.borderWidth);
 		const Clay_CornerRadius cornerRadius =
 			context.params.cornerRadius.value_or(theme.cornerRadius);
 		const Clay_ElementId contentId = context.uiManager.toClayEID(
-			context.part(Parts::content));
+			FlowUi::ValueOrThrow(context.part(Parts::content)));
 		const Clay_ElementId textId = context.uiManager.toClayEID(
-			context.part(Parts::text));
+			FlowUi::ValueOrThrow(context.part(Parts::text)));
 		const Clay_ElementId placeholderId = context.uiManager.toClayEID(
-			context.part(Parts::placeholder));
+			FlowUi::ValueOrThrow(context.part(Parts::placeholder)));
 		const Clay_Dimensions viewport = detail::text_field::resolveViewport(
 			contentId,
 			theme,

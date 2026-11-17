@@ -1,3 +1,4 @@
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "FlowUi/Public/managers/InputFieldManager.hpp"
 #include "FlowUi/Private/platformProviderService/WindowPlatformServices.hpp"
 #include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
@@ -487,6 +488,7 @@ void InputFieldManager::beginFrame(
 	const FrameInput& currentInput,
 	const FrameInput& previousInput,
 	uint32_t suppressedPrimaryPressClayId) {
+	frameError_ = {};
 	state_->previousInput = previousInput;
 	state_->currentInput = currentInput;
 	state_->suppressedPrimaryPressClayId = suppressedPrimaryPressClayId;
@@ -1351,26 +1353,46 @@ field_key::InputFieldKey InputFieldManager::normalizeFieldKey(ResourceKey key) c
 
 FieldQueryResult InputFieldManager::requestField(
 	FlowElementID fieldId,
-	const FieldRequest& request) {
+	const FieldRequest& request) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	return requestFieldByKey(field_key::toInputFieldKey(fieldId), request);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
 FieldQueryResult InputFieldManager::requestField(
 	GlobalFlowID fieldId,
-	const FieldRequest& request) {
+	const FieldRequest& request) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	return requestFieldByKey(field_key::toInputFieldKey(fieldId), request);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
 FieldQueryResult InputFieldManager::requestField(
 	FlowElementPartID fieldId,
-	const FieldRequest& request) {
+	const FieldRequest& request) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	return requestFieldByKey(field_key::toInputFieldKey(fieldId), request);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
 FieldQueryResult InputFieldManager::requestField(
 	ResourceKey key,
-	const FieldRequest& request) {
+	const FieldRequest& request) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	return requestFieldByKey(normalizeFieldKey(key), request);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
 FieldQueryResult InputFieldManager::requestFieldByKey(
@@ -1506,7 +1528,8 @@ FieldQueryResult InputFieldManager::requestFieldByKey(
 
 bool InputFieldManager::submitTextSpan(
 	FieldHandle handle,
-	const FieldTextSpanSubmission& span) {
+	const FieldTextSpanSubmission& span) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	if (!handle || handle.frameEpoch != state_->currentTouchEpoch ||
 		!elementIdIsValid(span.textElementId)) return false;
 	for (auto& [_, field] : state_->fieldsById) {
@@ -1532,25 +1555,50 @@ bool InputFieldManager::submitTextSpan(
 		return true;
 	}
 	return false;
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
-void InputFieldManager::requestCaret(ResourceKey key, CaretRequestKind kind) {
+void InputFieldManager::requestCaret(ResourceKey key, CaretRequestKind kind) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	requestCaretByKey(normalizeFieldKey(key), kind);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
-void InputFieldManager::requestCaret(FlowElementID fieldId, CaretRequestKind kind) {
+void InputFieldManager::requestCaret(FlowElementID fieldId, CaretRequestKind kind) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	requestCaretByKey(field_key::toInputFieldKey(fieldId), kind);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
-void InputFieldManager::requestCaret(GlobalFlowID fieldId, CaretRequestKind kind) {
+void InputFieldManager::requestCaret(GlobalFlowID fieldId, CaretRequestKind kind) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	requestCaretByKey(field_key::toInputFieldKey(fieldId), kind);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
-void InputFieldManager::requestCaret(FlowElementPartID fieldId, CaretRequestKind kind) {
+void InputFieldManager::requestCaret(FlowElementPartID fieldId, CaretRequestKind kind) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	requestCaretByKey(field_key::toInputFieldKey(fieldId), kind);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
-bool InputFieldManager::hasPrimaryFieldFocus() const {
+bool InputFieldManager::hasPrimaryFieldFocus() const noexcept {
+	if (!state_) return false;
 	if (!state_->primaryFieldId) {
 		return false;
 	}
@@ -1561,13 +1609,15 @@ bool InputFieldManager::hasPrimaryFieldFocus() const {
 	return !it->second.carets.empty();
 }
 
-bool InputFieldManager::canEditPrimaryField() const {
+bool InputFieldManager::canEditPrimaryField() const noexcept {
+	if (!state_) return false;
 	if (!state_->primaryFieldId) return false;
 	const auto it = state_->fieldsById.find(state_->primaryFieldId);
 	return it != state_->fieldsById.end() && !it->second.carets.empty() && !it->second.config.readOnly;
 }
 
-std::string_view InputFieldManager::getSelectedText() const {
+std::string_view InputFieldManager::getSelectedText() const try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	if (!state_->primaryFieldId) {
 		return {};
 	}
@@ -1610,10 +1660,15 @@ std::string_view InputFieldManager::getSelectedText() const {
 	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
 								FlowUi::detail::InitialCapacityTarget::input_fields_selected_text,
 								state_->selectedTextScratch.size());
-	return state_->selectedTextScratch;
+	return std::string_view{state_->selectedTextScratch};
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
-bool InputFieldManager::insertTextAtPrimaryCaret(std::string_view utf8Text) {
+bool InputFieldManager::insertTextAtPrimaryCaret(std::string_view utf8Text) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	if (utf8Text.empty() || !state_->primaryFieldId) {
 		return false;
 	}
@@ -1648,9 +1703,14 @@ bool InputFieldManager::insertTextAtPrimaryCaret(std::string_view utf8Text) {
 		markCaretBlinkReset();
 	}
 	return changed;
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
-bool InputFieldManager::enqueueCommand(TextCommand command, std::string_view payload) {
+bool InputFieldManager::enqueueCommand(TextCommand command, std::string_view payload) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	if (!state_->primaryFieldId || !hasPrimaryFieldFocus()) return false;
 	state_->pendingCommands.push_back(manager_storage::InputPendingCommand{
 		.payload = std::string(payload),
@@ -1658,34 +1718,58 @@ bool InputFieldManager::enqueueCommand(TextCommand command, std::string_view pay
 		.command = command,
 		.extendSelection = state_->currentInput.shift,});
 	return true;
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
 EditResult InputFieldManager::applyEdits(
 	FlowElementID fieldId,
 	std::span<const TextReplacement> edits,
-	EditOrigin origin) {
+	EditOrigin origin) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	return applyEditsByKey(field_key::toInputFieldKey(fieldId), edits, origin, false, true);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
 EditResult InputFieldManager::applyEdits(
 	GlobalFlowID fieldId,
 	std::span<const TextReplacement> edits,
-	EditOrigin origin) {
+	EditOrigin origin) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	return applyEditsByKey(field_key::toInputFieldKey(fieldId), edits, origin, false, true);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
 EditResult InputFieldManager::applyEdits(
 	FlowElementPartID fieldId,
 	std::span<const TextReplacement> edits,
-	EditOrigin origin) {
+	EditOrigin origin) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	return applyEditsByKey(field_key::toInputFieldKey(fieldId), edits, origin, false, true);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
 EditResult InputFieldManager::applyEdits(
 	ResourceKey key,
 	std::span<const TextReplacement> edits,
-	EditOrigin origin) {
+	EditOrigin origin) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	return applyEditsByKey(normalizeFieldKey(key), edits, origin, false, true);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
 EditResult InputFieldManager::applyEditsByKey(
@@ -1766,10 +1850,11 @@ EditResult InputFieldManager::commitEdits(
 	}
 
 	manager_storage::InputOwnedTransaction transaction{};
-	transaction.sequence = state_->nextTransactionSequence++;
+	transaction.sequence = state_->nextTransactionSequence;
 	transaction.revisionBefore = field.revision;
 	transaction.revisionAfter = field.revision + 1;
 	transaction.origin = origin;
+	transaction.selectionsBefore.reserve(field.carets.size());
 	for (const CaretState& caret : field.carets) {
 		transaction.selectionsBefore.push_back(TextSelection{
 			caret.anchorByteOffset,
@@ -1809,9 +1894,14 @@ EditResult InputFieldManager::commitEdits(
 	};
 	const size_t firstChangedLine = text_storage::lineFromByte(
 		field.storage, prepared.front().range.startByte);
+	// One failed replacement must not publish a prefix of a multi-caret edit.
+	// Stage storage independently; its move assignment is the nonthrowing commit.
+	static_assert(std::is_nothrow_move_assignable_v<text_storage::FieldStorage>);
+	text_storage::FieldStorage pendingStorage = field.storage;
 	for (auto it = prepared.rbegin(); it != prepared.rend(); ++it) {
-		text_storage::replace(field.storage, it->range, it->inserted);
+		text_storage::replace(pendingStorage, it->range, it->inserted);
 	}
+	field.storage = std::move(pendingStorage);
 	FLOWUI_MEMORY_DEMAND_RECORD(
 		state_->capacity_demand,
 		FlowUi::detail::InitialCapacityTarget::field_wrap_cache_by_hard_line,
@@ -1833,6 +1923,7 @@ EditResult InputFieldManager::commitEdits(
 	field.revision = transaction.revisionAfter;
 	field.flags.set_flag(InputFieldFlag::caret_reveal_pending, true);
 	field.frameTransactions.push_back(std::move(transaction));
+	++state_->nextTransactionSequence;
 	refreshTransactionViews(field);
 	return EditResult::Applied;
 }
@@ -1943,16 +2034,31 @@ void InputFieldManager::requestCaretByKey(field_key::InputFieldKey fieldId, Care
 	markCaretBlinkReset();
 }
 
-bool InputFieldManager::removeField(FlowElementID fieldId) {
+bool InputFieldManager::removeField(FlowElementID fieldId) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	return removeFieldByKey(field_key::toInputFieldKey(fieldId));
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
-bool InputFieldManager::removeField(GlobalFlowID fieldId) {
+bool InputFieldManager::removeField(GlobalFlowID fieldId) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	return removeFieldByKey(field_key::toInputFieldKey(fieldId));
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
-bool InputFieldManager::removeField(FlowElementPartID fieldId) {
+bool InputFieldManager::removeField(FlowElementPartID fieldId) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	return removeFieldByKey(field_key::toInputFieldKey(fieldId));
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
 bool InputFieldManager::removeFieldByKey(field_key::InputFieldKey fieldId) {
@@ -1987,29 +2093,49 @@ bool InputFieldManager::removeFieldByKey(field_key::InputFieldKey fieldId) {
 	return true;
 }
 
-bool InputFieldManager::removeField(ResourceKey key) {
+bool InputFieldManager::removeField(ResourceKey key) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	return removeFieldByKey(normalizeFieldKey(key));
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
 bool InputFieldManager::replaceText(
 	FlowElementID fieldId,
 	std::string_view text,
-	bool preserveCaret) {
+	bool preserveCaret) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	return replaceTextByKey(field_key::toInputFieldKey(fieldId), text, preserveCaret);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
 bool InputFieldManager::replaceText(
 	GlobalFlowID fieldId,
 	std::string_view text,
-	bool preserveCaret) {
+	bool preserveCaret) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	return replaceTextByKey(field_key::toInputFieldKey(fieldId), text, preserveCaret);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
 bool InputFieldManager::replaceText(
 	FlowElementPartID fieldId,
 	std::string_view text,
-	bool preserveCaret) {
+	bool preserveCaret) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	return replaceTextByKey(field_key::toInputFieldKey(fieldId), text, preserveCaret);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
 bool InputFieldManager::replaceTextByKey(
@@ -2103,11 +2229,17 @@ bool InputFieldManager::replaceTextByKey(
 	return true;
 }
 
-bool InputFieldManager::replaceText(ResourceKey key, std::string_view text, bool preserveCaret) {
+bool InputFieldManager::replaceText(ResourceKey key, std::string_view text, bool preserveCaret) try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	return replaceTextByKey(normalizeFieldKey(key), text, preserveCaret);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
-void InputFieldManager::clear() {
+void InputFieldManager::clear() try {
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
 								FlowUi::detail::InitialCapacityTarget::input_fields_registry,
 								state_->fieldsById.size());
@@ -2152,6 +2284,10 @@ void InputFieldManager::clear() {
 								FlowUi::detail::InitialCapacityTarget::input_fields_selected_text,
 								state_->selectedTextScratch.size());
 	state_->selectedTextScratch.clear();
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::InputBeginFrame);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
 void InputFieldManager::applyCapturedEdits(field_key::InputFieldKey fieldId, FieldState& field) {
@@ -2247,7 +2383,7 @@ void InputFieldManager::applyPendingCommands(field_key::InputFieldKey fieldId, F
 			const std::string selected = clipboardSelection();
 			if (!selected.empty() && state_->platformServices &&
 				state_->platformServices->hasClipboardAccess())
-				state_->platformServices->setClipboardText(selected);
+				detail::requireApiSuccess(state_->platformServices->setClipboardText(selected));
 			break;
 		}
 		case TextCommand::Cut: {
@@ -2260,16 +2396,15 @@ void InputFieldManager::applyPendingCommands(field_key::InputFieldKey fieldId, F
 			for (const SelectionRange& range : mergedSelectionRanges(field)) {
 				cuts.push_back(TextReplacement{TextRange{range.start, range.end}, {}});
 			}
-			if (commitEdits(field, cuts, EditOrigin::Cut, true) == EditResult::Applied) {
-				state_->platformServices->setClipboardText(selected);
-			}
+			detail::requireApiSuccess(state_->platformServices->setClipboardText(selected));
+			(void)commitEdits(field, cuts, EditOrigin::Cut, true);
 			break;
 		}
 		case TextCommand::Paste: {
 			const std::string pasted =
 				!pending.payload.empty()
 					? pending.payload
-					: (state_->platformServices ? state_->platformServices->clipboardText()
+					: (state_->platformServices ? detail::requireApiValue(state_->platformServices->clipboardText())
 												: std::string{});
 			if (!pasted.empty() && !field.config.readOnly) {
 				applyTextInsertion(field, pasted, EditOrigin::Paste);

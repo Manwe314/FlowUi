@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #pragma once
 
 #include "FlowUi/Public/BuildConfig.hpp"
@@ -52,7 +53,7 @@ void register_focus_target(Context& context, DevChangesState& changes, Clay_Elem
 	else
 		*found = target;
 	if (context.uiManager.getPreviousFramesInteraction().isPressed(identity)) {
-		context.uiManager.shortcuts().setFocusedElement(identity);
+		FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(identity));
 		if (!text_input.value && context.uiManager.inputFields().hasPrimaryFieldFocus())
 			context.uiManager.inputFields().requestCaret(FlowElementID{},
 														 CaretRequestKind::ClearAll);
@@ -74,7 +75,7 @@ template <class Context>
 void begin_focus_frame(Context& context, DevChangesState& changes) {
 	const auto& input = context.uiManager.getCurrentFrameInput();
 	const auto& previous = context.uiManager.getPreviousFrameInput();
-	const auto focused = context.uiManager.shortcuts().focusedElement().id;
+	const auto focused = FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id;
 	const auto found = std::ranges::find(changes.focus_targets, focused,
 										 [](const auto& target) { return target.identity.id; });
 	if (input.windowFocused && !changes.focus_targets.empty() &&
@@ -89,7 +90,7 @@ void begin_focus_frame(Context& context, DevChangesState& changes) {
 		const auto& target =
 			changes.focus_targets[(position + count + (reverse ? count - 1 : 1)) % count];
 		context.uiManager.inputFields().requestCaret(FlowElementID{}, CaretRequestKind::ClearAll);
-		context.uiManager.shortcuts().setFocusedElement(target.identity);
+		FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(target.identity));
 		if (target.text_input.value)
 			context.uiManager.inputFields().requestCaret(target.text_input,
 														 CaretRequestKind::SetPrimary);
@@ -340,13 +341,13 @@ inline void activate(void* target, uint64_t action, uint64_t value) {
 template <class Context>
 [[nodiscard]] const Font::FontFaceData* text_face(Context& context) {
 	const Font::FontFaceData* face =
-		context.params.app ? context.params.app->fonts().getFontById(0) : nullptr;
+		context.params.app ? FlowUi::ValueOrThrow(context.params.app->fonts()).get().getFontById(0) : nullptr;
 	if (!face && context.params.app)
-		context.params.app->fonts().visitDevFonts(
+		FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(context.params.app->fonts()).get().visitDevFonts(
 			&face, [](void* target, const FontManager::DevFontView& font) {
 				*static_cast<const Font::FontFaceData**>(target) = font.face;
 				return false;
-			});
+			}));
 	return face;
 }
 
@@ -480,11 +481,11 @@ void hinted_text(Context& context, const Identity& identity, std::string_view la
 				 uint16_t size = 12) {
 	auto heading = row();
 	heading.layout.sizing.height = CLAY_SIZING_FIT(0);
-	CLAY(context.clayID(identity), heading) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(identity)), heading) {
 		text(context, label, color, size);
 		diagnostics_ui::icon_with_identity(context, Keyed("hint-icon", identity.token), Icon::Info,
 										   interface_theme::kTextMuted, 12);
-		if (context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID(identity)))
+		if (context.uiManager.getPreviousFramesInteraction().isHovered(FlowUi::ValueOrThrow(context.clayID(identity))))
 			diagnostics_ui::pointer_tooltip(context, Keyed("hint-tooltip", identity.token),
 											description);
 	}
@@ -557,7 +558,7 @@ void choice(Context& context, IndexedElementName identity, std::string_view labe
 	const auto element = ::FlowUi::detail::element_id::resolveLocal(
 		context.id, FSEL::RadioChoice::definitionId, identity.token);
 	const auto clay_identity = context.uiManager.toClayEID(element);
-	if (context.uiManager.shortcuts().focusedElement().id == clay_identity.id) {
+	if (FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id == clay_identity.id) {
 		parameters.style.borderWidth =
 			selection_bar ? Clay_BorderWidth{3, 0, 0, 0, 0} : Clay_BorderWidth{1, 1, 1, 1, 0};
 		parameters.style.idleOverrides.borderColor = interface_theme::kAccentCurrent;
@@ -582,7 +583,7 @@ void choice(Context& context, IndexedElementName identity, std::string_view labe
 		caption.layout.sizing.height = CLAY_SIZING_GROW(0);
 		caption.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
 		caption.clip = {.horizontal = true, .scrollInputDisabled = true};
-		CLAY(context.clayID(Keyed("choice-label", identity.token)), caption)
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("choice-label", identity.token))), caption)
 		CLAY_TEXT(context.uiManager.toClayString(label), CLAY_TEXT_CONFIG(config));
 	} else {
 		CLAY_TEXT(context.uiManager.toClayString(label), CLAY_TEXT_CONFIG(config));
@@ -600,10 +601,10 @@ void bar_choice(Context& context, IndexedElementName identity, std::string_view 
 template <class Context>
 [[nodiscard]] Clay_ElementDeclaration viewport(Context& context, LocalElementName identity,
 											   float& retained_scroll,
-											   ViewportState* restoration = nullptr) noexcept {
+											   ViewportState* restoration = nullptr) {
 	auto result = column(0);
 	result.layout.sizing.height = CLAY_SIZING_GROW(0);
-	const auto scroll = Clay_GetScrollContainerData(context.clayID(identity));
+	const auto scroll = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID(identity)));
 	if (restoration && !scroll.found) {
 		restoration->requested_offset = retained_scroll;
 		restoration->settling_frames = retained_scroll < 0 ? 4 : 0;
@@ -645,7 +646,7 @@ template <class Context>
 /* Seed newly recreated Clay scroll state after opening a retained panel viewport. */
 template <class Context, class Identity>
 void restore_viewport_scroll(Context& context, const Identity& identity, float retained_scroll) {
-	const auto scroll = Clay_GetScrollContainerData(context.clayID(identity));
+	const auto scroll = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID(identity)));
 	if (scroll.found && scroll.scrollPosition && scroll.scrollContainerDimensions.height == 0)
 		scroll.scrollPosition->y = retained_scroll;
 }

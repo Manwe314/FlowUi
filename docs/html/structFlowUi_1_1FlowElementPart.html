@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,24 +111,79 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a1637a857926ed9753be8daaf2e73bd0b" id="r_a1637a857926ed9753be8daaf2e73bd0b"><td class="memItemLeft"><a id="a1637a857926ed9753be8daaf2e73bd0b" name="a1637a857926ed9753be8daaf2e73bd0b"></a>
-constexpr&#160;</td><td class="memItemRight"><b>operator bool</b> () const noexcept</td></tr>
+<tr class="memitem:a1637a857926ed9753be8daaf2e73bd0b" id="r_a1637a857926ed9753be8daaf2e73bd0b"><td class="memItemLeft">constexpr&#160;</td><td class="memItemRight"><a class="el" href="#a1637a857926ed9753be8daaf2e73bd0b">operator bool</a> () const noexcept</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a894a6ac11eb6f855e28298da53b4b342" id="r_a894a6ac11eb6f855e28298da53b4b342"><td class="memItemLeft"><a id="a894a6ac11eb6f855e28298da53b4b342" name="a894a6ac11eb6f855e28298da53b4b342"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>token</b> = 0</td></tr>
-<tr class="memitem:a575a791e56efbb72165b8ff62bed9899" id="r_a575a791e56efbb72165b8ff62bed9899"><td class="memItemLeft"><a id="a575a791e56efbb72165b8ff62bed9899" name="a575a791e56efbb72165b8ff62bed9899"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>debugName</b> {}</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a865d7791953cb44d4a365f1cefed4aab" id="r_a865d7791953cb44d4a365f1cefed4aab"><td class="memItemLeft"><a id="a865d7791953cb44d4a365f1cefed4aab" name="a865d7791953cb44d4a365f1cefed4aab"></a>
-constexpr bool&#160;</td><td class="memItemRight"><b>operator==</b> (<a class="el" href="structFlowUi_1_1FlowElementPart.html">FlowElementPart</a> lhs, <a class="el" href="structFlowUi_1_1FlowElementPart.html">FlowElementPart</a> rhs) noexcept</td></tr>
+<tr class="memitem:a894a6ac11eb6f855e28298da53b4b342" id="r_a894a6ac11eb6f855e28298da53b4b342"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a894a6ac11eb6f855e28298da53b4b342">token</a> = 0</td></tr>
+<tr class="memitem:a575a791e56efbb72165b8ff62bed9899" id="r_a575a791e56efbb72165b8ff62bed9899"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a575a791e56efbb72165b8ff62bed9899">debugName</a> {}</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Definition-time declaration of one semantic part owned by an element. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a1637a857926ed9753be8daaf2e73bd0b" name="a1637a857926ed9753be8daaf2e73bd0b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1637a857926ed9753be8daaf2e73bd0b">&#9670;&#160;</a></span>operator bool()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::FlowElementPart::operator bool </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel explicit">explicit</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return whether the identity is nonzero; this does not validate registration. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> first = <a class="code hl_function" href="namespaceFlowUi.html#a35e064ec104b63234e84b5b6a9dfda9e">FlowUi::Part</a>(<span class="stringliteral">&quot;label&quot;</span>);</div>
+<div class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> second = <a class="code hl_function" href="namespaceFlowUi.html#a35e064ec104b63234e84b5b6a9dfda9e">FlowUi::Part</a>(<span class="stringliteral">&quot;label&quot;</span>);</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> valid = <span class="keyword">static_cast&lt;</span><span class="keywordtype">bool</span><span class="keyword">&gt;</span>(first);</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> same = first == second;</div>
+<div class="ttc" id="anamespaceFlowUi_html_a35e064ec104b63234e84b5b6a9dfda9e"><div class="ttname"><a href="namespaceFlowUi.html#a35e064ec104b63234e84b5b6a9dfda9e">FlowUi::Part</a></div><div class="ttdeci">consteval FlowElementPart Part(const char(&amp;name)[N]) noexcept</div><div class="ttdef"><b>Definition</b> ElementID.hpp:421</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a575a791e56efbb72165b8ff62bed9899" name="a575a791e56efbb72165b8ff62bed9899"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a575a791e56efbb72165b8ff62bed9899">&#9670;&#160;</a></span>debugName</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::FlowElementPart::debugName {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed developer label excluded from equality; backing storage must outlive retained uses. </p>
+
+</div>
+</div>
+<a id="a894a6ac11eb6f855e28298da53b4b342" name="a894a6ac11eb6f855e28298da53b4b342"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a894a6ac11eb6f855e28298da53b4b342">&#9670;&#160;</a></span>token</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::FlowElementPart::token = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Definition-time part token; zero is invalid. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/identificationTypes/<a class="el" href="ElementIDTypes_8hpp_source.html">ElementIDTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -144,7 +199,7 @@ constexpr bool&#160;</td><td class="memItemRight"><b>operator==</b> (<a class="e
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1FlowElementPart.html">FlowElementPart</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1FlowElementPart.html">FlowElementPart</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

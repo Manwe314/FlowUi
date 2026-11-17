@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,26 +106,23 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::MemoryStatisticsQuery Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevMemoryReporting_8hpp_source.html">DevMemoryReporting.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a14103eb67b1fed1f334eb65f653ad52b" id="r_a14103eb67b1fed1f334eb65f653ad52b"><td class="memItemLeft"><a id="a14103eb67b1fed1f334eb65f653ad52b" name="a14103eb67b1fed1f334eb65f653ad52b"></a>
-MemorySourceId&#160;</td><td class="memItemRight"><b>source</b> = 0u</td></tr>
-<tr class="memitem:a79e814f0bc505f7e047b6665e6ac3a57" id="r_a79e814f0bc505f7e047b6665e6ac3a57"><td class="memItemLeft"><a id="a79e814f0bc505f7e047b6665e6ac3a57" name="a79e814f0bc505f7e047b6665e6ac3a57"></a>
-WindowId&#160;</td><td class="memItemRight"><b>window</b> = InvalidWindowId</td></tr>
-<tr class="memitem:a9af0e73ea7937157169279d30cedcf8c" id="r_a9af0e73ea7937157169279d30cedcf8c"><td class="memItemLeft"><a id="a9af0e73ea7937157169279d30cedcf8c" name="a9af0e73ea7937157169279d30cedcf8c"></a>
-MemoryStatisticMetric&#160;</td><td class="memItemRight"><b>metric</b> = MemoryStatisticMetric::LogicalLiveBytes</td></tr>
-<tr class="memitem:aac72d1545331bfcc8e3ab5cae9e3a819" id="r_aac72d1545331bfcc8e3ab5cae9e3a819"><td class="memItemLeft"><a id="aac72d1545331bfcc8e3ab5cae9e3a819" name="aac72d1545331bfcc8e3ab5cae9e3a819"></a>
-MemoryWeighting&#160;</td><td class="memItemRight"><b>weighting</b> = MemoryWeighting::AppTicks</td></tr>
-<tr class="memitem:ad273cf8dcb5afd9e05a95258e19d07db" id="r_ad273cf8dcb5afd9e05a95258e19d07db"><td class="memItemLeft"><a id="ad273cf8dcb5afd9e05a95258e19d07db" name="ad273cf8dcb5afd9e05a95258e19d07db"></a>
-std::optional&lt; MemoryCaptureId &gt;&#160;</td><td class="memItemRight"><b>capture</b> {}</td></tr>
-<tr class="memitem:a671929129dbd6f47a1722cb4f17520d7" id="r_a671929129dbd6f47a1722cb4f17520d7"><td class="memItemLeft"><a id="a671929129dbd6f47a1722cb4f17520d7" name="a671929129dbd6f47a1722cb4f17520d7"></a>
-std::vector&lt; double &gt;&#160;</td><td class="memItemRight"><b>percentiles</b> {0.50, 0.90, 0.95, 0.99}</td></tr>
+<tr class="memitem:a14103eb67b1fed1f334eb65f653ad52b" id="r_a14103eb67b1fed1f334eb65f653ad52b"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad77f8008bc1cd25d210f535c630fb739">MemorySourceId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a14103eb67b1fed1f334eb65f653ad52b">source</a> = 0u</td></tr>
+<tr class="memitem:a79e814f0bc505f7e047b6665e6ac3a57" id="r_a79e814f0bc505f7e047b6665e6ac3a57"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a79e814f0bc505f7e047b6665e6ac3a57">window</a> = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td></tr>
+<tr class="memitem:a9af0e73ea7937157169279d30cedcf8c" id="r_a9af0e73ea7937157169279d30cedcf8c"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a519534eb09f54d499ce1c49362ddc8e0">MemoryStatisticMetric</a>&#160;</td><td class="memItemRight"><a class="el" href="#a9af0e73ea7937157169279d30cedcf8c">metric</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a519534eb09f54d499ce1c49362ddc8e0a6847eee65a2061ef8cc4bd0a2e77dad9">MemoryStatisticMetric::LogicalLiveBytes</a></td></tr>
+<tr class="memitem:aac72d1545331bfcc8e3ab5cae9e3a819" id="r_aac72d1545331bfcc8e3ab5cae9e3a819"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a77bb97b1a7ff7ff40a58ead749a158aa">MemoryWeighting</a>&#160;</td><td class="memItemRight"><a class="el" href="#aac72d1545331bfcc8e3ab5cae9e3a819">weighting</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a77bb97b1a7ff7ff40a58ead749a158aaae1c68c48f101bced33ef1ad44dfee14a">MemoryWeighting::AppTicks</a></td></tr>
+<tr class="memitem:ad273cf8dcb5afd9e05a95258e19d07db" id="r_ad273cf8dcb5afd9e05a95258e19d07db"><td class="memItemLeft">std::optional&lt; <a class="el" href="namespaceFlowUi_1_1devSystems.html#a0e69379e77ebdfe113122d30e102b684">MemoryCaptureId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ad273cf8dcb5afd9e05a95258e19d07db">capture</a> {}</td></tr>
+<tr class="memitem:a671929129dbd6f47a1722cb4f17520d7" id="r_a671929129dbd6f47a1722cb4f17520d7"><td class="memItemLeft">std::vector&lt; double &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a671929129dbd6f47a1722cb4f17520d7">percentiles</a> {0.50, 0.90, 0.95, 0.99}</td></tr>
 <tr class="memitem:a9d183d1d9ab49f569dc0b5dd15edce91" id="r_a9d183d1d9ab49f569dc0b5dd15edce91"><td class="memItemLeft">std::optional&lt; uint64_t &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a9d183d1d9ab49f569dc0b5dd15edce91">begin_ns</a> {}</td></tr>
-<tr class="memitem:a0c03b8cdd39b7c74369fd70ff214bdd0" id="r_a0c03b8cdd39b7c74369fd70ff214bdd0"><td class="memItemLeft"><a id="a0c03b8cdd39b7c74369fd70ff214bdd0" name="a0c03b8cdd39b7c74369fd70ff214bdd0"></a>
-std::optional&lt; uint64_t &gt;&#160;</td><td class="memItemRight"><b>end_ns</b> {}</td></tr>
+<tr class="memitem:a0c03b8cdd39b7c74369fd70ff214bdd0" id="r_a0c03b8cdd39b7c74369fd70ff214bdd0"><td class="memItemLeft">std::optional&lt; uint64_t &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a0c03b8cdd39b7c74369fd70ff214bdd0">end_ns</a> {}</td></tr>
 </table>
-<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Select source, metric, interval/capture, weighting, and percentile fractions for a retained-history calculation. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a9d183d1d9ab49f569dc0b5dd15edce91" name="a9d183d1d9ab49f569dc0b5dd15edce91"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9d183d1d9ab49f569dc0b5dd15edce91">&#9670;&#160;</a></span>begin_ns</h2>
 
@@ -137,7 +134,112 @@ std::optional&lt; uint64_t &gt;&#160;</td><td class="memItemRight"><b>end_ns</b>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Optional time clipping; use ElapsedTime or Epochs weighting. </p>
+<p>Optional time clipping; use ElapsedTime or Epochs weighting. Inclusive monotonic interval/capture start in nanoseconds. </p>
+
+</div>
+</div>
+<a id="ad273cf8dcb5afd9e05a95258e19d07db" name="ad273cf8dcb5afd9e05a95258e19d07db"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad273cf8dcb5afd9e05a95258e19d07db">&#9670;&#160;</a></span>capture</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;<a class="el" href="namespaceFlowUi_1_1devSystems.html#a0e69379e77ebdfe113122d30e102b684">MemoryCaptureId</a>&gt; FlowUi::devSystems::MemoryStatisticsQuery::capture {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Optional capture identity; absent selects available history. </p>
+
+</div>
+</div>
+<a id="a0c03b8cdd39b7c74369fd70ff214bdd0" name="a0c03b8cdd39b7c74369fd70ff214bdd0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c03b8cdd39b7c74369fd70ff214bdd0">&#9670;&#160;</a></span>end_ns</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;uint64_t&gt; FlowUi::devSystems::MemoryStatisticsQuery::end_ns {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Exclusive monotonic interval/capture end in nanoseconds. </p>
+
+</div>
+</div>
+<a id="a9af0e73ea7937157169279d30cedcf8c" name="a9af0e73ea7937157169279d30cedcf8c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9af0e73ea7937157169279d30cedcf8c">&#9670;&#160;</a></span>metric</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a519534eb09f54d499ce1c49362ddc8e0">MemoryStatisticMetric</a> FlowUi::devSystems::MemoryStatisticsQuery::metric = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a519534eb09f54d499ce1c49362ddc8e0a6847eee65a2061ef8cc4bd0a2e77dad9">MemoryStatisticMetric::LogicalLiveBytes</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Selected byte/count metric; determines result units. </p>
+
+</div>
+</div>
+<a id="a671929129dbd6f47a1722cb4f17520d7" name="a671929129dbd6f47a1722cb4f17520d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a671929129dbd6f47a1722cb4f17520d7">&#9670;&#160;</a></span>percentiles</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;double&gt; FlowUi::devSystems::MemoryStatisticsQuery::percentiles {0.50, 0.90, 0.95, 0.99}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Requested fractions or computed percentile/value pairs. </p>
+
+</div>
+</div>
+<a id="a14103eb67b1fed1f334eb65f653ad52b" name="a14103eb67b1fed1f334eb65f653ad52b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a14103eb67b1fed1f334eb65f653ad52b">&#9670;&#160;</a></span>source</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad77f8008bc1cd25d210f535c630fb739">MemorySourceId</a> FlowUi::devSystems::MemoryStatisticsQuery::source = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Stable source identity. </p>
+
+</div>
+</div>
+<a id="aac72d1545331bfcc8e3ab5cae9e3a819" name="aac72d1545331bfcc8e3ab5cae9e3a819"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac72d1545331bfcc8e3ab5cae9e3a819">&#9670;&#160;</a></span>weighting</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a77bb97b1a7ff7ff40a58ead749a158aa">MemoryWeighting</a> FlowUi::devSystems::MemoryStatisticsQuery::weighting = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a77bb97b1a7ff7ff40a58ead749a158aaae1c68c48f101bced33ef1ad44dfee14a">MemoryWeighting::AppTicks</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>How each retained observation contributes weight. </p>
+
+</div>
+</div>
+<a id="a79e814f0bc505f7e047b6665e6ac3a57" name="a79e814f0bc505f7e047b6665e6ac3a57"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a79e814f0bc505f7e047b6665e6ac3a57">&#9670;&#160;</a></span>window</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> FlowUi::devSystems::MemoryStatisticsQuery::window = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owning window, or zero for app-wide measurements. </p>
 
 </div>
 </div>
@@ -157,7 +259,7 @@ std::optional&lt; uint64_t &gt;&#160;</td><td class="memItemRight"><b>end_ns</b>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1MemoryStatisticsQuery.html">MemoryStatisticsQuery</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1MemoryStatisticsQuery.html">MemoryStatisticsQuery</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,36 +111,49 @@ $(function() {
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &lt;compare&gt;</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="keyword">namespace </span>FlowUi {</div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi.html">FlowUi</a> {</div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span></div>
 <div class="foldopen" id="foldopen00009" data-start="{" data-end="};">
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno"><a class="line" href="structFlowUi_1_1TextureHandle.html">    9</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a> {</div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>    uint32_t index = 0;</div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>    uint32_t generation = 0;</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    [[nodiscard]] <span class="keyword">constexpr</span> <span class="keyword">explicit</span> <span class="keyword">operator</span> bool() <span class="keyword">const</span> <span class="keyword">noexcept</span> {</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>        <span class="keywordflow">return</span> index != 0 &amp;&amp; generation != 0;</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    }</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span> </div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    [[nodiscard]] <span class="keyword">constexpr</span> uint64_t packed() <span class="keyword">const</span> <span class="keyword">noexcept</span> {</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>        <span class="keywordflow">return</span> (<span class="keyword">static_cast&lt;</span>uint64_t<span class="keyword">&gt;</span>(generation) &lt;&lt; 32u) | index;</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    }</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    [[nodiscard]] <span class="keyword">static</span> <span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a> fromPacked(uint64_t value) <span class="keyword">noexcept</span> {</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>        <span class="keywordflow">return</span> <a class="code hl_struct" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a>{</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>            .index = <span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(value),</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>            .generation = <span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(value &gt;&gt; 32u),</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>        };</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    }</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    [[nodiscard]] <span class="keyword">auto</span> operator&lt;=&gt;(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a>&amp;) <span class="keyword">const</span> <span class="keyword">noexcept</span> = <span class="keywordflow">default</span>;</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>};</div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno"><a class="line" href="structFlowUi_1_1TextureHandle.html#a64a157e785838555e95795d21b9ba48c">   11</a></span>    uint32_t <a class="code hl_variable" href="structFlowUi_1_1TextureHandle.html#a64a157e785838555e95795d21b9ba48c">index</a> = 0;</div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno"><a class="line" href="structFlowUi_1_1TextureHandle.html#aa05caa472ee92e19f15002e5d94c7c94">   13</a></span>    uint32_t <a class="code hl_variable" href="structFlowUi_1_1TextureHandle.html#aa05caa472ee92e19f15002e5d94c7c94">generation</a> = 0;</div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span></div>
+<div class="foldopen" id="foldopen00025" data-start="{" data-end="}">
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno"><a class="line" href="structFlowUi_1_1TextureHandle.html#a5e6c12c0b89b6dfd93ca59032af58bd8">   25</a></span>    [[nodiscard]] <span class="keyword">constexpr</span> <span class="keyword">explicit</span> <span class="keyword">operator</span> bool() const noexcept {</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>        <span class="keywordflow">return</span> <a class="code hl_variable" href="structFlowUi_1_1TextureHandle.html#a64a157e785838555e95795d21b9ba48c">index</a> != 0 &amp;&amp; <a class="code hl_variable" href="structFlowUi_1_1TextureHandle.html#aa05caa472ee92e19f15002e5d94c7c94">generation</a> != 0;</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    }</div>
 </div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a> InvalidTextureHandle{};</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span></div>
+<div class="foldopen" id="foldopen00039" data-start="{" data-end="}">
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno"><a class="line" href="structFlowUi_1_1TextureHandle.html#a3d18122f84a3c87ca492dcbe272c9c88">   39</a></span>    [[nodiscard]] <span class="keyword">constexpr</span> uint64_t <a class="code hl_function" href="structFlowUi_1_1TextureHandle.html#a3d18122f84a3c87ca492dcbe272c9c88">packed</a>() const noexcept {</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>        <span class="keywordflow">return</span> (<span class="keyword">static_cast&lt;</span>uint64_t<span class="keyword">&gt;</span>(<a class="code hl_variable" href="structFlowUi_1_1TextureHandle.html#aa05caa472ee92e19f15002e5d94c7c94">generation</a>) &lt;&lt; 32u) | <a class="code hl_variable" href="structFlowUi_1_1TextureHandle.html#a64a157e785838555e95795d21b9ba48c">index</a>;</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    }</div>
+</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span></div>
+<div class="foldopen" id="foldopen00053" data-start="{" data-end="}">
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno"><a class="line" href="structFlowUi_1_1TextureHandle.html#a0f4b50224f4bcdfff74968d7dff215c8">   53</a></span>    [[nodiscard]] <span class="keyword">static</span> <span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a> <a class="code hl_function" href="structFlowUi_1_1TextureHandle.html#a0f4b50224f4bcdfff74968d7dff215c8">fromPacked</a>(uint64_t value) <span class="keyword">noexcept</span> {</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>        <span class="keywordflow">return</span> <a class="code hl_struct" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a>{</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>            .index = <span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(value),</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>            .<a class="code hl_variable" href="structFlowUi_1_1TextureHandle.html#aa05caa472ee92e19f15002e5d94c7c94">generation</a> = <span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(value &gt;&gt; 32u),</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>        };</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    }</div>
+</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span></div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno"><a class="line" href="structFlowUi_1_1TextureHandle.html#ad9ac1d5fa80fa918b0b94df91d7a88ff">   70</a></span>    [[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="structFlowUi_1_1TextureHandle.html#ad9ac1d5fa80fa918b0b94df91d7a88ff">operator&lt;=&gt;</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a>&amp;) <span class="keyword">const</span> <span class="keyword">noexcept</span> = <span class="keywordflow">default</span>;</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>};</div>
+</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span></div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#ab31d2fd776e72a170d9633bdbebe30a9">   74</a></span><span class="keyword">inline</span> <span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a> <a class="code hl_variable" href="namespaceFlowUi.html#ab31d2fd776e72a170d9633bdbebe30a9">InvalidTextureHandle</a>{};</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span> </div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="ttc" id="anamespaceFlowUi_html"><div class="ttname"><a href="namespaceFlowUi.html">FlowUi</a></div><div class="ttdef"><b>Definition</b> App.hpp:29</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_ab31d2fd776e72a170d9633bdbebe30a9"><div class="ttname"><a href="namespaceFlowUi.html#ab31d2fd776e72a170d9633bdbebe30a9">FlowUi::InvalidTextureHandle</a></div><div class="ttdeci">constexpr TextureHandle InvalidTextureHandle</div><div class="ttdef"><b>Definition</b> TextureHandle.hpp:74</div></div>
 <div class="ttc" id="astructFlowUi_1_1TextureHandle_html"><div class="ttname"><a href="structFlowUi_1_1TextureHandle.html">FlowUi::TextureHandle</a></div><div class="ttdef"><b>Definition</b> TextureHandle.hpp:9</div></div>
+<div class="ttc" id="astructFlowUi_1_1TextureHandle_html_a0f4b50224f4bcdfff74968d7dff215c8"><div class="ttname"><a href="structFlowUi_1_1TextureHandle.html#a0f4b50224f4bcdfff74968d7dff215c8">FlowUi::TextureHandle::fromPacked</a></div><div class="ttdeci">static constexpr TextureHandle fromPacked(uint64_t value) noexcept</div><div class="ttdef"><b>Definition</b> TextureHandle.hpp:53</div></div>
+<div class="ttc" id="astructFlowUi_1_1TextureHandle_html_a3d18122f84a3c87ca492dcbe272c9c88"><div class="ttname"><a href="structFlowUi_1_1TextureHandle.html#a3d18122f84a3c87ca492dcbe272c9c88">FlowUi::TextureHandle::packed</a></div><div class="ttdeci">constexpr uint64_t packed() const noexcept</div><div class="ttdef"><b>Definition</b> TextureHandle.hpp:39</div></div>
+<div class="ttc" id="astructFlowUi_1_1TextureHandle_html_a64a157e785838555e95795d21b9ba48c"><div class="ttname"><a href="structFlowUi_1_1TextureHandle.html#a64a157e785838555e95795d21b9ba48c">FlowUi::TextureHandle::index</a></div><div class="ttdeci">uint32_t index</div><div class="ttdef"><b>Definition</b> TextureHandle.hpp:11</div></div>
+<div class="ttc" id="astructFlowUi_1_1TextureHandle_html_aa05caa472ee92e19f15002e5d94c7c94"><div class="ttname"><a href="structFlowUi_1_1TextureHandle.html#aa05caa472ee92e19f15002e5d94c7c94">FlowUi::TextureHandle::generation</a></div><div class="ttdeci">uint32_t generation</div><div class="ttdef"><b>Definition</b> TextureHandle.hpp:13</div></div>
+<div class="ttc" id="astructFlowUi_1_1TextureHandle_html_ad9ac1d5fa80fa918b0b94df91d7a88ff"><div class="ttname"><a href="structFlowUi_1_1TextureHandle.html#ad9ac1d5fa80fa918b0b94df91d7a88ff">FlowUi::TextureHandle::operator&lt;=&gt;</a></div><div class="ttdeci">auto operator&lt;=&gt;(const TextureHandle &amp;) const noexcept=default</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

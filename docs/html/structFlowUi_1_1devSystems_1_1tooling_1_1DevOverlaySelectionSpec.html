@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,19 +106,30 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevOverlaySelectionSpec Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Copied renderer selection with optional comparison target and enabled surfaces.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevOverlayTypes_8hpp_source.html">DevOverlayTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a1e3238f48efa2083cb659cd69c635f3b" id="r_a1e3238f48efa2083cb659cd69c635f3b"><td class="memItemLeft"><a id="a1e3238f48efa2083cb659cd69c635f3b" name="a1e3238f48efa2083cb659cd69c635f3b"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverlayTargetSpec.html">DevOverlayTargetSpec</a>&#160;</td><td class="memItemRight"><b>primaryTarget</b> {}</td></tr>
+<tr class="memdesc:a1e3238f48efa2083cb659cd69c635f3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Main inspected target for the supplied snapshot. <br /></td></tr>
 <tr class="memitem:ac737f74a7206771d39c10e9a5ae9dbff" id="r_ac737f74a7206771d39c10e9a5ae9dbff"><td class="memItemLeft"><a id="ac737f74a7206771d39c10e9a5ae9dbff" name="ac737f74a7206771d39c10e9a5ae9dbff"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverlayTargetSpec.html">DevOverlayTargetSpec</a>&#160;</td><td class="memItemRight"><b>secondaryTarget</b> {}</td></tr>
+<tr class="memdesc:ac737f74a7206771d39c10e9a5ae9dbff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optional comparison target for distance/ruler overlays. <br /></td></tr>
 <tr class="memitem:ab11bd21b910bbdd9ba3227058aeaa34e" id="r_ab11bd21b910bbdd9ba3227058aeaa34e"><td class="memItemLeft"><a id="ab11bd21b910bbdd9ba3227058aeaa34e" name="ab11bd21b910bbdd9ba3227058aeaa34e"></a>
-DevOverlayModeFlags&#160;</td><td class="memItemRight"><b>modeFlags</b> = DevOverlayModeFlags::Default</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a0ff6c1476c2423ca79990827c61ff31d">DevOverlayModeFlags</a>&#160;</td><td class="memItemRight"><b>modeFlags</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a0ff6c1476c2423ca79990827c61ff31da7a1920d61156abc05a60135aefe8bc67">DevOverlayModeFlags::Default</a></td></tr>
+<tr class="memdesc:ab11bd21b910bbdd9ba3227058aeaa34e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Overlay surfaces to generate. <br /></td></tr>
 <tr class="memitem:a2464b116e89cef276b2f5e27c08f10e5" id="r_a2464b116e89cef276b2f5e27c08f10e5"><td class="memItemLeft"><a id="a2464b116e89cef276b2f5e27c08f10e5" name="a2464b116e89cef276b2f5e27c08f10e5"></a>
 float&#160;</td><td class="memItemRight"><b>uiScaleFactor</b> = 1.0f</td></tr>
+<tr class="memdesc:a2464b116e89cef276b2f5e27c08f10e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scale applied to overlay annotations. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Copied renderer selection with optional comparison target and enabled surfaces. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/overlay/<a class="el" href="DevOverlayTypes_8hpp_source.html">DevOverlayTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -134,7 +145,7 @@ float&#160;</td><td class="memItemRight"><b>uiScaleFactor</b> = 1.0f</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverlaySelectionSpec.html">DevOverlaySelectionSpec</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverlaySelectionSpec.html">DevOverlaySelectionSpec</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

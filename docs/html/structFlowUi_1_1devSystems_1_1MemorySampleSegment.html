@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,24 +106,127 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::MemorySampleSegment Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevMemoryReporting_8hpp_source.html">DevMemoryReporting.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a68deb4ca3bfdd0acce5adf8ad96d65dc" id="r_a68deb4ca3bfdd0acce5adf8ad96d65dc"><td class="memItemLeft"><a id="a68deb4ca3bfdd0acce5adf8ad96d65dc" name="a68deb4ca3bfdd0acce5adf8ad96d65dc"></a>
-MemorySampleSequence&#160;</td><td class="memItemRight"><b>sequence</b> = 0u</td></tr>
-<tr class="memitem:a94e591b38824624139c093bacd43cc90" id="r_a94e591b38824624139c093bacd43cc90"><td class="memItemLeft"><a id="a94e591b38824624139c093bacd43cc90" name="a94e591b38824624139c093bacd43cc90"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>history_epoch</b> = 1u</td></tr>
-<tr class="memitem:a3654c3967551987207af9bebecc83b8c" id="r_a3654c3967551987207af9bebecc83b8c"><td class="memItemLeft"><a id="a3654c3967551987207af9bebecc83b8c" name="a3654c3967551987207af9bebecc83b8c"></a>
-AppTickId&#160;</td><td class="memItemRight"><b>beginTick</b> = 0u</td></tr>
-<tr class="memitem:a0b165983d1f0ec17a0807ddd62b926b3" id="r_a0b165983d1f0ec17a0807ddd62b926b3"><td class="memItemLeft"><a id="a0b165983d1f0ec17a0807ddd62b926b3" name="a0b165983d1f0ec17a0807ddd62b926b3"></a>
-AppTickId&#160;</td><td class="memItemRight"><b>endTickExclusive</b> = 0u</td></tr>
-<tr class="memitem:a8477223e5c573b9466bf9bccb3f61ff2" id="r_a8477223e5c573b9466bf9bccb3f61ff2"><td class="memItemLeft"><a id="a8477223e5c573b9466bf9bccb3f61ff2" name="a8477223e5c573b9466bf9bccb3f61ff2"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>beginNs</b> = 0u</td></tr>
-<tr class="memitem:a3dc1416c6df3ecd1520a1abebcba8a1f" id="r_a3dc1416c6df3ecd1520a1abebcba8a1f"><td class="memItemLeft"><a id="a3dc1416c6df3ecd1520a1abebcba8a1f" name="a3dc1416c6df3ecd1520a1abebcba8a1f"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>endNs</b> = 0u</td></tr>
-<tr class="memitem:af5d073b99e753110659b30488f24d0dd" id="r_af5d073b99e753110659b30488f24d0dd"><td class="memItemLeft"><a id="af5d073b99e753110659b30488f24d0dd" name="af5d073b99e753110659b30488f24d0dd"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1MemoryValueSample.html">MemoryValueSample</a>&#160;</td><td class="memItemRight"><b>value</b> {}</td></tr>
+<tr class="memitem:a68deb4ca3bfdd0acce5adf8ad96d65dc" id="r_a68deb4ca3bfdd0acce5adf8ad96d65dc"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a76a2ca462d7a8f7858ef5ad26798110a">MemorySampleSequence</a>&#160;</td><td class="memItemRight"><a class="el" href="#a68deb4ca3bfdd0acce5adf8ad96d65dc">sequence</a> = 0u</td></tr>
+<tr class="memitem:a94e591b38824624139c093bacd43cc90" id="r_a94e591b38824624139c093bacd43cc90"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a94e591b38824624139c093bacd43cc90">history_epoch</a> = 1u</td></tr>
+<tr class="memitem:a3654c3967551987207af9bebecc83b8c" id="r_a3654c3967551987207af9bebecc83b8c"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a3654c3967551987207af9bebecc83b8c">beginTick</a> = 0u</td></tr>
+<tr class="memitem:a0b165983d1f0ec17a0807ddd62b926b3" id="r_a0b165983d1f0ec17a0807ddd62b926b3"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a0b165983d1f0ec17a0807ddd62b926b3">endTickExclusive</a> = 0u</td></tr>
+<tr class="memitem:a8477223e5c573b9466bf9bccb3f61ff2" id="r_a8477223e5c573b9466bf9bccb3f61ff2"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a8477223e5c573b9466bf9bccb3f61ff2">beginNs</a> = 0u</td></tr>
+<tr class="memitem:a3dc1416c6df3ecd1520a1abebcba8a1f" id="r_a3dc1416c6df3ecd1520a1abebcba8a1f"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a3dc1416c6df3ecd1520a1abebcba8a1f">endNs</a> = 0u</td></tr>
+<tr class="memitem:af5d073b99e753110659b30488f24d0dd" id="r_af5d073b99e753110659b30488f24d0dd"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryValueSample.html">MemoryValueSample</a>&#160;</td><td class="memItemRight"><a class="el" href="#af5d073b99e753110659b30488f24d0dd">value</a> {}</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>One retained half-open interval during which source values remain constant. Timestamps use monotonic nanoseconds. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a8477223e5c573b9466bf9bccb3f61ff2" name="a8477223e5c573b9466bf9bccb3f61ff2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8477223e5c573b9466bf9bccb3f61ff2">&#9670;&#160;</a></span>beginNs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemorySampleSegment::beginNs = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Inclusive monotonic interval timestamp in nanoseconds. </p>
+
+</div>
+</div>
+<a id="a3654c3967551987207af9bebecc83b8c" name="a3654c3967551987207af9bebecc83b8c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3654c3967551987207af9bebecc83b8c">&#9670;&#160;</a></span>beginTick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> FlowUi::devSystems::MemorySampleSegment::beginTick = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>First included application tick. </p>
+
+</div>
+</div>
+<a id="a3dc1416c6df3ecd1520a1abebcba8a1f" name="a3dc1416c6df3ecd1520a1abebcba8a1f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3dc1416c6df3ecd1520a1abebcba8a1f">&#9670;&#160;</a></span>endNs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemorySampleSegment::endNs = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Exclusive monotonic interval timestamp in nanoseconds. </p>
+
+</div>
+</div>
+<a id="a0b165983d1f0ec17a0807ddd62b926b3" name="a0b165983d1f0ec17a0807ddd62b926b3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b165983d1f0ec17a0807ddd62b926b3">&#9670;&#160;</a></span>endTickExclusive</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> FlowUi::devSystems::MemorySampleSegment::endTickExclusive = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>First application tick outside the interval. </p>
+
+</div>
+</div>
+<a id="a94e591b38824624139c093bacd43cc90" name="a94e591b38824624139c093bacd43cc90"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a94e591b38824624139c093bacd43cc90">&#9670;&#160;</a></span>history_epoch</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemorySampleSegment::history_epoch = 1u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Epoch separating retained intervals after pauses/reconfiguration. </p>
+
+</div>
+</div>
+<a id="a68deb4ca3bfdd0acce5adf8ad96d65dc" name="a68deb4ca3bfdd0acce5adf8ad96d65dc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a68deb4ca3bfdd0acce5adf8ad96d65dc">&#9670;&#160;</a></span>sequence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a76a2ca462d7a8f7858ef5ad26798110a">MemorySampleSequence</a> FlowUi::devSystems::MemorySampleSegment::sequence = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Monotonic identity assigned when the record is retained. </p>
+
+</div>
+</div>
+<a id="af5d073b99e753110659b30488f24d0dd" name="af5d073b99e753110659b30488f24d0dd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af5d073b99e753110659b30488f24d0dd">&#9670;&#160;</a></span>value</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryValueSample.html">MemoryValueSample</a> FlowUi::devSystems::MemorySampleSegment::value {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Measured metric value or source sample for this record. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevMemoryReporting_8hpp_source.html">DevMemoryReporting.hpp</a></li>
 </ul>
@@ -140,7 +243,7 @@ uint64_t&#160;</td><td class="memItemRight"><b>endNs</b> = 0u</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1MemorySampleSegment.html">MemorySampleSegment</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1MemorySampleSegment.html">MemorySampleSegment</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,7 +107,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Frame-scoped UI construction context and service bridge.  
+<p>Frame-scoped UI construction context and service bridge.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="UiManager_8hpp_source.html">UiManager.hpp</a>&gt;</code></p>
@@ -119,166 +119,171 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a105713a2a18e110bc4473c7d15003cb2" id="r_a105713a2a18e110bc4473c7d15003cb2"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#a105713a2a18e110bc4473c7d15003cb2">frameStatus</a> () const noexcept</td></tr>
+<tr class="memdesc:a105713a2a18e110bc4473c7d15003cb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the first latched UI error for this frame, including input-field and popup failure state. Check before committing custom frame composition.  <br /></td></tr>
+<tr class="memitem:a19749d1ffe094d2388f8140945a28d31" id="r_a19749d1ffe094d2388f8140945a28d31"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a19749d1ffe094d2388f8140945a28d31">recordFrameError</a> (<a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> error) const noexcept</td></tr>
+<tr class="memdesc:a19749d1ffe094d2388f8140945a28d31"><td class="mdescLeft">&#160;</td><td class="mdescRight">Latch the first error for this frame so partially built output cannot be submitted. Later calls preserve the earlier error.  <br /></td></tr>
 <tr class="memitem:a374b11d2d8da10622f7cfc8607aa7908" id="r_a374b11d2d8da10622f7cfc8607aa7908"><td class="memItemLeft"><a id="a374b11d2d8da10622f7cfc8607aa7908" name="a374b11d2d8da10622f7cfc8607aa7908"></a>
 void&#160;</td><td class="memItemRight"><b>appendDevMemorySamples</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1MemorySampleSink.html">devSystems::MemorySampleSink</a> &amp;sink) const noexcept</td></tr>
+<tr class="memdesc:a374b11d2d8da10622f7cfc8607aa7908"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append development memory observations without taking ownership of the sink. <br /></td></tr>
 <tr class="memitem:a28365f51552738f263fafb1ae248bd53" id="r_a28365f51552738f263fafb1ae248bd53"><td class="memItemLeft"><a id="a28365f51552738f263fafb1ae248bd53" name="a28365f51552738f263fafb1ae248bd53"></a>
 <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">devSystems::tooling::DevSchemaRegistry</a> *&#160;</td><td class="memItemRight"><b>devSchemaRegistry</b> () noexcept</td></tr>
+<tr class="memdesc:a28365f51552738f263fafb1ae248bd53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the connected mutable development schema registry, or nullptr. <br /></td></tr>
 <tr class="memitem:afe8db0265bd598b7eb1767d6bff4b290" id="r_afe8db0265bd598b7eb1767d6bff4b290"><td class="memItemLeft"><a id="afe8db0265bd598b7eb1767d6bff4b290" name="afe8db0265bd598b7eb1767d6bff4b290"></a>
 const <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">devSystems::tooling::DevSchemaRegistry</a> *&#160;</td><td class="memItemRight"><b>devSchemaRegistry</b> () const noexcept</td></tr>
+<tr class="memdesc:afe8db0265bd598b7eb1767d6bff4b290"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the connected immutable development schema registry, or nullptr. <br /></td></tr>
 <tr class="memitem:aaf370541b52cec49a2c93c0685bcafaf" id="r_aaf370541b52cec49a2c93c0685bcafaf"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeSnapshot.html">devSystems::tooling::DevTreeSnapshot</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#aaf370541b52cec49a2c93c0685bcafaf">devTreeSnapshot</a> () const noexcept</td></tr>
 <tr class="memitem:ad561da7e786a5005cefef59c1da5d122" id="r_ad561da7e786a5005cefef59c1da5d122"><td class="memItemLeft"><a id="ad561da7e786a5005cefef59c1da5d122" name="ad561da7e786a5005cefef59c1da5d122"></a>
 <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture.html">devSystems::tooling::DevTreeCapture</a> &amp;&#160;</td><td class="memItemRight"><b>devTreeCapture</b> () noexcept</td></tr>
+<tr class="memdesc:ad561da7e786a5005cefef59c1da5d122"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow this window's development tree capture service. <br /></td></tr>
 <tr class="memitem:a427553d51806b154701ff993aa70d396" id="r_a427553d51806b154701ff993aa70d396"><td class="memItemLeft"><a id="a427553d51806b154701ff993aa70d396" name="a427553d51806b154701ff993aa70d396"></a>
 const <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture.html">devSystems::tooling::DevTreeCapture</a> &amp;&#160;</td><td class="memItemRight"><b>devTreeCapture</b> () const noexcept</td></tr>
+<tr class="memdesc:a427553d51806b154701ff993aa70d396"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow this window's immutable development tree capture service. <br /></td></tr>
 <tr class="memitem:ab7b91f9ba66b646c7f1f82727a428f2e" id="r_ab7b91f9ba66b646c7f1f82727a428f2e"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ab7b91f9ba66b646c7f1f82727a428f2e">set_dev_evidence_context</a> (uint64_t app_tick, uint64_t window_frame) noexcept</td></tr>
 <tr class="memitem:abf27aa6e0c9b04a1988d0a86cb47afe9" id="r_abf27aa6e0c9b04a1988d0a86cb47afe9"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#abf27aa6e0c9b04a1988d0a86cb47afe9">set_dev_tree_collection</a> (bool enabled) noexcept</td></tr>
 <tr class="memitem:aef4854ac96e28f8dc101c81e15a74e29" id="r_aef4854ac96e28f8dc101c81e15a74e29"><td class="memItemLeft"><a id="aef4854ac96e28f8dc101c81e15a74e29" name="aef4854ac96e28f8dc101c81e15a74e29"></a>
 bool&#160;</td><td class="memItemRight"><b>dev_tree_collection</b> () const noexcept</td></tr>
+<tr class="memdesc:aef4854ac96e28f8dc101c81e15a74e29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether optional development-tree inspection copies are enabled. <br /></td></tr>
 <tr class="memitem:a9a6b18cd7b0301581da95b68a2a39847" id="r_a9a6b18cd7b0301581da95b68a2a39847"><td class="memItemLeft"><a id="a9a6b18cd7b0301581da95b68a2a39847" name="a9a6b18cd7b0301581da95b68a2a39847"></a>
 <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideEngine.html">devSystems::tooling::DevOverrideEngine</a> *&#160;</td><td class="memItemRight"><b>devOverrideEngine</b> () noexcept</td></tr>
+<tr class="memdesc:a9a6b18cd7b0301581da95b68a2a39847"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the connected mutable development override engine, or nullptr. <br /></td></tr>
 <tr class="memitem:a63d5ea494bfe41b5936050bddbd771d8" id="r_a63d5ea494bfe41b5936050bddbd771d8"><td class="memItemLeft"><a id="a63d5ea494bfe41b5936050bddbd771d8" name="a63d5ea494bfe41b5936050bddbd771d8"></a>
 const <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideEngine.html">devSystems::tooling::DevOverrideEngine</a> *&#160;</td><td class="memItemRight"><b>devOverrideEngine</b> () const noexcept</td></tr>
+<tr class="memdesc:a63d5ea494bfe41b5936050bddbd771d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the connected immutable development override engine, or nullptr. <br /></td></tr>
 <tr class="memitem:a1f9b39ce02a04579871c5b2e2e0f316a" id="r_a1f9b39ce02a04579871c5b2e2e0f316a"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a1f9b39ce02a04579871c5b2e2e0f316a">isDevInternalScope</a> () const noexcept</td></tr>
 <tr class="memdesc:a1f9b39ce02a04579871c5b2e2e0f316a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check whether UI construction is currently inside an active dev-internal element scope.  <br /></td></tr>
 <tr class="memitem:a655c6ae2644762e2a45690c7cf0ab717" id="r_a655c6ae2644762e2a45690c7cf0ab717"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a655c6ae2644762e2a45690c7cf0ab717">enterDevInternalScope</a> () noexcept</td></tr>
 <tr class="memitem:a966f80c7a46c2fd57f669b7518ea8336" id="r_a966f80c7a46c2fd57f669b7518ea8336"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a966f80c7a46c2fd57f669b7518ea8336">leaveDevInternalScope</a> () noexcept</td></tr>
 <tr class="memitem:ac1694a665b71269470ff22a2adc00437" id="r_ac1694a665b71269470ff22a2adc00437"><td class="memItemLeft">Clay_String&#160;</td><td class="memItemRight"><a class="el" href="#ac1694a665b71269470ff22a2adc00437">toClayString</a> (std::string_view s)</td></tr>
-<tr class="memdesc:ac1694a665b71269470ff22a2adc00437"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store a string in the current frame arena and return a Clay string.  <br /></td></tr>
-<tr class="memitem:aa86a3ee247d72399a92a0ad0e5ff8ca8" id="r_aa86a3ee247d72399a92a0ad0e5ff8ca8"><td class="memItemLeft"><a id="aa86a3ee247d72399a92a0ad0e5ff8ca8" name="aa86a3ee247d72399a92a0ad0e5ff8ca8"></a>
-Clay_String&#160;</td><td class="memItemRight"><b>toClayString</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key)</td></tr>
+<tr class="memdesc:ac1694a665b71269470ff22a2adc00437"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy text into current-frame storage and return a Clay_String borrowing that storage. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> supplies the name text and explicit resource attribution.  <br /></td></tr>
+<tr class="memitem:aa86a3ee247d72399a92a0ad0e5ff8ca8" id="r_aa86a3ee247d72399a92a0ad0e5ff8ca8"><td class="memItemLeft">Clay_String&#160;</td><td class="memItemRight"><a class="el" href="#aa86a3ee247d72399a92a0ad0e5ff8ca8">toClayString</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key)</td></tr>
+<tr class="memdesc:aa86a3ee247d72399a92a0ad0e5ff8ca8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy text into current-frame storage and return a Clay_String borrowing that storage. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> supplies the name text and explicit resource attribution.  <br /></td></tr>
 <tr class="memitem:a84ca159240dc3f702a72698da0cdda83" id="r_a84ca159240dc3f702a72698da0cdda83"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a84ca159240dc3f702a72698da0cdda83">imageData</a> (<a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a> textureRef)</td></tr>
-<tr class="memdesc:a84ca159240dc3f702a72698da0cdda83"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store a texture reference for use by Clay image render data.  <br /></td></tr>
+<tr class="memdesc:a84ca159240dc3f702a72698da0cdda83"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy a texture reference into current-frame storage and return the pointer used by Clay image configuration. The pointee is valid for this frame only.  <br /></td></tr>
 <tr class="memitem:aacd40f0f6f42bc6e2678ffc7eefa207e" id="r_aacd40f0f6f42bc6e2678ffc7eefa207e"><td class="memItemLeft">Clay_ElementDeclaration&#160;</td><td class="memItemRight"><a class="el" href="#aacd40f0f6f42bc6e2678ffc7eefa207e">inputContentElement</a> (const Clay_TextElementConfig &amp;textConfig) const</td></tr>
-<tr class="memdesc:aacd40f0f6f42bc6e2678ffc7eefa207e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a stable inner input-field content element declaration.  <br /></td></tr>
+<tr class="memdesc:aacd40f0f6f42bc6e2678ffc7eefa207e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an input-content declaration with growing width and a height derived from the resolved font metrics. Operational failures propagate and latch frame failure; cancel the failed frame.  <br /></td></tr>
 <tr class="memitem:ab5a7131ff83f731ff6f99006f4563d29" id="r_ab5a7131ff83f731ff6f99006f4563d29"><td class="memItemLeft">Clay_ElementId&#160;</td><td class="memItemRight"><a class="el" href="#ab5a7131ff83f731ff6f99006f4563d29">toClaySID</a> (std::string_view s)</td></tr>
-<tr class="memdesc:ab5a7131ff83f731ff6f99006f4563d29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a string id to a Clay string id.  <br /></td></tr>
-<tr class="memitem:a821f04303e0f62f020c18088b7e82d0a" id="r_a821f04303e0f62f020c18088b7e82d0a"><td class="memItemLeft"><a id="a821f04303e0f62f020c18088b7e82d0a" name="a821f04303e0f62f020c18088b7e82d0a"></a>
-Clay_ElementId&#160;</td><td class="memItemRight"><b>toClaySID</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key)</td></tr>
+<tr class="memdesc:ab5a7131ff83f731ff6f99006f4563d29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy the supplied string identity into current-frame storage and return its Clay string ID. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> carries explicit attribution.  <br /></td></tr>
+<tr class="memitem:a821f04303e0f62f020c18088b7e82d0a" id="r_a821f04303e0f62f020c18088b7e82d0a"><td class="memItemLeft">Clay_ElementId&#160;</td><td class="memItemRight"><a class="el" href="#a821f04303e0f62f020c18088b7e82d0a">toClaySID</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key)</td></tr>
+<tr class="memdesc:a821f04303e0f62f020c18088b7e82d0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy the supplied string identity into current-frame storage and return its Clay string ID. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> carries explicit attribution.  <br /></td></tr>
 <tr class="memitem:a8444d3c1aa6671658b33cdc3da3afe49" id="r_a8444d3c1aa6671658b33cdc3da3afe49"><td class="memItemLeft">Clay_ElementId&#160;</td><td class="memItemRight"><a class="el" href="#a8444d3c1aa6671658b33cdc3da3afe49">toClayEID</a> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> id)</td></tr>
-<tr class="memdesc:a8444d3c1aa6671658b33cdc3da3afe49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deterministically bridge a strong 64-bit Flow identity to Clay.  <br /></td></tr>
-<tr class="memitem:ae68d67fb1fc3e28dc4fe735b2ff64f70" id="r_ae68d67fb1fc3e28dc4fe735b2ff64f70"><td class="memItemLeft"><a id="ae68d67fb1fc3e28dc4fe735b2ff64f70" name="ae68d67fb1fc3e28dc4fe735b2ff64f70"></a>
-Clay_ElementId&#160;</td><td class="memItemRight"><b>toClayEID</b> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> id)</td></tr>
-<tr class="memitem:a619bac8a61106911e3e1ad0ec3e160e7" id="r_a619bac8a61106911e3e1ad0ec3e160e7"><td class="memItemLeft"><a id="a619bac8a61106911e3e1ad0ec3e160e7" name="a619bac8a61106911e3e1ad0ec3e160e7"></a>
-Clay_ElementId&#160;</td><td class="memItemRight"><b>toClayEID</b> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> id)</td></tr>
+<tr class="memdesc:a8444d3c1aa6671658b33cdc3da3afe49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bridge a strong local, global, or semantic-part identity directly into a Clay ID for this window.  <br /></td></tr>
+<tr class="memitem:ae68d67fb1fc3e28dc4fe735b2ff64f70" id="r_ae68d67fb1fc3e28dc4fe735b2ff64f70"><td class="memItemLeft">Clay_ElementId&#160;</td><td class="memItemRight"><a class="el" href="#ae68d67fb1fc3e28dc4fe735b2ff64f70">toClayEID</a> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> id)</td></tr>
+<tr class="memdesc:ae68d67fb1fc3e28dc4fe735b2ff64f70"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bridge a strong local, global, or semantic-part identity directly into a Clay ID for this window.  <br /></td></tr>
+<tr class="memitem:a619bac8a61106911e3e1ad0ec3e160e7" id="r_a619bac8a61106911e3e1ad0ec3e160e7"><td class="memItemLeft">Clay_ElementId&#160;</td><td class="memItemRight"><a class="el" href="#a619bac8a61106911e3e1ad0ec3e160e7">toClayEID</a> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> id)</td></tr>
+<tr class="memdesc:a619bac8a61106911e3e1ad0ec3e160e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bridge a strong local, global, or semantic-part identity directly into a Clay ID for this window.  <br /></td></tr>
 <tr class="memitem:a3ef6d75f9ad2e76294c104c4b3e25803" id="r_a3ef6d75f9ad2e76294c104c4b3e25803"><td class="memTemplParams" colspan="2">template&lt;FlowElement Element&gt; </td></tr>
 <tr class="memitem:a3ef6d75f9ad2e76294c104c4b3e25803 template"><td class="memItemLeft">ElementBuilder&lt; Element &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a3ef6d75f9ad2e76294c104c4b3e25803">createElement</a> (const Element &amp;, <a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> localName, std::source_location sourceLocation=std::source_location::current())</td></tr>
-<tr class="memdesc:a3ef6d75f9ad2e76294c104c4b3e25803"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a builder for a typed FlowUi element instance.  <br /></td></tr>
-<tr class="memitem:a624b11df98a5bd289658908a20ff335a" id="r_a624b11df98a5bd289658908a20ff335a"><td class="memTemplParams" colspan="2"><a id="a624b11df98a5bd289658908a20ff335a" name="a624b11df98a5bd289658908a20ff335a"></a>
-template&lt;FlowElement Element&gt; </td></tr>
-<tr class="memitem:a624b11df98a5bd289658908a20ff335a template"><td class="memItemLeft">ElementBuilder&lt; Element &gt;&#160;</td><td class="memItemRight"><b>createElement</b> (const Element &amp;, <a class="el" href="structFlowUi_1_1RuntimeElementName.html">RuntimeElementName</a> localName, std::source_location sourceLocation=std::source_location::current())</td></tr>
+<tr class="memdesc:a3ef6d75f9ad2e76294c104c4b3e25803"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.  <br /></td></tr>
+<tr class="memitem:a624b11df98a5bd289658908a20ff335a" id="r_a624b11df98a5bd289658908a20ff335a"><td class="memTemplParams" colspan="2">template&lt;FlowElement Element&gt; </td></tr>
+<tr class="memitem:a624b11df98a5bd289658908a20ff335a template"><td class="memItemLeft">ElementBuilder&lt; Element &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a624b11df98a5bd289658908a20ff335a">createElement</a> (const Element &amp;, <a class="el" href="structFlowUi_1_1RuntimeElementName.html">RuntimeElementName</a> localName, std::source_location sourceLocation=std::source_location::current())</td></tr>
+<tr class="memdesc:a624b11df98a5bd289658908a20ff335a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.  <br /></td></tr>
 <tr class="memitem:a51885147c9c179c658e3c4a56eff4758" id="r_a51885147c9c179c658e3c4a56eff4758"><td class="memTemplParams" colspan="2">template&lt;FlowElement Element&gt; </td></tr>
 <tr class="memitem:a51885147c9c179c658e3c4a56eff4758 template"><td class="memItemLeft">ElementBuilder&lt; Element &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a51885147c9c179c658e3c4a56eff4758">createElement</a> (const Element &amp;, <a class="el" href="structFlowUi_1_1IndexedElementName.html">IndexedElementName</a> indexedName, std::source_location sourceLocation=std::source_location::current())</td></tr>
+<tr class="memdesc:a51885147c9c179c658e3c4a56eff4758"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.  <br /></td></tr>
 <tr class="memitem:aa457fe979bd7351de0c6dea2a787c2d6" id="r_aa457fe979bd7351de0c6dea2a787c2d6"><td class="memTemplParams" colspan="2">template&lt;FlowElement Element&gt; </td></tr>
-<tr class="memitem:aa457fe979bd7351de0c6dea2a787c2d6 template"><td class="memItemLeft">ElementBuilder&lt; Element &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aa457fe979bd7351de0c6dea2a787c2d6">createElement</a> (const Element &amp;, <a class="el" href="structFlowUi_1_1AutoElementName.html">AutoElementName</a> automaticName=AutoID(), std::source_location sourceLocation=std::source_location::current())</td></tr>
+<tr class="memitem:aa457fe979bd7351de0c6dea2a787c2d6 template"><td class="memItemLeft">ElementBuilder&lt; Element &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aa457fe979bd7351de0c6dea2a787c2d6">createElement</a> (const Element &amp;, <a class="el" href="structFlowUi_1_1AutoElementName.html">AutoElementName</a> automaticName=<a class="el" href="namespaceFlowUi.html#a4866f6a494e247b6e01d4e018d80be8c">AutoID</a>(), std::source_location sourceLocation=std::source_location::current())</td></tr>
+<tr class="memdesc:aa457fe979bd7351de0c6dea2a787c2d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.  <br /></td></tr>
 <tr class="memitem:ab4f49d95db3b7f8f58cbb41e601302c0" id="r_ab4f49d95db3b7f8f58cbb41e601302c0"><td class="memTemplParams" colspan="2">template&lt;FlowElement Element&gt; </td></tr>
 <tr class="memitem:ab4f49d95db3b7f8f58cbb41e601302c0 template"><td class="memItemLeft">ElementBuilder&lt; Element &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ab4f49d95db3b7f8f58cbb41e601302c0">createElement</a> (const Element &amp;, <a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> globalId, std::source_location sourceLocation=std::source_location::current())</td></tr>
-<tr class="memitem:a23df94764d8ff8d9d728a053fea4805f" id="r_a23df94764d8ff8d9d728a053fea4805f"><td class="memTemplParams" colspan="2"><a id="a23df94764d8ff8d9d728a053fea4805f" name="a23df94764d8ff8d9d728a053fea4805f"></a>
-template&lt;FlowElement Element&gt; </td></tr>
-<tr class="memitem:a23df94764d8ff8d9d728a053fea4805f template"><td class="memItemLeft">ElementBuilder&lt; Element &gt;&#160;</td><td class="memItemRight"><b>createElement</b> (const Element &amp;, <a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> resolvedId, std::source_location sourceLocation=std::source_location::current())</td></tr>
+<tr class="memdesc:ab4f49d95db3b7f8f58cbb41e601302c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.  <br /></td></tr>
+<tr class="memitem:a23df94764d8ff8d9d728a053fea4805f" id="r_a23df94764d8ff8d9d728a053fea4805f"><td class="memTemplParams" colspan="2">template&lt;FlowElement Element&gt; </td></tr>
+<tr class="memitem:a23df94764d8ff8d9d728a053fea4805f template"><td class="memItemLeft">ElementBuilder&lt; Element &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a23df94764d8ff8d9d728a053fea4805f">createElement</a> (const Element &amp;, <a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> resolvedId, std::source_location sourceLocation=std::source_location::current())</td></tr>
+<tr class="memdesc:a23df94764d8ff8d9d728a053fea4805f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.  <br /></td></tr>
 <tr class="memitem:ade984ed76c3e6ebe3098aae2d0d3b6ef" id="r_ade984ed76c3e6ebe3098aae2d0d3b6ef"><td class="memTemplParams" colspan="2">template&lt;FlowElement Element&gt; </td></tr>
 <tr class="memitem:ade984ed76c3e6ebe3098aae2d0d3b6ef template"><td class="memItemLeft">ElementBuilder&lt; Element &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ade984ed76c3e6ebe3098aae2d0d3b6ef">createElement</a> (const Element &amp;, <a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> partId, std::source_location sourceLocation=std::source_location::current())</td></tr>
+<tr class="memdesc:ade984ed76c3e6ebe3098aae2d0d3b6ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.  <br /></td></tr>
 <tr class="memitem:a857a971efa5a8e904806b9398e0e4883" id="r_a857a971efa5a8e904806b9398e0e4883"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a857a971efa5a8e904806b9398e0e4883">drawConstructed</a> ()</td></tr>
-<tr class="memdesc:a857a971efa5a8e904806b9398e0e4883"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close the current element opened by <a class="el" href="classFlowUi_1_1ElementBuilder.html#a29afc3c4439f57b17785e3f66fc035a6">ElementBuilder::construct()</a>.  <br /></td></tr>
-<tr class="memitem:a428e81a65fec2e616b90be54b58744c4" id="r_a428e81a65fec2e616b90be54b58744c4"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1InteractionSnapshot.html">InteractionSnapshot</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a428e81a65fec2e616b90be54b58744c4">getPreviousFramesInteraction</a> () const</td></tr>
-<tr class="memdesc:a428e81a65fec2e616b90be54b58744c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the previous completed frame's interaction snapshot.  <br /></td></tr>
-<tr class="memitem:a0caf0ecce99a1beb956ce76179b2f06a" id="r_a0caf0ecce99a1beb956ce76179b2f06a"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1FrameInput.html">FrameInput</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a0caf0ecce99a1beb956ce76179b2f06a">getCurrentFrameInput</a> () const</td></tr>
-<tr class="memdesc:a0caf0ecce99a1beb956ce76179b2f06a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return input for the current layout frame.  <br /></td></tr>
-<tr class="memitem:a12cb4ceeafcca80fea278337586ae2ac" id="r_a12cb4ceeafcca80fea278337586ae2ac"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1FrameInput.html">FrameInput</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a12cb4ceeafcca80fea278337586ae2ac">getPreviousFrameInput</a> () const</td></tr>
-<tr class="memdesc:a12cb4ceeafcca80fea278337586ae2ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return input for the previous layout frame.  <br /></td></tr>
+<tr class="memdesc:a857a971efa5a8e904806b9398e0e4883"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close the most recent root opened by <a class="el" href="classFlowUi_1_1ElementBuilder.html#a29afc3c4439f57b17785e3f66fc035a6" title="Run enabled pointer callbacks, runLogic and constructElement synchronously, then open the declared Cl...">ElementBuilder::construct()</a>, including its <a class="el" href="namespaceFlowUi.html">FlowUi</a> scope and development capture. Each successful construct needs one close.  <br /></td></tr>
+<tr class="memitem:abdbe4dfbb903e693d323b665b0aafca5" id="r_abdbe4dfbb903e693d323b665b0aafca5"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1InteractionSnapshot.html">InteractionSnapshot</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#abdbe4dfbb903e693d323b665b0aafca5">getPreviousFramesInteraction</a> () const noexcept</td></tr>
+<tr class="memdesc:abdbe4dfbb903e693d323b665b0aafca5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the previous completed frame interaction snapshot. It remains the stable source for current element pointer callbacks.  <br /></td></tr>
+<tr class="memitem:acd0103d030b290cdc0733364ca7b2db3" id="r_acd0103d030b290cdc0733364ca7b2db3"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1InteractionSnapshot.html">InteractionSnapshot</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#acd0103d030b290cdc0733364ca7b2db3">dev_completed_interaction</a> () const noexcept</td></tr>
+<tr class="memitem:a0d25ebbb120d56b271aa7ca5ee2122b5" id="r_a0d25ebbb120d56b271aa7ca5ee2122b5"><td class="memItemLeft">Clay_Dimensions&#160;</td><td class="memItemRight"><a class="el" href="#a0d25ebbb120d56b271aa7ca5ee2122b5">dev_layout_dimensions</a> () const noexcept</td></tr>
+<tr class="memitem:aeca400d15964f97372a67819d8a2d111" id="r_aeca400d15964f97372a67819d8a2d111"><td class="memItemLeft">std::uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#aeca400d15964f97372a67819d8a2d111">dev_completed_window_frame</a> () const noexcept</td></tr>
+<tr class="memitem:ad458a1a30b6e89cefb4e89fb7b7fbaa9" id="r_ad458a1a30b6e89cefb4e89fb7b7fbaa9"><td class="memItemLeft"><a id="ad458a1a30b6e89cefb4e89fb7b7fbaa9" name="ad458a1a30b6e89cefb4e89fb7b7fbaa9"></a>
+std::uint64_t&#160;</td><td class="memItemRight"><b>dev_completed_app_tick</b> () const noexcept</td></tr>
+<tr class="memdesc:ad458a1a30b6e89cefb4e89fb7b7fbaa9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the app tick owning the most recently completed window UI frame. <br /></td></tr>
+<tr class="memitem:a48ec5e29c0a6dcb0060c1ebcd7205781" id="r_a48ec5e29c0a6dcb0060c1ebcd7205781"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1FrameInput.html">FrameInput</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a48ec5e29c0a6dcb0060c1ebcd7205781">getCurrentFrameInput</a> () const noexcept</td></tr>
+<tr class="memdesc:a48ec5e29c0a6dcb0060c1ebcd7205781"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow this frame input in scaled <a class="el" href="namespaceFlowUi.html">FlowUi</a> layout coordinates; do not retain this reference as an immutable historical snapshot.  <br /></td></tr>
+<tr class="memitem:a1660e5ed0ebff6bd0918cb045001e601" id="r_a1660e5ed0ebff6bd0918cb045001e601"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1FrameInput.html">FrameInput</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a1660e5ed0ebff6bd0918cb045001e601">getPreviousFrameInput</a> () const noexcept</td></tr>
+<tr class="memdesc:a1660e5ed0ebff6bd0918cb045001e601"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the previous layout-frame input, useful with current input for edge and drag calculations.  <br /></td></tr>
 <tr class="memitem:a206f83532a07edc4dc706ab8fb4a8be0" id="r_a206f83532a07edc4dc706ab8fb4a8be0"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1InputFieldManager.html">InputFieldManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a206f83532a07edc4dc706ab8fb4a8be0">inputFields</a> () noexcept</td></tr>
-<tr class="memdesc:a206f83532a07edc4dc706ab8fb4a8be0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the input field manager.  <br /></td></tr>
+<tr class="memdesc:a206f83532a07edc4dc706ab8fb4a8be0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow this window <a class="el" href="classFlowUi_1_1InputFieldManager.html" title="Window-owned editable text, caret state, and atomic edit operations.">InputFieldManager</a> directly; the const overload exposes read-only access.  <br /></td></tr>
 <tr class="memitem:a872b6e0553d3fe8a24c1d66d7a2fa508" id="r_a872b6e0553d3fe8a24c1d66d7a2fa508"><td class="memItemLeft">const <a class="el" href="classFlowUi_1_1InputFieldManager.html">InputFieldManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a872b6e0553d3fe8a24c1d66d7a2fa508">inputFields</a> () const noexcept</td></tr>
-<tr class="memdesc:a872b6e0553d3fe8a24c1d66d7a2fa508"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the input field manager.  <br /></td></tr>
+<tr class="memdesc:a872b6e0553d3fe8a24c1d66d7a2fa508"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow this window <a class="el" href="classFlowUi_1_1InputFieldManager.html" title="Window-owned editable text, caret state, and atomic edit operations.">InputFieldManager</a> directly; the const overload exposes read-only access.  <br /></td></tr>
 <tr class="memitem:ad3fecb217eafbe9424502df6ad1ab678" id="r_ad3fecb217eafbe9424502df6ad1ab678"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1ShortcutManager.html">ShortcutManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ad3fecb217eafbe9424502df6ad1ab678">shortcuts</a> () noexcept</td></tr>
-<tr class="memdesc:ad3fecb217eafbe9424502df6ad1ab678"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the shortcut manager.  <br /></td></tr>
+<tr class="memdesc:ad3fecb217eafbe9424502df6ad1ab678"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow this window <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a> directly; the const overload exposes read-only access.  <br /></td></tr>
 <tr class="memitem:abcbd8a4a112ae261dd426634be2a7eb0" id="r_abcbd8a4a112ae261dd426634be2a7eb0"><td class="memItemLeft">const <a class="el" href="classFlowUi_1_1ShortcutManager.html">ShortcutManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#abcbd8a4a112ae261dd426634be2a7eb0">shortcuts</a> () const noexcept</td></tr>
-<tr class="memdesc:abcbd8a4a112ae261dd426634be2a7eb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the shortcut manager.  <br /></td></tr>
-<tr class="memitem:ae4ee7ab158203c5fd05638a36ebe2582" id="r_ae4ee7ab158203c5fd05638a36ebe2582"><td class="memItemLeft"><a id="ae4ee7ab158203c5fd05638a36ebe2582" name="ae4ee7ab158203c5fd05638a36ebe2582"></a>
-<a class="el" href="classFlowUi_1_1PopupManager.html">PopupManager</a> &amp;&#160;</td><td class="memItemRight"><b>popups</b> () noexcept</td></tr>
-<tr class="memdesc:ae4ee7ab158203c5fd05638a36ebe2582"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access this window's mutable popup placement and dismissal service. <br /></td></tr>
-<tr class="memitem:a2c16677c401408f760450da7a379941b" id="r_a2c16677c401408f760450da7a379941b"><td class="memItemLeft"><a id="a2c16677c401408f760450da7a379941b" name="a2c16677c401408f760450da7a379941b"></a>
-const <a class="el" href="classFlowUi_1_1PopupManager.html">PopupManager</a> &amp;&#160;</td><td class="memItemRight"><b>popups</b> () const noexcept</td></tr>
-<tr class="memdesc:a2c16677c401408f760450da7a379941b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access this window's immutable popup placement and dismissal service. <br /></td></tr>
-<tr class="memitem:a24bd77317966a4c812ecbf8d17ec7427" id="r_a24bd77317966a4c812ecbf8d17ec7427"><td class="memItemLeft"><a id="a24bd77317966a4c812ecbf8d17ec7427" name="a24bd77317966a4c812ecbf8d17ec7427"></a>
-ActionManager &amp;&#160;</td><td class="memItemRight"><b>actions</b> ()</td></tr>
-<tr class="memdesc:a24bd77317966a4c812ecbf8d17ec7427"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the app-wide <a class="el" href="classFlowUi_1_1ActionManager.html">ActionManager</a> attached to this UI. <br /></td></tr>
-<tr class="memitem:a9a3fd25f67778090523069fde51031b4" id="r_a9a3fd25f67778090523069fde51031b4"><td class="memItemLeft"><a id="a9a3fd25f67778090523069fde51031b4" name="a9a3fd25f67778090523069fde51031b4"></a>
-const ActionManager &amp;&#160;</td><td class="memItemRight"><b>actions</b> () const</td></tr>
-<tr class="memdesc:a9a3fd25f67778090523069fde51031b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the immutable app-wide <a class="el" href="classFlowUi_1_1ActionManager.html">ActionManager</a> attached to this UI. <br /></td></tr>
-<tr class="memitem:ab9cc1d97b3ab0764ad700650679fccc8" id="r_ab9cc1d97b3ab0764ad700650679fccc8"><td class="memItemLeft"><a id="ab9cc1d97b3ab0764ad700650679fccc8" name="ab9cc1d97b3ab0764ad700650679fccc8"></a>
-ActionInvocationStatus&#160;</td><td class="memItemRight"><b>invoke</b> (<a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a> call)</td></tr>
-<tr class="memdesc:ab9cc1d97b3ab0764ad700650679fccc8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke an action from this window's UI context. <br /></td></tr>
-<tr class="memitem:a15f634a57bdcc1cc0838007554144c5d" id="r_a15f634a57bdcc1cc0838007554144c5d"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a15f634a57bdcc1cc0838007554144c5d">devToolsConfig</a> ()</td></tr>
-<tr class="memdesc:a15f634a57bdcc1cc0838007554144c5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access developer tooling config.  <br /></td></tr>
-<tr class="memitem:a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9" id="r_a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9">devToolsConfig</a> () const</td></tr>
-<tr class="memdesc:a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access developer tooling config.  <br /></td></tr>
-<tr class="memitem:af951ad4db8a17064009ed8ff9ac9f79a" id="r_af951ad4db8a17064009ed8ff9ac9f79a"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#af951ad4db8a17064009ed8ff9ac9f79a">setClipboardText</a> (std::string_view text) const</td></tr>
-<tr class="memdesc:af951ad4db8a17064009ed8ff9ac9f79a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set clipboard text through the configured clipboard accessor.  <br /></td></tr>
-<tr class="memitem:a4b3ec28e336b11fc18d35639a360544e" id="r_a4b3ec28e336b11fc18d35639a360544e"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a4b3ec28e336b11fc18d35639a360544e">clipboardText</a> () const</td></tr>
-<tr class="memdesc:a4b3ec28e336b11fc18d35639a360544e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read clipboard text through the configured clipboard accessor.  <br /></td></tr>
-<tr class="memitem:a64bfd45ccd65d7eb70792e13a4559a8f" id="r_a64bfd45ccd65d7eb70792e13a4559a8f"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a64bfd45ccd65d7eb70792e13a4559a8f">hasClipboardAccess</a> () const</td></tr>
-<tr class="memdesc:a64bfd45ccd65d7eb70792e13a4559a8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether clipboard accessors are installed.  <br /></td></tr>
-<tr class="memitem:a73558c0199600f70651c54dba7211498" id="r_a73558c0199600f70651c54dba7211498"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a73558c0199600f70651c54dba7211498">requestCursor</a> (CursorType cursorType, uint8_t priority=0)</td></tr>
-<tr class="memdesc:a73558c0199600f70651c54dba7211498"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request a cursor shape for the current frame.  <br /></td></tr>
-<tr class="memitem:adbbbc7d049cee3b9e97242fc44585c2d" id="r_adbbbc7d049cee3b9e97242fc44585c2d"><td class="memItemLeft">FontId&#160;</td><td class="memItemRight"><a class="el" href="#adbbbc7d049cee3b9e97242fc44585c2d">resolveFont</a> (FontFamilyId familyId, uint32_t weight=400, FontStyle style=FontStyle::Normal) const</td></tr>
-<tr class="memdesc:adbbbc7d049cee3b9e97242fc44585c2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve a concrete Clay font id for a family/style request.  <br /></td></tr>
-<tr class="memitem:a43b32fe49c09bc873a6691764164ba6b" id="r_a43b32fe49c09bc873a6691764164ba6b"><td class="memItemLeft">FontId&#160;</td><td class="memItemRight"><a class="el" href="#a43b32fe49c09bc873a6691764164ba6b">resolveFont</a> (std::string_view familyName, uint32_t weight=400, FontStyle style=FontStyle::Normal) const</td></tr>
-<tr class="memdesc:a43b32fe49c09bc873a6691764164ba6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve a concrete Clay font id for a named family/style request.  <br /></td></tr>
-<tr class="memitem:ad20b526851ef6b7948612512c11d09b4" id="r_ad20b526851ef6b7948612512c11d09b4"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
-<tr class="memitem:ad20b526851ef6b7948612512c11d09b4 template"><td class="memItemLeft">const T &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ad20b526851ef6b7948612512c11d09b4">theme</a> () const</td></tr>
-<tr class="memdesc:ad20b526851ef6b7948612512c11d09b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the active variant for theme type T.  <br /></td></tr>
+<tr class="memdesc:abcbd8a4a112ae261dd426634be2a7eb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow this window <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a> directly; the const overload exposes read-only access.  <br /></td></tr>
+<tr class="memitem:ae4ee7ab158203c5fd05638a36ebe2582" id="r_ae4ee7ab158203c5fd05638a36ebe2582"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1PopupManager.html">PopupManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ae4ee7ab158203c5fd05638a36ebe2582">popups</a> () noexcept</td></tr>
+<tr class="memdesc:ae4ee7ab158203c5fd05638a36ebe2582"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow this window popup placement and dismissal manager directly; the const overload exposes read-only access.  <br /></td></tr>
+<tr class="memitem:a2c16677c401408f760450da7a379941b" id="r_a2c16677c401408f760450da7a379941b"><td class="memItemLeft">const <a class="el" href="classFlowUi_1_1PopupManager.html">PopupManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a2c16677c401408f760450da7a379941b">popups</a> () const noexcept</td></tr>
+<tr class="memdesc:a2c16677c401408f760450da7a379941b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow this window popup placement and dismissal manager directly; the const overload exposes read-only access.  <br /></td></tr>
+<tr class="memitem:a24bd77317966a4c812ecbf8d17ec7427" id="r_a24bd77317966a4c812ecbf8d17ec7427"><td class="memItemLeft">ActionManager &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a24bd77317966a4c812ecbf8d17ec7427">actions</a> ()</td></tr>
+<tr class="memdesc:a24bd77317966a4c812ecbf8d17ec7427"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the attached app-wide action manager directly. A detached <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> throws <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>.  <br /></td></tr>
+<tr class="memitem:a9a3fd25f67778090523069fde51031b4" id="r_a9a3fd25f67778090523069fde51031b4"><td class="memItemLeft">const ActionManager &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a9a3fd25f67778090523069fde51031b4">actions</a> () const</td></tr>
+<tr class="memdesc:a9a3fd25f67778090523069fde51031b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the attached app-wide action manager directly. A detached <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> throws <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>.  <br /></td></tr>
+<tr class="memitem:ab9cc1d97b3ab0764ad700650679fccc8" id="r_ab9cc1d97b3ab0764ad700650679fccc8"><td class="memItemLeft"><a class="el" href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">ActionInvocationStatus</a>&#160;</td><td class="memItemRight"><a class="el" href="#ab9cc1d97b3ab0764ad700650679fccc8">invoke</a> (<a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a> call)</td></tr>
+<tr class="memdesc:ab9cc1d97b3ab0764ad700650679fccc8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke an action synchronously and return Invoked, Empty, Unbound or Disabled. Arbitrary callback exceptions propagate unchanged; application effects are not rolled back.  <br /></td></tr>
+<tr class="memitem:a71fb1337efb7e24ecbc99cb94280d9eb" id="r_a71fb1337efb7e24ecbc99cb94280d9eb"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a71fb1337efb7e24ecbc99cb94280d9eb">devToolsConfig</a> () noexcept</td></tr>
+<tr class="memdesc:a71fb1337efb7e24ecbc99cb94280d9eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access developer tooling config.  <br /></td></tr>
+<tr class="memitem:a06823dac96e546dbc844e2310fe0ac17" id="r_a06823dac96e546dbc844e2310fe0ac17"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a06823dac96e546dbc844e2310fe0ac17">devToolsConfig</a> () const noexcept</td></tr>
+<tr class="memdesc:a06823dac96e546dbc844e2310fe0ac17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access developer tooling config.  <br /></td></tr>
+<tr class="memitem:afe6978f52c9a7f3d1ecf8c6e7922c5d7" id="r_afe6978f52c9a7f3d1ecf8c6e7922c5d7"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#afe6978f52c9a7f3d1ecf8c6e7922c5d7">setClipboardText</a> (std::string_view text) const noexcept</td></tr>
+<tr class="memdesc:afe6978f52c9a7f3d1ecf8c6e7922c5d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy text to the attached platform clipboard. Detached, unsupported, and failed platform operations are returned as errors; check the <a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>.  <br /></td></tr>
+<tr class="memitem:a4cd9dc8463ac528d50962c9986d98b37" id="r_a4cd9dc8463ac528d50962c9986d98b37"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a4cd9dc8463ac528d50962c9986d98b37">clipboardText</a> () const noexcept</td></tr>
+<tr class="memdesc:a4cd9dc8463ac528d50962c9986d98b37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an owned copy of clipboard text. An empty successful string is valid text; detached/platform failures are errors.  <br /></td></tr>
+<tr class="memitem:adc91343c39cfe81567e539bb9ff03d9b" id="r_adc91343c39cfe81567e539bb9ff03d9b"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#adc91343c39cfe81567e539bb9ff03d9b">hasClipboardAccess</a> () const noexcept</td></tr>
+<tr class="memdesc:adc91343c39cfe81567e539bb9ff03d9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether the attached window currently supports immediate clipboard reads and writes; detached managers return false.  <br /></td></tr>
+<tr class="memitem:a84679487a52610d8cc949bc14bba921d" id="r_a84679487a52610d8cc949bc14bba921d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a84679487a52610d8cc949bc14bba921d">requestCursor</a> (<a class="el" href="namespaceFlowUi.html#a8363459dc99cb2c2add5540efe09c80a">CursorType</a> cursorType, uint8_t priority=0) noexcept</td></tr>
+<tr class="memdesc:a84679487a52610d8cc949bc14bba921d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request this frame cursor shape. Highest priority wins; a later equal-priority request may replace the earlier one. Requests reset at frame start.  <br /></td></tr>
+<tr class="memitem:a9ef869053c1450285cb193ca75fb1a0f" id="r_a9ef869053c1450285cb193ca75fb1a0f"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a45ed3353542a8e69aead84b91e7d88ed">FontId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a9ef869053c1450285cb193ca75fb1a0f">resolveFont</a> (<a class="el" href="namespaceFlowUi.html#a95598f991c84086ade49a9b22410496a">FontFamilyId</a> familyId, uint32_t weight=400, <a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52e">FontStyle</a> style=<a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FontStyle::Normal</a>) const noexcept</td></tr>
+<tr class="memdesc:a9ef869053c1450285cb193ca75fb1a0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the resolved concrete font ID from this attached manager's frame view. Zero represents an unresolved font fallback; this lookup does not allocate.  <br /></td></tr>
+<tr class="memitem:a4fa1933eae0bc67f209e0e0d0ecd70ac" id="r_a4fa1933eae0bc67f209e0e0d0ecd70ac"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a45ed3353542a8e69aead84b91e7d88ed">FontId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4fa1933eae0bc67f209e0e0d0ecd70ac">resolveFont</a> (std::string_view familyName, uint32_t weight=400, <a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52e">FontStyle</a> style=<a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FontStyle::Normal</a>) const noexcept</td></tr>
+<tr class="memdesc:a4fa1933eae0bc67f209e0e0d0ecd70ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the resolved concrete font ID from this attached manager's frame view. Zero represents an unresolved font fallback; this lookup does not allocate.  <br /></td></tr>
+<tr class="memitem:a72d5077348ca5ea8b3541c110c422ca5" id="r_a72d5077348ca5ea8b3541c110c422ca5"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
+<tr class="memitem:a72d5077348ca5ea8b3541c110c422ca5 template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::reference_wrapper&lt; const T &gt; &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a72d5077348ca5ea8b3541c110c422ca5">theme</a> () const noexcept</td></tr>
+<tr class="memdesc:a72d5077348ca5ea8b3541c110c422ca5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the active or explicitly named registered theme through <a class="el" href="classFlowUi_1_1Result.html">Result&lt;reference_wrapper&lt;const T&gt;&gt;</a>. Active lookup respects a development local theme scope; named lookup bypasses it.  <br /></td></tr>
 <tr class="memitem:afa3989bc0b3e492f1e5f9a11ef116bc0" id="r_afa3989bc0b3e492f1e5f9a11ef116bc0"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#afa3989bc0b3e492f1e5f9a11ef116bc0">isDevPassivePreview</a> () const noexcept</td></tr>
-<tr class="memitem:a6873d408b6c4e703fc90ce70f9a53f61" id="r_a6873d408b6c4e703fc90ce70f9a53f61"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
-<tr class="memitem:a6873d408b6c4e703fc90ce70f9a53f61 template"><td class="memItemLeft">const T &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a6873d408b6c4e703fc90ce70f9a53f61">theme</a> (std::string_view variantName) const</td></tr>
-<tr class="memdesc:a6873d408b6c4e703fc90ce70f9a53f61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access a specific named variant for theme type T.  <br /></td></tr>
-<tr class="memitem:a9ce889342ed4460cfef00c05e0b5abf0" id="r_a9ce889342ed4460cfef00c05e0b5abf0"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1FlowUiTheme.html">FlowUiTheme</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a9ce889342ed4460cfef00c05e0b5abf0">flowTheme</a> () const</td></tr>
-<tr class="memdesc:a9ce889342ed4460cfef00c05e0b5abf0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience shortcut for active built-in <a class="el" href="structFlowUi_1_1FlowUiTheme.html" title="Standard design system tokens for FlowUi built-in elements.">FlowUiTheme</a>.  <br /></td></tr>
-<tr class="memitem:a35409fc9aafc767ac636443f14d53f3c" id="r_a35409fc9aafc767ac636443f14d53f3c"><td class="memItemLeft"><a id="a35409fc9aafc767ac636443f14d53f3c" name="a35409fc9aafc767ac636443f14d53f3c"></a>
-ElementManager &amp;&#160;</td><td class="memItemRight"><b>elements</b> ()</td></tr>
-<tr class="memdesc:a35409fc9aafc767ac636443f14d53f3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the app-owned element state/resource manager. <br /></td></tr>
-<tr class="memitem:afe707a42b7d57091c84ea9ac325c5c99" id="r_afe707a42b7d57091c84ea9ac325c5c99"><td class="memItemLeft"><a id="afe707a42b7d57091c84ea9ac325c5c99" name="afe707a42b7d57091c84ea9ac325c5c99"></a>
-const ElementManager &amp;&#160;</td><td class="memItemRight"><b>elements</b> () const</td></tr>
-<tr class="memdesc:afe707a42b7d57091c84ea9ac325c5c99"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the app-owned element state/resource manager. <br /></td></tr>
-<tr class="memitem:a8b358e6e96602f764b75782489aee371" id="r_a8b358e6e96602f764b75782489aee371"><td class="memItemLeft"><a id="a8b358e6e96602f764b75782489aee371" name="a8b358e6e96602f764b75782489aee371"></a>
-WindowId&#160;</td><td class="memItemRight"><b>windowId</b> () const noexcept</td></tr>
-<tr class="memdesc:a8b358e6e96602f764b75782489aee371"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the window whose frame this UI manager builds. <br /></td></tr>
-<tr class="memitem:a935e548cf5618a5d99dd430bfdc342bd" id="r_a935e548cf5618a5d99dd430bfdc342bd"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1devSystems_1_1interface__elements_1_1DevMemoryHistoryController.html">devSystems::interface_elements::DevMemoryHistoryController</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a935e548cf5618a5d99dd430bfdc342bd">memory_history_controller</a> () const noexcept</td></tr>
-<tr class="memitem:a6aecd1a6f796581ec3cfdf519078b999" id="r_a6aecd1a6f796581ec3cfdf519078b999"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1devSystems_1_1interface__elements_1_1DevTimelineController.html">devSystems::interface_elements::DevTimelineController</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a6aecd1a6f796581ec3cfdf519078b999">timeline_controller</a> () const noexcept</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a4097b3e04a4f8ece21f5abe1b10e6323" id="r_a4097b3e04a4f8ece21f5abe1b10e6323"><td class="memItemLeft"><a id="a4097b3e04a4f8ece21f5abe1b10e6323" name="a4097b3e04a4f8ece21f5abe1b10e6323"></a>
-class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
-<tr class="memitem:a3774cb31996edd81d77f419969d38b78" id="r_a3774cb31996edd81d77f419969d38b78"><td class="memItemLeft"><a id="a3774cb31996edd81d77f419969d38b78" name="a3774cb31996edd81d77f419969d38b78"></a>
-class&#160;</td><td class="memItemRight"><b>ElementManager</b></td></tr>
-<tr class="memitem:afbf17e1f0158828c2be22ecde58644fc" id="r_afbf17e1f0158828c2be22ecde58644fc"><td class="memItemLeft"><a id="afbf17e1f0158828c2be22ecde58644fc" name="afbf17e1f0158828c2be22ecde58644fc"></a>
-class&#160;</td><td class="memItemRight"><b>ActionManager</b></td></tr>
-<tr class="memitem:abb2a719dcf3236be74d0092c15fd71c9" id="r_abb2a719dcf3236be74d0092c15fd71c9"><td class="memItemLeft"><a id="abb2a719dcf3236be74d0092c15fd71c9" name="abb2a719dcf3236be74d0092c15fd71c9"></a>
-struct&#160;</td><td class="memItemRight"><b>AppWindow</b></td></tr>
-<tr class="memitem:a88c80de81a00318e3b75377fbc0d1e28" id="r_a88c80de81a00318e3b75377fbc0d1e28"><td class="memTemplParams" colspan="2"><a id="a88c80de81a00318e3b75377fbc0d1e28" name="a88c80de81a00318e3b75377fbc0d1e28"></a>
-template&lt;FlowElement Element&gt; </td></tr>
-<tr class="memitem:a88c80de81a00318e3b75377fbc0d1e28 template"><td class="memItemLeft">class&#160;</td><td class="memItemRight"><b>ElementBuilder</b></td></tr>
-<tr class="memitem:a2010738c866a6ea14df9835bedd89615" id="r_a2010738c866a6ea14df9835bedd89615"><td class="memTemplParams" colspan="2"><a id="a2010738c866a6ea14df9835bedd89615" name="a2010738c866a6ea14df9835bedd89615"></a>
-template&lt;typename Element&gt; </td></tr>
-<tr class="memitem:a2010738c866a6ea14df9835bedd89615 template"><td class="memItemLeft">struct&#160;</td><td class="memItemRight"><b>ElementBuildContext</b></td></tr>
-<tr class="memitem:a92b77dc322f255563e93ccfccc5efbcb" id="r_a92b77dc322f255563e93ccfccc5efbcb"><td class="memTemplParams" colspan="2"><a id="a92b77dc322f255563e93ccfccc5efbcb" name="a92b77dc322f255563e93ccfccc5efbcb"></a>
-template&lt;typename Element&gt; </td></tr>
-<tr class="memitem:a92b77dc322f255563e93ccfccc5efbcb template"><td class="memItemLeft">struct&#160;</td><td class="memItemRight"><b>ElementInteractionContext</b></td></tr>
-<tr class="memitem:a241a0ae403c7ccad1ded3b62498a3e8d" id="r_a241a0ae403c7ccad1ded3b62498a3e8d"><td class="memItemLeft"><a id="a241a0ae403c7ccad1ded3b62498a3e8d" name="a241a0ae403c7ccad1ded3b62498a3e8d"></a>
-void&#160;</td><td class="memItemRight"><b>detail::claimFlowRootForDev</b> (UiManager &amp;uiManager, <a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> elementId, <a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a> definitionId, std::string_view fileName, uint32_t line, uint32_t column, std::string_view functionName, bool automaticIdentity)</td></tr>
+<tr class="memitem:a646b33ecaa9e7719e1cbba4fd47ae101" id="r_a646b33ecaa9e7719e1cbba4fd47ae101"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
+<tr class="memitem:a646b33ecaa9e7719e1cbba4fd47ae101 template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::reference_wrapper&lt; const T &gt; &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a646b33ecaa9e7719e1cbba4fd47ae101">theme</a> (std::string_view variantName) const noexcept</td></tr>
+<tr class="memdesc:a646b33ecaa9e7719e1cbba4fd47ae101"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the active or explicitly named registered theme through <a class="el" href="classFlowUi_1_1Result.html">Result&lt;reference_wrapper&lt;const T&gt;&gt;</a>. Active lookup respects a development local theme scope; named lookup bypasses it.  <br /></td></tr>
+<tr class="memitem:af91fe2d1c5e4cc97a869b5f7156ba806" id="r_af91fe2d1c5e4cc97a869b5f7156ba806"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::reference_wrapper&lt; const <a class="el" href="structFlowUi_1_1FlowUiTheme.html">FlowUiTheme</a> &gt; &gt;&#160;</td><td class="memItemRight"><a class="el" href="#af91fe2d1c5e4cc97a869b5f7156ba806">flowTheme</a> () const noexcept</td></tr>
+<tr class="memdesc:af91fe2d1c5e4cc97a869b5f7156ba806"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the active built-in <a class="el" href="structFlowUi_1_1FlowUiTheme.html" title="Standard design system tokens for FlowUi built-in elements.">FlowUiTheme</a> through <a class="el" href="classFlowUi_1_1Result.html">Result&lt;reference_wrapper&lt;const FlowUiTheme&gt;&gt;</a>, including a development local theme scope.  <br /></td></tr>
+<tr class="memitem:a35409fc9aafc767ac636443f14d53f3c" id="r_a35409fc9aafc767ac636443f14d53f3c"><td class="memItemLeft">ElementManager &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a35409fc9aafc767ac636443f14d53f3c">elements</a> ()</td></tr>
+<tr class="memdesc:a35409fc9aafc767ac636443f14d53f3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the attached app-wide element manager directly. A detached <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> throws <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>.  <br /></td></tr>
+<tr class="memitem:afe707a42b7d57091c84ea9ac325c5c99" id="r_afe707a42b7d57091c84ea9ac325c5c99"><td class="memItemLeft">const ElementManager &amp;&#160;</td><td class="memItemRight"><a class="el" href="#afe707a42b7d57091c84ea9ac325c5c99">elements</a> () const</td></tr>
+<tr class="memdesc:afe707a42b7d57091c84ea9ac325c5c99"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the attached app-wide element manager directly. A detached <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> throws <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>.  <br /></td></tr>
+<tr class="memitem:a8b358e6e96602f764b75782489aee371" id="r_a8b358e6e96602f764b75782489aee371"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a8b358e6e96602f764b75782489aee371">windowId</a> () const noexcept</td></tr>
+<tr class="memdesc:a8b358e6e96602f764b75782489aee371"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the window whose frame is built by this manager.  <br /></td></tr>
+<tr class="memitem:a935e548cf5618a5d99dd430bfdc342bd" id="r_a935e548cf5618a5d99dd430bfdc342bd"><td class="memItemLeft">devSystems::interface_elements::DevMemoryHistoryController *&#160;</td><td class="memItemRight"><a class="el" href="#a935e548cf5618a5d99dd430bfdc342bd">memory_history_controller</a> () const noexcept</td></tr>
+<tr class="memitem:a6aecd1a6f796581ec3cfdf519078b999" id="r_a6aecd1a6f796581ec3cfdf519078b999"><td class="memItemLeft">devSystems::interface_elements::DevTimelineController *&#160;</td><td class="memItemRight"><a class="el" href="#a6aecd1a6f796581ec3cfdf519078b999">timeline_controller</a> () const noexcept</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Frame-scoped UI construction context and service bridge. </p>
-<p><a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> owns the Clay layout context used by <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> during each frame. User code normally reaches it through <a class="el" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc" title="Access the UI manager.">App::ui()</a>, then uses it to create typed FlowUi elements, convert Flow element ids and dynamic strings into Clay data, query frame input and previous-frame interaction state, and access scoped UI services such as input fields, shortcuts, clipboard helpers, cursor requests, and font resolution.</p>
+<p><a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> owns the Clay layout context used by <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> during each frame. User code normally reaches it through <a class="el" href="classFlowUi_1_1App.html#a572a046213b0d0460376a5cbc4b5651d" title="Access the UI manager.">App::ui()</a>, then uses it to create typed <a class="el" href="namespaceFlowUi.html">FlowUi</a> elements, convert Flow element ids and dynamic strings into Clay data, query frame input and previous-frame interaction state, and access scoped UI services such as input fields, shortcuts, clipboard helpers, cursor requests, and font resolution.</p>
 <p><a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> owns the <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> lifecycle. beginFrame(), endFrame(), renderer bridge data, clipboard backend wiring, and font-manager wiring are internal to <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a>, so custom elements should treat <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> as the frame-local authoring surface rather than as a standalone runtime object.</p>
-<div class="fragment"></div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2concepts_2mental__model.html" title="Core Mental Model">Core Mental Model</a> </dd>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> uiResult = app.ui();</div>
+<div class="line"><span class="keywordflow">if</span> (!uiResult) <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(uiResult.error());</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; ui = uiResult-&gt;get();</div>
+<div class="line"> </div>
+<div class="line">ui.<a class="code hl_function" href="#a3ef6d75f9ad2e76294c104c4b3e25803">createElement</a>(<a class="code hl_variable" href="namespaceFlowUi.html#afff9af94cfd508cf8eed929c4b13eeee">FlowUi::kButton</a>, <a class="code hl_struct" href="structFlowUi_1_1LocalElementName.html">FlowUi::LocalElementName</a>{<span class="stringliteral">&quot;save&quot;</span>})</div>
+<div class="line">    .setParameters(<a class="code hl_struct" href="structFlowUi_1_1ButtonParameters.html">FlowUi::ButtonParameters</a>{.label = <span class="stringliteral">&quot;Save&quot;</span>})</div>
+<div class="line">    .draw();</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:110</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a3ef6d75f9ad2e76294c104c4b3e25803"><div class="ttname"><a href="#a3ef6d75f9ad2e76294c104c4b3e25803">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Element &gt; createElement(const Element &amp;, LocalElementName localName, std::source_location sourceLocation=std::source_location::current())</div><div class="ttdoc">Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve und...</div><div class="ttdef"><b>Definition</b> UiManager.hpp:349</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_afff9af94cfd508cf8eed929c4b13eeee"><div class="ttname"><a href="namespaceFlowUi.html#afff9af94cfd508cf8eed929c4b13eeee">FlowUi::kButton</a></div><div class="ttdeci">constexpr Button kButton</div><div class="ttdef"><b>Definition</b> Button.hpp:139</div></div>
+<div class="ttc" id="astructFlowUi_1_1ButtonParameters_html"><div class="ttname"><a href="structFlowUi_1_1ButtonParameters.html">FlowUi::ButtonParameters</a></div><div class="ttdef"><b>Definition</b> Button.hpp:10</div></div>
+<div class="ttc" id="astructFlowUi_1_1LocalElementName_html"><div class="ttname"><a href="structFlowUi_1_1LocalElementName.html">FlowUi::LocalElementName</a></div><div class="ttdef"><b>Definition</b> ElementID.hpp:33</div></div>
+</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2concepts_2mental__model.html" title="Core Mental Model">Core Mental Model</a> </dd>
 <dd>
 <a class="el" href="md_docs_2concepts_2element__system.html" title="Element System">Element System</a> </dd>
 <dd>
 <a class="el" href="md_docs_2tutorials_2custom__elements.html" title="Custom Elements">Custom Elements</a> </dd></dl>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
-<a id="a4b3ec28e336b11fc18d35639a360544e" name="a4b3ec28e336b11fc18d35639a360544e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4b3ec28e336b11fc18d35639a360544e">&#9670;&#160;</a></span>clipboardText()</h2>
+<a id="a24bd77317966a4c812ecbf8d17ec7427" name="a24bd77317966a4c812ecbf8d17ec7427"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24bd77317966a4c812ecbf8d17ec7427">&#9670;&#160;</a></span>actions() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -287,7 +292,35 @@ void&#160;</td><td class="memItemRight"><b>detail::claimFlowRootForDev</b> (UiMa
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::string FlowUi::UiManager::clipboardText </td>
+          <td class="memname">ActionManager &amp; FlowUi::UiManager::actions </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Borrow the attached app-wide action manager directly. A detached <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> throws <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a9a3fd25f67778090523069fde51031b4" name="a9a3fd25f67778090523069fde51031b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9a3fd25f67778090523069fde51031b4">&#9670;&#160;</a></span>actions() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const ActionManager &amp; FlowUi::UiManager::actions </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
@@ -300,19 +333,47 @@ void&#160;</td><td class="memItemRight"><b>detail::claimFlowRootForDev</b> (UiMa
 </table>
 </div><div class="memdoc">
 
-<p>Read clipboard text through the configured clipboard accessor. </p>
-<dl class="section return"><dt>Returns</dt><dd>Clipboard text, or an empty string when no getter is installed.</dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">Any</td><td>exception thrown by the configured clipboard getter.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Borrow the attached app-wide action manager directly. A detached <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> throws <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a4cd9dc8463ac528d50962c9986d98b37" name="a4cd9dc8463ac528d50962c9986d98b37"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4cd9dc8463ac528d50962c9986d98b37">&#9670;&#160;</a></span>clipboardText()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::string &gt; FlowUi::UiManager::clipboardText </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return an owned copy of clipboard text. An empty successful string is valid text; detached/platform failures are errors. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">auto</span> result = ui.clipboardText();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> std::string pasted = std::move(*result);</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
 </div>
 </div>
 <a id="aa457fe979bd7351de0c6dea2a787c2d6" name="aa457fe979bd7351de0c6dea2a787c2d6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa457fe979bd7351de0c6dea2a787c2d6">&#9670;&#160;</a></span>createElement() <span class="overload">[1/5]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aa457fe979bd7351de0c6dea2a787c2d6">&#9670;&#160;</a></span>createElement() <span class="overload">[1/7]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -330,7 +391,7 @@ template&lt;FlowElement Element&gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structFlowUi_1_1AutoElementName.html">AutoElementName</a></td>          <td class="paramname"><span class="paramname"><em>automaticName</em></span><span class="paramdefsep"> = </span><span class="paramdefval">AutoID()</span>, </td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1AutoElementName.html">AutoElementName</a></td>          <td class="paramname"><span class="paramname"><em>automaticName</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="namespaceFlowUi.html#a4866f6a494e247b6e01d4e018d80be8c">AutoID</a>()</span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -344,13 +405,64 @@ template&lt;FlowElement Element&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Create a positional element identified by this callsite.</p>
-<p>Automatic IDs are appropriate only for stable static trees. A callsite executed repeatedly must use Indexed(), Keyed(), or indexedIDs().next(). </p>
+
+<p>Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address. </p>
+<p>Direct throwing operation: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a> and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line">ui.createElement(counter, <a class="code hl_function" href="namespaceFlowUi.html#a4866f6a494e247b6e01d4e018d80be8c">FlowUi::AutoID</a>())</div>
+<div class="line">    .setParameters({.width = 160.0f})</div>
+<div class="line">    .draw();</div>
+<div class="ttc" id="anamespaceFlowUi_html_a4866f6a494e247b6e01d4e018d80be8c"><div class="ttname"><a href="namespaceFlowUi.html#a4866f6a494e247b6e01d4e018d80be8c">FlowUi::AutoID</a></div><div class="ttdeci">constexpr AutoElementName AutoID(const char *fileName=__builtin_FILE(), uint32_t line=__builtin_LINE(), uint32_t column=0) noexcept</div><div class="ttdoc">Capture the caller location as an automatic identity token.</div><div class="ttdef"><b>Definition</b> ElementID.hpp:402</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a23df94764d8ff8d9d728a053fea4805f" name="a23df94764d8ff8d9d728a053fea4805f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a23df94764d8ff8d9d728a053fea4805f">&#9670;&#160;</a></span>createElement() <span class="overload">[2/7]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;FlowElement Element&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ElementBuilder&lt; Element &gt; FlowUi::UiManager::createElement </td>
+          <td>(</td>
+          <td class="paramtype">const Element &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a></td>          <td class="paramname"><span class="paramname"><em>resolvedId</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::source_location</td>          <td class="paramname"><span class="paramname"><em>sourceLocation</em></span><span class="paramdefsep"> = </span><span class="paramdefval">std::source_location::current()</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address. </p>
+<p>Direct throwing operation: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a> and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line">ui.createElement(counter, <span class="keywordtype">id</span>)</div>
+<div class="line">    .setParameters({.width = 160.0f})</div>
+<div class="line">    .draw();</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
 
 </div>
 </div>
 <a id="ade984ed76c3e6ebe3098aae2d0d3b6ef" name="ade984ed76c3e6ebe3098aae2d0d3b6ef"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ade984ed76c3e6ebe3098aae2d0d3b6ef">&#9670;&#160;</a></span>createElement() <span class="overload">[2/5]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ade984ed76c3e6ebe3098aae2d0d3b6ef">&#9670;&#160;</a></span>createElement() <span class="overload">[3/7]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -382,12 +494,19 @@ template&lt;FlowElement Element&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Create an element at a semantic part address already bound to its owner. </p>
+
+<p>Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address. </p>
+<p>Direct throwing operation: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a> and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line">ui.createElement(counter, <span class="keywordtype">id</span>)</div>
+<div class="line">    .setParameters({.width = 160.0f})</div>
+<div class="line">    .draw();</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
 
 </div>
 </div>
 <a id="ab4f49d95db3b7f8f58cbb41e601302c0" name="ab4f49d95db3b7f8f58cbb41e601302c0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab4f49d95db3b7f8f58cbb41e601302c0">&#9670;&#160;</a></span>createElement() <span class="overload">[3/5]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ab4f49d95db3b7f8f58cbb41e601302c0">&#9670;&#160;</a></span>createElement() <span class="overload">[4/7]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -419,12 +538,19 @@ template&lt;FlowElement Element&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Create an explicitly global element without applying the local parent hash. </p>
+
+<p>Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address. </p>
+<p>Direct throwing operation: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a> and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line">ui.createElement(counter, <span class="keywordtype">id</span>)</div>
+<div class="line">    .setParameters({.width = 160.0f})</div>
+<div class="line">    .draw();</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
 
 </div>
 </div>
 <a id="a51885147c9c179c658e3c4a56eff4758" name="a51885147c9c179c658e3c4a56eff4758"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a51885147c9c179c658e3c4a56eff4758">&#9670;&#160;</a></span>createElement() <span class="overload">[4/5]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a51885147c9c179c658e3c4a56eff4758">&#9670;&#160;</a></span>createElement() <span class="overload">[5/7]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -456,12 +582,20 @@ template&lt;FlowElement Element&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Create a repeated child using a positional or stable numeric key. </p>
+
+<p>Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address. </p>
+<p>Direct throwing operation: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a> and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line">ui.createElement(counter, <a class="code hl_function" href="namespaceFlowUi.html#ac6240c50bc1cd842b3503644a10ae529">FlowUi::Indexed</a>(<span class="stringliteral">&quot;counter&quot;</span>, 0))</div>
+<div class="line">    .setParameters({.width = 160.0f})</div>
+<div class="line">    .draw();</div>
+<div class="ttc" id="anamespaceFlowUi_html_ac6240c50bc1cd842b3503644a10ae529"><div class="ttname"><a href="namespaceFlowUi.html#ac6240c50bc1cd842b3503644a10ae529">FlowUi::Indexed</a></div><div class="ttdeci">constexpr IndexedElementName Indexed(LocalElementName name, uint64_t index) noexcept</div><div class="ttdef"><b>Definition</b> ElementID.hpp:280</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
 
 </div>
 </div>
 <a id="a3ef6d75f9ad2e76294c104c4b3e25803" name="a3ef6d75f9ad2e76294c104c4b3e25803"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3ef6d75f9ad2e76294c104c4b3e25803">&#9670;&#160;</a></span>createElement() <span class="overload">[5/5]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ef6d75f9ad2e76294c104c4b3e25803">&#9670;&#160;</a></span>createElement() <span class="overload">[6/7]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -494,31 +628,63 @@ template&lt;FlowElement Element&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Create a builder for a typed FlowUi element instance. </p>
-<p><a class="el" href="#a3ef6d75f9ad2e76294c104c4b3e25803" title="Create a builder for a typed FlowUi element instance.">createElement()</a> is the public entry point for invoking FlowUi element definitions. The returned <a class="el" href="classFlowUi_1_1ElementBuilder.html" title="Builder returned by UiManager::createElement().">ElementBuilder</a> owns the resolved element ID and parameter storage for this invocation until draw() or construct() is called.</p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">Element</td><td>Empty tag type satisfying <a class="el" href="conceptFlowUi_1_1FlowElement.html">FlowElement</a>. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">element</td><td>Compile-time element tag used only for type deduction. </td></tr>
-    <tr><td class="paramname">localName</td><td>Name unique among siblings of the same element definition. </td></tr>
-    <tr><td class="paramname">sourceLocation</td><td>Source location captured for developer-mode inspection when FLOW_UI_DEV_MODE is enabled. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd><a class="el" href="classFlowUi_1_1ElementBuilder.html" title="Builder returned by UiManager::createElement().">ElementBuilder</a> configured for the passed definition and element id.</dd></dl>
-<div class="fragment"></div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2custom__elements.html" title="Custom Elements">Custom Elements</a> </dd>
-<dd>
-<a class="el" href="md_docs_2tutorials_2developer__mode.html" title="Developer Systems">Developer Mode</a> </dd></dl>
+<p>Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address. </p>
+<p>Direct throwing operation: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a> and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line">ui.createElement(counter, <span class="stringliteral">&quot;counter&quot;</span>)</div>
+<div class="line">    .setParameters({.width = 160.0f})</div>
+<div class="line">    .draw();</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
 
 </div>
 </div>
-<a id="a15f634a57bdcc1cc0838007554144c5d" name="a15f634a57bdcc1cc0838007554144c5d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a15f634a57bdcc1cc0838007554144c5d">&#9670;&#160;</a></span>devToolsConfig() <span class="overload">[1/2]</span></h2>
+<a id="a624b11df98a5bd289658908a20ff335a" name="a624b11df98a5bd289658908a20ff335a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a624b11df98a5bd289658908a20ff335a">&#9670;&#160;</a></span>createElement() <span class="overload">[7/7]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;FlowElement Element&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ElementBuilder&lt; Element &gt; FlowUi::UiManager::createElement </td>
+          <td>(</td>
+          <td class="paramtype">const Element &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1RuntimeElementName.html">RuntimeElementName</a></td>          <td class="paramname"><span class="paramname"><em>localName</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::source_location</td>          <td class="paramname"><span class="paramname"><em>sourceLocation</em></span><span class="paramdefsep"> = </span><span class="paramdefval">std::source_location::current()</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address. </p>
+<p>Direct throwing operation: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a> and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line">ui.createElement(counter, <a class="code hl_function" href="namespaceFlowUi.html#a6d9da0c2fbac1b0f170957b7d70b4b4f">FlowUi::RuntimeName</a>(<span class="stringliteral">&quot;counter&quot;</span>))</div>
+<div class="line">    .setParameters({.width = 160.0f})</div>
+<div class="line">    .draw();</div>
+<div class="ttc" id="anamespaceFlowUi_html_a6d9da0c2fbac1b0f170957b7d70b4b4f"><div class="ttname"><a href="namespaceFlowUi.html#a6d9da0c2fbac1b0f170957b7d70b4b4f">FlowUi::RuntimeName</a></div><div class="ttdeci">constexpr RuntimeElementName RuntimeName(std::string_view name) noexcept</div><div class="ttdef"><b>Definition</b> ElementID.hpp:258</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="acd0103d030b290cdc0733364ca7b2db3" name="acd0103d030b290cdc0733364ca7b2db3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acd0103d030b290cdc0733364ca7b2db3">&#9670;&#160;</a></span>dev_completed_interaction()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -527,26 +693,76 @@ template&lt;FlowElement Element&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a> &amp; FlowUi::UiManager::devToolsConfig </td>
+          <td class="memname">const <a class="el" href="structFlowUi_1_1InteractionSnapshot.html">InteractionSnapshot</a> &amp; FlowUi::UiManager::dev_completed_interaction </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Access developer tooling config. </p>
-<dl class="section return"><dt>Returns</dt><dd>Mutable developer tooling configuration. </dd></dl>
+<p>Observe the just-completed layout; valid only until this window begins its next frame. </p>
 
 </div>
 </div>
-<a id="a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9" name="a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9">&#9670;&#160;</a></span>devToolsConfig() <span class="overload">[2/2]</span></h2>
+<a id="aeca400d15964f97372a67819d8a2d111" name="aeca400d15964f97372a67819d8a2d111"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeca400d15964f97372a67819d8a2d111">&#9670;&#160;</a></span>dev_completed_window_frame()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::uint64_t FlowUi::UiManager::dev_completed_window_frame </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Last completed UI identity, independent of optional development-tree collection. </p>
+
+</div>
+</div>
+<a id="a0d25ebbb120d56b271aa7ca5ee2122b5" name="a0d25ebbb120d56b271aa7ca5ee2122b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d25ebbb120d56b271aa7ca5ee2122b5">&#9670;&#160;</a></span>dev_layout_dimensions()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Clay_Dimensions FlowUi::UiManager::dev_layout_dimensions </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Layout-space window extent used by the most recent build, without switching Clay contexts. </p>
+
+</div>
+</div>
+<a id="a06823dac96e546dbc844e2310fe0ac17" name="a06823dac96e546dbc844e2310fe0ac17"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a06823dac96e546dbc844e2310fe0ac17">&#9670;&#160;</a></span>devToolsConfig() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -563,13 +779,41 @@ template&lt;FlowElement Element&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
 <p>Access developer tooling config. </p>
 <dl class="section return"><dt>Returns</dt><dd>Immutable developer tooling configuration. </dd></dl>
+
+</div>
+</div>
+<a id="a71fb1337efb7e24ecbc99cb94280d9eb" name="a71fb1337efb7e24ecbc99cb94280d9eb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a71fb1337efb7e24ecbc99cb94280d9eb">&#9670;&#160;</a></span>devToolsConfig() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a> &amp; FlowUi::UiManager::devToolsConfig </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Access developer tooling config. </p>
+<dl class="section return"><dt>Returns</dt><dd>Mutable developer tooling configuration. </dd></dl>
 
 </div>
 </div>
@@ -614,15 +858,70 @@ template&lt;FlowElement Element&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Close the current element opened by <a class="el" href="classFlowUi_1_1ElementBuilder.html#a29afc3c4439f57b17785e3f66fc035a6">ElementBuilder::construct()</a>. </p>
-<p>Call this after emitting child Clay nodes for an element opened through createElement(...).construct(). <a class="el" href="#a857a971efa5a8e904806b9398e0e4883" title="Close the current element opened by ElementBuilder::construct().">drawConstructed()</a> closes that constructed root and ends any active dev-mode capture for it.</p>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">std::runtime_error</td><td>if there is no active constructed element or if the Clay context is not initialized.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Close the most recent root opened by <a class="el" href="classFlowUi_1_1ElementBuilder.html#a29afc3c4439f57b17785e3f66fc035a6" title="Run enabled pointer callbacks, runLogic and constructElement synchronously, then open the declared Cl...">ElementBuilder::construct()</a>, including its <a class="el" href="namespaceFlowUi.html">FlowUi</a> scope and development capture. Each successful construct needs one close. </p>
+<p>Direct throwing operation: library validation raises <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a> and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.</p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line">ui.createElement(counter, <span class="stringliteral">&quot;panel&quot;</span>).construct();</div>
+<div class="line">ui.createElement(counter, <span class="stringliteral">&quot;child&quot;</span>).draw();</div>
+<div class="line">ui.drawConstructed();</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a35409fc9aafc767ac636443f14d53f3c" name="a35409fc9aafc767ac636443f14d53f3c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a35409fc9aafc767ac636443f14d53f3c">&#9670;&#160;</a></span>elements() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ElementManager &amp; FlowUi::UiManager::elements </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Borrow the attached app-wide element manager directly. A detached <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> throws <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="afe707a42b7d57091c84ea9ac325c5c99" name="afe707a42b7d57091c84ea9ac325c5c99"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe707a42b7d57091c84ea9ac325c5c99">&#9670;&#160;</a></span>elements() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const ElementManager &amp; FlowUi::UiManager::elements </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Borrow the attached app-wide element manager directly. A detached <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> throws <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
 </div>
 </div>
 <a id="a655c6ae2644762e2a45690c7cf0ab717" name="a655c6ae2644762e2a45690c7cf0ab717"></a>
@@ -651,8 +950,8 @@ template&lt;FlowElement Element&gt; </div>
 
 </div>
 </div>
-<a id="a9ce889342ed4460cfef00c05e0b5abf0" name="a9ce889342ed4460cfef00c05e0b5abf0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9ce889342ed4460cfef00c05e0b5abf0">&#9670;&#160;</a></span>flowTheme()</h2>
+<a id="af91fe2d1c5e4cc97a869b5f7156ba806" name="af91fe2d1c5e4cc97a869b5f7156ba806"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af91fe2d1c5e4cc97a869b5f7156ba806">&#9670;&#160;</a></span>flowTheme()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -661,7 +960,7 @@ template&lt;FlowElement Element&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="structFlowUi_1_1FlowUiTheme.html">FlowUiTheme</a> &amp; FlowUi::UiManager::flowTheme </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::reference_wrapper&lt; const <a class="el" href="structFlowUi_1_1FlowUiTheme.html">FlowUiTheme</a> &gt; &gt; FlowUi::UiManager::flowTheme </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
@@ -669,18 +968,62 @@ template&lt;FlowElement Element&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Convenience shortcut for active built-in <a class="el" href="structFlowUi_1_1FlowUiTheme.html" title="Standard design system tokens for FlowUi built-in elements.">FlowUiTheme</a>. </p>
-<dl class="section return"><dt>Returns</dt><dd>Const reference to active <a class="el" href="structFlowUi_1_1FlowUiTheme.html" title="Standard design system tokens for FlowUi built-in elements.">FlowUiTheme</a>. </dd></dl>
+<p>Borrow the active built-in <a class="el" href="structFlowUi_1_1FlowUiTheme.html" title="Standard design system tokens for FlowUi built-in elements.">FlowUiTheme</a> through <a class="el" href="classFlowUi_1_1Result.html">Result&lt;reference_wrapper&lt;const FlowUiTheme&gt;&gt;</a>, including a development local theme scope. </p>
+<p>Check the <a class="el" href="classFlowUi_1_1Result.html">Result</a> before result-&gt;get(). The wrapper and extracted reference do not own the payload. Reacquire after theme registry changes; a development override also limits the borrow to its enclosing scope.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">auto</span> result = ui.flowTheme();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&amp; <a class="code hl_function" href="#a72d5077348ca5ea8b3541c110c422ca5">theme</a> = result-&gt;get();</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">float</span> fontSize = <a class="code hl_function" href="#a72d5077348ca5ea8b3541c110c422ca5">theme</a>.<a class="code hl_variable" href="structFlowUi_1_1FlowUiTheme.html#af94fb0700589cc8aaa6283cfe115d8de">fontSizeMedium</a>;</div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a72d5077348ca5ea8b3541c110c422ca5"><div class="ttname"><a href="#a72d5077348ca5ea8b3541c110c422ca5">FlowUi::UiManager::theme</a></div><div class="ttdeci">Result&lt; std::reference_wrapper&lt; const T &gt; &gt; theme() const noexcept</div><div class="ttdoc">Borrow the active or explicitly named registered theme through Result&lt;reference_wrapper&lt;const T&gt;&gt;....</div><div class="ttdef"><b>Definition</b> UiManager.hpp:815</div></div>
+<div class="ttc" id="astructFlowUi_1_1FlowUiTheme_html"><div class="ttname"><a href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a></div><div class="ttdoc">Standard design system tokens for FlowUi built-in elements.</div><div class="ttdef"><b>Definition</b> FlowUiTheme.hpp:16</div></div>
+<div class="ttc" id="astructFlowUi_1_1FlowUiTheme_html_af94fb0700589cc8aaa6283cfe115d8de"><div class="ttname"><a href="structFlowUi_1_1FlowUiTheme.html#af94fb0700589cc8aaa6283cfe115d8de">FlowUi::FlowUiTheme::fontSizeMedium</a></div><div class="ttdeci">float fontSizeMedium</div><div class="ttdoc">Medium font size in pixels.</div><div class="ttdef"><b>Definition</b> FlowUiTheme.hpp:74</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
 
 </div>
 </div>
-<a id="a0caf0ecce99a1beb956ce76179b2f06a" name="a0caf0ecce99a1beb956ce76179b2f06a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0caf0ecce99a1beb956ce76179b2f06a">&#9670;&#160;</a></span>getCurrentFrameInput()</h2>
+<a id="a105713a2a18e110bc4473c7d15003cb2" name="a105713a2a18e110bc4473c7d15003cb2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a105713a2a18e110bc4473c7d15003cb2">&#9670;&#160;</a></span>frameStatus()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::UiManager::frameStatus </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return the first latched UI error for this frame, including input-field and popup failure state. Check before committing custom frame composition. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">auto</span> result = ui.frameStatus();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a48ec5e29c0a6dcb0060c1ebcd7205781" name="a48ec5e29c0a6dcb0060c1ebcd7205781"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a48ec5e29c0a6dcb0060c1ebcd7205781">&#9670;&#160;</a></span>getCurrentFrameInput()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -697,19 +1040,18 @@ template&lt;FlowElement Element&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return input for the current layout frame. </p>
-<p>Coordinates are in FlowUi layout space after <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> has applied UI scaling.</p>
-<dl class="section return"><dt>Returns</dt><dd>Current frame input used by <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> during this layout pass.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Borrow this frame input in scaled <a class="el" href="namespaceFlowUi.html">FlowUi</a> layout coordinates; do not retain this reference as an immutable historical snapshot. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
 </div>
 </div>
-<a id="a12cb4ceeafcca80fea278337586ae2ac" name="a12cb4ceeafcca80fea278337586ae2ac"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a12cb4ceeafcca80fea278337586ae2ac">&#9670;&#160;</a></span>getPreviousFrameInput()</h2>
+<a id="a1660e5ed0ebff6bd0918cb045001e601" name="a1660e5ed0ebff6bd0918cb045001e601"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1660e5ed0ebff6bd0918cb045001e601">&#9670;&#160;</a></span>getPreviousFrameInput()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -726,19 +1068,18 @@ template&lt;FlowElement Element&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return input for the previous layout frame. </p>
-<p>Use this with <a class="el" href="#a0caf0ecce99a1beb956ce76179b2f06a" title="Return input for the current layout frame.">getCurrentFrameInput()</a> for custom edge detection or drag calculations.</p>
-<dl class="section return"><dt>Returns</dt><dd>Previous frame input in FlowUi layout space.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Borrow the previous layout-frame input, useful with current input for edge and drag calculations. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
 </div>
 </div>
-<a id="a428e81a65fec2e616b90be54b58744c4" name="a428e81a65fec2e616b90be54b58744c4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a428e81a65fec2e616b90be54b58744c4">&#9670;&#160;</a></span>getPreviousFramesInteraction()</h2>
+<a id="abdbe4dfbb903e693d323b665b0aafca5" name="abdbe4dfbb903e693d323b665b0aafca5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abdbe4dfbb903e693d323b665b0aafca5">&#9670;&#160;</a></span>getPreviousFramesInteraction()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -755,19 +1096,18 @@ template&lt;FlowElement Element&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return the previous completed frame's interaction snapshot. </p>
-<p>Element callbacks use the previous snapshot while constructing the current frame so hover, press, hold, and release queries are stable.</p>
-<dl class="section return"><dt>Returns</dt><dd>Interaction data collected when the previous frame ended.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Borrow the previous completed frame interaction snapshot. It remains the stable source for current element pointer callbacks. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
 </div>
 </div>
-<a id="a64bfd45ccd65d7eb70792e13a4559a8f" name="a64bfd45ccd65d7eb70792e13a4559a8f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a64bfd45ccd65d7eb70792e13a4559a8f">&#9670;&#160;</a></span>hasClipboardAccess()</h2>
+<a id="adc91343c39cfe81567e539bb9ff03d9b" name="adc91343c39cfe81567e539bb9ff03d9b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc91343c39cfe81567e539bb9ff03d9b">&#9670;&#160;</a></span>hasClipboardAccess()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -784,20 +1124,14 @@ template&lt;FlowElement Element&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return whether clipboard accessors are installed. </p>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">true</td><td>Both clipboard setter and getter callbacks are installed. </td></tr>
-    <tr><td class="paramname">false</td><td>At least one clipboard callback is missing.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Return whether the attached window currently supports immediate clipboard reads and writes; detached managers return false. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
 </div>
 </div>
 <a id="a84ca159240dc3f702a72698da0cdda83" name="a84ca159240dc3f702a72698da0cdda83"></a>
@@ -823,23 +1157,18 @@ template&lt;FlowElement Element&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Store a texture reference for use by Clay image render data. </p>
-<p>Clay image commands carry an opaque pointer. This helper copies <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> into the current frame arena and returns a pointer suitable for Clay_ImageElementConfig::imageData.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">textureRef</td><td>Texture request or registered texture handle to store. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Pointer to the frame-arena copy of textureRef.</dd></dl>
+<p>Copy a texture reference into current-frame storage and return the pointer used by Clay image configuration. The pointee is valid for this frame only. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line">Clay_ImageElementConfig image{};</div>
+<div class="line">image.imageData = ui.imageData(texture);</div>
+</div><!-- fragment --></dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::runtime_error</td><td>if the current frame arena does not have enough capacity. Increase <a class="el" href="structFlowUi_1_1UiConfig.html#a2d1e958b117a67d93875c8db44c20c04" title="Byte capacity of each transient UI arena.">UiConfig::stringArenaSize</a>.</td></tr>
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>On a library failure; the first failure is latched for this frame. Other operational exceptions propagate after latching frame failure. Abandon the failed frame.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>This function should be used as .imageData instead of raw variable address</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
 </div>
 </div>
 <a id="aacd40f0f6f42bc6e2678ffc7eefa207e" name="aacd40f0f6f42bc6e2678ffc7eefa207e"></a>
@@ -865,16 +1194,17 @@ template&lt;FlowElement Element&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Create a stable inner input-field content element declaration. </p>
-<p>This helper returns a Clay element declaration intended for the inner content node of an input field. The width grows to available space and the height is fixed to the resolved font line height for textConfig. Use it between the visual/padded outer input box and the Clay text element so an empty field keeps a stable layout area for caret rendering.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">textConfig</td><td>Clay text configuration that will be used for the field text. </td></tr>
+<p>Return an input-content declaration with growing width and a height derived from the resolved font metrics. Operational failures propagate and latch frame failure; cancel the failed frame. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> Clay_ElementDeclaration content = ui.inputContentElement(textConfig);</div>
+</div><!-- fragment --></dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>On a library failure; the first failure is latched for this frame. Other operational exceptions propagate after latching frame failure. Abandon the failed frame.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Clay element declaration with grow width and fixed line-height height.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
 </div>
 </div>
 <a id="a872b6e0553d3fe8a24c1d66d7a2fa508" name="a872b6e0553d3fe8a24c1d66d7a2fa508"></a>
@@ -900,8 +1230,8 @@ template&lt;FlowElement Element&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Access the input field manager. </p>
-<dl class="section return"><dt>Returns</dt><dd>Immutable <a class="el" href="classFlowUi_1_1InputFieldManager.html" title="Manages text input fields, focus, caret state, and edit operations.">InputFieldManager</a> owned by this <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a>. </dd></dl>
+<p>Borrow this window <a class="el" href="classFlowUi_1_1InputFieldManager.html" title="Window-owned editable text, caret state, and atomic edit operations.">InputFieldManager</a> directly; the const overload exposes read-only access. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
 
 </div>
 </div>
@@ -928,9 +1258,43 @@ template&lt;FlowElement Element&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Access the input field manager. </p>
-<dl class="section return"><dt>Returns</dt><dd>Mutable <a class="el" href="classFlowUi_1_1InputFieldManager.html" title="Manages text input fields, focus, caret state, and edit operations.">InputFieldManager</a> owned by this <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a>.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Borrow this window <a class="el" href="classFlowUi_1_1InputFieldManager.html" title="Window-owned editable text, caret state, and atomic edit operations.">InputFieldManager</a> directly; the const overload exposes read-only access. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="ab9cc1d97b3ab0764ad700650679fccc8" name="ab9cc1d97b3ab0764ad700650679fccc8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab9cc1d97b3ab0764ad700650679fccc8">&#9670;&#160;</a></span>invoke()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">ActionInvocationStatus</a> FlowUi::UiManager::invoke </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a></td>          <td class="paramname"><span class="paramname"><em>call</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Invoke an action synchronously and return Invoked, Empty, Unbound or Disabled. Arbitrary callback exceptions propagate unchanged; application effects are not rolled back. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md</dd></dl>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_enumeration" href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">FlowUi::ActionInvocationStatus</a> outcome = <a class="code hl_function" href="#a24bd77317966a4c812ecbf8d17ec7427">actions</a>.invoke(call);</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> invoked = outcome == <a class="code hl_enumvalue" href="group__flowui__action__manager.html#gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1">FlowUi::ActionInvocationStatus::Invoked</a>;</div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a24bd77317966a4c812ecbf8d17ec7427"><div class="ttname"><a href="#a24bd77317966a4c812ecbf8d17ec7427">FlowUi::UiManager::actions</a></div><div class="ttdeci">ActionManager &amp; actions()</div><div class="ttdoc">Borrow the attached app-wide action manager directly. A detached UiManager throws FlowUiException.</div></div>
+<div class="ttc" id="agroup__flowui__action__manager_html_ga9d1bf355b9b6efbdfd521544535423dc"><div class="ttname"><a href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">FlowUi::ActionInvocationStatus</a></div><div class="ttdeci">ActionInvocationStatus</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:240</div></div>
+<div class="ttc" id="agroup__flowui__action__manager_html_gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1"><div class="ttname"><a href="group__flowui__action__manager.html#gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1">FlowUi::ActionInvocationStatus::Invoked</a></div><div class="ttdeci">@ Invoked</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:242</div></div>
+</div><!-- fragment --> </dd></dl>
+
 </div>
 </div>
 <a id="a1f9b39ce02a04579871c5b2e2e0f316a" name="a1f9b39ce02a04579871c5b2e2e0f316a"></a>
@@ -957,7 +1321,7 @@ template&lt;FlowElement Element&gt; </div>
 </div><div class="memdoc">
 
 <p>Check whether UI construction is currently inside an active dev-internal element scope. </p>
-<p>When true, child elements (even standard library controls like FSEL::Button) are protected from developer override mutations and captured as internal dev elements. </p>
+<p>When true, child elements (even standard library controls like <a class="el" href="structFlowUi_1_1FSEL_1_1Button.html">FSEL::Button</a>) are protected from developer override mutations and captured as internal dev elements. </p>
 
 </div>
 </div>
@@ -1023,7 +1387,7 @@ template&lt;FlowElement Element&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classFlowUi_1_1devSystems_1_1interface__elements_1_1DevMemoryHistoryController.html">devSystems::interface_elements::DevMemoryHistoryController</a> * FlowUi::UiManager::memory_history_controller </td>
+          <td class="memname">devSystems::interface_elements::DevMemoryHistoryController * FlowUi::UiManager::memory_history_controller </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
@@ -1039,39 +1403,8 @@ template&lt;FlowElement Element&gt; </div>
 
 </div>
 </div>
-<a id="a73558c0199600f70651c54dba7211498" name="a73558c0199600f70651c54dba7211498"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a73558c0199600f70651c54dba7211498">&#9670;&#160;</a></span>requestCursor()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void FlowUi::UiManager::requestCursor </td>
-          <td>(</td>
-          <td class="paramtype">CursorType</td>          <td class="paramname"><span class="paramname"><em>cursorType</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>priority</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Request a cursor shape for the current frame. </p>
-<p>Cursor requests are reset at the beginning of each frame. When multiple requests are made in one frame, the request with the highest priority wins; equal priority requests may replace earlier requests.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">cursorType</td><td>Cursor shape requested by UI code. </td></tr>
-    <tr><td class="paramname">priority</td><td>Ordering priority for this frame's cursor request.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --> 
-</div>
-</div>
-<a id="adbbbc7d049cee3b9e97242fc44585c2d" name="adbbbc7d049cee3b9e97242fc44585c2d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adbbbc7d049cee3b9e97242fc44585c2d">&#9670;&#160;</a></span>resolveFont() <span class="overload">[1/2]</span></h2>
+<a id="a2c16677c401408f760450da7a379941b" name="a2c16677c401408f760450da7a379941b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c16677c401408f760450da7a379941b">&#9670;&#160;</a></span>popups() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1080,9 +1413,125 @@ template&lt;FlowElement Element&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">FontId FlowUi::UiManager::resolveFont </td>
+          <td class="memname">const <a class="el" href="classFlowUi_1_1PopupManager.html">PopupManager</a> &amp; FlowUi::UiManager::popups </td>
           <td>(</td>
-          <td class="paramtype">FontFamilyId</td>          <td class="paramname"><span class="paramname"><em>familyId</em></span>, </td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Borrow this window popup placement and dismissal manager directly; the const overload exposes read-only access. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="ae4ee7ab158203c5fd05638a36ebe2582" name="ae4ee7ab158203c5fd05638a36ebe2582"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae4ee7ab158203c5fd05638a36ebe2582">&#9670;&#160;</a></span>popups() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1PopupManager.html">PopupManager</a> &amp; FlowUi::UiManager::popups </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Borrow this window popup placement and dismissal manager directly; the const overload exposes read-only access. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a19749d1ffe094d2388f8140945a28d31" name="a19749d1ffe094d2388f8140945a28d31"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a19749d1ffe094d2388f8140945a28d31">&#9670;&#160;</a></span>recordFrameError()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::UiManager::recordFrameError </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a></td>          <td class="paramname"><span class="paramname"><em>error</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Latch the first error for this frame so partially built output cannot be submitted. Later calls preserve the earlier error. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a84679487a52610d8cc949bc14bba921d" name="a84679487a52610d8cc949bc14bba921d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a84679487a52610d8cc949bc14bba921d">&#9670;&#160;</a></span>requestCursor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::UiManager::requestCursor </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi.html#a8363459dc99cb2c2add5540efe09c80a">CursorType</a></td>          <td class="paramname"><span class="paramname"><em>cursorType</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>priority</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Request this frame cursor shape. Highest priority wins; a later equal-priority request may replace the earlier one. Requests reset at frame start. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a9ef869053c1450285cb193ca75fb1a0f" name="a9ef869053c1450285cb193ca75fb1a0f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9ef869053c1450285cb193ca75fb1a0f">&#9670;&#160;</a></span>resolveFont() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a45ed3353542a8e69aead84b91e7d88ed">FontId</a> FlowUi::UiManager::resolveFont </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi.html#a95598f991c84086ade49a9b22410496a">FontFamilyId</a></td>          <td class="paramname"><span class="paramname"><em>familyId</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1092,32 +1541,28 @@ template&lt;FlowElement Element&gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">FontStyle</td>          <td class="paramname"><span class="paramname"><em>style</em></span><span class="paramdefsep"> = </span><span class="paramdefval">FontStyle::Normal</span>&#160;) const</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52e">FontStyle</a></td>          <td class="paramname"><span class="paramname"><em>style</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FontStyle::Normal</a></span>&#160;) const</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Resolve a concrete Clay font id for a family/style request. </p>
-<p>This forwards to <a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a> when the App-owned font manager is connected to <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a>. It is useful in element callbacks that receive <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> but not <a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a> directly.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">familyId</td><td>Existing logical font family id. </td></tr>
-    <tr><td class="paramname">weight</td><td>Requested CSS-style font weight. </td></tr>
-    <tr><td class="paramname">style</td><td>Requested font style. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Concrete FontId for Clay text, or 0 if no font manager is attached or the family cannot be resolved.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Return the resolved concrete font ID from this attached manager's frame view. Zero represents an unresolved font fallback; this lookup does not allocate. </p>
+<dl class="section pre"><dt>Precondition</dt><dd>This <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> remains initialized and attached to its owning window. The frame view is populated during frame preparation.</dd></dl>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="namespaceFlowUi.html#a45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a> font = ui.resolveFont(family, 400, <a class="code hl_enumvalue" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FlowUi::FontStyle::Normal</a>);</div>
+<div class="ttc" id="anamespaceFlowUi_html_a45ed3353542a8e69aead84b91e7d88ed"><div class="ttname"><a href="namespaceFlowUi.html#a45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a></div><div class="ttdeci">uint16_t FontId</div><div class="ttdef"><b>Definition</b> FontTypes.hpp:14</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0"><div class="ttname"><a href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FlowUi::FontStyle::Normal</a></div><div class="ttdeci">@ Normal</div><div class="ttdef"><b>Definition</b> FontTypes.hpp:21</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
 </div>
 </div>
-<a id="a43b32fe49c09bc873a6691764164ba6b" name="a43b32fe49c09bc873a6691764164ba6b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a43b32fe49c09bc873a6691764164ba6b">&#9670;&#160;</a></span>resolveFont() <span class="overload">[2/2]</span></h2>
+<a id="a4fa1933eae0bc67f209e0e0d0ecd70ac" name="a4fa1933eae0bc67f209e0e0d0ecd70ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4fa1933eae0bc67f209e0e0d0ecd70ac">&#9670;&#160;</a></span>resolveFont() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1126,7 +1571,7 @@ template&lt;FlowElement Element&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">FontId FlowUi::UiManager::resolveFont </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a45ed3353542a8e69aead84b91e7d88ed">FontId</a> FlowUi::UiManager::resolveFont </td>
           <td>(</td>
           <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>familyName</em></span>, </td>
         </tr>
@@ -1138,28 +1583,22 @@ template&lt;FlowElement Element&gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">FontStyle</td>          <td class="paramname"><span class="paramname"><em>style</em></span><span class="paramdefsep"> = </span><span class="paramdefval">FontStyle::Normal</span>&#160;) const</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52e">FontStyle</a></td>          <td class="paramname"><span class="paramname"><em>style</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FontStyle::Normal</a></span>&#160;) const</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Resolve a concrete Clay font id for a named family/style request. </p>
-<p>This forwards to <a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a> when available and returns 0 when the family name cannot be resolved.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">familyName</td><td>Existing logical font family name string. </td></tr>
-    <tr><td class="paramname">weight</td><td>Requested CSS-style font weight. </td></tr>
-    <tr><td class="paramname">style</td><td>Requested font style. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Concrete FontId for Clay text, or 0 if no font manager is attached or the family cannot be resolved.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Return the resolved concrete font ID from this attached manager's frame view. Zero represents an unresolved font fallback; this lookup does not allocate. </p>
+<dl class="section pre"><dt>Precondition</dt><dd>This <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> remains initialized and attached to its owning window. The frame view is populated during frame preparation.</dd></dl>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="namespaceFlowUi.html#a45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a> font = ui.resolveFont(family, 400, <a class="code hl_enumvalue" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FlowUi::FontStyle::Normal</a>);</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
 </div>
 </div>
 <a id="ab7b91f9ba66b646c7f1f82727a428f2e" name="ab7b91f9ba66b646c7f1f82727a428f2e"></a>
@@ -1218,36 +1657,37 @@ template&lt;FlowElement Element&gt; </div>
 
 </div>
 </div>
-<a id="af951ad4db8a17064009ed8ff9ac9f79a" name="af951ad4db8a17064009ed8ff9ac9f79a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af951ad4db8a17064009ed8ff9ac9f79a">&#9670;&#160;</a></span>setClipboardText()</h2>
+<a id="afe6978f52c9a7f3d1ecf8c6e7922c5d7" name="afe6978f52c9a7f3d1ecf8c6e7922c5d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe6978f52c9a7f3d1ecf8c6e7922c5d7">&#9670;&#160;</a></span>setClipboardText()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FlowUi::UiManager::setClipboardText </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::UiManager::setClipboardText </td>
           <td>(</td>
           <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>text</em></span></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Set clipboard text through the configured clipboard accessor. </p>
-<p>If no clipboard setter is installed, this function does nothing.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">text</td><td>Text to copy to the system or configured clipboard.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">Any</td><td>exception thrown by the configured clipboard setter.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Copy text to the attached platform clipboard. Detached, unsupported, and failed platform operations are returned as errors; check the <a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">auto</span> result = ui.setClipboardText(<span class="stringliteral">&quot;Copied text&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
 </div>
 </div>
 <a id="abcbd8a4a112ae261dd426634be2a7eb0" name="abcbd8a4a112ae261dd426634be2a7eb0"></a>
@@ -1273,8 +1713,8 @@ template&lt;FlowElement Element&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Access the shortcut manager. </p>
-<dl class="section return"><dt>Returns</dt><dd>Immutable <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a> owned by this <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a>. </dd></dl>
+<p>Borrow this window <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a> directly; the const overload exposes read-only access. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
 
 </div>
 </div>
@@ -1301,13 +1741,13 @@ template&lt;FlowElement Element&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Access the shortcut manager. </p>
-<dl class="section return"><dt>Returns</dt><dd>Mutable <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a> owned by this <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a>.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Borrow this window <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a> directly; the const overload exposes read-only access. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
 </div>
 </div>
-<a id="ad20b526851ef6b7948612512c11d09b4" name="ad20b526851ef6b7948612512c11d09b4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad20b526851ef6b7948612512c11d09b4">&#9670;&#160;</a></span>theme() <span class="overload">[1/2]</span></h2>
+<a id="a72d5077348ca5ea8b3541c110c422ca5" name="a72d5077348ca5ea8b3541c110c422ca5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a72d5077348ca5ea8b3541c110c422ca5">&#9670;&#160;</a></span>theme() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1318,7 +1758,7 @@ template&lt;typename T&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const T &amp; FlowUi::UiManager::theme </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::reference_wrapper&lt; const T &gt; &gt; FlowUi::UiManager::theme </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
@@ -1326,30 +1766,26 @@ template&lt;typename T&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Access the active variant for theme type T. </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">T</td><td>Theme struct type. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Const reference to active theme instance of type T. </dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">std::runtime_error</td><td>if <a class="el" href="classFlowUi_1_1ThemeManager.html" title="Manages registrable themes, named theme variants, and active theme dispatch.">ThemeManager</a> is not connected or theme is unregistered. </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Borrow the active or explicitly named registered theme through <a class="el" href="classFlowUi_1_1Result.html">Result&lt;reference_wrapper&lt;const T&gt;&gt;</a>. Active lookup respects a development local theme scope; named lookup bypasses it. </p>
+<p>Check the <a class="el" href="classFlowUi_1_1Result.html">Result</a> before result-&gt;get(). The wrapper and extracted reference do not own the payload. Reacquire after theme registry changes; a development override also limits the borrow to its enclosing scope.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">auto</span> result = ui.theme&lt;<a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&gt;();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&amp; <a class="code hl_function" href="#a72d5077348ca5ea8b3541c110c422ca5">theme</a> = result-&gt;get();</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">float</span> fontSize = <a class="code hl_function" href="#a72d5077348ca5ea8b3541c110c422ca5">theme</a>.<a class="code hl_variable" href="structFlowUi_1_1FlowUiTheme.html#af94fb0700589cc8aaa6283cfe115d8de">fontSizeMedium</a>;</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
 
 </div>
 </div>
-<a id="a6873d408b6c4e703fc90ce70f9a53f61" name="a6873d408b6c4e703fc90ce70f9a53f61"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6873d408b6c4e703fc90ce70f9a53f61">&#9670;&#160;</a></span>theme() <span class="overload">[2/2]</span></h2>
+<a id="a646b33ecaa9e7719e1cbba4fd47ae101" name="a646b33ecaa9e7719e1cbba4fd47ae101"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a646b33ecaa9e7719e1cbba4fd47ae101">&#9670;&#160;</a></span>theme() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1360,7 +1796,7 @@ template&lt;typename T&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const T &amp; FlowUi::UiManager::theme </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::reference_wrapper&lt; const T &gt; &gt; FlowUi::UiManager::theme </td>
           <td>(</td>
           <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>variantName</em></span></td><td>)</td>
           <td> const</td>
@@ -1368,31 +1804,21 @@ template&lt;typename T&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Access a specific named variant for theme type T. </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">T</td><td>Theme struct type. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">variantName</td><td>Name of the theme variant. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Const reference to named theme instance of type T. </dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">std::runtime_error</td><td>if <a class="el" href="classFlowUi_1_1ThemeManager.html" title="Manages registrable themes, named theme variants, and active theme dispatch.">ThemeManager</a> is not connected or variant is unregistered. </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Borrow the active or explicitly named registered theme through <a class="el" href="classFlowUi_1_1Result.html">Result&lt;reference_wrapper&lt;const T&gt;&gt;</a>. Active lookup respects a development local theme scope; named lookup bypasses it. </p>
+<p>Check the <a class="el" href="classFlowUi_1_1Result.html">Result</a> before result-&gt;get(). The wrapper and extracted reference do not own the payload. Reacquire after theme registry changes; a development override also limits the borrow to its enclosing scope.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">auto</span> result = ui.theme&lt;<a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&gt;(<span class="stringliteral">&quot;light&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&amp; <a class="code hl_function" href="#a72d5077348ca5ea8b3541c110c422ca5">theme</a> = result-&gt;get();</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">float</span> fontSize = <a class="code hl_function" href="#a72d5077348ca5ea8b3541c110c422ca5">theme</a>.<a class="code hl_variable" href="structFlowUi_1_1FlowUiTheme.html#af94fb0700589cc8aaa6283cfe115d8de">fontSizeMedium</a>;</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
 
 </div>
 </div>
@@ -1406,7 +1832,7 @@ template&lt;typename T&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classFlowUi_1_1devSystems_1_1interface__elements_1_1DevTimelineController.html">devSystems::interface_elements::DevTimelineController</a> * FlowUi::UiManager::timeline_controller </td>
+          <td class="memname">devSystems::interface_elements::DevTimelineController * FlowUi::UiManager::timeline_controller </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
@@ -1423,7 +1849,7 @@ template&lt;typename T&gt; </div>
 </div>
 </div>
 <a id="a8444d3c1aa6671658b33cdc3da3afe49" name="a8444d3c1aa6671658b33cdc3da3afe49"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8444d3c1aa6671658b33cdc3da3afe49">&#9670;&#160;</a></span>toClayEID()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a8444d3c1aa6671658b33cdc3da3afe49">&#9670;&#160;</a></span>toClayEID() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1445,13 +1871,131 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Deterministically bridge a strong 64-bit Flow identity to Clay. </p>
-<p>Production builds construct the numeric Clay id without allocating or hashing strings. Developer builds attach the ID's diagnostic name when it is available. Use <a class="el" href="#ab5a7131ff83f731ff6f99006f4563d29" title="Convert a string id to a Clay string id.">toClaySID()</a> for explicitly string-named Clay-only nodes.</p>
-<div class="fragment"></div><!-- fragment --> 
+<p>Bridge a strong local, global, or semantic-part identity directly into a Clay ID for this window. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> Clay_ElementId clayId = ui.toClayEID(<span class="keywordtype">id</span>);</div>
+</div><!-- fragment --></dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>On a library failure; the first failure is latched for this frame. Other operational exceptions propagate after latching frame failure. Abandon the failed frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a619bac8a61106911e3e1ad0ec3e160e7" name="a619bac8a61106911e3e1ad0ec3e160e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a619bac8a61106911e3e1ad0ec3e160e7">&#9670;&#160;</a></span>toClayEID() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Clay_ElementId FlowUi::UiManager::toClayEID </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Bridge a strong local, global, or semantic-part identity directly into a Clay ID for this window. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> Clay_ElementId clayId = ui.toClayEID(<span class="keywordtype">id</span>);</div>
+</div><!-- fragment --></dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>On a library failure; the first failure is latched for this frame. Other operational exceptions propagate after latching frame failure. Abandon the failed frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="ae68d67fb1fc3e28dc4fe735b2ff64f70" name="ae68d67fb1fc3e28dc4fe735b2ff64f70"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae68d67fb1fc3e28dc4fe735b2ff64f70">&#9670;&#160;</a></span>toClayEID() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Clay_ElementId FlowUi::UiManager::toClayEID </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Bridge a strong local, global, or semantic-part identity directly into a Clay ID for this window. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> Clay_ElementId clayId = ui.toClayEID(<span class="keywordtype">id</span>);</div>
+</div><!-- fragment --></dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>On a library failure; the first failure is latched for this frame. Other operational exceptions propagate after latching frame failure. Abandon the failed frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a821f04303e0f62f020c18088b7e82d0a" name="a821f04303e0f62f020c18088b7e82d0a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a821f04303e0f62f020c18088b7e82d0a">&#9670;&#160;</a></span>toClaySID() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Clay_ElementId FlowUi::UiManager::toClaySID </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Copy the supplied string identity into current-frame storage and return its Clay string ID. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> carries explicit attribution. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> name{.name = <span class="stringliteral">&quot;toolbar/save&quot;</span>};</div>
+<div class="line"><span class="keyword">const</span> Clay_ElementId clayId = ui.toClaySID(name);</div>
+<div class="ttc" id="astructFlowUi_1_1ResourceKey_html"><div class="ttname"><a href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a></div><div class="ttdoc">Human-readable logical identity accepted by FlowUi managers.</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:39</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>On a library failure; the first failure is latched for this frame. Other operational exceptions propagate after latching frame failure. Abandon the failed frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
 </div>
 </div>
 <a id="ab5a7131ff83f731ff6f99006f4563d29" name="ab5a7131ff83f731ff6f99006f4563d29"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab5a7131ff83f731ff6f99006f4563d29">&#9670;&#160;</a></span>toClaySID()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ab5a7131ff83f731ff6f99006f4563d29">&#9670;&#160;</a></span>toClaySID() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1473,26 +2017,59 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Convert a string id to a Clay string id. </p>
-<p>This is a convenience wrapper around CLAY_SID using <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> frame string storage. Use it when Clay's string-id path is desired for the current frame.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">s</td><td>Element id string. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Clay element id generated from s.</dd></dl>
+<p>Copy the supplied string identity into current-frame storage and return its Clay string ID. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> carries explicit attribution. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> std::string_view name = <span class="stringliteral">&quot;toolbar/save&quot;</span>;</div>
+<div class="line"><span class="keyword">const</span> Clay_ElementId clayId = ui.toClaySID(name);</div>
+</div><!-- fragment --></dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::runtime_error</td><td>if the current frame arena does not have enough capacity.</td></tr>
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>On a library failure; the first failure is latched for this frame. Other operational exceptions propagate after latching frame failure. Abandon the failed frame.</td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"></div><!-- fragment --> 
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="aa86a3ee247d72399a92a0ad0e5ff8ca8" name="aa86a3ee247d72399a92a0ad0e5ff8ca8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa86a3ee247d72399a92a0ad0e5ff8ca8">&#9670;&#160;</a></span>toClayString() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Clay_String FlowUi::UiManager::toClayString </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Copy text into current-frame storage and return a Clay_String borrowing that storage. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> supplies the name text and explicit resource attribution. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> text{.name = <span class="stringliteral">&quot;Save&quot;</span>};</div>
+<div class="line"><span class="keyword">const</span> Clay_String clayText = ui.toClayString(text);</div>
+</div><!-- fragment --></dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>On a library failure; the first failure is latched for this frame. Other operational exceptions propagate after latching frame failure. Abandon the failed frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
 </div>
 </div>
 <a id="ac1694a665b71269470ff22a2adc00437" name="ac1694a665b71269470ff22a2adc00437"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac1694a665b71269470ff22a2adc00437">&#9670;&#160;</a></span>toClayString()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ac1694a665b71269470ff22a2adc00437">&#9670;&#160;</a></span>toClayString() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1514,23 +2091,46 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Store a string in the current frame arena and return a Clay string. </p>
-<p>Clay stores string data by pointer, so dynamic strings emitted during UI construction must live at least until the frame ends. This function copies the input into <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a>'s active frame arena and returns a Clay_String pointing at that copy.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">s</td><td>UTF-8/string data to copy into the current frame arena. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Clay string view backed by <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> frame storage.</dd></dl>
+<p>Copy text into current-frame storage and return a Clay_String borrowing that storage. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> supplies the name text and explicit resource attribution. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> std::string_view text = <span class="stringliteral">&quot;Save&quot;</span>;</div>
+<div class="line"><span class="keyword">const</span> Clay_String clayText = ui.toClayString(text);</div>
+</div><!-- fragment --></dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::runtime_error</td><td>if the current frame arena does not have enough capacity. Increase <a class="el" href="structFlowUi_1_1UiConfig.html#a2d1e958b117a67d93875c8db44c20c04" title="Byte capacity of each transient UI arena.">UiConfig::stringArenaSize</a>. </td></tr>
-    <tr><td class="paramname">std::bad_alloc</td><td>if arena storage allocation has failed earlier.</td></tr>
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>On a library failure; the first failure is latched for this frame. Other operational exceptions propagate after latching frame failure. Abandon the failed frame.</td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"></div><!-- fragment --> 
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a8b358e6e96602f764b75782489aee371" name="a8b358e6e96602f764b75782489aee371"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8b358e6e96602f764b75782489aee371">&#9670;&#160;</a></span>windowId()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> FlowUi::UiManager::windowId </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return the window whose frame is built by this manager. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/ui_manager.md </dd></dl>
+
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
@@ -1549,7 +2149,7 @@ template&lt;typename T&gt; </div>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1UiManager.html">UiManager</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1UiManager.html">UiManager</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

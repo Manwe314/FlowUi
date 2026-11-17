@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,20 +106,95 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::CapacityProfileRequest Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevMemoryReporting_8hpp_source.html">DevMemoryReporting.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:af9cb0859d53165d06dc93b1a3554210b" id="r_af9cb0859d53165d06dc93b1a3554210b"><td class="memItemLeft"><a id="af9cb0859d53165d06dc93b1a3554210b" name="af9cb0859d53165d06dc93b1a3554210b"></a>
-MemoryCaptureId&#160;</td><td class="memItemRight"><b>capture</b> = 0u</td></tr>
-<tr class="memitem:addc0b250730fd3cf54f6bee94f4b36ab" id="r_addc0b250730fd3cf54f6bee94f4b36ab"><td class="memItemLeft"><a id="addc0b250730fd3cf54f6bee94f4b36ab" name="addc0b250730fd3cf54f6bee94f4b36ab"></a>
-double&#160;</td><td class="memItemRight"><b>percentile</b> = 0.95</td></tr>
-<tr class="memitem:af95727cdf3a70a4e85e9ed63d679ee69" id="r_af95727cdf3a70a4e85e9ed63d679ee69"><td class="memItemLeft"><a id="af95727cdf3a70a4e85e9ed63d679ee69" name="af95727cdf3a70a4e85e9ed63d679ee69"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>safetyMargin</b> = 0u</td></tr>
-<tr class="memitem:a2638d667779f003efb87eb9974d1ea34" id="r_a2638d667779f003efb87eb9974d1ea34"><td class="memItemLeft"><a id="a2638d667779f003efb87eb9974d1ea34" name="a2638d667779f003efb87eb9974d1ea34"></a>
-float&#160;</td><td class="memItemRight"><b>growthFactor</b> = 1.5f</td></tr>
-<tr class="memitem:aa66e286a5213e6563e4ec141e969c45f" id="r_aa66e286a5213e6563e4ec141e969c45f"><td class="memItemLeft"><a id="aa66e286a5213e6563e4ec141e969c45f" name="aa66e286a5213e6563e4ec141e969c45f"></a>
-CapacityGrowthPolicy&#160;</td><td class="memItemRight"><b>growthPolicy</b> = CapacityGrowthPolicy::PercentileInitialNormalGrowth</td></tr>
+<tr class="memitem:af9cb0859d53165d06dc93b1a3554210b" id="r_af9cb0859d53165d06dc93b1a3554210b"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a0e69379e77ebdfe113122d30e102b684">MemoryCaptureId</a>&#160;</td><td class="memItemRight"><a class="el" href="#af9cb0859d53165d06dc93b1a3554210b">capture</a> = 0u</td></tr>
+<tr class="memitem:addc0b250730fd3cf54f6bee94f4b36ab" id="r_addc0b250730fd3cf54f6bee94f4b36ab"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#addc0b250730fd3cf54f6bee94f4b36ab">percentile</a> = 0.95</td></tr>
+<tr class="memitem:af95727cdf3a70a4e85e9ed63d679ee69" id="r_af95727cdf3a70a4e85e9ed63d679ee69"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#af95727cdf3a70a4e85e9ed63d679ee69">safetyMargin</a> = 0u</td></tr>
+<tr class="memitem:a2638d667779f003efb87eb9974d1ea34" id="r_a2638d667779f003efb87eb9974d1ea34"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#a2638d667779f003efb87eb9974d1ea34">growthFactor</a> = 1.5f</td></tr>
+<tr class="memitem:aa66e286a5213e6563e4ec141e969c45f" id="r_aa66e286a5213e6563e4ec141e969c45f"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ab4fadca14a8dca935b484759148e981a">CapacityGrowthPolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa66e286a5213e6563e4ec141e969c45f">growthPolicy</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ab4fadca14a8dca935b484759148e981aaef0f4443cef929a857d41230dada5528">CapacityGrowthPolicy::PercentileInitialNormalGrowth</a></td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Capture and percentile policy used to preview startup reserves without mutating runtime capacities. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="af9cb0859d53165d06dc93b1a3554210b" name="af9cb0859d53165d06dc93b1a3554210b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af9cb0859d53165d06dc93b1a3554210b">&#9670;&#160;</a></span>capture</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a0e69379e77ebdfe113122d30e102b684">MemoryCaptureId</a> FlowUi::devSystems::CapacityProfileRequest::capture = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Optional capture identity; absent selects available history. </p>
+
+</div>
+</div>
+<a id="a2638d667779f003efb87eb9974d1ea34" name="a2638d667779f003efb87eb9974d1ea34"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2638d667779f003efb87eb9974d1ea34">&#9670;&#160;</a></span>growthFactor</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float FlowUi::devSystems::CapacityProfileRequest::growthFactor = 1.5f</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Storage growth multiplier used for preview; must be finite and greater than one. </p>
+
+</div>
+</div>
+<a id="aa66e286a5213e6563e4ec141e969c45f" name="aa66e286a5213e6563e4ec141e969c45f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa66e286a5213e6563e4ec141e969c45f">&#9670;&#160;</a></span>growthPolicy</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ab4fadca14a8dca935b484759148e981a">CapacityGrowthPolicy</a> FlowUi::devSystems::CapacityProfileRequest::growthPolicy = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ab4fadca14a8dca935b484759148e981aaef0f4443cef929a857d41230dada5528">CapacityGrowthPolicy::PercentileInitialNormalGrowth</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>How startup reserves and a later growth step cover observed demand. </p>
+
+</div>
+</div>
+<a id="addc0b250730fd3cf54f6bee94f4b36ab" name="addc0b250730fd3cf54f6bee94f4b36ab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#addc0b250730fd3cf54f6bee94f4b36ab">&#9670;&#160;</a></span>percentile</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double FlowUi::devSystems::CapacityProfileRequest::percentile = 0.95</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Percentile fraction in [0,1], such as 0.95 for the 95th percentile. </p>
+
+</div>
+</div>
+<a id="af95727cdf3a70a4e85e9ed63d679ee69" name="af95727cdf3a70a4e85e9ed63d679ee69"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af95727cdf3a70a4e85e9ed63d679ee69">&#9670;&#160;</a></span>safetyMargin</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::CapacityProfileRequest::safetyMargin = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Additional capacity in each target's units after percentile selection. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevMemoryReporting_8hpp_source.html">DevMemoryReporting.hpp</a></li>
 </ul>
@@ -136,7 +211,7 @@ CapacityGrowthPolicy&#160;</td><td class="memItemRight"><b>growthPolicy</b> = Ca
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1CapacityProfileRequest.html">CapacityProfileRequest</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1CapacityProfileRequest.html">CapacityProfileRequest</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

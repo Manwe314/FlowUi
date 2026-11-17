@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,24 +111,31 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a595278732e2e1b821c9a285908388327" id="r_a595278732e2e1b821c9a285908388327"><td class="memItemLeft"><a id="a595278732e2e1b821c9a285908388327" name="a595278732e2e1b821c9a285908388327"></a>
-&#160;</td><td class="memItemRight"><b>DevBakePipeline</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">tooling::DevSchemaRegistry</a> &amp;schemas, <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideEngine.html">DevOverrideEngine</a> &amp;overrides) noexcept</td></tr>
+<tr class="memitem:a7bbf0e51d4f09e0832a90570182d31f8" id="r_a7bbf0e51d4f09e0832a90570182d31f8"><td class="memItemLeft"><a id="a7bbf0e51d4f09e0832a90570182d31f8" name="a7bbf0e51d4f09e0832a90570182d31f8"></a>
+&#160;</td><td class="memItemRight"><b>DevBakePipeline</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">tooling::DevSchemaRegistry</a> &amp;schemas, <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideEngine.html">DevOverrideEngine</a> &amp;overrides)</td></tr>
+<tr class="memdesc:a7bbf0e51d4f09e0832a90570182d31f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the registry and override engine for the pipeline lifetime; no manifest is written by construction. Allocation and member-construction failures propagate to the owner. <br /></td></tr>
 <tr class="memitem:a6bf2ee35970b7d303960b73cec60acf8" id="r_a6bf2ee35970b7d303960b73cec60acf8"><td class="memItemLeft"><a id="a6bf2ee35970b7d303960b73cec60acf8" name="a6bf2ee35970b7d303960b73cec60acf8"></a>
 void&#160;</td><td class="memItemRight"><b>setManifestPath</b> (std::filesystem::path path)</td></tr>
+<tr class="memdesc:a6bf2ee35970b7d303960b73cec60acf8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace the owned destination path for subsequent reads/reviews/commits; this does not write the file. <br /></td></tr>
 <tr class="memitem:abde078fa81d7b6eaf40e052afec16080" id="r_abde078fa81d7b6eaf40e052afec16080"><td class="memItemLeft"><a id="abde078fa81d7b6eaf40e052afec16080" name="abde078fa81d7b6eaf40e052afec16080"></a>
 const std::filesystem::path &amp;&#160;</td><td class="memItemRight"><b>manifestPath</b> () const noexcept</td></tr>
+<tr class="memdesc:abde078fa81d7b6eaf40e052afec16080"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the current native manifest path until the next path change or destruction. <br /></td></tr>
 <tr class="memitem:ad518e1abad299b6079869caa7afcc20f" id="r_ad518e1abad299b6079869caa7afcc20f"><td class="memItemLeft"><a id="ad518e1abad299b6079869caa7afcc20f" name="ad518e1abad299b6079869caa7afcc20f"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCommandResult.html">DevCommandResult</a>&#160;</td><td class="memItemRight"><b>bake</b> () noexcept</td></tr>
+<tr class="memdesc:ad518e1abad299b6079869caa7afcc20f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Capture currently bakeable live edits and persist their manifest; return an explicit command result. <br /></td></tr>
 <tr class="memitem:a5766319ba7ad49b0ec3d636598248d93" id="r_a5766319ba7ad49b0ec3d636598248d93"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevChangesReviewPlan.html">DevChangesReviewPlan</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5766319ba7ad49b0ec3d636598248d93">query_review</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevChangesReviewRequest.html">DevChangesReviewRequest</a> &amp;request={}) const noexcept</td></tr>
 <tr class="memitem:a1a9b2881703e2adb930dffb18fe06b6b" id="r_a1a9b2881703e2adb930dffb18fe06b6b"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCommandResult.html">DevCommandResult</a>&#160;</td><td class="memItemRight"><a class="el" href="#a1a9b2881703e2adb930dffb18fe06b6b">commit_review</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevChangesReviewPlan.html">DevChangesReviewPlan</a> &amp;plan, std::uint64_t current_memory_revision=0) noexcept</td></tr>
-<tr class="memitem:a8c4b36e8b15ad11620170e21f8d78f5a" id="r_a8c4b36e8b15ad11620170e21f8d78f5a"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCommandResult.html">DevCommandResult</a>&#160;</td><td class="memItemRight"><a class="el" href="#a8c4b36e8b15ad11620170e21f8d78f5a">save_memory_capacities</a> (const FlowUi::detail::Manifest &amp;selections, std::span&lt; const std::string_view &gt; removed={}, const std::filesystem::path &amp;review_path={}) noexcept</td></tr>
+<tr class="memitem:a8c4b36e8b15ad11620170e21f8d78f5a" id="r_a8c4b36e8b15ad11620170e21f8d78f5a"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCommandResult.html">DevCommandResult</a>&#160;</td><td class="memItemRight"><a class="el" href="#a8c4b36e8b15ad11620170e21f8d78f5a">save_memory_capacities</a> (const FlowUi::detail::MemoryCapacityManifest &amp;selections, std::span&lt; const std::string_view &gt; removed={}, const std::filesystem::path &amp;review_path={}) noexcept</td></tr>
 <tr class="memitem:af8bf8245aa54e8746cc9e9dc34b2547e" id="r_af8bf8245aa54e8746cc9e9dc34b2547e"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCommandResult.html">DevCommandResult</a>&#160;</td><td class="memItemRight"><a class="el" href="#af8bf8245aa54e8746cc9e9dc34b2547e">reset_memory_capacities</a> () noexcept</td></tr>
-<tr class="memitem:a54ff114854ec98d9e2f28993e141bbb9" id="r_a54ff114854ec98d9e2f28993e141bbb9"><td class="memItemLeft"><a id="a54ff114854ec98d9e2f28993e141bbb9" name="a54ff114854ec98d9e2f28993e141bbb9"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevBakeStatusSnapshot.html">DevBakeStatusSnapshot</a>&#160;</td><td class="memItemRight"><b>queryStatus</b> () const noexcept</td></tr>
-<tr class="memitem:a246868a9c75e5f68b2d20e7f5d48b6f5" id="r_a246868a9c75e5f68b2d20e7f5d48b6f5"><td class="memItemLeft"><a id="a246868a9c75e5f68b2d20e7f5d48b6f5" name="a246868a9c75e5f68b2d20e7f5d48b6f5"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevBakeDiffEntry.html">DevBakeDiffEntry</a> &gt;&#160;</td><td class="memItemRight"><b>queryDiff</b> () const noexcept</td></tr>
+<tr class="memitem:a9a8c7bc8dd8ae22ab291a14580abb1eb" id="r_a9a8c7bc8dd8ae22ab291a14580abb1eb"><td class="memItemLeft"><a id="a9a8c7bc8dd8ae22ab291a14580abb1eb" name="a9a8c7bc8dd8ae22ab291a14580abb1eb"></a>
+<a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevBakeStatusSnapshot.html">DevBakeStatusSnapshot</a>&#160;</td><td class="memItemRight"><b>queryStatus</b> () const</td></tr>
+<tr class="memdesc:a9a8c7bc8dd8ae22ab291a14580abb1eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an owned current eligibility/status snapshot; collection/allocation failures propagate. <br /></td></tr>
+<tr class="memitem:aec4d0b0d0ea97cc569eb6adaa29bd077" id="r_aec4d0b0d0ea97cc569eb6adaa29bd077"><td class="memItemLeft"><a id="aec4d0b0d0ea97cc569eb6adaa29bd077" name="aec4d0b0d0ea97cc569eb6adaa29bd077"></a>
+std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevBakeDiffEntry.html">DevBakeDiffEntry</a> &gt;&#160;</td><td class="memItemRight"><b>queryDiff</b> () const</td></tr>
+<tr class="memdesc:aec4d0b0d0ea97cc569eb6adaa29bd077"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return owned comparison rows; collection/allocation failures propagate instead of an empty success. <br /></td></tr>
 <tr class="memitem:a191796c0b383062d66f62de3beef4c03" id="r_a191796c0b383062d66f62de3beef4c03"><td class="memItemLeft"><a id="a191796c0b383062d66f62de3beef4c03" name="a191796c0b383062d66f62de3beef4c03"></a>
 const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevBakeManifest.html">DevBakeManifest</a> &amp;&#160;</td><td class="memItemRight"><b>manifest</b> () const noexcept</td></tr>
+<tr class="memdesc:a191796c0b383062d66f62de3beef4c03"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the pipeline's retained manifest until the next bake/review commit or owner destruction. <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Runtime capture/coalescing side of the manifest-driven baking pipeline. </p>
@@ -227,7 +234,7 @@ const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevBakeManife
         <tr>
           <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCommandResult.html">DevCommandResult</a> FlowUi::devSystems::tooling::DevBakePipeline::save_memory_capacities </td>
           <td>(</td>
-          <td class="paramtype">const FlowUi::detail::Manifest &amp;</td>          <td class="paramname"><span class="paramname"><em>selections</em></span>, </td>
+          <td class="paramtype">const FlowUi::detail::MemoryCapacityManifest &amp;</td>          <td class="paramname"><span class="paramname"><em>selections</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -266,7 +273,7 @@ const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevBakeManife
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevBakePipeline.html">DevBakePipeline</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevBakePipeline.html">DevBakePipeline</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

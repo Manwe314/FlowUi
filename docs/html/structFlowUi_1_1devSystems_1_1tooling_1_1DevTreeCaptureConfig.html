@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,21 +106,45 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevTreeCaptureConfig Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Initial UI-tree reserves and hard capture limits in development builds. Reserves reduce startup growth; maximum counts bound retained evidence. Clay fields require FLOW_UI_DEV_CAPTURE_CLAY.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevConfig_8hpp_source.html">DevConfig.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a83d1542bb983913a9baccc8ee4a12cac" id="r_a83d1542bb983913a9baccc8ee4a12cac"><td class="memItemLeft"><a id="a83d1542bb983913a9baccc8ee4a12cac" name="a83d1542bb983913a9baccc8ee4a12cac"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>flowNodeReserve</b> = 512</td></tr>
+<tr class="memdesc:a83d1542bb983913a9baccc8ee4a12cac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial Flow element node reserve, in nodes. <br /></td></tr>
 <tr class="memitem:ad54360b1abfbaf3a6e6a78e3fea2144b" id="r_ad54360b1abfbaf3a6e6a78e3fea2144b"><td class="memItemLeft"><a id="ad54360b1abfbaf3a6e6a78e3fea2144b" name="ad54360b1abfbaf3a6e6a78e3fea2144b"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>stringByteReserve</b> = 64u * 1024u</td></tr>
+<tr class="memdesc:ad54360b1abfbaf3a6e6a78e3fea2144b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial captured metadata text reserve, in bytes. <br /></td></tr>
 <tr class="memitem:a24ea8cebdf6744bf0818658bdd5b499d" id="r_a24ea8cebdf6744bf0818658bdd5b499d"><td class="memItemLeft"><a id="a24ea8cebdf6744bf0818658bdd5b499d" name="a24ea8cebdf6744bf0818658bdd5b499d"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>diagnosticReserve</b> = 64</td></tr>
+<tr class="memdesc:a24ea8cebdf6744bf0818658bdd5b499d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial capture diagnostic reserve, in records. <br /></td></tr>
 <tr class="memitem:ae992425d08ffdb6555e25aa0bb13b5f6" id="r_ae992425d08ffdb6555e25aa0bb13b5f6"><td class="memItemLeft"><a id="ae992425d08ffdb6555e25aa0bb13b5f6" name="ae992425d08ffdb6555e25aa0bb13b5f6"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>maximumFlowNodes</b> = 1u &lt;&lt; 20u</td></tr>
+<tr class="memdesc:ae992425d08ffdb6555e25aa0bb13b5f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum captured Flow nodes. <br /></td></tr>
 <tr class="memitem:a953357bbd34188743da265e7ec18e995" id="r_a953357bbd34188743da265e7ec18e995"><td class="memItemLeft"><a id="a953357bbd34188743da265e7ec18e995" name="a953357bbd34188743da265e7ec18e995"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>maximumStringBytes</b> = 64u * 1024u * 1024u</td></tr>
+<tr class="memdesc:a953357bbd34188743da265e7ec18e995"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum captured metadata text, in bytes. <br /></td></tr>
+<tr class="memitem:a4f6870f765e39bc7286115417d7259a5" id="r_a4f6870f765e39bc7286115417d7259a5"><td class="memItemLeft"><a id="a4f6870f765e39bc7286115417d7259a5" name="a4f6870f765e39bc7286115417d7259a5"></a>
+uint32_t&#160;</td><td class="memItemRight"><b>clayNodeReserve</b> = 2048</td></tr>
+<tr class="memdesc:a4f6870f765e39bc7286115417d7259a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial Clay layout node reserve, in nodes. <br /></td></tr>
+<tr class="memitem:a037d063c876d7e673a16811a9df39f66" id="r_a037d063c876d7e673a16811a9df39f66"><td class="memItemLeft"><a id="a037d063c876d7e673a16811a9df39f66" name="a037d063c876d7e673a16811a9df39f66"></a>
+uint32_t&#160;</td><td class="memItemRight"><b>clayRootReserve</b> = 32</td></tr>
+<tr class="memdesc:a037d063c876d7e673a16811a9df39f66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial Clay root reserve, in roots. <br /></td></tr>
+<tr class="memitem:a3b96096333de24f27c99d8d0ccef703b" id="r_a3b96096333de24f27c99d8d0ccef703b"><td class="memItemLeft"><a id="a3b96096333de24f27c99d8d0ccef703b" name="a3b96096333de24f27c99d8d0ccef703b"></a>
+uint32_t&#160;</td><td class="memItemRight"><b>directLinkReserve</b> = 2048</td></tr>
+<tr class="memdesc:a3b96096333de24f27c99d8d0ccef703b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial Flow-to-Clay association reserve, in links. <br /></td></tr>
+<tr class="memitem:aa7573d75dcd9958081180a4a553d9055" id="r_aa7573d75dcd9958081180a4a553d9055"><td class="memItemLeft"><a id="aa7573d75dcd9958081180a4a553d9055" name="aa7573d75dcd9958081180a4a553d9055"></a>
+uint32_t&#160;</td><td class="memItemRight"><b>maximumClayNodes</b> = 1u &lt;&lt; 22u</td></tr>
+<tr class="memdesc:aa7573d75dcd9958081180a4a553d9055"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum captured Clay layout nodes. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Initial UI-tree reserves and hard capture limits in development builds. Reserves reduce startup growth; maximum counts bound retained evidence. Clay fields require FLOW_UI_DEV_CAPTURE_CLAY. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/<a class="el" href="DevConfig_8hpp_source.html">DevConfig.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -136,7 +160,7 @@ uint32_t&#160;</td><td class="memItemRight"><b>maximumStringBytes</b> = 64u * 10
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCaptureConfig.html">DevTreeCaptureConfig</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCaptureConfig.html">DevTreeCaptureConfig</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

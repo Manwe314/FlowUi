@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,7 +107,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Keyboard chord used by developer tooling.  
+<p>Keyboard chord used by developer tooling.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="DevToolsConfig_8hpp_source.html">DevToolsConfig.hpp</a>&gt;</code></p>
@@ -116,7 +116,7 @@ $(function() {
 Public Attributes</h2></td></tr>
 <tr class="memitem:a5140eb9264fe69028381b5bdc2e2b2c3" id="r_a5140eb9264fe69028381b5bdc2e2b2c3"><td class="memItemLeft"><a id="a5140eb9264fe69028381b5bdc2e2b2c3" name="a5140eb9264fe69028381b5bdc2e2b2c3"></a>
 int&#160;</td><td class="memItemRight"><b>key</b> = 68</td></tr>
-<tr class="memdesc:a5140eb9264fe69028381b5bdc2e2b2c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Platform key code consumed by FlowUi's <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a> backend. <br /></td></tr>
+<tr class="memdesc:a5140eb9264fe69028381b5bdc2e2b2c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Platform key code consumed by <a class="el" href="namespaceFlowUi.html">FlowUi</a>'s <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a> backend. <br /></td></tr>
 <tr class="memitem:a9d68d7f37f4182007ec0aa3284e8ba93" id="r_a9d68d7f37f4182007ec0aa3284e8ba93"><td class="memItemLeft"><a id="a9d68d7f37f4182007ec0aa3284e8ba93" name="a9d68d7f37f4182007ec0aa3284e8ba93"></a>
 bool&#160;</td><td class="memItemRight"><b>ctrl</b> = true</td></tr>
 <tr class="memdesc:a9d68d7f37f4182007ec0aa3284e8ba93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether Ctrl is required. <br /></td></tr>
@@ -130,12 +130,12 @@ bool&#160;</td><td class="memItemRight"><b>alt</b> = false</td></tr>
 bool&#160;</td><td class="memItemRight"><b>super</b> = false</td></tr>
 <tr class="memdesc:a5044aaec41c7839b29ed8dc231818015"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether Super/Command is required. <br /></td></tr>
 <tr class="memitem:a2bd162b0a591ee40af142ed294d529c3" id="r_a2bd162b0a591ee40af142ed294d529c3"><td class="memItemLeft"><a id="a2bd162b0a591ee40af142ed294d529c3" name="a2bd162b0a591ee40af142ed294d529c3"></a>
-DevShortcutTrigger&#160;</td><td class="memItemRight"><b>trigger</b> = DevShortcutTrigger::Press</td></tr>
+<a class="el" href="namespaceFlowUi.html#a157149dd05c1f77199e9c13fd9c24ddb">DevShortcutTrigger</a>&#160;</td><td class="memItemRight"><b>trigger</b> = <a class="el" href="namespaceFlowUi.html#a157149dd05c1f77199e9c13fd9c24ddba0610123bdd4ffc191a3ea05a847e1307">DevShortcutTrigger::Press</a></td></tr>
 <tr class="memdesc:a2bd162b0a591ee40af142ed294d529c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shortcut trigger mode. <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Keyboard chord used by developer tooling. </p>
-<p>Default Key Chord used to open DeV tool window by default it is set to ctrl + shift + D triggers on Press </p>
+<p>Defaults to Ctrl+Shift+D on the press transition. The chord uses backend key codes and exact modifier matching. </p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/configurationStructs/<a class="el" href="DevToolsConfig_8hpp_source.html">DevToolsConfig.hpp</a></li>
 </ul>
@@ -152,7 +152,7 @@ DevShortcutTrigger&#160;</td><td class="memItemRight"><b>trigger</b> = DevShortc
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1DevShortcutChord.html">DevShortcutChord</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1DevShortcutChord.html">DevShortcutChord</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

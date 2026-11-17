@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,74 +106,341 @@ $(function() {
   <div class="headertitle"><div class="title">Action Manager API </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><span class="tt">ActionManager</span> unifies two deliberately different activation lifetimes behind the cheap <span class="tt">ActionCall</span> value used by elements.</p>
-<ul>
-<li><span class="tt">appActions()</span> registers semantic, app-wide operations by <span class="tt">AppActionID</span>. Its callable and binding record are owned internally through <span class="tt">StorageSystem</span>; every resource supplied by user code is borrowed and must outlive the binding.</li>
-<li><span class="tt">uiActions()</span> creates unregistered, inline <span class="tt">UiActionCall</span> values from stateless <span class="tt">UiAction</span> recipes and local resources. The call borrows referenced resources and must not be retained beyond their lifetime.</li>
-</ul>
-<p><span class="tt">ActionCall{}</span> is inert. In release builds it is trivially copyable and no larger than 32 bytes on 64-bit targets.</p>
-<h1>App actions</h1>
-<div class="fragment"><div class="line"><span class="keyword">struct </span>Document {</div>
-<div class="line">    <span class="keywordtype">void</span> save();</div>
-<div class="line">};</div>
-<div class="line"> </div>
-<div class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> Save = FlowUi::AppAction(<span class="stringliteral">&quot;editor.save&quot;</span>);</div>
-<div class="line"> </div>
-<div class="line">Document document;</div>
-<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> save_binding = app.actions().appActions().bind(</div>
-<div class="line">    {.id = Save, .debugName = <span class="stringliteral">&quot;Save document&quot;</span>},</div>
-<div class="line">    [](Document* value) { value-&gt;save(); },</div>
-<div class="line">    &amp;document);</div>
-<div class="line"><span class="keywordflow">if</span> (!save_binding) {</div>
-<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(save_binding.error());</div>
+<div class="textblock"><p><a href="include/FlowUi/Public/managers/ActionManager.hpp">ActionManager.hpp</a> dispatches retained app actions and compact local UI calls. Its App-owned facade is available through checked <span class="tt">App::actions()</span>; <span class="tt">UiManager::actions()</span> returns a direct borrowed reference and throws if detached.</p>
+<div class="fragment"><div class="line"><span class="keywordtype">int</span> saveCount = 0;</div>
+<div class="line"><span class="keyword">auto</span> managerResult = app.actions();</div>
+<div class="line"><span class="keywordflow">if</span> (!managerResult) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(managerResult.error());</div>
 <div class="line">}</div>
-<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1AppActionCall.html">FlowUi::AppActionCall</a> save = *save_binding;</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1ActionManager.html">FlowUi::ActionManager</a>&amp; manager = managerResult-&gt;get();</div>
+<div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="classFlowUi_1_1ActionManager.html#ae96f24f680a3556f03d86d0a4abdb642">appActions</a>().<a class="code hl_function" href="group__flowui__action__manager.html#gab2d7dad2e88c776b251fdfcf2b2a88c0">bind</a>(<a class="code hl_function" href="group__flowui__action__manager.html#ga78191cadc43d03c544c284c66abbd22a">FlowUi::AppAction</a>(<span class="stringliteral">&quot;editor.save&quot;</span>),</div>
+<div class="line">    [](<span class="keywordtype">int</span>&amp; count) { ++count; }, std::ref(saveCount));</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1AppActionCall.html">FlowUi::AppActionCall</a> save = *result;</div>
+<div class="ttc" id="aclassFlowUi_1_1ActionManager_html"><div class="ttname"><a href="classFlowUi_1_1ActionManager.html">FlowUi::ActionManager</a></div><div class="ttdoc">App-owned dispatcher for retained semantic actions and compact UI calls.</div><div class="ttdef"><b>Definition</b> ActionManager.hpp:257</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ActionManager_html_ae96f24f680a3556f03d86d0a4abdb642"><div class="ttname"><a href="classFlowUi_1_1ActionManager.html#ae96f24f680a3556f03d86d0a4abdb642">FlowUi::ActionManager::appActions</a></div><div class="ttdeci">AppActions &amp; appActions() noexcept</div><div class="ttdoc">Borrow the mutable or const facade for retained application actions. The manager owns this facade.</div><div class="ttdef"><b>Definition</b> ActionManager.hpp:355</div></div>
 <div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
-<div class="ttc" id="astructFlowUi_1_1AppActionCall_html"><div class="ttname"><a href="structFlowUi_1_1AppActionCall.html">FlowUi::AppActionCall</a></div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:40</div></div>
-</div><!-- fragment --><p>Use <span class="tt">select(Save)</span> at distant call sites. Selection stores only the semantic ID; it does not expose the storage record. Duplicate <span class="tt">bind</span> is rejected, <span class="tt">rebind</span> explicitly replaces an existing implementation, and <span class="tt">unbind</span> retires the binding safely even during its own invocation.</p>
-<p>Ordinary UI invocation discards a return value:</p>
-<div class="fragment"><div class="line">(void)app.actions().invoke(<a class="code hl_class" href="classFlowUi_1_1ActionCall.html">FlowUi::ActionCall</a>{save});</div>
-<div class="ttc" id="aclassFlowUi_1_1ActionCall_html"><div class="ttname"><a href="classFlowUi_1_1ActionCall.html">FlowUi::ActionCall</a></div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:86</div></div>
-</div><!-- fragment --><p>When the result matters, author that intent at the invocation site:</p>
-<div class="fragment"><div class="line"><span class="keyword">auto</span> path = app.actions().appActions().invokeFor&lt;std::string&gt;(exportPath);</div>
-<div class="line"><span class="keywordflow">if</span> (path) useExportPath(path.value());</div>
-</div><!-- fragment --><p><span class="tt">ActionResult&lt;T&gt;</span> reports <span class="tt">Empty</span>, <span class="tt">Unbound</span>, <span class="tt">Disabled</span>, or <span class="tt">ResultTypeMismatch</span> without requiring C++23 <span class="tt">std::expected</span> support from the standard library.</p>
-<h1>Local UI actions</h1>
-<p>Recipes are stateless constexpr values. Their arguments describe the entire operation; <span class="tt">.make()</span> supplies the concrete local resources.</p>
-<div class="fragment"><div class="line"><span class="keyword">inline</span> <span class="keyword">constexpr</span> <span class="keyword">auto</span> SetBool = FlowUi::UiAction(</div>
-<div class="line">    <span class="stringliteral">&quot;ui.set_bool&quot;</span>,</div>
-<div class="line">    [](<span class="keywordtype">bool</span>&amp; target, <span class="keywordtype">bool</span> value) { target = value; });</div>
-<div class="line"> </div>
-<div class="line"><span class="keyword">inline</span> <span class="keyword">constexpr</span> <span class="keyword">auto</span> ToggleBool = FlowUi::UiAction(</div>
-<div class="line">    <span class="stringliteral">&quot;ui.toggle_bool&quot;</span>,</div>
-<div class="line">    [](<span class="keywordtype">bool</span>&amp; target) { target = !target; });</div>
-<div class="line"> </div>
-<div class="line"><span class="keyword">auto</span> openMenu = app.actions().uiActions().make(SetBool, menuOpen, <span class="keyword">true</span>);</div>
-<div class="line"><span class="keyword">auto</span> togglePanel = app.actions().uiActions().make(ToggleBool, panelOpen);</div>
-</div><!-- fragment --><p>UI calls allocate nothing and do not use <span class="tt">StorageSystem</span>. References require lvalues, payloads must fit the inline budget, and recipes must be empty, trivial, concrete, and return <span class="tt">void</span>.</p>
-<h1>Reusable Button and shortcuts</h1>
-<p>The standard <span class="tt">kButton</span> has one <span class="tt">ActionCall onActivate</span> property, with no action-kind flag or owned callback:</p>
-<div class="fragment"><div class="line">ui.createElement(FlowUi::kButton, <span class="stringliteral">&quot;save&quot;</span>)</div>
-<div class="line">  .setParameters({.onActivate = save, .label = <span class="stringliteral">&quot;Save&quot;</span>})</div>
-<div class="line">  .draw();</div>
-<div class="line"> </div>
-<div class="line">ui.createElement(FlowUi::kButton, <span class="stringliteral">&quot;menu&quot;</span>)</div>
-<div class="line">  .setParameters({.onActivate = openMenu, .label = <span class="stringliteral">&quot;Menu&quot;</span>})</div>
-<div class="line">  .draw();</div>
-</div><!-- fragment --><p>The Button is stateless. A Dropdown owns its genuine <span class="tt">open</span> state and gives its internal Button a UI call targeting that state; no element polls another element every frame.</p>
-<p>Shortcuts intentionally retain only <span class="tt">AppActionCall</span>:</p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> save_shortcut = app.ui().shortcuts().registerShortcut(</div>
-<div class="line">    {.key = GLFW_KEY_S, .ctrl = <span class="keyword">true</span>},</div>
-<div class="line">    <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">FlowUi::ShortcutScope::Global</a>,</div>
-<div class="line">    100,</div>
-<div class="line">    save,</div>
-<div class="line">    FlowUi::ShortcutHandling::Consume);</div>
-<div class="line"><span class="keywordflow">if</span> (!save_shortcut) {</div>
-<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(save_shortcut.error());</div>
+<div class="ttc" id="agroup__flowui__action__manager_html_ga78191cadc43d03c544c284c66abbd22a"><div class="ttname"><a href="group__flowui__action__manager.html#ga78191cadc43d03c544c284c66abbd22a">FlowUi::AppAction</a></div><div class="ttdeci">consteval AppActionID AppAction(const char(&amp;name)[N]) noexcept</div><div class="ttdef"><b>Definition</b> AppActionID.hpp:72</div></div>
+<div class="ttc" id="agroup__flowui__action__manager_html_gab2d7dad2e88c776b251fdfcf2b2a88c0"><div class="ttname"><a href="group__flowui__action__manager.html#gab2d7dad2e88c776b251fdfcf2b2a88c0">FlowUi::AppActions::bind</a></div><div class="ttdeci">Result&lt; AppActionCall &gt; bind(AppActionID id, Callable &amp;&amp;callable, Resources &amp;&amp;... resources)</div><div class="ttdoc">Create a retained application binding and return its AppActionCall. The ID must be nonzero and unboun...</div><div class="ttdef"><b>Definition</b> ActionManager.hpp:566</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppActionCall_html"><div class="ttname"><a href="structFlowUi_1_1AppActionCall.html">FlowUi::AppActionCall</a></div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:58</div></div>
+</div><!-- fragment --><p>The referenced <span class="tt">saveCount</span> must outlive binding retirement and every active invocation. Bind accepts function/member pointers, stateless concrete callables or explicitly borrowed callable objects. Arguments supplied as pointers or <span class="tt">std::ref</span>/<span class="tt">std::cref</span> are borrowed. Existing <span class="tt">AppActionCall</span> values resolve the current binding by identity; <span class="tt">rebind()</span> updates future calls while active invocations finish their original binding.</p>
+<p><span class="tt">bind()</span>/<span class="tt">rebind()</span> return checked <span class="tt">Result&lt;AppActionCall&gt;</span> while arbitrary callable construction exceptions can propagate. Ordinary invocation returns a direct <span class="tt">ActionInvocationStatus</span>; typed invocation uses the separate <span class="tt">ActionResult&lt;T&gt;</span> dispatch-error domain. Callback/result-movement exceptions propagate unchanged and side effects are not rolled back or automatically retried. See <a class="el" href="md_docs_2api_2result__handling.html" title="Results and borrowed references">result handling</a>.</p>
+<p>UI recipes must be stateless, trivial, concrete and return <span class="tt">void</span>. <span class="tt">UiActionCall::InlineBytes</span> is <span class="tt">2 * sizeof(void*)</span>: 16 bytes on a platform with 64-bit pointers. Reference arguments require matching lvalues; value arguments are stored in the fixed payload. Fallible argument conversion must happen before the <span class="tt">noexcept make()</span> call. Release-mode size assertions bound <span class="tt">UiActionCall</span> and <span class="tt">ActionCall</span> to 24 and 32 bytes respectively on supported 64-bit targets; development metadata can enlarge them.</p>
+<p><span class="tt">ActionCall{}</span> is inert. Availability observers do not invoke anything. <span class="tt">AppActionAvailability{.enabled = false}</span> disables a live app binding; UI calls with an operation are enabled directly. Conditional developer observation methods do not alter these application contracts.</p>
+<h2><b>AppActions::bind</b></h2>
+<h3><span class="tt">template &lt;typename Callable, typename... Resources&gt; [[nodiscard]] Result&lt;AppActionCall&gt; bind(AppActionID id, Callable&amp;&amp; callable, Resources&amp;&amp;... resources);</span></h3>
+<p>Create a retained application binding and return its AppActionCall. The ID must be nonzero and unbound; the descriptor overload also copies its diagnostic name.</p>
+<p>Hybrid contract: structured binding validation/publication failures are returned; arbitrary callable construction exceptions propagate unchanged. Resources supplied as pointers/std::ref/std::cref are borrowed and must outlive binding retirement and all in-progress calls. Callable objects must meet the bind restrictions: function/member pointer, stateless concrete callable, or explicitly borrowed callable.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keywordtype">int</span> saveCount = 0;</div>
+<div class="line"><span class="keyword">auto</span> result = actions.bind(<a class="code hl_function" href="group__flowui__action__manager.html#ga78191cadc43d03c544c284c66abbd22a">FlowUi::AppAction</a>(<span class="stringliteral">&quot;docs.save&quot;</span>), [](<span class="keywordtype">int</span>&amp; saveCount) { ++saveCount; }, std::ref(saveCount));</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
 <div class="line">}</div>
-<div class="ttc" id="agroup__flowui__shortcut__manager_html_gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8"><div class="ttname"><a href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">FlowUi::ShortcutScope::Global</a></div><div class="ttdeci">@ Global</div><div class="ttdoc">Run regardless of focused input or focused element state.</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:35</div></div>
-</div><!-- fragment --><p><span class="tt">Consume</span> stops lower-priority matches only after a successful invocation. Disabled and unbound actions fall through. Shortcut ownership remains window-scoped in this release.</p>
-<p>For a unique local case, put the required callback type in that element's own parameters and invoke it directly. Arbitrary owning callables are intentionally not part of <span class="tt">ActionCall</span>. </p>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1AppActionCall.html">FlowUi::AppActionCall</a> save = *result;</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>AppActions::bind</b></h2>
+<h3><span class="tt">template &lt;typename Callable, typename... Resources&gt; [[nodiscard]] Result&lt;AppActionCall&gt; bind(AppActionDescriptor descriptor, Callable&amp;&amp; callable, Resources&amp;&amp;... resources);</span></h3>
+<p>Create a retained application binding and return its AppActionCall. The ID must be nonzero and unbound; the descriptor overload also copies its diagnostic name.</p>
+<p>Hybrid contract: structured binding validation/publication failures are returned; arbitrary callable construction exceptions propagate unchanged. Resources supplied as pointers/std::ref/std::cref are borrowed and must outlive binding retirement and all in-progress calls. Callable objects must meet the bind restrictions: function/member pointer, stateless concrete callable, or explicitly borrowed callable.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keywordtype">int</span> saveCount = 0;</div>
+<div class="line"><span class="keyword">auto</span> result = actions.bind(<a class="code hl_struct" href="structFlowUi_1_1AppActionDescriptor.html">FlowUi::AppActionDescriptor</a>{.id = <a class="code hl_function" href="group__flowui__action__manager.html#ga78191cadc43d03c544c284c66abbd22a">FlowUi::AppAction</a>(<span class="stringliteral">&quot;docs.save&quot;</span>), .<a class="code hl_variable" href="structFlowUi_1_1AppActionID.html#a05a1eb6bb5fc28088ac510442e9c8f1e">debugName</a> = <span class="stringliteral">&quot;Save&quot;</span>}, [](<span class="keywordtype">int</span>&amp; saveCount) { ++saveCount; }, std::ref(saveCount));</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1AppActionCall.html">FlowUi::AppActionCall</a> save = *result;</div>
+<div class="ttc" id="astructFlowUi_1_1AppActionDescriptor_html"><div class="ttname"><a href="structFlowUi_1_1AppActionDescriptor.html">FlowUi::AppActionDescriptor</a></div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:220</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppActionID_html_a05a1eb6bb5fc28088ac510442e9c8f1e"><div class="ttname"><a href="structFlowUi_1_1AppActionID.html#a05a1eb6bb5fc28088ac510442e9c8f1e">FlowUi::AppActionID::debugName</a></div><div class="ttdeci">std::string_view debugName</div><div class="ttdef"><b>Definition</b> AppActionID.hpp:25</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>AppActions::select</b></h2>
+<h3><span class="tt">[[nodiscard]] AppActionCall select(AppActionID id) const noexcept;</span></h3>
+<p>Create a direct AppActionCall containing this identity without checking or creating its binding.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>AppActions::isBound</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isBound(AppActionID id) const noexcept;</span></h3>
+<p>Return whether the ID or call currently resolves to a live binding; an empty or unavailable binding is false.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>AppActions::isBound</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isBound(AppActionCall call) const noexcept;</span></h3>
+<p>Return whether the ID or call currently resolves to a live binding; an empty or unavailable binding is false.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>AppActions::unbind</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; unbind(AppActionID id) noexcept;</span></h3>
+<p>Retire a binding and return whether one was removed. Successful false is ordinary absence; already active invocations may finish.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = actions.unbind(<span class="keywordtype">id</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = *result;</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>AppActions::rebind</b></h2>
+<h3><span class="tt">template &lt;typename Callable, typename... Resources&gt; [[nodiscard]] Result&lt;AppActionCall&gt; rebind(AppActionDescriptor descriptor, Callable&amp;&amp; callable, Resources&amp;&amp;... resources);</span></h3>
+<p>Replace an existing retained binding at the same identity. Active invocations finish on their original binding; future calls resolve the replacement. A missing binding is returned as an error.</p>
+<p>Hybrid contract: structured binding validation/publication failures are returned; arbitrary callable construction exceptions propagate unchanged. Resources supplied as pointers/std::ref/std::cref are borrowed and must outlive binding retirement and all in-progress calls. Callable objects must meet the bind restrictions: function/member pointer, stateless concrete callable, or explicitly borrowed callable.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keywordtype">int</span> saveCount = 0;</div>
+<div class="line"><span class="keyword">auto</span> result = actions.rebind(<a class="code hl_struct" href="structFlowUi_1_1AppActionDescriptor.html">FlowUi::AppActionDescriptor</a>{.id = <a class="code hl_function" href="group__flowui__action__manager.html#ga78191cadc43d03c544c284c66abbd22a">FlowUi::AppAction</a>(<span class="stringliteral">&quot;docs.save&quot;</span>), .<a class="code hl_variable" href="structFlowUi_1_1AppActionID.html#a05a1eb6bb5fc28088ac510442e9c8f1e">debugName</a> = <span class="stringliteral">&quot;Save&quot;</span>}, [](<span class="keywordtype">int</span>&amp; saveCount) { ++saveCount; }, std::ref(saveCount));</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1AppActionCall.html">FlowUi::AppActionCall</a> save = *result;</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>AppActions::invoke</b></h2>
+<h3><span class="tt">[[nodiscard]] ActionInvocationStatus invoke(AppActionCall call);</span></h3>
+<p>Invoke synchronously and directly return Invoked, Empty, Unbound or Disabled. An unavailable call does not run its callable.</p>
+<p>Callback and owned-result movement exceptions propagate unchanged. Side effects are not rolled back or automatically retried. invokeFor requires nonthrowing destruction of owned payloads; reference and array result types are rejected.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_enumeration" href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">FlowUi::ActionInvocationStatus</a> outcome = actions.invoke(call);</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> invoked = outcome == <a class="code hl_enumvalue" href="group__flowui__action__manager.html#gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1">FlowUi::ActionInvocationStatus::Invoked</a>;</div>
+<div class="ttc" id="agroup__flowui__action__manager_html_ga9d1bf355b9b6efbdfd521544535423dc"><div class="ttname"><a href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">FlowUi::ActionInvocationStatus</a></div><div class="ttdeci">ActionInvocationStatus</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:240</div></div>
+<div class="ttc" id="agroup__flowui__action__manager_html_gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1"><div class="ttname"><a href="group__flowui__action__manager.html#gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1">FlowUi::ActionInvocationStatus::Invoked</a></div><div class="ttdeci">@ Invoked</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:242</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>AppActions::invokeFor</b></h2>
+<h3><span class="tt">template &lt;typename Result&gt; [[nodiscard]] ActionResult&lt;Result&gt; invokeFor(AppActionCall call);</span></h3>
+<p>Invoke only when the bound result type exactly matches Result. Return ActionResult&lt;Result&gt;, whose errors are Empty, Unbound, Disabled and ResultTypeMismatch. This is distinct from <a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;T&gt;</a>.</p>
+<p>Callback and owned-result movement exceptions propagate unchanged. Side effects are not rolled back or automatically retried. invokeFor requires nonthrowing destruction of owned payloads; reference and array result types are rejected.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = actions.invokeFor&lt;<span class="keywordtype">int</span>&gt;(countCall);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keyword">const</span> <a class="code hl_enumeration" href="group__flowui__action__manager.html#gab6bb8ae73c3f5aa724070004f2095cc2">FlowUi::ActionInvokeError</a> error = result.error();</div>
+<div class="line">    <span class="keywordflow">return</span>; <span class="comment">// Handle the dispatch failure in the surrounding application code.</span></div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">int</span> displayedCount = result.value();</div>
+<div class="ttc" id="agroup__flowui__action__manager_html_gab6bb8ae73c3f5aa724070004f2095cc2"><div class="ttname"><a href="group__flowui__action__manager.html#gab6bb8ae73c3f5aa724070004f2095cc2">FlowUi::ActionInvokeError</a></div><div class="ttdeci">ActionInvokeError</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:252</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>AppActions::availability</b></h2>
+<h3><span class="tt">[[nodiscard]] AppActionAvailability availability(AppActionCall call) const noexcept;</span></h3>
+<p>Observe effective enabled state directly; empty, unavailable and unbound calls are disabled.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>AppActions::setAvailability</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; setAvailability(AppActionID id, AppActionAvailability availability) noexcept;</span></h3>
+<p>Update the enabled flag of a live binding. Successful false means that no live binding matched the identity.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = actions.setAvailability(<span class="keywordtype">id</span>, {.enabled = <span class="keyword">false</span>});</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> updated = *result;</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>UiActions::make</b></h2>
+<h3><span class="tt">template &lt;typename Operation, typename... Resources&gt; [[nodiscard]] UiActionCall make( UiActionRecipe&lt;Operation&gt; recipe, Resources&amp;&amp;... resources) const noexcept;</span></h3>
+<p>Pack a stateless, trivial, concrete void-returning UiAction recipe and its arguments into a direct UiActionCall with no retained app binding.</p>
+<p>Arguments must match the recipe and fit UiActionCall::InlineBytes = 2 * sizeof(void*), which is 16 bytes with 64-bit pointers. Referenced lvalues must outlive every call copy; value arguments are stored inline. Argument conversion must be nothrow; perform fallible conversion before make(). Size and argument rules are compile-time checks.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keywordtype">bool</span> panelOpen = <span class="keyword">false</span>;</div>
+<div class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> toggle = <a class="code hl_function" href="group__flowui__action__manager.html#ga39b6472605f9f479ce549d4104e4afa4">FlowUi::UiAction</a>(<span class="stringliteral">&quot;docs.toggle&quot;</span>, [](<span class="keywordtype">bool</span>&amp; open) { open = !open; });</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1UiActionCall.html">FlowUi::UiActionCall</a> call = actions.make(toggle, panelOpen);</div>
+<div class="ttc" id="aclassFlowUi_1_1UiActionCall_html"><div class="ttname"><a href="classFlowUi_1_1UiActionCall.html">FlowUi::UiActionCall</a></div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:78</div></div>
+<div class="ttc" id="agroup__flowui__action__manager_html_ga39b6472605f9f479ce549d4104e4afa4"><div class="ttname"><a href="group__flowui__action__manager.html#ga39b6472605f9f479ce549d4104e4afa4">FlowUi::UiAction</a></div><div class="ttdeci">constexpr auto UiAction(Fn fn, ActionSourceLocation source=ActionSourceLocation::current()) noexcept</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:451</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>ActionManager::ActionManager</b></h2>
+<h3><span class="tt">ActionManager() noexcept;</span></h3>
+<p>Construct a detached manager; application code normally obtains the initialized App-owned manager.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>ActionManager::~ActionManager</b></h2>
+<h3><span class="tt">~ActionManager();</span></h3>
+<p>Release owned service data. The App controls this manager lifetime.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>ActionManager::ActionManager</b></h2>
+<h3><span class="tt">ActionManager(const ActionManager&amp;) = delete;</span></h3>
+<p>Copying and moving are disabled as declared; use the App-owned instance by reference.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>ActionManager::operator =</b></h2>
+<h3><span class="tt">ActionManager&amp; operator=(const ActionManager&amp;) = delete;</span></h3>
+<p>Copying and moving are disabled as declared; use the App-owned instance by reference.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>ActionManager::ActionManager</b></h2>
+<h3><span class="tt">ActionManager(ActionManager&amp;&amp;) = delete;</span></h3>
+<p>Copying and moving are disabled as declared; use the App-owned instance by reference.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>ActionManager::operator =</b></h2>
+<h3><span class="tt">ActionManager&amp; operator=(ActionManager&amp;&amp;) = delete;</span></h3>
+<p>Copying and moving are disabled as declared; use the App-owned instance by reference.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>ActionManager::appActions</b></h2>
+<h3><span class="tt">[[nodiscard]] AppActions&amp; appActions() noexcept;</span></h3>
+<p>Borrow the mutable or const facade for retained application actions. The manager owns this facade.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>ActionManager::appActions</b></h2>
+<h3><span class="tt">[[nodiscard]] const AppActions&amp; appActions() const noexcept;</span></h3>
+<p>Borrow the mutable or const facade for retained application actions. The manager owns this facade.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>ActionManager::uiActions</b></h2>
+<h3><span class="tt">[[nodiscard]] UiActions&amp; uiActions() noexcept;</span></h3>
+<p>Borrow the mutable or const facade for inline UI action creation. The manager owns this facade.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>ActionManager::uiActions</b></h2>
+<h3><span class="tt">[[nodiscard]] const UiActions&amp; uiActions() const noexcept;</span></h3>
+<p>Borrow the mutable or const facade for inline UI action creation. The manager owns this facade.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>ActionManager::invoke</b></h2>
+<h3><span class="tt">[[nodiscard]] ActionInvocationStatus invoke(ActionCall call, ActionInvocationSource source = {});</span></h3>
+<p>Invoke synchronously and directly return Invoked, Empty, Unbound or Disabled. An unavailable call does not run its callable.</p>
+<p>Callback and owned-result movement exceptions propagate unchanged. Side effects are not rolled back or automatically retried. invokeFor requires nonthrowing destruction of owned payloads; reference and array result types are rejected.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_enumeration" href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">FlowUi::ActionInvocationStatus</a> outcome = actions.invoke(call);</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> invoked = outcome == <a class="code hl_enumvalue" href="group__flowui__action__manager.html#gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1">FlowUi::ActionInvocationStatus::Invoked</a>;</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>ActionManager::availability</b></h2>
+<h3><span class="tt">[[nodiscard]] ActionAvailability availability(ActionCall call) const noexcept;</span></h3>
+<p>Observe effective enabled state directly; empty, unavailable and unbound calls are disabled.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h2><b>ActionManager::debugInfo</b></h2>
+<h3><span class="tt">[[nodiscard]] std::optional&lt;ActionDebugInfo&gt; debugInfo(ActionCall call) const noexcept;</span></h3>
+<p>Available only with FLOW_UI_DEV_MODE. Return a direct diagnostic snapshot of the call without invoking it.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>.</p>
+<h1>Action value types and helpers</h1>
+<p><span class="tt">AppActionID</span> is authored with <span class="tt">AppAction("name")</span>; an ID being nonzero does not mean it is bound. <span class="tt">AppActionCall</span> stores that ID. <span class="tt">AppActionDescriptor</span> adds a diagnostic <span class="tt">debugName</span> copied at bind time. <span class="tt">UiActionRecipe&lt;Fn&gt;</span> stores its stateless operation and generated identity; use <span class="tt">UiAction()</span> rather than editing that identity. <span class="tt">ActionCall</span> wraps either kind and copying it never extends a borrowed resource lifetime. <span class="tt">ActionStableReference</span> stores a kind and numeric stable identity without a live binding.</p>
+<p><span class="tt">ActionInvocationStatus</span> contains <span class="tt">Invoked</span>, <span class="tt">Empty</span>, <span class="tt">Unbound</span> and <span class="tt">Disabled</span>. <span class="tt">ActionInvokeError</span> additionally describes <span class="tt">ResultTypeMismatch</span> for typed invocation. <span class="tt">ActionInvocationSource</span> carries <span class="tt">kind</span>, <span class="tt">window</span>, <span class="tt">element</span> and <span class="tt">sourceId</span> attribution; it does not own the invoking UI or element. <span class="tt">ActionInvocationSourceKind</span> identifies direct, UI manager, element-hook or shortcut sources, with additional agentic attribution when enabled. Developer builds also expose <span class="tt">ActionSourceLocation::current(...)</span> and <span class="tt">ActionDebugInfo</span> snapshots; their source/name text remains borrowed.</p>
+<h2><b>AppActionCall::operator bool</b></h2>
+<h3><span class="tt">[[nodiscard]] constexpr explicit operator bool() const noexcept;</span></h3>
+<p>Return whether the call contains a nonempty operation identity. This does not resolve app binding, resource lifetime or enabled state.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>UiActionCall::operator bool</b></h2>
+<h3><span class="tt">[[nodiscard]] constexpr explicit operator bool() const noexcept;</span></h3>
+<p>Return whether the call contains a nonempty operation identity. This does not resolve app binding, resource lifetime or enabled state.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionCall::operator bool</b></h2>
+<h3><span class="tt">[[nodiscard]] constexpr explicit operator bool() const noexcept;</span></h3>
+<p>Return whether the call contains a nonempty operation identity. This does not resolve app binding, resource lifetime or enabled state.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>UiActionCall::UiActionCall</b></h2>
+<h3><span class="tt">constexpr UiActionCall() noexcept = default;</span></h3>
+<p>Create an empty UI call. Obtain populated calls from UiActions::make().</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionCall::ActionCall</b></h2>
+<h3><span class="tt">constexpr ActionCall() noexcept;</span></h3>
+<p>Construct an empty type-erased call.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionCall::ActionCall</b></h2>
+<h3><span class="tt">constexpr ActionCall(AppActionCall call) noexcept;</span></h3>
+<p>Wrap an app call without creating a binding. An invalid ID becomes an empty call.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionCall::ActionCall</b></h2>
+<h3><span class="tt">constexpr ActionCall(UiActionCall call) noexcept;</span></h3>
+<p>Wrap an inline UI call without extending the lifetime of its borrowed resources.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionCall::kind</b></h2>
+<h3><span class="tt">[[nodiscard]] constexpr ActionCallKind kind() const noexcept;</span></h3>
+<p>Return the stored representation: None, App, Ui, or the unresolved UiRecipe representation. This is an observation, not dispatch.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionCall::stableReference</b></h2>
+<h3><span class="tt">[[nodiscard]] constexpr ActionStableReference stableReference() const noexcept;</span></h3>
+<p>Return a reproducible app identity or an unresolved UI recipe identity. A normal inline UI call only exposes its recipe identity in development builds when reconstructable; otherwise this returns an empty reference. It does not serialize borrowed UI argument values.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionCall::fromStable</b></h2>
+<h3><span class="tt">[[nodiscard]] static constexpr ActionCall fromStable( ActionCallKind kind, uint64_t stableId) noexcept;</span></h3>
+<p>Create an app call or unresolved UI recipe reference. Zero/unsupported input yields an empty call. No binding is created; the receiving dispatcher must resolve a published recipe, and an unavailable recipe reports Unbound.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1ActionCall.html">FlowUi::ActionCall</a> call{original};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> stable = call.<a class="code hl_function" href="classFlowUi_1_1ActionCall.html#ab5d371b103795d4c27d78ed763dbddb4">stableReference</a>();</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1ActionCall.html">FlowUi::ActionCall</a> restored = <a class="code hl_function" href="classFlowUi_1_1ActionCall.html#a757d66f2d34cb9798fc67cbd47ab4b13">FlowUi::ActionCall::fromStable</a>(stable.kind, stable.id);</div>
+<div class="ttc" id="aclassFlowUi_1_1ActionCall_html"><div class="ttname"><a href="classFlowUi_1_1ActionCall.html">FlowUi::ActionCall</a></div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:140</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ActionCall_html_a757d66f2d34cb9798fc67cbd47ab4b13"><div class="ttname"><a href="classFlowUi_1_1ActionCall.html#a757d66f2d34cb9798fc67cbd47ab4b13">FlowUi::ActionCall::fromStable</a></div><div class="ttdeci">static constexpr ActionCall fromStable(ActionCallKind kind, uint64_t stableId) noexcept</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:181</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ActionCall_html_ab5d371b103795d4c27d78ed763dbddb4"><div class="ttname"><a href="classFlowUi_1_1ActionCall.html#ab5d371b103795d4c27d78ed763dbddb4">FlowUi::ActionCall::stableReference</a></div><div class="ttdeci">constexpr ActionStableReference stableReference() const noexcept</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:160</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionResult&lt;Result&gt;::ActionResult</b></h2>
+<h3><span class="tt">ActionResult(Result result);</span></h3>
+<p>Own a successful result value; copying/moving that value may throw.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionResult&lt;Result&gt;::ActionResult</b></h2>
+<h3><span class="tt">ActionResult(ActionInvokeError error) noexcept;</span></h3>
+<p>Store a dispatch failure without running a callable.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionResult&lt;Result&gt;::hasValue</b></h2>
+<h3><span class="tt">[[nodiscard]] bool hasValue() const noexcept;</span></h3>
+<p>Return whether invocation produced an owned result.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionResult&lt;Result&gt;::operator bool</b></h2>
+<h3><span class="tt">[[nodiscard]] explicit operator bool() const noexcept;</span></h3>
+<p>Return hasValue(); inspect this before value().</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionResult&lt;Result&gt;::value</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&amp; value() &amp;;</span></h3>
+<p>Borrow the successful value mutably; failure throws std::bad_optional_access.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionResult&lt;Result&gt;::value</b></h2>
+<h3><span class="tt">[[nodiscard]] const Result&amp; value() const&amp;;</span></h3>
+<p>Borrow the successful value immutably; failure throws std::bad_optional_access.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionResult&lt;Result&gt;::value</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&amp;&amp; value() &amp;&amp;;</span></h3>
+<p>Move from the successful value; failure throws std::bad_optional_access. The returned reference must not outlive this ActionResult.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionResult&lt;Result&gt;::error</b></h2>
+<h3><span class="tt">[[nodiscard]] ActionInvokeError error() const noexcept;</span></h3>
+<p>Return the dispatch error; meaningful only on failure.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionResult&lt;void&gt;::success</b></h2>
+<h3><span class="tt">[[nodiscard]] static ActionResult success() noexcept;</span></h3>
+<p>Create the successful no-value outcome.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionResult&lt;void&gt;::ActionResult</b></h2>
+<h3><span class="tt">ActionResult(ActionInvokeError error) noexcept;</span></h3>
+<p>Create a failed no-value outcome.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionResult&lt;void&gt;::hasValue</b></h2>
+<h3><span class="tt">[[nodiscard]] bool hasValue() const noexcept;</span></h3>
+<p>Return whether the void action completed successfully.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionResult&lt;void&gt;::operator bool</b></h2>
+<h3><span class="tt">[[nodiscard]] explicit operator bool() const noexcept;</span></h3>
+<p>Return whether invocation succeeded. Check this before treating the void action as complete.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionResult&lt;void&gt;::value</b></h2>
+<h3><span class="tt">void value() const noexcept;</span></h3>
+<p>No-value compatibility observer. This performs no success validation; always check bool/hasValue() first.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b>ActionResult&lt;void&gt;::error</b></h2>
+<h3><span class="tt">[[nodiscard]] ActionInvokeError error() const noexcept;</span></h3>
+<p>Return the dispatch error; meaningful only on failure.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = actions.invokeFor&lt;<span class="keywordtype">void</span>&gt;(save);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keyword">const</span> <a class="code hl_enumeration" href="group__flowui__action__manager.html#gab6bb8ae73c3f5aa724070004f2095cc2">FlowUi::ActionInvokeError</a> error = result.error();</div>
+<div class="line">    <span class="keywordflow">return</span>; <span class="comment">// Handle the dispatch failure before continuing.</span></div>
+<div class="line">}</div>
+<div class="line">result.value(); <span class="comment">// No payload; the invocation&#39;s success was checked above.</span></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b><a class="el" href="group__flowui__action__manager.html#ga39b6472605f9f479ce549d4104e4afa4">FlowUi::UiAction</a></b></h2>
+<h3><span class="tt">template &lt;typename Fn&gt; [[nodiscard]] constexpr auto UiAction(Fn fn) noexcept;</span></h3>
+<p>Create a recipe whose identity follows the concrete callable type. The operation must be empty, trivial, default constructible, non-generic and return void. Development builds append an optional ActionSourceLocation argument recording the definition location.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h2><b><a class="el" href="group__flowui__action__manager.html#ga39b6472605f9f479ce549d4104e4afa4">FlowUi::UiAction</a></b></h2>
+<h3><span class="tt">template &lt;std::size_t N, typename Fn&gt; [[nodiscard]] consteval auto UiAction(const char (&amp;name)[N], Fn fn) noexcept;</span></h3>
+<p>Create a recipe with identity hashed from a nonempty literal name. Reusing that name denotes the same authored recipe identity; keep the operation signature consistent. Development builds append an optional ActionSourceLocation argument recording the definition location.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keywordtype">bool</span> open = <span class="keyword">false</span>;</div>
+<div class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> recipe = <a class="code hl_function" href="group__flowui__action__manager.html#ga39b6472605f9f479ce549d4104e4afa4">FlowUi::UiAction</a>([](<span class="keywordtype">bool</span>&amp; value) { value = !value; });</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1UiActionCall.html">FlowUi::UiActionCall</a> call = actions.make(recipe, open);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">Owning header</a>.</p>
+<h1>Checked development catalogue and preview hooks</h1>
+<p>The following optional hooks exist only with <span class="tt">FLOW_UI_DEV_MODE</span>. The same checked Result/Status usage applies to supported development services. The preview examples use the complete <span class="tt">Counter</span> definition in <a class="el" href="md_docs_2api_2elements.html" title="Element API">the element reference</a>.</p>
+<h2><b>ActionManager::visitDevActions</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; visitDevActions( void* userData, DevActionVisitor visitor) const noexcept;</span></h3>
+<p>Synchronously visit borrowed catalogue entries. Successful true means the visit completed; successful false means a visitor stopped early or storage/visitor was unavailable. Thrown visitor/storage failures are converted to structured errors. Do not retain views or references to their metadata beyond the call.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line">std::size_t boundCount = 0;</div>
+<div class="line"><span class="keyword">auto</span> result = actions.visitDevActions(&amp;boundCount,</div>
+<div class="line">    [](<span class="keywordtype">void</span>* userData, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ActionManager_1_1DevActionView.html">FlowUi::ActionManager::DevActionView</a>&amp; view) {</div>
+<div class="line">        <span class="keyword">auto</span>&amp; count = *<span class="keyword">static_cast&lt;</span>std::size_t*<span class="keyword">&gt;</span>(userData);</div>
+<div class="line">        <span class="keywordflow">if</span> (view.<a class="code hl_variable" href="structFlowUi_1_1ActionManager_1_1DevActionView.html#a9c3d73cd6e93b214603fe72391fcbe3c">debug</a>.<a class="code hl_variable" href="structFlowUi_1_1ActionDebugInfo.html#a566e008134b881a7a6f498066becc78b">bound</a>) ++count;</div>
+<div class="line">        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">    });</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> completed = *result;</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="astructFlowUi_1_1ActionDebugInfo_html_a566e008134b881a7a6f498066becc78b"><div class="ttname"><a href="structFlowUi_1_1ActionDebugInfo.html#a566e008134b881a7a6f498066becc78b">FlowUi::ActionDebugInfo::bound</a></div><div class="ttdeci">bool bound</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:414</div></div>
+<div class="ttc" id="astructFlowUi_1_1ActionManager_1_1DevActionView_html"><div class="ttname"><a href="structFlowUi_1_1ActionManager_1_1DevActionView.html">FlowUi::ActionManager::DevActionView</a></div><div class="ttdoc">Callable-free action metadata borrowed during a developer visitor.</div><div class="ttdef"><b>Definition</b> ActionManager.hpp:261</div></div>
+<div class="ttc" id="astructFlowUi_1_1ActionManager_1_1DevActionView_html_a9c3d73cd6e93b214603fe72391fcbe3c"><div class="ttname"><a href="structFlowUi_1_1ActionManager_1_1DevActionView.html#a9c3d73cd6e93b214603fe72391fcbe3c">FlowUi::ActionManager::DevActionView::debug</a></div><div class="ttdeci">ActionDebugInfo debug</div><div class="ttdoc">Identity, availability, counters, and diagnostic source snapshot.</div><div class="ttdef"><b>Definition</b> ActionManager.hpp:263</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ActionManager.hpp">Owning header</a>. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

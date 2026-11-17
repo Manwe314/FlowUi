@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,19 +106,30 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::TimingReportingConfig Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Timing history retention and rolling statistics; independent of producer detail.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevConfig_8hpp_source.html">DevConfig.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a652949babd7e715a7d9c9ac9aefd8833" id="r_a652949babd7e715a7d9c9ac9aefd8833"><td class="memItemLeft"><a id="a652949babd7e715a7d9c9ac9aefd8833" name="a652949babd7e715a7d9c9ac9aefd8833"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>retainedAppTickCapacity</b> = 4096u</td></tr>
+<tr class="memdesc:a652949babd7e715a7d9c9ac9aefd8833"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum application ticks retained in timing history. <br /></td></tr>
 <tr class="memitem:a83ac3e036b141dd4cf65797f70fc572d" id="r_a83ac3e036b141dd4cf65797f70fc572d"><td class="memItemLeft"><a id="a83ac3e036b141dd4cf65797f70fc572d" name="a83ac3e036b141dd4cf65797f70fc572d"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>minimumFramesInFlightMultiplier</b> = 20u</td></tr>
+<tr class="memdesc:a83ac3e036b141dd4cf65797f70fc572d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Minimum history coverage relative to the frames-in-flight count. <br /></td></tr>
 <tr class="memitem:a57b7b56086aa720230de3ee2af02df2a" id="r_a57b7b56086aa720230de3ee2af02df2a"><td class="memItemLeft"><a id="a57b7b56086aa720230de3ee2af02df2a" name="a57b7b56086aa720230de3ee2af02df2a"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>rollingSampleCapacity</b> = 2048u</td></tr>
+<tr class="memdesc:a57b7b56086aa720230de3ee2af02df2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum duration samples used for rolling statistics. <br /></td></tr>
 <tr class="memitem:a24dc63ea3d2db0135a23825bf08b4636" id="r_a24dc63ea3d2db0135a23825bf08b4636"><td class="memItemLeft"><a id="a24dc63ea3d2db0135a23825bf08b4636" name="a24dc63ea3d2db0135a23825bf08b4636"></a>
 std::vector&lt; double &gt;&#160;</td><td class="memItemRight"><b>percentilePoints</b> {0.50, 0.90, 0.95, 0.99}</td></tr>
+<tr class="memdesc:a24dc63ea3d2db0135a23825bf08b4636"><td class="mdescLeft">&#160;</td><td class="mdescRight">Requested percentile fractions in [0, 1], such as 0.95 for the 95th percentile. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Timing history retention and rolling statistics; independent of producer detail. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/<a class="el" href="DevConfig_8hpp_source.html">DevConfig.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -134,7 +145,7 @@ std::vector&lt; double &gt;&#160;</td><td class="memItemRight"><b>percentilePoin
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1TimingReportingConfig.html">TimingReportingConfig</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1TimingReportingConfig.html">TimingReportingConfig</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

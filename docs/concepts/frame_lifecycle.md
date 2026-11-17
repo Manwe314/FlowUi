@@ -2,6 +2,8 @@
 
 ## Introduction
 
+Use `App::runFrame()` as the normal application-facing build boundary. It contains direct authoring exceptions, gives latched frame failures precedence over later unlatched callback exceptions, cancels failed output, and returns `Status` to the runtime-loop owner. The manual phase APIs described below remain checked; use `FlowUi::ValueOrThrow` only when deliberately propagating their results. Cancellation does not promise rollback of all existing state or application effects.
+
 FlowUi's frame lifecycle is the internal path that turns one loop iteration of user code into presented pixels. At the public API level this looks small: `shouldClose()`, `beginFrame()`, UI construction, `endFrame()`, and `drawFrame()`. Internally, each step coordinates the window backend, frame input, Clay layout, frame-local arenas, input fields, shortcuts, popups, icons, viewports, texture registry state, Vulkan frame resources, swapchain images, and the UI renderer. The public configuration structs affect this path before the loop even starts: most importantly, `AppConfig::vk.framesInFlight` chooses how many frame slots FlowUi creates and then manages internally for command buffers, fences, semaphores, UI arenas, texture retirement buckets, viewport resources, renderer instance buffers, and descriptor sets.
 
 The frame can be pictured as a pipeline:
@@ -70,11 +72,14 @@ The user does not manually rotate these slots. The runtime uses `frames.currentF
 The frame loop usually starts with:
 
 ```cpp
-while (!app.shouldClose()) {
-    app.beginFrame();
-    buildUi(app);
-    app.endFrame();
-    app.drawFrame();
+while (!FlowUi::ValueOrThrow(app.shouldClose())) {
+    const auto status = app.runFrame([](FlowUi::UiManager& ui, FlowUi::WindowId) {
+        buildUi(ui);
+    });
+    if (!status) {
+        app.reportError(status.error());
+        break; // This application stops after a failed frame.
+    }
 }
 ```
 
@@ -87,13 +92,21 @@ A multi-window loop uses the explicit overloads instead:
 
 ```cpp
 while (running) {
-    app.pollEvents();
+    const auto pollStatus = app.pollEvents();
+    if (!pollStatus) {
+        app.reportError(pollStatus.error());
+        break;
+    }
 
     for (FlowUi::WindowId window : windowsToDraw) {
-        app.beginFrame(window);
-        buildUi(app.ui(window));
-        app.endFrame(window);
-        app.drawFrame(window);
+        const auto status = app.runFrame(window, [](FlowUi::UiManager& ui, FlowUi::WindowId) {
+            buildUi(ui);
+        });
+        if (!status) {
+            app.reportError(status.error());
+            running = false;
+            break;
+        }
     }
 }
 ```
@@ -105,7 +118,7 @@ window frame triplet may be active at a time, so finish or cancel one window's
 `beginFrame(id)` → `endFrame(id)` → `drawFrame(id)` sequence before beginning
 another.
 
-`App::shouldClose()` forwards into the internal window backend. If the app is not initialized, or the backend is gone, it returns `true`. In a normal running app, the backend answers from native window state: close button, OS window events, or whatever the backend considers a close request.
+`App::shouldClose()` returns `Result<bool>`. An empty app returns `AppUnavailable`; a registered window already stopped or closing returns a successful `true`. A running window answers from native state, such as the close button or OS events. The first example deliberately propagates a failed close query through `ValueOrThrow`; applications can instead inspect its error and choose their runtime-loop policy.
 
 The no-argument `beginFrame()` polls the global backend before starting the main
 window. Explicit multi-window loops perform that work through `pollEvents()`.
@@ -160,8 +173,8 @@ The code between `beginFrame()` and `endFrame()` is where user code describes th
 Typical user code touches several layers at once:
 
 ```cpp
-FlowUi::UiManager& ui = app.ui();
-FlowUi::TextureRef icon = app.icons().textureRef("save");
+FlowUi::UiManager& ui = FlowUi::ValueOrThrow(app.ui()).get();
+FlowUi::TextureRef icon = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.icons()).get().textureRef("save"));
 FlowUi::FontId labelFont = ui.resolveFont("Body", 600, FlowUi::FontStyle::Normal);
 
 ui.createElement(kToolbarButton, "toolbar/save")
@@ -277,7 +290,7 @@ Remember that Flow element interaction callbacks read the previous completed int
 
 ## What to Read Next
 
-- [Core Mental Model](mental_model.md)
-- [Element System](element_system.md)
-- [Managers](managers.md)
-- [Viewports and Vulkan Interop](../tutorials/viewports_vulkan_interop.md)
+- [Core Mental Model](docs/concepts/mental_model.md)
+- [Element System](docs/concepts/element_system.md)
+- [Managers](docs/concepts/managers.md)
+- [Viewports and Vulkan Interop](docs/tutorials/viewports_vulkan_interop.md)

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,25 +106,40 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevStaticStructDescriptor&lt; Fields &gt; Struct Template Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Compile-time object/semantic-type descriptor produced by <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a62777868685e9ec02a233f42f74d1146" title="Declare an object schema with typed fields in source order; names/help strings are borrowed until reg...">devStruct()</a> and related factories.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevSchemaDescriptor_8hpp_source.html">DevSchemaDescriptor.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:af010c520da339d9823237f82cf05434e" id="r_af010c520da339d9823237f82cf05434e"><td class="memItemLeft"><a id="af010c520da339d9823237f82cf05434e" name="af010c520da339d9823237f82cf05434e"></a>
 std::string_view&#160;</td><td class="memItemRight"><b>name</b> {}</td></tr>
+<tr class="memdesc:af010c520da339d9823237f82cf05434e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed static display name copied during ingestion. <br /></td></tr>
 <tr class="memitem:abe6a658d5c4287228eaf6b78fbe06563" id="r_abe6a658d5c4287228eaf6b78fbe06563"><td class="memItemLeft"><a id="abe6a658d5c4287228eaf6b78fbe06563" name="abe6a658d5c4287228eaf6b78fbe06563"></a>
 std::string_view&#160;</td><td class="memItemRight"><b>hint</b> {}</td></tr>
+<tr class="memdesc:abe6a658d5c4287228eaf6b78fbe06563"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed static help text copied during ingestion. <br /></td></tr>
 <tr class="memitem:a024d04d7e9214c06f47109477b1226b5" id="r_a024d04d7e9214c06f47109477b1226b5"><td class="memItemLeft"><a id="a024d04d7e9214c06f47109477b1226b5" name="a024d04d7e9214c06f47109477b1226b5"></a>
-DevEditorKind&#160;</td><td class="memItemRight"><b>editor</b> = DevEditorKind::ObjectGroup</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a555c8e5884c6c456ab128183dba97dff">DevEditorKind</a>&#160;</td><td class="memItemRight"><b>editor</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a555c8e5884c6c456ab128183dba97dffa03d81c8b3dfdf88091a261d6a92f75a6">DevEditorKind::ObjectGroup</a></td></tr>
+<tr class="memdesc:a024d04d7e9214c06f47109477b1226b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Preferred semantic editor for this object. <br /></td></tr>
 <tr class="memitem:a1760dec82d24072b9ec4d016507a5124" id="r_a1760dec82d24072b9ec4d016507a5124"><td class="memItemLeft"><a id="a1760dec82d24072b9ec4d016507a5124" name="a1760dec82d24072b9ec4d016507a5124"></a>
-DevCaptureCapability&#160;</td><td class="memItemRight"><b>capture</b> = DevCaptureCapability::Value</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a2a42a90248d141a0ce047f726f096684">DevCaptureCapability</a>&#160;</td><td class="memItemRight"><b>capture</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a2a42a90248d141a0ce047f726f096684a689202409e48743b914713f96d93947c">DevCaptureCapability::Value</a></td></tr>
+<tr class="memdesc:a1760dec82d24072b9ec4d016507a5124"><td class="mdescLeft">&#160;</td><td class="mdescRight">Declared metadata/value capture capability. <br /></td></tr>
 <tr class="memitem:ae6502ce7fdd1b241899c6c0097c40d25" id="r_ae6502ce7fdd1b241899c6c0097c40d25"><td class="memItemLeft"><a id="ae6502ce7fdd1b241899c6c0097c40d25" name="ae6502ce7fdd1b241899c6c0097c40d25"></a>
-DevEditCapability&#160;</td><td class="memItemRight"><b>edit</b> = DevEditCapability::Editable</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a7a36c9891916e94f8f5056aeda8f7911">DevEditCapability</a>&#160;</td><td class="memItemRight"><b>edit</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a7a36c9891916e94f8f5056aeda8f7911a2c09e798bf8c5a82d211331c82893a0f">DevEditCapability::Editable</a></td></tr>
+<tr class="memdesc:ae6502ce7fdd1b241899c6c0097c40d25"><td class="mdescLeft">&#160;</td><td class="mdescRight">Declared edit capability before field/role restrictions. <br /></td></tr>
 <tr class="memitem:a4fe3ed07f24779f2e21b54fc9c93b428" id="r_a4fe3ed07f24779f2e21b54fc9c93b428"><td class="memItemLeft"><a id="a4fe3ed07f24779f2e21b54fc9c93b428" name="a4fe3ed07f24779f2e21b54fc9c93b428"></a>
-DevCapabilityReason&#160;</td><td class="memItemRight"><b>reason</b> = DevCapabilityReason::None</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a43213ec90e7d9c92c3de5b018e250b8d">DevCapabilityReason</a>&#160;</td><td class="memItemRight"><b>reason</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a43213ec90e7d9c92c3de5b018e250b8da6adf97f83acf6453d4a6a4b1070f3754">DevCapabilityReason::None</a></td></tr>
+<tr class="memdesc:a4fe3ed07f24779f2e21b54fc9c93b428"><td class="mdescLeft">&#160;</td><td class="mdescRight">Explanation for reduced capability. <br /></td></tr>
 <tr class="memitem:a3f2603badd32259c5c8960c6cae64f4e" id="r_a3f2603badd32259c5c8960c6cae64f4e"><td class="memItemLeft"><a id="a3f2603badd32259c5c8960c6cae64f4e" name="a3f2603badd32259c5c8960c6cae64f4e"></a>
 std::tuple&lt; Fields... &gt;&#160;</td><td class="memItemRight"><b>fields</b> {}</td></tr>
+<tr class="memdesc:a3f2603badd32259c5c8960c6cae64f4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Typed member descriptors in declaration order. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><div class="compoundTemplParams">template&lt;typename... Fields&gt;<br />
+struct FlowUi::devSystems::tooling::DevStaticStructDescriptor&lt; Fields &gt;</div><p>Compile-time object/semantic-type descriptor produced by <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a62777868685e9ec02a233f42f74d1146" title="Declare an object schema with typed fields in source order; names/help strings are borrowed until reg...">devStruct()</a> and related factories. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/schema/<a class="el" href="DevSchemaDescriptor_8hpp_source.html">DevSchemaDescriptor.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -140,7 +155,7 @@ std::tuple&lt; Fields... &gt;&#160;</td><td class="memItemRight"><b>fields</b> {
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevStaticStructDescriptor.html">DevStaticStructDescriptor</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevStaticStructDescriptor.html">DevStaticStructDescriptor</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

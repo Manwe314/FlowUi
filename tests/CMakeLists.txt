@@ -3,6 +3,50 @@ target_link_libraries(flowui_resource_tests PRIVATE FlowUi::FlowUi)
 target_compile_definitions(flowui_resource_tests PRIVATE FLOWUI_TEST_RESOURCE_SUBDIRECTORY="${FLOWUI_RESOURCE_SUBDIRECTORY}")
 add_test(NAME flowui.resources COMMAND flowui_resource_tests)
 
+add_executable(flowui_reporting_ring_tests DevMonitoringTests/ReportingRingTests.cpp)
+target_compile_features(flowui_reporting_ring_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_reporting_ring_tests PRIVATE ${PROJECT_SOURCE_DIR}/include)
+add_test(NAME flowui.dev.reporting_ring COMMAND flowui_reporting_ring_tests)
+
+add_executable(flowui_api_boundary_tests ErrorTests/ApiBoundaryTests.cpp)
+target_link_libraries(flowui_api_boundary_tests PRIVATE FlowUi::FlowUi)
+add_test(NAME flowui.errors.api_boundary COMMAND flowui_api_boundary_tests)
+
+add_executable(flowui_value_or_throw_tests ErrorTests/ValueOrThrowTests.cpp)
+target_link_libraries(flowui_value_or_throw_tests PRIVATE FlowUi::FlowUi)
+add_test(NAME flowui.errors.value_or_throw COMMAND flowui_value_or_throw_tests)
+
+add_executable(flowui_public_manager_contract_tests ApiBoundaryTests/PublicManagerContractTests.cpp)
+target_link_libraries(flowui_public_manager_contract_tests PRIVATE FlowUi::FlowUi)
+target_include_directories(flowui_public_manager_contract_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+add_test(NAME flowui.errors.public_manager_contracts COMMAND flowui_public_manager_contract_tests)
+
+add_executable(flowui_resource_manager_signature_tests ApiBoundaryTests/ResourceManagerSignatureTests.cpp)
+target_link_libraries(flowui_resource_manager_signature_tests PRIVATE FlowUi::FlowUi)
+add_test(NAME flowui.errors.resource_manager_signatures COMMAND flowui_resource_manager_signature_tests)
+
+add_executable(flowui_app_api_boundary_tests ErrorTests/AppApiBoundaryTests.cpp)
+target_link_libraries(flowui_app_api_boundary_tests PRIVATE FlowUi::FlowUi)
+add_test(NAME flowui.errors.app_api_boundary COMMAND flowui_app_api_boundary_tests)
+add_test(NAME flowui.errors.app_api_boundary_live COMMAND flowui_app_api_boundary_tests --live)
+set_tests_properties(flowui.errors.app_api_boundary_live PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 60)
+
+if(UNIX AND NOT APPLE AND flowui_library_type STREQUAL "STATIC_LIBRARY")
+    add_executable(flowui_window_recovery_tests WindowTests/WindowRecoveryTests.cpp)
+    target_link_libraries(flowui_window_recovery_tests PRIVATE FlowUi::FlowUi)
+    target_link_options(flowui_window_recovery_tests PRIVATE
+        "LINKER:--wrap=vkWaitForFences" "LINKER:--wrap=vkQueueSubmit"
+        "LINKER:--wrap=vkEndCommandBuffer")
+    flowui_package_resources(flowui_window_recovery_tests)
+    add_test(NAME flowui.window.recovery COMMAND flowui_window_recovery_tests)
+    set_tests_properties(flowui.window.recovery PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 60 RUN_SERIAL TRUE)
+endif()
+
+
+add_executable(flowui_ui_api_boundary_tests ApiBoundaryTests/UiApiBoundaryTests.cpp)
+target_link_libraries(flowui_ui_api_boundary_tests PRIVATE FlowUi::FlowUi)
+add_test(NAME flowui.errors.ui_api_boundary COMMAND flowui_ui_api_boundary_tests)
+
 find_package(Python3 COMPONENTS Interpreter QUIET)
 if(Python3_Interpreter_FOUND AND NOT MSVC)
     add_test(NAME flowui.platform.selection_diagnostics
@@ -41,6 +85,7 @@ add_test(NAME flowui.input.semantic_service COMMAND flowui_input_service_tests)
 set_tests_properties(flowui.input.semantic_service PROPERTIES LABELS "flowui;input;unit")
 
 add_executable(flowui_input_public_headers_tests InputServiceTests/InputPublicHeadersTests.cpp)
+target_link_libraries(flowui_input_public_headers_tests PRIVATE FlowUi::FlowUi)
 target_compile_features(flowui_input_public_headers_tests PRIVATE cxx_std_23)
 target_include_directories(flowui_input_public_headers_tests PRIVATE
     ${FLOWUI_GENERATED_INCLUDE_DIR} ${PROJECT_SOURCE_DIR}/include)
@@ -172,6 +217,12 @@ set_tests_properties(flowui.dev.schema_registry PROPERTIES
 
 if(FLOW_UI_DEV_MODE)
 	find_package(Threads REQUIRED)
+	add_executable(flowui_dev_tooling_failure_tests DevSystemsTests/DevToolingFailureTests.cpp)
+	target_compile_features(flowui_dev_tooling_failure_tests PRIVATE cxx_std_23)
+	target_link_libraries(flowui_dev_tooling_failure_tests PRIVATE FlowUi::FlowUi)
+	add_test(NAME flowui.dev.tooling_failures COMMAND flowui_dev_tooling_failure_tests
+		${PROJECT_SOURCE_DIR}/.flowui/agentic/verification/blocker-fixes/tooling)
+	set_tests_properties(flowui.dev.tooling_failures PROPERTIES TIMEOUT 60)
 	add_executable(flowui_dev_value_summary_tests DevSystemsTests/DevValueSummaryTests.cpp)
 	target_compile_features(flowui_dev_value_summary_tests PRIVATE cxx_std_23)
 	target_link_libraries(flowui_dev_value_summary_tests PRIVATE FlowUi::FlowUi)
@@ -538,7 +589,7 @@ if(Python3_Interpreter_FOUND AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
                 set(diagnostic_compiler_path ${CMAKE_CXX_COMPILER})
             else()
-                find_program(FLOWUI_DIAGNOSTIC_GCC NAMES g++-15 g++-14 g++-13 g++-12 g++)
+                find_program(FLOWUI_DIAGNOSTIC_GCC NAMES g++-15 g++-14 g++-13 g++-12 g++-11 g++)
                 set(diagnostic_compiler_path ${FLOWUI_DIAGNOSTIC_GCC})
             endif()
         else()
@@ -1372,6 +1423,17 @@ target_link_libraries(flowui_theme_manager_tests
 )
 
 add_test(NAME flowui.themes.manager COMMAND flowui_theme_manager_tests)
+
+add_executable(flowui_storage_cleanup_failure_tests
+    StorageTests/StorageCleanupFailureTests.cpp HeadlessVulkanFixture.cpp)
+target_compile_features(flowui_storage_cleanup_failure_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_storage_cleanup_failure_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+if(FLOWUI_REQUIRE_VULKAN_TEST_DEVICE)
+    target_compile_definitions(flowui_storage_cleanup_failure_tests PRIVATE FLOWUI_TEST_REQUIRE_VULKAN_DEVICE=1)
+endif()
+target_link_libraries(flowui_storage_cleanup_failure_tests PRIVATE FlowUi::FlowUi Vulkan::Vulkan)
+add_test(NAME flowui.storage.cleanup_failures COMMAND flowui_storage_cleanup_failure_tests)
+set_tests_properties(flowui.storage.cleanup_failures PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 60)
 set_tests_properties(flowui.themes.manager PROPERTIES
     LABELS "flowui;themes;unit"
     SKIP_RETURN_CODE 77
@@ -1389,6 +1451,11 @@ if(FLOW_UI_DEV_MODE AND FLOW_UI_DEV_CAPTURE_CLAY AND FLOWUI_HAS_GLFW_PROVIDER)
     target_link_libraries(flowui_dev_changes_interaction_tests PRIVATE FlowUi::FlowUi ${FLOWUI_GLFW_TARGET})
     flowui_package_resources(flowui_dev_changes_interaction_tests)
     add_test(NAME flowui.dev.changes_interaction COMMAND flowui_dev_changes_interaction_tests)
+    add_test(NAME flowui.dev.changes_runtime_acknowledgement
+        COMMAND flowui_dev_changes_interaction_tests --runtime-acknowledgement-only)
+    set_tests_properties(flowui.dev.changes_runtime_acknowledgement PROPERTIES
+        SKIP_RETURN_CODE 77 TIMEOUT 60 RUN_SERIAL TRUE)
+
     # The wheel fixture keeps native GLFW focus/cursor state across multiple frames.
     set_tests_properties(flowui.dev.changes_interaction PROPERTIES
         TIMEOUT 90
@@ -1558,6 +1625,8 @@ if(AGENTIC_WORKFLOW)
     target_include_directories(flowui_agentic_service_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(flowui_agentic_service_tests PRIVATE FlowUi::FlowUi)
     add_test(NAME flowui.agentic.service COMMAND flowui_agentic_service_tests capture)
+    add_test(NAME flowui.agentic.configure_failure COMMAND flowui_agentic_service_tests configure_failure)
+    set_tests_properties(flowui.agentic.configure_failure PROPERTIES TIMEOUT 30 LABELS "flowui;agentic;unit")
     add_test(NAME flowui.agentic.capture_retention COMMAND flowui_agentic_service_tests capture_retention)
     set_tests_properties(flowui.agentic.capture_retention PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 90 LABELS "flowui;agentic;window;vulkan;retention")
     add_test(NAME flowui.agentic.dormant COMMAND flowui_agentic_service_tests dormant)

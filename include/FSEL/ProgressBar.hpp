@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include <algorithm>
 #include <optional>
 #include <string_view>
@@ -70,7 +72,7 @@ struct ProgressBar {
 	 */
 	static void buildElement(BuildContext& context) {
 		const FSELProgressBarTheme& theme =
-			context.uiManager.theme<FSELTheme>().progressBarTheme;
+			FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().progressBarTheme;
 		const detail::bounded_value::Bounds bounds =
 			detail::bounded_value::normalizeBounds(
 				context.params.minimum,
@@ -120,7 +122,7 @@ struct ProgressBar {
 
 		CLAY(context.clayID(), root) {
 			if (ratio > 0.0f) {
-				CLAY(context.clayID("fill"), fill);
+				CLAY(FlowUi::ValueOrThrow(context.clayID("fill")), fill);
 			}
 		}
 	}

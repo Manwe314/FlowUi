@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryHistoryViewport.hpp"
 #include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
@@ -607,7 +608,7 @@ void DevMemoryHistoryController::draw(UiManager& manager, Clay_ElementId image,
 							   .clearColor = {0, 0, 0, 1}});
 		controller.created = result.has_value();
 		if (controller.created)
-			controller.viewports->getViewPort(controller.key)
+			FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(controller.viewports->getViewPort(controller.key))
 				->setRenderCallback([this](const auto& context) noexcept {
 					try {
 						impl_->record(context);
@@ -615,7 +616,7 @@ void DevMemoryHistoryController::draw(UiManager& manager, Clay_ElementId image,
 						impl_->replay_failed = true;
 						impl_->recorded = false;
 					}
-				});
+				}));
 	}
 	if (!controller.created) {
 		state.viewport_error = "History viewport creation failed";
@@ -625,7 +626,7 @@ void DevMemoryHistoryController::draw(UiManager& manager, Clay_ElementId image,
 	Clay_ElementDeclaration declaration{};
 	declaration.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
 	declaration.image.imageData =
-		manager.imageData(controller.viewports->getTexture(controller.key));
+		manager.imageData(FlowUi::ValueOrThrow(controller.viewports->getTexture(controller.key)));
 	CLAY(image, declaration) {}
 }
 void DevMemoryHistoryController::prepare(
@@ -866,8 +867,8 @@ void DevMemoryHistoryController::submitted(uint64_t serial) {
 }
 void DevMemoryHistoryController::destroy_drained() {
 	if (impl_->created && impl_->viewports)
-		impl_->viewports->getViewPort(impl_->key)->clearRenderCallback();
-	impl_->upload = std::make_unique<SurfaceUpload>();
+		FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(impl_->viewports->getViewPort(impl_->key))->clearRenderCallback());
+	impl_->upload.reset();
 	impl_->state = nullptr;
 	impl_->reporting = nullptr;
 	impl_->created = false;

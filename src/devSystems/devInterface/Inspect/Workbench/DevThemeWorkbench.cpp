@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Inspect/Workbench/DevThemeWorkbench.hpp"
 #include "devSystems/devInterface/Inspect/DevThemeEditorData.hpp"
 #if FLOW_UI_DEV_MODE
@@ -16,7 +17,7 @@ using namespace theme_editor;
 namespace {
 constexpr auto kCopyThemeCode =
 	UiAction("flowui.dev_interface.theme.copy-code", [](App& app, DevThemeWorkbench::State& state) {
-		app.setClipboardText(state.code);
+		FlowUi::ValueOrThrow(app.setClipboardText(state.code));
 		state.copy_feedback = "Copied C++";
 	});
 
@@ -30,22 +31,22 @@ void workbench_card(DevThemeWorkbench::BuildContext& context, std::string_view n
 	surface.cornerRadius = CLAY_CORNER_RADIUS(5);
 	surface.border = {interface_theme::kBorderPrimary, {1, 1, 1, 1, 0}};
 	surface.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
-	CLAY(context.clayID(RuntimeName(name)), surface) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(RuntimeName(name))), surface) {
 		// The clipping card must contain a percentage-bounded frame; a growing
 		// child would expand to the content height instead of forming a viewport.
-		CLAY(context.clayID(RuntimeName(std::string(name) + "-frame")), column(true)) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(RuntimeName(std::string(name) + "-frame"))), column(true)) {
 			auto header = section(34, interface_theme::kDepth2Ink);
 			header.layout.padding = Clay_Padding{10, 10, 0, 0};
 			header.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
-			CLAY(context.clayID(RuntimeName(std::string(name) + "-header")), header) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(RuntimeName(std::string(name) + "-header"))), header) {
 				text(context.uiManager, title, 10, interface_theme::kTextCanvas);
 			}
 			if (toolbar) {
-				CLAY(context.clayID(RuntimeName(std::string(name) + "-toolbar")), section()) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID(RuntimeName(std::string(name) + "-toolbar"))), section()) {
 					toolbar();
 				}
 			}
-			const auto scroll_id = context.clayID(RuntimeName(std::string(name) + "-scroll"));
+			const auto scroll_id = FlowUi::ValueOrThrow(context.clayID(RuntimeName(std::string(name) + "-scroll")));
 			auto viewport = scroll_surface(scroll_id);
 			viewport.clip.scrollInputDisabled = preview;
 			CLAY(scroll_id, viewport) {
@@ -54,7 +55,7 @@ void workbench_card(DevThemeWorkbench::BuildContext& context, std::string_view n
 				body.layout.childGap = 7;
 				if (preview)
 					body.layout.sizing.height = CLAY_SIZING_PERCENT(1);
-				CLAY(context.clayID(RuntimeName(std::string(name) + "-content")), body) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID(RuntimeName(std::string(name) + "-content"))), body) {
 					content();
 				}
 			}
@@ -69,7 +70,7 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 	if (!app || !state)
 		return;
 	auto& sandbox = context.state();
-	const auto schema = app->devTooling().schemas().view();
+	const auto schema = FlowUi::ValueOrThrow(app->devTooling()).get().schemas().view();
 	auto& model = state->theme_editor_model;
 	if (!model.refresh(*app))
 		return;
@@ -83,7 +84,7 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 		header.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		header.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
 		header.clip = {.horizontal = true, .scrollInputDisabled = true};
-		CLAY(context.clayID("header"), header) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("header")), header) {
 			text(context.uiManager,
 				 selected ? (state->inspect_theme_all_variants ? std::string_view{"All Variants"}
 															   : selected->variant)
@@ -114,8 +115,8 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 			}
 			std::vector<const ThemeManager::DevThemePreview*> previews;
 			previews.reserve(16);
-			app->themes().visitDevPreviews(
-				selected->type, [&](const auto& scene) { previews.emplace_back(&scene); });
+			FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app->themes()).get().visitDevPreviews(
+				selected->type, [&](const auto& scene) { previews.emplace_back(&scene); }));
 			const bool builtin =
 				previews.empty() && selected->type == ::FlowUi::detail::typeHash<FSEL::FSELTheme>();
 			sandbox.preview_options.clear();
@@ -156,7 +157,7 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 					auto message = column();
 					message.layout.sizing.height = CLAY_SIZING_GROW(0);
 					message.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
-					CLAY(context.clayID("preview-message"), message) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("preview-message")), message) {
 						text(context.uiManager,
 							 !has_preview
 								 ? "No component preview registered for " +
@@ -181,7 +182,7 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 					examples.layout.sizing.width = CLAY_SIZING_FIT(0);
 				examples.layout.layoutDirection =
 					sandbox.preview_layout == 1 ? CLAY_LEFT_TO_RIGHT : CLAY_TOP_TO_BOTTOM;
-				CLAY(context.clayID("preview-elements"), examples) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("preview-elements")), examples) {
 					UiManager::DevThemeScope preview_theme_scope(context.uiManager,
 																 selected_presentation->source);
 					if (builtin) draw_fsel_theme_specimens(context, *app, sandbox);
@@ -194,8 +195,8 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 							auto preview_slot = column();
 							if (sandbox.preview_layout == 1)
 								preview_slot.layout.sizing.width = CLAY_SIZING_FIT(0);
-							CLAY(context.clayID(
-									 RuntimeName("preview-" + std::to_string(preview_index))),
+							CLAY(FlowUi::ValueOrThrow(context.clayID(
+									 RuntimeName("preview-" + std::to_string(preview_index)))),
 								 preview_slot) {
 								text(context.uiManager, previews[preview_index]->debug_name, 11,
 									 interface_theme::kTextCanvas);
@@ -281,7 +282,7 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 				sandbox.filter_all_variants = state->inspect_theme_all_variants;
 				if (selection_changed) {
 					const auto scroll =
-						Clay_GetScrollContainerData(context.clayID("tokens-scroll"));
+						Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("tokens-scroll")));
 					if (scroll.found && scroll.scrollPosition)
 						*scroll.scrollPosition = {};
 				}
@@ -320,11 +321,11 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 				};
 				line.layout.padding = Clay_Padding{4, 4, 5, 5};
 				line.border = {interface_theme::kBorderPrimary, {0, 0, 0, 1, 0}};
-				CLAY(context.clayID(RuntimeName(identity)), line) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID(RuntimeName(identity))), line) {
 					auto caption = column();
 					caption.layout.sizing.width = CLAY_SIZING_PERCENT(.32f);
 					caption.backgroundColor = {};
-					CLAY(context.clayID(RuntimeName(std::string(identity) + "-label")), caption) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID(RuntimeName(std::string(identity) + "-label"))), caption) {
 						value_text(label, 10, interface_theme::kTextSecondary);
 					}
 					const auto* type = schema->type(leaf.field->valueType);
@@ -333,12 +334,12 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 						swatch.layout.sizing = {CLAY_SIZING_FIXED(18), CLAY_SIZING_FIXED(18)};
 						swatch.backgroundColor = *static_cast<const Clay_Color*>(value);
 						swatch.cornerRadius = CLAY_CORNER_RADIUS(3);
-						CLAY(context.clayID(RuntimeName(std::string(identity) + "-swatch")),
+						CLAY(FlowUi::ValueOrThrow(context.clayID(RuntimeName(std::string(identity) + "-swatch"))),
 							 swatch);
 					}
 					auto value_cell = column();
 					value_cell.backgroundColor = {};
-					CLAY(context.clayID(RuntimeName(std::string(identity) + "-value")),
+					CLAY(FlowUi::ValueOrThrow(context.clayID(RuntimeName(std::string(identity) + "-value"))),
 						 value_cell) {
 						value_text(display, 11,
 								   accent ? interface_theme::kAccentSeaGlass
@@ -349,7 +350,7 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 			const auto draw_tokens = [&] {
 				// Fixed single-line overview rows permit exact spacer heights at any font scale.
 				// Full reflected values remain available in the existing inspector editors.
-				const auto scroll = Clay_GetScrollContainerData(context.clayID("tokens-scroll"));
+				const auto scroll = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("tokens-scroll")));
 				const std::size_t variant_count =
 					state->inspect_theme_all_variants
 						? std::ranges::count_if(
@@ -378,7 +379,7 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 				const std::size_t end = first + std::min(total - first, visible_count);
 				auto heading = row();
 				heading.layout.sizing.height = CLAY_SIZING_FIXED(heading_height);
-				CLAY(context.clayID("token-summary"), heading) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("token-summary")), heading) {
 					Clay_TextElementConfig heading_style{};
 					heading_style.fontSize = 10;
 					heading_style.textColor = interface_theme::kTextSecondary;
@@ -398,7 +399,7 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 					declaration.layout.sizing = {
 						CLAY_SIZING_GROW(0),
 						CLAY_SIZING_FIXED(static_cast<float>(count) * stride - row_gap)};
-					CLAY(context.clayID(RuntimeName(identity)), declaration);
+					CLAY(FlowUi::ValueOrThrow(context.clayID(RuntimeName(identity))), declaration);
 				};
 				spacer("tokens-before", first);
 				sandbox.emitted_token_rows = 0;
@@ -406,7 +407,7 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 					const auto leaf_index = sandbox.token_indices[row_index];
 					const auto& leaf = selected_leaves[leaf_index];
 					auto token_section = section(row_height);
-					CLAY(context.clayID(RuntimeName("token-" + leaf.path)), token_section) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID(RuntimeName("token-" + leaf.path))), token_section) {
 						Clay_TextElementConfig path_style{};
 						path_style.fontSize = 11;
 						path_style.textColor = interface_theme::kTextCanvas;
@@ -477,10 +478,10 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 				}
 				const auto assignment_count = sandbox.assignment_count;
 				const auto omitted_count = sandbox.omitted_count;
-				CLAY(context.clayID("code-actions"), row()) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("code-actions")), row()) {
 					button(
 						context, "copy", "Copy C++",
-						ActionCall{app->actions().uiActions().make(kCopyThemeCode, *app, sandbox)},
+						ActionCall{FlowUi::ValueOrThrow(app->actions()).get().uiActions().make(kCopyThemeCode, *app, sandbox)},
 						!sandbox.code.empty(), action_icon(app, interface_icons::kCopyKey));
 					if (!sandbox.copy_feedback.empty())
 						text(context.uiManager, sandbox.copy_feedback, 10);
@@ -514,7 +515,7 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 					const auto& value = presentation->values[change.leaf_index];
 					const std::string identity =
 						"change-" + std::string(variant.variant) + "-" + leaf.path;
-					CLAY(context.clayID(RuntimeName(identity)), section()) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID(RuntimeName(identity))), section()) {
 						text(context.uiManager, std::string(variant.variant) + " / " + leaf.path,
 							 11, interface_theme::kTextCanvas);
 						text(context.uiManager,
@@ -540,16 +541,16 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 			content.layout.padding = CLAY_PADDING_ALL(14);
 			content.layout.childGap = 12;
 			content.backgroundColor = interface_theme::kDepth0Keel;
-			CLAY(context.clayID("content"), content) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("content")), content) {
 				auto grid_row = row();
 				grid_row.layout.sizing.height = CLAY_SIZING_PERCENT(.5f);
 				grid_row.layout.childGap = 12;
-				CLAY(context.clayID("top-row"), grid_row) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("top-row")), grid_row) {
 					workbench_card(context, "specimens", "PREVIEW", draw_specimens, preview_toolbar,
 								   true);
 					workbench_card(context, "tokens", "TOKEN OVERVIEW", draw_tokens, token_toolbar);
 				}
-				CLAY(context.clayID("bottom-row"), grid_row) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("bottom-row")), grid_row) {
 					workbench_card(context, "changes", "CHANGES", draw_changes);
 					workbench_card(context, "code", "C++ CODE", draw_code);
 				}
@@ -558,7 +559,7 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 			auto empty = column();
 			empty.layout.sizing.height = CLAY_SIZING_GROW(0);
 			empty.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
-			CLAY(context.clayID("empty-selection"), empty) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("empty-selection")), empty) {
 				text(context.uiManager, "Select a theme to open its workbench", 12,
 					 interface_theme::kTextMuted);
 			}

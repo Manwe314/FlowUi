@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Inspect/Selector/DevThemeSelector.hpp"
 #include "devSystems/devInterface/Inspect/DevThemeEditorData.hpp"
 #if FLOW_UI_DEV_MODE
@@ -10,7 +11,7 @@ void DevThemeSelector::buildElement(BuildContext& context) {
 	auto* state = context.params.interfaceState;
 	if (!app || !state)
 		return;
-	const auto schema = app->devTooling().schemas().view();
+	const auto schema = FlowUi::ValueOrThrow(app->devTooling()).get().schemas().view();
 	auto& model = state->theme_editor_model;
 	if (!model.refresh(*app))
 		return;
@@ -59,14 +60,14 @@ void DevThemeSelector::buildElement(BuildContext& context) {
 													   "Search themes, variants, tokens..."})
 			.setDevInternalCapture(true)
 			.draw();
-		auto scroll = scroll_surface(context.clayID("tree"));
+		auto scroll = scroll_surface(FlowUi::ValueOrThrow(context.clayID("tree")));
 		scroll.backgroundColor = interface_theme::kDepth0Keel;
 		scroll.border = {interface_theme::kBorderPrimary, {0, 0, 0, 1, 0}};
-		CLAY(context.clayID("tree"), scroll) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("tree")), scroll) {
 			auto tree_content = column();
 			tree_content.layout.childGap = 0;
 			tree_content.backgroundColor = interface_theme::kDepth0Keel;
-			CLAY(context.clayID("tree-content"), tree_content) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("tree-content")), tree_content) {
 				tooling::DevTypeId last_type = 0;
 				bool type_expanded = true;
 				for (const auto& theme : catalogue) {
@@ -192,14 +193,14 @@ void DevThemeSelector::buildElement(BuildContext& context) {
 		footer.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
 		footer.border.width = {};
 
-		CLAY(context.clayID("footer"), footer) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("footer")), footer) {
 			text(context.uiManager, "Theme Types: " + std::to_string(types.size()), 10,
 				 interface_theme::kTextMuted);
 			text(context.uiManager, "Variants: " + std::to_string(catalogue.size()), 10,
 				 interface_theme::kTextMuted);
 			text(context.uiManager,
 				 "Live Changes: " +
-					 std::to_string(app->devTooling().overrides().themeBakeRecords().size()),
+					 std::to_string(FlowUi::ValueOrThrow(app->devTooling()).get().overrides().themeBakeRecords().size()),
 				 10, interface_theme::kTextMuted);
 		}
 	}

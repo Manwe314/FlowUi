@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,22 +111,107 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a8dd96fa10232fa4ebd0d6c002e544d72" id="r_a8dd96fa10232fa4ebd0d6c002e544d72"><td class="memItemLeft"><a id="a8dd96fa10232fa4ebd0d6c002e544d72" name="a8dd96fa10232fa4ebd0d6c002e544d72"></a>
-WindowId&#160;</td><td class="memItemRight"><b>id</b> = InvalidWindowId</td></tr>
-<tr class="memitem:a05f3e7ec4a77656375ba08ea5760e062" id="r_a05f3e7ec4a77656375ba08ea5760e062"><td class="memItemLeft"><a id="a05f3e7ec4a77656375ba08ea5760e062" name="a05f3e7ec4a77656375ba08ea5760e062"></a>
-std::string&#160;</td><td class="memItemRight"><b>title</b> {}</td></tr>
-<tr class="memitem:a5f513108cb20255dd439153741d8681f" id="r_a5f513108cb20255dd439153741d8681f"><td class="memItemLeft"><a id="a5f513108cb20255dd439153741d8681f" name="a5f513108cb20255dd439153741d8681f"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>framesInFlight</b> = 1u</td></tr>
-<tr class="memitem:a656992433464bc3fba5d672ed09acf4b" id="r_a656992433464bc3fba5d672ed09acf4b"><td class="memItemLeft"><a id="a656992433464bc3fba5d672ed09acf4b" name="a656992433464bc3fba5d672ed09acf4b"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>actual_present_mode</b> = 0u</td></tr>
-<tr class="memitem:af605d33d3148eb53bbd72c3acc7393d2" id="r_af605d33d3148eb53bbd72c3acc7393d2"><td class="memItemLeft"><a id="af605d33d3148eb53bbd72c3acc7393d2" name="af605d33d3148eb53bbd72c3acc7393d2"></a>
-float&#160;</td><td class="memItemRight"><b>layout_dpi</b> = 96.0f</td></tr>
-<tr class="memitem:a86e9ebc4c9ec4f0de2c9bf0df29fe413" id="r_a86e9ebc4c9ec4f0de2c9bf0df29fe413"><td class="memItemLeft"><a id="a86e9ebc4c9ec4f0de2c9bf0df29fe413" name="a86e9ebc4c9ec4f0de2c9bf0df29fe413"></a>
-float&#160;</td><td class="memItemRight"><b>font_scale</b> = 1.0f</td></tr>
+<tr class="memitem:a8dd96fa10232fa4ebd0d6c002e544d72" id="r_a8dd96fa10232fa4ebd0d6c002e544d72"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a8dd96fa10232fa4ebd0d6c002e544d72">id</a> = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td></tr>
+<tr class="memitem:a05f3e7ec4a77656375ba08ea5760e062" id="r_a05f3e7ec4a77656375ba08ea5760e062"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a05f3e7ec4a77656375ba08ea5760e062">title</a> {}</td></tr>
+<tr class="memitem:a5f513108cb20255dd439153741d8681f" id="r_a5f513108cb20255dd439153741d8681f"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a5f513108cb20255dd439153741d8681f">framesInFlight</a> = 1u</td></tr>
+<tr class="memitem:a656992433464bc3fba5d672ed09acf4b" id="r_a656992433464bc3fba5d672ed09acf4b"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a656992433464bc3fba5d672ed09acf4b">actual_present_mode</a> = 0u</td></tr>
+<tr class="memitem:af605d33d3148eb53bbd72c3acc7393d2" id="r_af605d33d3148eb53bbd72c3acc7393d2"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#af605d33d3148eb53bbd72c3acc7393d2">layout_dpi</a> = 96.0f</td></tr>
+<tr class="memitem:a86e9ebc4c9ec4f0de2c9bf0df29fe413" id="r_a86e9ebc4c9ec4f0de2c9bf0df29fe413"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#a86e9ebc4c9ec4f0de2c9bf0df29fe413">font_scale</a> = 1.0f</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Immutable metadata for one window exposed to development tooling. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a656992433464bc3fba5d672ed09acf4b" name="a656992433464bc3fba5d672ed09acf4b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a656992433464bc3fba5d672ed09acf4b">&#9670;&#160;</a></span>actual_present_mode</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::DevWindowInfo::actual_present_mode = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Selected backend presentation-mode numeric value. </p>
+
+</div>
+</div>
+<a id="a86e9ebc4c9ec4f0de2c9bf0df29fe413" name="a86e9ebc4c9ec4f0de2c9bf0df29fe413"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a86e9ebc4c9ec4f0de2c9bf0df29fe413">&#9670;&#160;</a></span>font_scale</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float FlowUi::DevWindowInfo::font_scale = 1.0f</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Effective text scaling reported for this window. </p>
+
+</div>
+</div>
+<a id="a5f513108cb20255dd439153741d8681f" name="a5f513108cb20255dd439153741d8681f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f513108cb20255dd439153741d8681f">&#9670;&#160;</a></span>framesInFlight</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::DevWindowInfo::framesInFlight = 1u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Frame resource slot count for this window. </p>
+
+</div>
+</div>
+<a id="a8dd96fa10232fa4ebd0d6c002e544d72" name="a8dd96fa10232fa4ebd0d6c002e544d72"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8dd96fa10232fa4ebd0d6c002e544d72">&#9670;&#160;</a></span>id</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> FlowUi::DevWindowInfo::id = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Stable native window identity. </p>
+
+</div>
+</div>
+<a id="af605d33d3148eb53bbd72c3acc7393d2" name="af605d33d3148eb53bbd72c3acc7393d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af605d33d3148eb53bbd72c3acc7393d2">&#9670;&#160;</a></span>layout_dpi</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float FlowUi::DevWindowInfo::layout_dpi = 96.0f</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Logical DPI used for point-to-pixel text conversion. </p>
+
+</div>
+</div>
+<a id="a05f3e7ec4a77656375ba08ea5760e062" name="a05f3e7ec4a77656375ba08ea5760e062"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a05f3e7ec4a77656375ba08ea5760e062">&#9670;&#160;</a></span>title</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string FlowUi::DevWindowInfo::title {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned native-window title snapshot. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="DevSnapshotTypes_8hpp_source.html">DevSnapshotTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -142,7 +227,7 @@ float&#160;</td><td class="memItemRight"><b>font_scale</b> = 1.0f</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1DevWindowInfo.html">DevWindowInfo</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1DevWindowInfo.html">DevWindowInfo</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

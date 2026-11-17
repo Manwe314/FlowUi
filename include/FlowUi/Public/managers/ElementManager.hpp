@@ -1,4 +1,5 @@
 #pragma once
+#include "FlowUi/Private/ApiBoundary.hpp"
 
 #include "FlowUi/Private/elementSystem/ElementRegistrationSupport.hpp"
 #include "FlowUi/Public/BuildConfig.hpp"
@@ -49,176 +50,391 @@ public:
 	/** @brief Append observation-only development memory accounting to the borrowed sink. */
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
 #endif
-	/** @brief Construct an uninitialized manager; applications normally use App::elements(). */
+	/**
+	 * @brief Construct a detached manager; application code normally obtains the initialized App-owned manager.
+	 *
+	 * @see docs/api/elements.md
+	 */
 	ElementManager() = default;
-	/** @brief Release owned element state, definition metadata, and resource payloads. */
+	/**
+	 * @brief Release owned service data. The App controls this manager lifetime.
+	 *
+	 * @see docs/api/elements.md
+	 */
 	~ElementManager();
 
+	/**
+	 * @brief Copying and moving are disabled as declared; use the App-owned instance by reference.
+	 *
+	 * @see docs/api/elements.md
+	 */
 	ElementManager(const ElementManager&) = delete;
+	/**
+	 * @brief Copying and moving are disabled as declared; use the App-owned instance by reference.
+	 *
+	 * @see docs/api/elements.md
+	 */
 	ElementManager& operator=(const ElementManager&) = delete;
+	/**
+	 * @brief Copying and moving are disabled as declared; use the App-owned instance by reference.
+	 *
+	 * @see docs/api/elements.md
+	 */
 	ElementManager(ElementManager&&) = delete;
+	/**
+	 * @brief Copying and moving are disabled as declared; use the App-owned instance by reference.
+	 *
+	 * @see docs/api/elements.md
+	 */
 	ElementManager& operator=(ElementManager&&) = delete;
 
 	/**
-	 * @brief Get a const pointer to existing element state without creating it.
-	 * @return Immutable state pointer, or nullptr when the window/instance has no state.
-	 * @note The pointer remains stable until explicit erase, transient-state GC at
-	 * a later successful frame boundary, or window destruction. Do not retain a
-	 * transient-state pointer across frame boundaries.
+	 * @brief Look up immutable existing state for this definition, window and typed identity without creating state. Check failure separately from a successful nullptr.
+	 *
+	 * The pointer is borrowed until explicit erasure, transient collection at a later successful frame boundary or window destruction. Do not retain transient state pointers across frames. Invalid owner/identity/access conditions are returned as errors.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = elements.getStatePointerConst(counter, window, id);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto* state = *result;
+	 * if (state) {
+	 *     const int count = state->count;
+	 * }
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
 	 */
 	template <FlowElement Element>
 		requires HasState<Element>
-	[[nodiscard]] const StateOf<Element>* getStatePointerConst(
+	[[nodiscard]] Result<const StateOf<Element>*> getStatePointerConst(
 		const Element&,
 		WindowId window,
-		FlowElementID elementId) const {
+		FlowElementID elementId) const noexcept try {
 		return static_cast<const StateOf<Element>*>(readStateErased(
 			detail::element::elementDescriptor<Element>, window,
 			detail::element::toInstanceKey(elementId)));
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::ElementResolveState);
+		return unexpectedError(error);
 	}
 
-	/** @brief Borrow existing immutable state for a global ID in window.
-	 * The primary overload's lifetime and deferred-erasure rules apply.
+	/**
+	 * @brief Look up immutable existing state for this definition, window and typed identity without creating state. Check failure separately from a successful nullptr.
+	 *
+	 * The pointer is borrowed until explicit erasure, transient collection at a later successful frame boundary or window destruction. Do not retain transient state pointers across frames. Invalid owner/identity/access conditions are returned as errors.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = elements.getStatePointerConst(counter, window, id);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto* state = *result;
+	 * if (state) {
+	 *     const int count = state->count;
+	 * }
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
 	 */
 	template <FlowElement Element>
 		requires HasState<Element>
-	[[nodiscard]] const StateOf<Element>* getStatePointerConst(
+	[[nodiscard]] Result<const StateOf<Element>*> getStatePointerConst(
 		const Element&,
 		WindowId window,
-		GlobalFlowID elementId) const {
+		GlobalFlowID elementId) const noexcept try {
 		return static_cast<const StateOf<Element>*>(readStateErased(
 			detail::element::elementDescriptor<Element>, window,
 			detail::element::toInstanceKey(elementId)));
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::ElementResolveState);
+		return unexpectedError(error);
 	}
 
-	/** @brief Borrow existing immutable state for a semantic part ID in window.
-	 * The primary overload's lifetime and deferred-erasure rules apply.
+	/**
+	 * @brief Look up immutable existing state for this definition, window and typed identity without creating state. Check failure separately from a successful nullptr.
+	 *
+	 * The pointer is borrowed until explicit erasure, transient collection at a later successful frame boundary or window destruction. Do not retain transient state pointers across frames. Invalid owner/identity/access conditions are returned as errors.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = elements.getStatePointerConst(counter, window, id);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto* state = *result;
+	 * if (state) {
+	 *     const int count = state->count;
+	 * }
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
 	 */
 	template <FlowElement Element>
 		requires HasState<Element>
-	[[nodiscard]] const StateOf<Element>* getStatePointerConst(
+	[[nodiscard]] Result<const StateOf<Element>*> getStatePointerConst(
 		const Element&,
 		WindowId window,
-		FlowElementPartID elementId) const {
+		FlowElementPartID elementId) const noexcept try {
 		return static_cast<const StateOf<Element>*>(readStateErased(
 			detail::element::elementDescriptor<Element>, window,
 			detail::element::toInstanceKey(elementId)));
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::ElementResolveState);
+		return unexpectedError(error);
 	}
 
 	/**
-	 * @brief Get a mutable pointer to existing element state without creating it.
-	 * @return Mutable state pointer, or nullptr when the window/instance has no state.
-	 * @note The pointer remains stable until explicit erase, transient-state GC at
-	 * a later successful frame boundary, or window destruction. Do not retain a
-	 * transient-state pointer across frame boundaries.
+	 * @brief Look up mutable existing state for this definition, window and typed identity without creating state. Check failure separately from a successful nullptr.
+	 *
+	 * The pointer is borrowed until explicit erasure, transient collection at a later successful frame boundary or window destruction. Do not retain transient state pointers across frames. Invalid owner/identity/access conditions are returned as errors.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = elements.getStatePointer(counter, window, id);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto* state = *result;
+	 * if (state) {
+	 *     const int count = state->count;
+	 * }
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
 	 */
 	template <FlowElement Element>
 		requires HasState<Element>
-	[[nodiscard]] StateOf<Element>* getStatePointer(
+	[[nodiscard]] Result<StateOf<Element>*> getStatePointer(
 		const Element&,
 		WindowId window,
-		FlowElementID elementId) {
+		FlowElementID elementId) noexcept try {
 		return static_cast<StateOf<Element>*>(modifyStateErased(
 			detail::element::elementDescriptor<Element>, window,
 			detail::element::toInstanceKey(elementId)));
-	}
-
-	/** @brief Borrow existing mutable state for a semantic part ID in window.
-	 * The primary overload's lifetime and deferred-erasure rules apply.
-	 */
-	template <FlowElement Element>
-		requires HasState<Element>
-	[[nodiscard]] StateOf<Element>* getStatePointer(
-		const Element&,
-		WindowId window,
-		FlowElementPartID elementId) {
-		return static_cast<StateOf<Element>*>(modifyStateErased(
-			detail::element::elementDescriptor<Element>, window,
-			detail::element::toInstanceKey(elementId)));
-	}
-
-	/** @brief Borrow existing mutable state for a global ID in window.
-	 * The primary overload's lifetime and deferred-erasure rules apply.
-	 */
-	template <FlowElement Element>
-		requires HasState<Element>
-	[[nodiscard]] StateOf<Element>* getStatePointer(
-		const Element&,
-		WindowId window,
-		GlobalFlowID elementId) {
-		return static_cast<StateOf<Element>*>(modifyStateErased(
-			detail::element::elementDescriptor<Element>, window,
-			detail::element::toInstanceKey(elementId)));
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::ElementResolveState);
+		return unexpectedError(error);
 	}
 
 	/**
-	 * @brief Explicitly erase an existing state instance.
-	 * @note Erasure requested during a window build is deferred to that frame's
-	 * successful commit, after every cached callback pointer has been released.
-	 * A canceled frame discards its queued erasures.
+	 * @brief Look up mutable existing state for this definition, window and typed identity without creating state. Check failure separately from a successful nullptr.
+	 *
+	 * The pointer is borrowed until explicit erasure, transient collection at a later successful frame boundary or window destruction. Do not retain transient state pointers across frames. Invalid owner/identity/access conditions are returned as errors.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = elements.getStatePointer(counter, window, id);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto* state = *result;
+	 * if (state) {
+	 *     const int count = state->count;
+	 * }
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
 	 */
 	template <FlowElement Element>
 		requires HasState<Element>
-	bool eraseState(
+	[[nodiscard]] Result<StateOf<Element>*> getStatePointer(
 		const Element&,
 		WindowId window,
-		FlowElementID elementId) {
-		return eraseStateErased(
+		FlowElementPartID elementId) noexcept try {
+		return static_cast<StateOf<Element>*>(modifyStateErased(
 			detail::element::elementDescriptor<Element>, window,
-			detail::element::toInstanceKey(elementId));
-	}
-
-	/** @brief Erase existing state for a semantic part ID in window.
-	 * The primary overload's lifetime and deferred-erasure rules apply.
-	 */
-	template <FlowElement Element>
-		requires HasState<Element>
-	bool eraseState(
-		const Element&,
-		WindowId window,
-		FlowElementPartID elementId) {
-		return eraseStateErased(
-			detail::element::elementDescriptor<Element>, window,
-			detail::element::toInstanceKey(elementId));
-	}
-
-	/** @brief Erase existing state for a global ID in window.
-	 * The primary overload's lifetime and deferred-erasure rules apply.
-	 */
-	template <FlowElement Element>
-		requires HasState<Element>
-	bool eraseState(
-		const Element&,
-		WindowId window,
-		GlobalFlowID elementId) {
-		return eraseStateErased(
-			detail::element::elementDescriptor<Element>, window,
-			detail::element::toInstanceKey(elementId));
+			detail::element::toInstanceKey(elementId)));
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::ElementResolveState);
+		return unexpectedError(error);
 	}
 
 	/**
-	 * @brief Aggressively collect every currently expired transient state in a window.
-	 * @return Number of state records removed.
+	 * @brief Look up mutable existing state for this definition, window and typed identity without creating state. Check failure separately from a successful nullptr.
+	 *
+	 * The pointer is borrowed until explicit erasure, transient collection at a later successful frame boundary or window destruction. Do not retain transient state pointers across frames. Invalid owner/identity/access conditions are returned as errors.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = elements.getStatePointer(counter, window, id);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto* state = *result;
+	 * if (state) {
+	 *     const int count = state->count;
+	 * }
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	template <FlowElement Element>
+		requires HasState<Element>
+	[[nodiscard]] Result<StateOf<Element>*> getStatePointer(
+		const Element&,
+		WindowId window,
+		GlobalFlowID elementId) noexcept try {
+		return static_cast<StateOf<Element>*>(modifyStateErased(
+			detail::element::elementDescriptor<Element>, window,
+			detail::element::toInstanceKey(elementId)));
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::ElementResolveState);
+		return unexpectedError(error);
+	}
+
+	/**
+	 * @brief Erase this instance state, returning whether an existing state was selected for erasure. During a window build erasure is deferred until successful commit; cancellation discards queued erasures.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = elements.eraseState(counter, window, id);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const bool erased = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	template <FlowElement Element>
+		requires HasState<Element>
+	[[nodiscard]] Result<bool> eraseState(
+		const Element&,
+		WindowId window,
+		FlowElementID elementId) noexcept try {
+		return eraseStateErased(
+			detail::element::elementDescriptor<Element>, window,
+			detail::element::toInstanceKey(elementId));
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::ElementResolveState);
+		return unexpectedError(error);
+	}
+
+	/**
+	 * @brief Erase this instance state, returning whether an existing state was selected for erasure. During a window build erasure is deferred until successful commit; cancellation discards queued erasures.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = elements.eraseState(counter, window, id);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const bool erased = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	template <FlowElement Element>
+		requires HasState<Element>
+	[[nodiscard]] Result<bool> eraseState(
+		const Element&,
+		WindowId window,
+		FlowElementPartID elementId) noexcept try {
+		return eraseStateErased(
+			detail::element::elementDescriptor<Element>, window,
+			detail::element::toInstanceKey(elementId));
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::ElementResolveState);
+		return unexpectedError(error);
+	}
+
+	/**
+	 * @brief Erase this instance state, returning whether an existing state was selected for erasure. During a window build erasure is deferred until successful commit; cancellation discards queued erasures.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = elements.eraseState(counter, window, id);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const bool erased = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	template <FlowElement Element>
+		requires HasState<Element>
+	[[nodiscard]] Result<bool> eraseState(
+		const Element&,
+		WindowId window,
+		GlobalFlowID elementId) noexcept try {
+		return eraseStateErased(
+			detail::element::elementDescriptor<Element>, window,
+			detail::element::toInstanceKey(elementId));
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::ElementResolveState);
+		return unexpectedError(error);
+	}
+
+	/**
+	 * @brief Collect all currently expired transient state for one window and return the number removed. Successful frame completion normally handles retirement.
+	 *
+	 * @see docs/api/elements.md
 	 */
 	[[nodiscard]] size_t collectStateGarbage(WindowId window) noexcept;
 
 	/**
-	 * @brief Eagerly construct one element definition's app-wide resources.
-	 * @note Resource-free definitions are silently ignored.
+	 * @brief Eagerly prepare the immutable app-wide resources of one definition or every definition in an ElementSet. Resource-free definitions are successful no-ops.
+	 *
+	 * Hybrid contract: a resourceful definition without an initialized owner returns ObjectNotInitialized. Resource constructor and allocation exceptions propagate; already prepared definitions remain ready and preparation can be retried.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = elements.prepare(counter);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
 	 */
 	template <FlowElement Element>
-	void prepare(const Element&) {
+	[[nodiscard]] Status prepare(const Element&) {
 		if constexpr (HasResources<Element>) {
+			if (!app_ || !controller_ || !storage_)
+				return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ElementResolveResource));
 			(void)resolveResourcesErased(detail::element::elementDescriptor<Element>, true);
 		}
+
+		return {};
 	}
 
 	/**
-	 * @brief Eagerly construct resources for every resourceful definition in a set.
-	 * @note Resource-free members are silently ignored.
+	 * @brief Eagerly prepare the immutable app-wide resources of one definition or every definition in an ElementSet. Resource-free definitions are successful no-ops.
+	 *
+	 * Hybrid contract: a resourceful definition without an initialized owner returns ObjectNotInitialized. Resource constructor and allocation exceptions propagate; already prepared definitions remain ready and preparation can be retried.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto result = elements.prepare(FlowUi::elementSet(counter, FlowUi::kButton));
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
 	 */
 	template <FlowElement... Elements>
-	void prepare(const ElementSet<Elements...>&) {
+	[[nodiscard]] Status prepare(const ElementSet<Elements...>&) {
+		if constexpr ((HasResources<Elements> || ...)) {
+			if (!app_ || !controller_ || !storage_)
+				return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ElementResolveResource));
+		}
 		auto prepareElementType = [this]<typename Element>() {
 			if constexpr (HasResources<Element>) {
 				(void)resolveResourcesErased(
@@ -226,6 +442,8 @@ public:
 			}
 		};
 		(prepareElementType.template operator()<Elements>(), ...);
+
+		return {};
 	}
 
 private:

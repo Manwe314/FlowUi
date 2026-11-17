@@ -3,6 +3,7 @@
 #include "devSystems/devAgenticWorkflow/AgenticLocalTransport.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticManifest.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticService.hpp"
+#include "devSystems/devAgenticWorkflow/detail/AgenticProvenanceState.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/errors/DevError.hpp"
 #include "devSystems/devMonitoringAndReporting/reporting/DevPerformanceCapture.hpp"
@@ -15,6 +16,10 @@
 #include <fstream>
 #include <future>
 #include <thread>
+#if defined(__linux__)
+#include <cerrno>
+#include <fcntl.h>
+#endif
 
 namespace {
 using namespace FlowUi;
@@ -41,7 +46,7 @@ void frame(App& application, bool inject_runtime_occurrence = false) {
 			"agentic.service.fixture.issue", "tests/AgenticWorkflowTests/AgenticServiceTests.cpp",
 			"frame");
 		const auto error = makeError(ErrorCode::AssetNotFound, ErrorSite::ResourceReadFile, 18u);
-		auto& errors = application.devMonitoring().errors();
+		auto& errors = ::FlowUi::test::requireValue(application.devMonitoring()).get().errors();
 		const auto occurrence = errors.recordRaised(error, source);
 		FLOWUI_CHECK(occurrence != 0u);
 		errors.recordStep(occurrence, FlowUi::devSystems::DevErrorStepKind::Resolution, error,
@@ -52,12 +57,12 @@ void frame(App& application, bool inject_runtime_occurrence = false) {
 	root.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
 	CLAY(CLAY_ID("agentic_service_fixture"), root) {
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
-		if (application.viewPorts().contains("retained_agentic_viewport")) {
+		if (::FlowUi::test::requireValue(::FlowUi::test::requireValue(application.viewPorts()).get().contains("retained_agentic_viewport"))) {
 			Clay_ElementDeclaration viewport{};
 			viewport.layout.sizing = {.width = CLAY_SIZING_FIXED(32),
 									  .height = CLAY_SIZING_FIXED(24)};
-			viewport.image.imageData = application.ui().imageData(
-				application.viewPorts().getTexture("retained_agentic_viewport"));
+			viewport.image.imageData = ::FlowUi::test::requireValue(application.ui()).get().imageData(
+				::FlowUi::test::requireValue(::FlowUi::test::requireValue(application.viewPorts()).get().getTexture("retained_agentic_viewport")));
 			CLAY(CLAY_ID("agentic_service_retained_viewport"), viewport) {}
 		}
 #endif
@@ -84,19 +89,93 @@ AppConfig configuration(const std::filesystem::path& store, bool enabled) {
 	return config;
 }
 
+void test_configuration_failure(const std::filesystem::path& store) {
+#if defined(__linux__)
+	// A successful cache describes the loaded inode, which rejects modification.
+	errno = 0;
+	const auto executableWrite = ::open("/proc/self/exe", O_WRONLY | O_CLOEXEC);
+	FLOWUI_CHECK(executableWrite == -1 && errno == ETXTBSY);
+	FlowUi::devSystems::agentic::detail::AgenticBinaryIdentity identity;
+	const auto binary = FlowUi::devSystems::agentic::detail::processBinaryIdentity(
+		identity, 128u * 1024u * 1024u);
+	FLOWUI_CHECK(binary && identity.bytes > 0 && identity.digest == *binary);
+	const auto budgetFailure = FlowUi::devSystems::agentic::detail::processBinaryIdentity(
+		identity, identity.bytes - 1);
+	FLOWUI_CHECK(!budgetFailure && budgetFailure.error().code == ErrorCode::AgenticBudgetExhausted);
+	FLOWUI_CHECK(FlowUi::test::requireValue(
+		FlowUi::devSystems::agentic::detail::processBinaryIdentity(identity, identity.bytes)) == *binary);
+#endif
+	App application;
+	ThemeManager themes;
+	FlowUi::devSystems::DevMonitoringAndReporting monitoring;
+	FlowUi::devSystems::DevTooling tooling;
+	ResourceConfig resources;
+	AgenticWorkflowService service({.application = &application,
+								   .monitoring = &monitoring,
+								   .tooling = &tooling,
+								   .themes = &themes,
+								   .resource_configuration = &resources});
+	auto supplied = configuration(store, true).agentic_workflow;
+	supplied.run_id = FlowUi::test::requireValue(make_identifier("cfg"));
+	supplied.local_attachment_enabled = true;
+	supplied.input_control_enabled = true;
+	// A directory at the descriptor destination rejects publication after the
+	// IPC workers and interaction runtime have already been constructed.
+	FLOWUI_CHECK(std::filesystem::create_directories(
+		store / "runtime" / "instances" / (supplied.run_id + ".json")));
+	const auto setupFailure = service.configure(supplied);
+	FLOWUI_CHECK(!setupFailure &&
+				 setupFailure.error().code == ErrorCode::AgenticPublicationFailed);
+	FLOWUI_CHECK(!std::filesystem::exists(
+		store / "runtime" / "instances" / (supplied.run_id + ".json.pending")));
+	const auto rejected = service.request_capture(AgenticCaptureRequest{});
+	FLOWUI_CHECK(!rejected && rejected.error().code == ErrorCode::AgenticUnavailable);
+	FLOWUI_CHECK(!service.interaction_runtime());
+	FLOWUI_CHECK(!FlowUi::test::requireValue(service.capabilities()).enabled);
+	AgenticStore retainedStore(store);
+	const auto failedRunId = supplied.run_id;
+	const auto failedRun = FlowUi::test::requireValue(retainedStore.resolve_run(failedRunId));
+	const auto failureStatus = FlowUi::test::requireValue(retainedStore.queryRunStatus(failedRunId));
+	FLOWUI_CHECK(failureStatus.find("status")->string_or() == "failed");
+	FLOWUI_CHECK(failureStatus.find("reason")->string_or() == "configuration_failed");
+	FLOWUI_CHECK(!service.configure(supplied));
+	FLOWUI_CHECK(FlowUi::test::requireValue(retainedStore.resolve_run(failedRunId)) == failedRun);
+	FLOWUI_CHECK(FlowUi::test::requireValue(retainedStore.queryRunStatus(failedRunId))
+				 .find("status")->string_or() == "failed");
+#if !defined(_WIN32)
+	FLOWUI_CHECK(!std::filesystem::exists(std::filesystem::temp_directory_path() /
+										 ("flowui_" + supplied.run_id + ".sock")));
+#endif
+
+	// Failed setup must not publish configured=true or leave a running writer.
+	supplied = configuration(store, true).agentic_workflow;
+	supplied.run_id = "configuration-retry";
+	FLOWUI_CHECK(service.configure(supplied));
+	FLOWUI_CHECK(FlowUi::test::requireValue(service.capabilities()).enabled);
+	FLOWUI_CHECK(FlowUi::test::requireValue(retainedStore.queryRunStatus(supplied.run_id))
+				 .find("status")->string_or() == "running");
+	FLOWUI_CHECK(!service.configure(supplied));
+	FLOWUI_CHECK(FlowUi::test::requireValue(service.capabilities()).enabled);
+	FLOWUI_CHECK(service.shutdown());
+	FLOWUI_CHECK(FlowUi::test::requireValue(retainedStore.queryRunStatus(supplied.run_id))
+				 .find("status")->string_or() == "stopped");
+	FLOWUI_CHECK(FlowUi::test::requireValue(retainedStore.queryRunStatus(failedRunId))
+				 .find("status")->string_or() == "failed");
+}
+
 void test_dormancy(const std::filesystem::path& store) {
-	auto application = makeApplication(configuration(store, false));
-	const auto capabilities = application.agentic_workflow().capabilities();
+	auto application = ::FlowUi::test::requireValue(makeApplication(configuration(store, false)));
+	const auto capabilities = ::FlowUi::test::requireValue(application.agentic_workflow()).get().capabilities();
 	FLOWUI_CHECK(capabilities && !capabilities->enabled);
 	AgenticCaptureRequest request;
-	FLOWUI_CHECK(!application.agentic_workflow().request_capture(request));
+	FLOWUI_CHECK(!::FlowUi::test::requireValue(application.agentic_workflow()).get().request_capture(request));
 	frame(application);
 	FLOWUI_CHECK(!std::filesystem::exists(store));
 }
 
 void test_capture_retention(const std::filesystem::path& store) {
-	auto application = makeApplication(configuration(store, true));
-	auto& service = application.agentic_workflow();
+	auto application = ::FlowUi::test::requireValue(makeApplication(configuration(store, true)));
+	auto& service = ::FlowUi::test::requireValue(application.agentic_workflow()).get();
 	AgenticCaptureRequest original;
 	original.limits = service.capabilities()->limits;
 	original.performance = original.runtime_diagnostics = original.memory = original.visual =
@@ -153,8 +232,8 @@ void test_live_capture(const std::filesystem::path& store) {
 	std::uint64_t step_calls = 0;
 	std::uint64_t verify_calls = 0;
 	std::uint64_t cleanup_calls = 0;
-	auto application = makeApplication(configuration(store, true));
-	auto& service = application.agentic_workflow();
+	auto application = ::FlowUi::test::requireValue(makeApplication(configuration(store, true)));
+	auto& service = ::FlowUi::test::requireValue(application.agentic_workflow()).get();
 	const auto capabilities = service.capabilities();
 	FLOWUI_CHECK(capabilities && capabilities->enabled && capabilities->visual);
 	FLOWUI_CHECK(!capabilities->run_id.empty());
@@ -228,7 +307,7 @@ void test_live_capture(const std::filesystem::path& store) {
 	FLOWUI_CHECK(job);
 	const auto retried = service.request_capture(request);
 	FLOWUI_CHECK(retried && *retried == *job);
-	FLOWUI_CHECK(service.capture_lease_active());
+	FLOWUI_CHECK(FlowUi::test::requireValue(service.capture_lease_active()));
 	FLOWUI_CHECK(!application.request_dev_performance_capture({}));
 	auto different_request = request;
 	different_request.seed = 19u;
@@ -250,7 +329,7 @@ void test_live_capture(const std::filesystem::path& store) {
 				  << '\n';
 	FLOWUI_CHECK(status.phase == JobPhase::sealed);
 	FLOWUI_CHECK(setup_calls == 1u && verify_calls == 1u && cleanup_calls == 2u);
-	FLOWUI_CHECK(!service.capture_lease_active());
+	FLOWUI_CHECK(!FlowUi::test::requireValue(service.capture_lease_active()));
 	const auto sealed_retry = service.request_capture(request);
 	FLOWUI_CHECK(sealed_retry && *sealed_retry == *job);
 	const auto manifest = read_manifest(status.manifest_path);
@@ -343,11 +422,11 @@ void test_live_capture(const std::filesystem::path& store) {
 				 capabilities->run_id);
 
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
-	const auto viewport_created = application.viewPorts().create(
+	const auto viewport_created = ::FlowUi::test::requireValue(application.viewPorts()).get().create(
 		"retained_agentic_viewport",
 		ViewPortCreateInfo{.clearColor = {0.1f, 0.4f, 0.7f, 1.0f}, .clearEveryFrame = false});
 	FLOWUI_CHECK(viewport_created && *viewport_created);
-	const auto frames_in_flight = application.viewPorts().getVulkanInterop().framesInFlight;
+	const auto frames_in_flight = ::FlowUi::test::requireValue(::FlowUi::test::requireValue(application.viewPorts()).get().getVulkanInterop()).get().framesInFlight;
 	for (std::uint32_t warmup_frame = 0; warmup_frame <= frames_in_flight; ++warmup_frame)
 		frame(application);
 	auto viewport_request = request;
@@ -386,7 +465,7 @@ void test_live_capture(const std::filesystem::path& store) {
 				 viewport_image->find("submission")->find("serial")->uint64_or());
 	FLOWUI_CHECK(producer->find("source_image_revision")->uint64_or() > 0u);
 	FLOWUI_CHECK(!viewport_image->find("sampling_relationship")->find("same_frame")->bool_or());
-	const auto viewport_removed = application.viewPorts().remove("retained_agentic_viewport");
+	const auto viewport_removed = ::FlowUi::test::requireValue(application.viewPorts()).get().remove("retained_agentic_viewport");
 	FLOWUI_CHECK(viewport_removed && *viewport_removed);
 #endif
 
@@ -402,8 +481,8 @@ void test_live_capture(const std::filesystem::path& store) {
 	performance_request.memory =
 		capabilities->memory ? SectionRequirement::required : SectionRequirement::omit;
 	performance_request.idempotency_key = "correlated-performance-service-pass";
-	const bool previous_tree_collection = application.ui().dev_tree_collection();
-	const bool previous_value_collection = application.devTooling().overrides().value_collection();
+	const bool previous_tree_collection = ::FlowUi::test::requireValue(application.ui()).get().dev_tree_collection();
+	const bool previous_value_collection = ::FlowUi::test::requireValue(application.devTooling()).get().overrides().value_collection();
 	const auto performance_job = service.request_capture(performance_request);
 	FLOWUI_CHECK(performance_job);
 	bool injected = false;
@@ -414,8 +493,8 @@ void test_live_capture(const std::filesystem::path& store) {
 		FLOWUI_CHECK(before_frame);
 		const bool recording = before_frame->phase == JobPhase::recording;
 		if (recording) {
-			observed_suspension = !application.ui().dev_tree_collection() &&
-								  !application.devTooling().overrides().value_collection();
+			observed_suspension = !::FlowUi::test::requireValue(application.ui()).get().dev_tree_collection() &&
+								  !::FlowUi::test::requireValue(application.devTooling()).get().overrides().value_collection();
 		}
 		const bool emit = recording && !injected && capabilities->runtime_diagnostics;
 		frame(application, emit);
@@ -432,8 +511,8 @@ void test_live_capture(const std::filesystem::path& store) {
 		std::cerr << "Performance service capture outcome: " << name(status.phase) << ": "
 				  << status.reason << '\n';
 	FLOWUI_CHECK(status.phase == JobPhase::sealed && observed_suspension);
-	FLOWUI_CHECK(application.ui().dev_tree_collection() == previous_tree_collection);
-	FLOWUI_CHECK(application.devTooling().overrides().value_collection() ==
+	FLOWUI_CHECK(::FlowUi::test::requireValue(application.ui()).get().dev_tree_collection() == previous_tree_collection);
+	FLOWUI_CHECK(::FlowUi::test::requireValue(application.devTooling()).get().overrides().value_collection() ==
 				 previous_value_collection);
 	const auto performance_manifest = read_manifest(status.manifest_path);
 	FLOWUI_CHECK(performance_manifest);
@@ -464,7 +543,7 @@ void test_live_capture(const std::filesystem::path& store) {
 		memory_request.measurement_ticks = 12;
 		memory_request.duration_ns = 10'000'000'000ull;
 		memory_request.idempotency_key = "memory-publication-generation-coherence";
-		const auto before_memory = application.devMonitoring().memoryReporting().status();
+		const auto before_memory = ::FlowUi::test::requireValue(application.devMonitoring()).get().memoryReporting().status();
 		const auto memory_job = service.request_capture(memory_request);
 		FLOWUI_CHECK(memory_job);
 		const auto memory_deadline = std::chrono::steady_clock::now() + std::chrono::seconds(15);
@@ -481,7 +560,7 @@ void test_live_capture(const std::filesystem::path& store) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(2));
 		}
 		FLOWUI_CHECK(memory_status.phase == JobPhase::sealed);
-		const auto after_memory = application.devMonitoring().memoryReporting().status();
+		const auto after_memory = ::FlowUi::test::requireValue(application.devMonitoring()).get().memoryReporting().status();
 		FLOWUI_CHECK(after_memory.generation > before_memory.generation + 1);
 		FLOWUI_CHECK(after_memory.history_epoch == before_memory.history_epoch &&
 					 after_memory.history_storage_generation ==
@@ -520,8 +599,8 @@ void test_local_endpoint(const std::filesystem::path& store) {
 	{
 		auto config = configuration(store, true);
 		config.agentic_workflow.local_attachment_enabled = true;
-		auto application = makeApplication(config);
-		auto& service = application.agentic_workflow();
+		auto application = ::FlowUi::test::requireValue(makeApplication(config));
+		auto& service = ::FlowUi::test::requireValue(application.agentic_workflow()).get();
 		const auto capabilities = service.capabilities();
 		FLOWUI_CHECK(capabilities && capabilities->local_attachment);
 		descriptor_path = store / "runtime" / "instances" / (capabilities->run_id + ".json");
@@ -613,16 +692,20 @@ void test_local_endpoint(const std::filesystem::path& store) {
 } // namespace
 
 int main(int argument_count, char** arguments) {
+	const std::string_view selected = argument_count > 1 ? arguments[1] : "capture";
 #if !defined(_WIN32)
-	if (!std::getenv("DISPLAY") && !std::getenv("WAYLAND_DISPLAY")) {
+	if (selected != "configure_failure" && !std::getenv("DISPLAY") &&
+		!std::getenv("WAYLAND_DISPLAY")) {
 		std::cout << "SKIP: native-window Agentic Workflow test requires a GUI display\n";
 		return 77;
 	}
 #endif
 	FlowUi::test::Runner runner;
 	TestDirectory directory;
-	const std::string_view selected = argument_count > 1 ? arguments[1] : "capture";
-	if (selected == "dormant")
+	if (selected == "configure_failure")
+		runner.run("failed configuration leaves no live admission and permits retry",
+				   [&] { test_configuration_failure(directory.root / "configuration"); });
+	else if (selected == "dormant")
 		runner.run("dormant app creates no agentic store",
 				   [&] { test_dormancy(directory.root / "dormant"); });
 	else if (selected == "capture")

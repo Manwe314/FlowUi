@@ -294,6 +294,9 @@
         "completion_succeeded": {
           "type": "boolean"
         },
+        "completion_observation_failed": {
+          "type": "boolean"
+        },
         "reason": {
           "type": "string",
           "maxLength": 4096

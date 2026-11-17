@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #include "../demo/DemoElementSchemas.hpp"
 #include "FlowUi/Public/Flow.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticAction.hpp"
@@ -57,8 +58,8 @@ struct SampleResources {
 	SampleResources() = default;
 	explicit SampleResources(App& app) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
-		interface_icons::registerDevInterfaceIcons(app.icons());
-		icon = app.icons().textureRef(interface_icons::kInspectKey);
+		interface_icons::registerDevInterfaceIcons(::FlowUi::test::requireValue(app.icons()).get());
+		icon = ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.icons()).get().textureRef(interface_icons::kInspectKey));
 #endif
 	}
 };
@@ -94,7 +95,7 @@ struct Sample {
 				Clay_ElementDeclaration icon{};
 				icon.layout.sizing = {CLAY_SIZING_FIXED(18), CLAY_SIZING_FIXED(18)};
 				icon.image.imageData = context.uiManager.imageData(context.resources().icon);
-				CLAY(context.clayID("sample-resource"), icon);
+				CLAY(::FlowUi::test::requireValue(context.clayID("sample-resource")), icon);
 			}
 		}
 	}
@@ -147,7 +148,7 @@ struct Fixture {
 void set_icons(App& app, Fixture& fixture, bool enabled) {
 	fixture.icons_enabled = enabled;
 	auto invocation = ::FlowUi::detail::element::ElementInvocation<DevInterfaceHeader>::begin(
-		app.elements(), app.ui(fixture.interface_window), fixture.interface_window,
+		::FlowUi::test::requireValue(app.elements()).get(), ::FlowUi::test::requireValue(app.ui(fixture.interface_window)).get(), fixture.interface_window,
 		FlowElementID{DevInterfaceHeader::definitionId.value});
 	auto& resources = const_cast<DevInterfaceHeaderResources&>(invocation.resources());
 	if (!fixture.saved_header_icons) {
@@ -163,7 +164,7 @@ void require_status(Status status) {
 }
 
 void draw_application(App& app, WindowId window, Fixture& fixture) {
-	auto& ui = app.ui(window);
+	auto& ui = ::FlowUi::test::requireValue(app.ui(window)).get();
 	Clay_ElementDeclaration root{};
 	root.layout.sizing = {CLAY_SIZING_GROW(0), CLAY_SIZING_GROW(0)};
 	root.layout.padding = CLAY_PADDING_ALL(20);
@@ -205,7 +206,7 @@ void draw_application(App& app, WindowId window, Fixture& fixture) {
 		button.text = "Application FSEL button";
 		button.contentMode = FSEL::ButtonContentMode::IconThenText;
 		button.icon = fixture.icons_enabled ? fixture.icon : TextureRef{};
-		button.onActivate = ActionCall{app.actions().uiActions().make(
+		button.onActivate = ActionCall{::FlowUi::test::requireValue(app.actions()).get().uiActions().make(
 			UiAction("tests.dev-notes.increment", [](std::uint64_t& count) { ++count; }),
 			fixture.button_activations)};
 		ui.createElement(FSEL::kButton, button_identity).setParameters(button).draw();
@@ -214,7 +215,7 @@ void draw_application(App& app, WindowId window, Fixture& fixture) {
 
 [[nodiscard]] agentic::Json snapshot(App& app, const Fixture& fixture) {
 	int window_width = 0, window_height = 0;
-	glfwGetWindowSize(static_cast<GLFWwindow*>(app.nativeWindowHandle(fixture.interface_window)),
+	glfwGetWindowSize(static_cast<GLFWwindow*>(::FlowUi::test::requireValue(app.nativeWindowHandle(fixture.interface_window))),
 					  &window_width, &window_height);
 	const auto& timeline = fixture.session.performance_timeline;
 	std::array<std::uint64_t, 4> cpu_level_counts{};
@@ -248,8 +249,8 @@ void draw_application(App& app, WindowId window, Fixture& fixture) {
 		 {"window_width", agentic::Json::number(static_cast<std::uint64_t>(window_width))},
 		 {"window_height", agentic::Json::number(static_cast<std::uint64_t>(window_height))},
 		 {"completed_window_frame",
-		  agentic::decimal(app.ui(fixture.interface_window).dev_completed_window_frame())},
-		 {"completed_main_frame", agentic::decimal(app.ui().dev_completed_window_frame())},
+		  agentic::decimal(::FlowUi::test::requireValue(app.ui(fixture.interface_window)).get().dev_completed_window_frame())},
+		 {"completed_main_frame", agentic::decimal(::FlowUi::test::requireValue(app.ui()).get().dev_completed_window_frame())},
 		 {"inspector_width", agentic::Json(fixture.session.inspectorWidth)},
 		 {"geometry_stress", fixture.geometry_stress},
 		 {"active_tab", agentic::Json::number(fixture.session.activeTab)},
@@ -259,7 +260,7 @@ void draw_application(App& app, WindowId window, Fixture& fixture) {
 								: agentic::Json{}},
 		 {"optional_present", fixture.parameters.winning_value.has_value()},
 		 {"recording_cpu_level", agentic::Json::number(static_cast<std::uint64_t>(
-									 app.devMonitoring().timing().config().cpuLevel))},
+									 ::FlowUi::test::requireValue(app.devMonitoring()).get().timing().config().cpuLevel))},
 		 {"compiled_cpu_level", agentic::Json::number(FLOWUI_DEV_TIMING_LEVEL)},
 		 {"timeline_snapshot_revision", agentic::decimal(timeline.snapshot_revision)},
 		 {"timeline_capture_generation", agentic::decimal(timeline.capture_generation)},
@@ -289,7 +290,7 @@ void draw_application(App& app, WindowId window, Fixture& fixture) {
 
 [[nodiscard]] Status submit_value(App& app, Fixture& fixture, const agentic::Json* value,
 								  bool clear) {
-	const auto schema = app.devTooling().schemas().view();
+	const auto schema = ::FlowUi::test::requireValue(app.devTooling()).get().schemas().view();
 	const auto* element = schema ? schema->findElement(Sample::definitionId) : nullptr;
 	if (!element)
 		return unexpectedError(agentic::agentic_error(agentic::AgenticError::unavailable));
@@ -307,7 +308,7 @@ void draw_application(App& app, WindowId window, Fixture& fixture) {
 	command.field = {schema->type(element->parametersType)->id, field->id};
 	command.layer = tooling::DevOverrideLayer::LiveDefinition;
 	command.preserve_baked_assignment = true;
-	const auto& records = app.devTooling().overrides().appliedOverrides().records();
+	const auto& records = ::FlowUi::test::requireValue(app.devTooling()).get().overrides().appliedOverrides().records();
 	const auto previous = std::ranges::find_if(records, [&](const auto& record) {
 		return record.target.definition == command.element.definition &&
 			   record.target.scope == tooling::DevOverrideScope::Definition &&
@@ -316,7 +317,7 @@ void draw_application(App& app, WindowId window, Fixture& fixture) {
 	});
 	if (clear && previous == records.end())
 		return {};
-	if (!clear && app.devTooling().overrides().copyValue(std::optional<double>{value->number_or()},
+	if (!clear && ::FlowUi::test::requireValue(app.devTooling()).get().overrides().copyValue(std::optional<double>{value->number_or()},
 														 command.value) !=
 					  tooling::DevValueOperationStatus::Success)
 		return unexpectedError(agentic::agentic_error(agentic::AgenticError::unavailable));
@@ -336,7 +337,7 @@ void draw_application(App& app, WindowId window, Fixture& fixture) {
 	tooling::DevChangeSet changes{};
 	changes.transaction = fixture.session.nextEditTransaction++;
 	changes.commands.emplace_back(std::move(command));
-	if (!app.devTooling().overrides().submit(std::move(changes)))
+	if (!::FlowUi::test::requireValue(app.devTooling()).get().overrides().submit(std::move(changes)))
 		return unexpectedError(agentic::agentic_error(agentic::AgenticError::unavailable));
 	fixture.session.editUndoStack.emplace_back(std::move(history));
 	fixture.session.editRedoStack.clear();
@@ -344,7 +345,7 @@ void draw_application(App& app, WindowId window, Fixture& fixture) {
 }
 
 [[nodiscard]] Status submit_button_definition(App& app, Fixture& fixture, std::uint64_t font_size) {
-	const auto schema = app.devTooling().schemas().view();
+	const auto schema = ::FlowUi::test::requireValue(app.devTooling()).get().schemas().view();
 	const auto* element = schema ? schema->findElement(FSEL::Button::definitionId) : nullptr;
 	if (!element)
 		return unexpectedError(agentic::agentic_error(agentic::AgenticError::unavailable));
@@ -362,14 +363,14 @@ void draw_application(App& app, WindowId window, Fixture& fixture) {
 	command.field = {schema->type(element->parametersType)->id, field->id};
 	command.layer = tooling::DevOverrideLayer::LiveDefinition;
 	command.preserve_baked_assignment = true;
-	if (font_size && app.devTooling().overrides().copyValue(
+	if (font_size && ::FlowUi::test::requireValue(app.devTooling()).get().overrides().copyValue(
 						 std::optional<std::uint16_t>{static_cast<std::uint16_t>(font_size)},
 						 command.value) != tooling::DevValueOperationStatus::Success)
 		return unexpectedError(agentic::agentic_error(agentic::AgenticError::unavailable));
 	tooling::DevChangeSet changes{};
 	changes.transaction = fixture.session.nextEditTransaction++;
 	changes.commands.emplace_back(std::move(command));
-	if (!app.devTooling().overrides().submit(std::move(changes)))
+	if (!::FlowUi::test::requireValue(app.devTooling()).get().overrides().submit(std::move(changes)))
 		return unexpectedError(agentic::agentic_error(agentic::AgenticError::unavailable));
 	fixture.button_definition_font_size = font_size;
 	return {};
@@ -390,7 +391,7 @@ void draw_application(App& app, WindowId window, Fixture& fixture) {
 		fixture.session.inspectorWidth = static_cast<float>(width->number_or());
 	if (const auto* width = arguments.find("window_width"))
 		glfwSetWindowSize(
-			static_cast<GLFWwindow*>(app.nativeWindowHandle(fixture.interface_window)),
+			static_cast<GLFWwindow*>(::FlowUi::test::requireValue(app.nativeWindowHandle(fixture.interface_window))),
 			static_cast<int>(width->number_or()), 820);
 	if (const auto* height = arguments.find("combo_height"))
 		fixture.combo_height = static_cast<float>(height->number_or());
@@ -408,7 +409,7 @@ void draw_application(App& app, WindowId window, Fixture& fixture) {
 	}
 	if (const auto* theme = arguments.find("theme")) {
 		fixture.theme = theme->string_or();
-		const auto changed = app.themes().setActiveVariant<FSEL::FSELTheme>(fixture.theme);
+		const auto changed = ::FlowUi::test::requireValue(app.themes()).get().setActiveVariant<FSEL::FSELTheme>(fixture.theme);
 		if (!changed)
 			return changed;
 	}
@@ -436,7 +437,7 @@ void draw_application(App& app, WindowId window, Fixture& fixture) {
 		} else if (selection->string_or() == "clay") {
 #if FLOW_UI_DEV_CAPTURE_CLAY
 			fixture.session.inspectForest = kDevInterfaceClayForest;
-			const auto& tree = app.ui(fixture.session.selectedWindowId).devTreeSnapshot();
+			const auto& tree = ::FlowUi::test::requireValue(app.ui(fixture.session.selectedWindowId)).get().devTreeSnapshot();
 			const auto node = std::ranges::find_if(tree.flow.nodes, [](const auto& candidate) {
 				return candidate.definition == Sample::definitionId;
 			});
@@ -557,7 +558,7 @@ void draw_application(App& app, WindowId window, Fixture& fixture) {
 }
 
 [[nodiscard]] Status register_action(App& app, Fixture& fixture) {
-	auto runtime = app.agentic_workflow().interaction_runtime();
+	auto runtime = ::FlowUi::test::requireValue(app.agentic_workflow()).get().interaction_runtime();
 	if (!runtime)
 		return unexpectedError(runtime.error());
 	agentic::AgenticActionDeclaration declaration;
@@ -617,16 +618,16 @@ void render(App& app, Fixture& fixture) {
 			fixture.configuration_error = changed.error();
 		fixture.applied_generation = fixture.configuration_generation;
 		fixture.applied_interface_frame =
-			app.ui(fixture.interface_window).dev_completed_window_frame();
-		fixture.applied_main_frame = app.ui().dev_completed_window_frame();
+			::FlowUi::test::requireValue(app.ui(fixture.interface_window)).get().dev_completed_window_frame();
+		fixture.applied_main_frame = ::FlowUi::test::requireValue(app.ui()).get().dev_completed_window_frame();
 	}
 	require_status(app.beginFrame());
 	draw_application(app, app.mainWindowId(), fixture);
 	require_status(app.endFrame());
 	require_status(app.drawFrame());
 	fixture.rendered_interface_frame =
-		app.ui(fixture.interface_window).dev_completed_window_frame();
-	fixture.rendered_main_frame = app.ui().dev_completed_window_frame();
+		::FlowUi::test::requireValue(app.ui(fixture.interface_window)).get().dev_completed_window_frame();
+	fixture.rendered_main_frame = ::FlowUi::test::requireValue(app.ui()).get().dev_completed_window_frame();
 	fixture.completed_state = snapshot(app, fixture);
 }
 
@@ -638,9 +639,9 @@ void render(App& app, Fixture& fixture) {
 }
 
 [[nodiscard]] bool verify_combo_geometry(App& app) {
-	const auto& tree = app.ui().devTreeSnapshot();
+	const auto& tree = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot();
 	const auto root = std::ranges::find_if(tree.clay.nodes, [&](const auto& node) {
-		return node.clayId == app.ui().toClayEID(FlowElementID{combo_identity.value}).id;
+		return node.clayId == ::FlowUi::test::requireValue(app.ui()).get().toClayEID(FlowElementID{combo_identity.value}).id;
 	});
 	if (root == tree.clay.nodes.end())
 		return false;
@@ -701,7 +702,7 @@ void render(App& app, Fixture& fixture) {
 		return false;
 	set_inspect_window(app, fixture.session, fixture.secondary_window);
 	if (fixture.session.selectedElementId ||
-		app.devTooling().inspect_interaction().primary_target())
+		::FlowUi::test::requireValue(app.devTooling()).get().inspect_interaction().primary_target())
 		return false;
 	require_status(app.destroyWindow(fixture.secondary_window));
 	fixture.secondary_window = InvalidWindowId;
@@ -745,21 +746,21 @@ int main(int argument_count, char** arguments) {
 		config.agentic_workflow.action_control_enabled = !native_test;
 		config.agentic_workflow.store_path = store;
 		config.agentic_workflow.limits.maximum_images = 64;
-		App app = makeApplication(config);
+		App app = ::FlowUi::test::requireValue(makeApplication(config));
 		if (!store.empty())
-			app.devTooling().bakePipeline().setManifestPath(store / "fixture.flowchanges");
+			::FlowUi::test::requireValue(app.devTooling()).get().bakePipeline().setManifestPath(store / "fixture.flowchanges");
 		require_status(
-			app.themes().registerTheme<FSEL::FSELTheme>("default", FSEL::FSELTheme{}, true));
+			::FlowUi::test::requireValue(app.themes()).get().registerTheme<FSEL::FSELTheme>("default", FSEL::FSELTheme{}, true));
 		auto hostile = FSEL::FSELTheme{};
 		hostile.buttonTheme.idle.backgroundColor = Flow_Color("#E05050");
 		hostile.buttonTheme.padding = CLAY_PADDING_ALL(28);
 		hostile.buttonTheme.labelFontSize = 25;
 		hostile.comboBoxTheme.iconSize = 80;
 		hostile.comboBoxTheme.triggerPadding = CLAY_PADDING_ALL(18);
-		require_status(app.themes().registerTheme<FSEL::FSELTheme>("hostile", hostile, false));
+		require_status(::FlowUi::test::requireValue(app.themes()).get().registerTheme<FSEL::FSELTheme>("hostile", hostile, false));
 #if FLOWUI_INCLUDE_ICON_MANAGER
-		interface_icons::registerDevInterfaceIcons(app.icons());
-		fixture.icon = app.icons().textureRef(interface_icons::kInspectKey);
+		interface_icons::registerDevInterfaceIcons(::FlowUi::test::requireValue(app.icons()).get());
+		fixture.icon = ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.icons()).get().textureRef(interface_icons::kInspectKey));
 #endif
 		const auto secondary = app.createWindow(
 			WindowConfigOverrides{
@@ -791,7 +792,7 @@ int main(int argument_count, char** arguments) {
 			return passed ? 0 : 1;
 		}
 		require_status(register_action(app, fixture));
-		while (!app.shouldClose()) {
+		while (!::FlowUi::test::requireValue(app.shouldClose())) {
 			render(app, fixture);
 			std::this_thread::sleep_for(std::chrono::milliseconds(2));
 		}

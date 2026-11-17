@@ -1,15 +1,27 @@
 var group__flowui__shortcut__manager =
 [
     [ "FlowUi::ShortcutManager", "classFlowUi_1_1ShortcutManager.html", [
-      [ "DevShortcutView", "structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html", null ],
-      [ "clear", "classFlowUi_1_1ShortcutManager.html#af08e7e2bb696cec1bf476a3afda5d6b1", null ],
-      [ "clearFocusedElement", "classFlowUi_1_1ShortcutManager.html#abf2f8245061c1fd51116e79c615ce52d", null ],
-      [ "focusedElement", "classFlowUi_1_1ShortcutManager.html#a2d2a678228d439ea9889a30b1a6c94b2", null ],
-      [ "registerShortcut", "classFlowUi_1_1ShortcutManager.html#a85b5c95b323ace22144320b9679a820d", null ],
-      [ "registerShortcut", "classFlowUi_1_1ShortcutManager.html#a2bc44da2fe129e8b7ab3a6f2ff8b0b9b", null ],
-      [ "setFocusedElement", "classFlowUi_1_1ShortcutManager.html#a8a496694eeaf4fdf03166ecf9c273212", null ],
-      [ "unregisterShortcut", "classFlowUi_1_1ShortcutManager.html#aa1243fa0e00dffc89ec688db82954a5e", null ],
-      [ "visitDevShortcuts", "classFlowUi_1_1ShortcutManager.html#a36fec101cdc166336fedc06d6ddc12e5", null ]
+      [ "DevShortcutView", "structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html", [
+        [ "action", "structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html#a3633b809c851c2f8c78b13e4b2a8a0d3", null ],
+        [ "callback", "structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html#a9b11ca360409abbe827faaec6a8705f5", null ],
+        [ "chord", "structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html#a67f7ed0779ffb4f4e2e1a231aaed5847", null ],
+        [ "epoch", "structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html#a6944ea20f8f815f27696970910a7354c", null ],
+        [ "handling", "structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html#aa763eaf54e3c81b074930f6fa25bb3c9", null ],
+        [ "id", "structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html#acfcca05a240716c18920a274d59e3e65", null ],
+        [ "order", "structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html#a8a236b5f46744b5b891b21c41d2c5532", null ],
+        [ "priority", "structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html#a09abbf5fa4c0c0e87061f0b46ef3383e", null ],
+        [ "scope", "structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html#af8f54459c3728d7d3ccd9f30faa9f8c2", null ]
+      ] ],
+      [ "DevShortcutVisitor", "classFlowUi_1_1ShortcutManager.html#aa8aa7973b532d68addbc0fbeb01410d5", null ],
+      [ "appendDevMemorySamples", "classFlowUi_1_1ShortcutManager.html#a51cfe2fbc872abbd7363026d1f4209de", null ],
+      [ "clear", "classFlowUi_1_1ShortcutManager.html#aa43c7748d7ae0f95c290f4d96f9ec797", null ],
+      [ "clearFocusedElement", "classFlowUi_1_1ShortcutManager.html#ab6df95bf61d8cb4e8e19bcf1feace71c", null ],
+      [ "focusedElement", "classFlowUi_1_1ShortcutManager.html#aa7269bc6ec50eeb4e64ef2e85839b95d", null ],
+      [ "registerShortcut", "classFlowUi_1_1ShortcutManager.html#aea902f47ad087df9bfb6ce4d1457328b", null ],
+      [ "registerShortcut", "classFlowUi_1_1ShortcutManager.html#a1bbaaa509819dbd397fd1b5696f95bd2", null ],
+      [ "setFocusedElement", "classFlowUi_1_1ShortcutManager.html#a00314911c83eefc062bb22a8db0ae78a", null ],
+      [ "unregisterShortcut", "classFlowUi_1_1ShortcutManager.html#a10a828d4b72e8aca8efe653764561354", null ],
+      [ "visitDevShortcuts", "classFlowUi_1_1ShortcutManager.html#ad5ee805bcf932e983247cb4a8c503c3c", null ]
     ] ],
     [ "FlowUi::ShortcutChord", "structFlowUi_1_1ShortcutChord.html", [
       [ "alt", "structFlowUi_1_1ShortcutChord.html#ad4895e2238cad0480ba4f2317b040355", null ],
@@ -27,7 +39,10 @@ var group__flowui__shortcut__manager =
     ] ],
     [ "FlowUi::ShortcutCallback", "group__flowui__shortcut__manager.html#gafe920a194eec62fa501a18d765c03a35", null ],
     [ "FlowUi::ShortcutId", "group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9", null ],
-    [ "FlowUi::ShortcutHandling", "group__flowui__shortcut__manager.html#gaa96df297b2a302ec17595a07e88af64f", null ],
+    [ "FlowUi::ShortcutHandling", "group__flowui__shortcut__manager.html#gaa96df297b2a302ec17595a07e88af64f", [
+      [ "FlowUi::ShortcutHandling::Consume", "group__flowui__shortcut__manager.html#ggaa96df297b2a302ec17595a07e88af64fad2e0379c3a30439bfc1b6869af4408cc", null ],
+      [ "FlowUi::ShortcutHandling::PassThrough", "group__flowui__shortcut__manager.html#ggaa96df297b2a302ec17595a07e88af64fae1ff6a7360e99cb46db6bb5d3ff8e2eb", null ]
+    ] ],
     [ "FlowUi::ShortcutScope", "group__flowui__shortcut__manager.html#ga1b3c08a536c355e5163a7a367297bfee", [
       [ "FlowUi::ShortcutScope::FocusedInput", "group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeac39487764c47d7394c716eb92cf51694", null ],
       [ "FlowUi::ShortcutScope::FocusedElement", "group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeada12bd1e401dad9ceac02d871dbb34e3", null ],

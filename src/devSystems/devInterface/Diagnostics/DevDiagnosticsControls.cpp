@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsControls.hpp"
 #include "FlowUi/Public/input/Key.hpp"
 
@@ -98,12 +99,12 @@ void help_text(Context& context, uint64_t key, std::string_view label, std::stri
 	auto heading = row(0);
 	heading.layout.sizing.height = CLAY_SIZING_FIT(0);
 	heading.layout.sizing.width = CLAY_SIZING_FIT(0);
-	CLAY(context.clayID(Keyed("help", key)), heading) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("help", key))), heading) {
 		text(context, label, color, size);
 		diagnostics_ui::icon(context, Keyed("help-icon", key), Icon::Info,
 							 interface_theme::kTextMuted, 12);
 		if (context.uiManager.getPreviousFramesInteraction().isHovered(
-				context.clayID(Keyed("help", key))))
+				FlowUi::ValueOrThrow(context.clayID(Keyed("help", key)))))
 			diagnostics_ui::pointer_tooltip(context, Keyed("help-tooltip", key), description);
 	}
 }
@@ -174,7 +175,7 @@ void command(Context& context, uint64_t key, std::string_view label, DevDiagnost
 			 bool enabled = true, uint32_t index = 0) {
 	ActionCall call{};
 	if (context.params.app)
-		call = ActionCall{context.params.app->actions().uiActions().make(
+		call = ActionCall{FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(
 			queue_command, context.params.interfaceState->diagnostics, action, index)};
 	const auto icon =
 		action == DevDiagnosticsCommand::Resume ? Icon::Resume
@@ -191,7 +192,7 @@ void command(Context& context, uint64_t key, std::string_view label, DevDiagnost
 }
 void number(Context& context, uint64_t key, std::string_view label, uint32_t& value,
 			uint32_t maximum = 1000000) {
-	CLAY(context.clayID(Keyed("number", key)), column(3)) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("number", key))), column(3)) {
 		help_text(
 			context, 10 + key, label,
 			key == 3
@@ -275,7 +276,7 @@ void rebuild_options(Context& context) {
 }
 void trigger_choice(Context& context, uint64_t key, std::string_view label, uint64_t& value,
 					std::span<const FSEL::ComboBoxOption> options) {
-	CLAY(context.clayID(Keyed("trigger-choice-field", key)), column(3)) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("trigger-choice-field", key))), column(3)) {
 		help_text(context, 20 + key, label,
 				  "Any is a wildcard. Match the error code and production site; source, subject "
 				  "and window do not narrow this trigger.");
@@ -307,11 +308,11 @@ void trigger_editor(Context& context) {
 	trigger_choice(context, 2, "Production site", controls.trigger_site, controls.site_options);
 	button(context, 20,
 		   state.trigger.matchNativeCode ? "Native code matching: on" : "Native code matching: off",
-		   ActionCall{context.params.app->actions().uiActions().make(
+		   ActionCall{FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(
 			   toggle_native, state.trigger.matchNativeCode)});
 	if (state.trigger.matchNativeCode)
 		number(context, 3, "Native code (unsigned decimal)", state.trigger.nativeCode, UINT32_MAX);
-	CLAY(context.clayID("trigger-windows"), row()) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("trigger-windows")), row()) {
 		number(context, 4, "Pre-occurrence ticks", state.trigger.preOccurrenceTicks);
 		number(context, 5, "Post-occurrence ticks", state.trigger.postOccurrenceTicks);
 	}
@@ -340,7 +341,7 @@ void trigger_editor(Context& context) {
 				 ". That earlier rule wins for matching occurrences.",
 			 interface_theme::kStatusAmber);
 	button(context, 21, "Arm trigger",
-		   ActionCall{context.params.app->actions().uiActions().make(arm_trigger, state, controls)},
+		   ActionCall{FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(arm_trigger, state, controls)},
 		   !duplicate_found && config.triggers.size() < 64);
 	if (config.triggers.size() >= 64)
 		text(context, "Trigger capacity reached (64 rules).", interface_theme::kStatusAmber);
@@ -361,7 +362,7 @@ void trigger_editor(Context& context) {
 		auto card = column(4);
 		card.layout.padding = {8, 8, 6, 6};
 		card.backgroundColor = interface_theme::kDepth1Panel;
-		CLAY(context.clayID(Keyed("armed-rule", trigger_index)), card) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("armed-rule", trigger_index))), card) {
 			text(context,
 				 "#" + std::to_string(trigger_index + 1) + " " +
 					 (armed.code == ErrorCode::None ? "Any code"
@@ -376,7 +377,7 @@ void trigger_editor(Context& context) {
 												   : "Any native code") +
 					 " · pre " + std::to_string(armed.preOccurrenceTicks) + " / post " +
 					 std::to_string(armed.postOccurrenceTicks) + " ticks");
-			CLAY(context.clayID(Keyed("armed-actions", trigger_index)), row()) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("armed-actions", trigger_index))), row()) {
 				command(context, 1000 + trigger_index * 3, "Move up",
 						DevDiagnosticsCommand::MoveTriggerUp, trigger_index > 0, trigger_index);
 				command(context, 1001 + trigger_index * 3, "Move down",
@@ -389,7 +390,7 @@ void trigger_editor(Context& context) {
 	}
 	button(context, 22, "Close",
 		   ActionCall{
-			   context.params.app->actions().uiActions().make(close_popovers, state, controls)});
+			   FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(close_popovers, state, controls)});
 }
 void export_editor(Context& context) {
 	auto& state = context.params.interfaceState->diagnostics;
@@ -440,7 +441,7 @@ void export_editor(Context& context) {
 	if (!state.message.empty())
 		text(context, state.message, interface_theme::kTextSecondary);
 	button(context, 32, "Close",
-		   ActionCall{context.params.app->actions().uiActions().make(close_popovers, state,
+		   ActionCall{FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(close_popovers, state,
 																	 context.state())});
 }
 } // namespace
@@ -488,7 +489,7 @@ void DevDiagnosticsControls::buildElement(BuildContext& context) {
 				Clay_Sizing{.width = CLAY_SIZING_FIXED(163), .height = CLAY_SIZING_FIXED(28)};
 			if (available)
 				capture.onChanged = ActionCall{
-					context.params.app->actions().uiActions().make(change_capture, state)};
+					FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(change_capture, state)};
 			context.uiManager.createElement(FSEL::kComboBox, "capture-level")
 				.setParameters(capture)
 				.setDevInternalCapture(true)
@@ -498,16 +499,16 @@ void DevDiagnosticsControls::buildElement(BuildContext& context) {
 			draw_capture();
 		if (available && compact) {
 			button(context, 4, "Diagnostics…",
-				   ActionCall{context.params.app->actions().uiActions().make(toggle_compact, state,
+				   ActionCall{FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(toggle_compact, state,
 																			 context.state())});
 		} else if (available) {
 			button(context, 1, "Capture trigger…",
-				   ActionCall{context.params.app->actions().uiActions().make(toggle_trigger, state,
+				   ActionCall{FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(toggle_trigger, state,
 																			 context.state())});
 			command(context, 2, state.frozen ? "Resume live" : "Freeze view",
 					state.frozen ? DevDiagnosticsCommand::Resume : DevDiagnosticsCommand::Freeze);
 			button(context, 3, "Export…",
-				   ActionCall{context.params.app->actions().uiActions().make(toggle_export, state)},
+				   ActionCall{FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(toggle_export, state)},
 				   state.selected.has_value() || !state.snapshot.rows.empty());
 		} else
 			text(context, "Reporting unavailable");
@@ -533,16 +534,16 @@ void DevDiagnosticsControls::buildElement(BuildContext& context) {
 												  : 0,
 									 5};
 			panel.floating.zIndex = 110;
-			CLAY(context.clayID("control-popover"), panel) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("control-popover")), panel) {
 				auto scroll_body = column(8);
 				scroll_body.layout.sizing.height = CLAY_SIZING_FIT(
 					0, std::max(120.0f, dimensions.height -
 											(anchor.found ? anchor.boundingBox.y + 40 : 80) - 12));
 				scroll_body.clip = {.vertical = true};
-				const auto scroll = Clay_GetScrollContainerData(context.clayID("popover-body"));
+				const auto scroll = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("popover-body")));
 				if (scroll.found && scroll.scrollPosition)
 					scroll_body.clip.childOffset = *scroll.scrollPosition;
-				CLAY(context.clayID("popover-body"), scroll_body) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("popover-body")), scroll_body) {
 					if (state.show_trigger)
 						trigger_editor(context);
 					else if (state.show_export)
@@ -551,19 +552,19 @@ void DevDiagnosticsControls::buildElement(BuildContext& context) {
 						text(context, "Diagnostics controls", interface_theme::kTextCanvas, 13);
 						draw_capture();
 						button(context, 1, "Capture trigger…",
-							   ActionCall{context.params.app->actions().uiActions().make(
+							   ActionCall{FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(
 								   toggle_trigger, state, context.state())});
 						command(context, 2, state.frozen ? "Resume live" : "Freeze view",
 								state.frozen ? DevDiagnosticsCommand::Resume
 											 : DevDiagnosticsCommand::Freeze);
 						button(context, 3, "Export…",
-							   ActionCall{context.params.app->actions().uiActions().make(
+							   ActionCall{FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(
 								   toggle_export, state)},
 							   state.selected.has_value() || !state.snapshot.rows.empty());
 						if (!state.message.empty())
 							text(context, state.message);
 						button(context, 5, "Close",
-							   ActionCall{context.params.app->actions().uiActions().make(
+							   ActionCall{FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(
 								   close_popovers, state, context.state())});
 					}
 					constexpr std::array<std::string_view, 5> level_names{

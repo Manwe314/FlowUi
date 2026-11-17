@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,85 +106,324 @@ $(function() {
   <div class="headertitle"><div class="title">Icon Manager API </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1>Enums</h1>
-<h2><b>TextureFitMode</b></h2>
-<h3><span class="tt">enum class TextureFitMode : uint8_t</span></h3>
-<p>Texture layout mode inside a target rectangle. Icon texture refs typically use contain sizing.</p>
-<h1>Public Structs</h1>
-<h2><b>IconManagerConfig</b></h2>
-<h3><span class="tt">struct IconManagerConfig</span></h3>
-<p>Configures SVG icon rasterization and atlas caching. It controls atlas size, maximum pages, size reuse tolerance, and padding.</p>
-<h2><b>TextureRef</b></h2>
-<h3><span class="tt">struct TextureRef</span></h3>
-<p>Texture request handle returned by IconManager. FlowUi resolves it to a cached atlas variant sized to the rendered UI area.</p>
+<div class="textblock"><p><a href="include/FlowUi/Public/managers/IconManager.hpp">Public declarations</a> · <a href="include/FlowUi/Public/configurationStructs/IconManagerConfig.hpp">Icon configuration</a></p>
+<p>With <span class="tt">FLOWUI_INCLUDE_ICON_MANAGER</span> enabled, SVG source is parsed at registration and rasterized lazily at the rendered size. Existing keys are preserved rather than replaced. With icon support disabled, all normal registration/removal/lookup overloads below return <span class="tt">UnsupportedBuildFeature</span>; successful <span class="tt">false</span> is not the disabled-build signal. <span class="tt">App::icons()</span> can also report unavailable support before a manager is acquired.</p>
+<h1>Acquire the manager</h1>
+<p><span class="tt">App</span> getters return <span class="tt">Result&lt;std::reference_wrapper&lt;T&gt;&gt;</span>. Check the wrapper, then name the borrowed object as a normal reference:</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = app.icons();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><a class="code hl_struct" href="structFlowUi_1_1IconManager.html">FlowUi::IconManager</a>&amp; manager = result-&gt;get();</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html"><div class="ttname"><a href="structFlowUi_1_1IconManager.html">FlowUi::IconManager</a></div><div class="ttdoc">App-shared SVG registration and lazy frame-size rasterization.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:56</div></div>
+</div><!-- fragment --><p>The reference is borrowed; the App must outlive it, and window-owned managers must also stay within their owning window lifetime. The examples use an already acquired manager reference and existing field/window identities where needed. They choose an application policy of throwing <span class="tt">FlowUiException</span> after a failed Result; returning/reporting the error is equally possible. Include the relevant manager/value headers and <span class="tt"><a class="el" href="Exception_8hpp_source.html">FlowUi/Public/errorManagement/Exception.hpp</a></span>.</p>
+<p>ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<p>For <span class="tt">Result&lt;bool&gt;</span>, <span class="tt">if (!result)</span> tests operational failure; <span class="tt">*result</span> is the separate operation outcome. Never treat a successful <span class="tt">false</span> as an error.</p>
 <h1>Public API</h1>
 <h2><b>registerSvg</b></h2>
-<h3><span class="tt">Result&lt;bool&gt; registerSvg(std::string_view key, std::string_view svgSource)</span></h3>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; registerSvg(std::string_view key, std::string_view svgSource) noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before reading the value, and use <span class="tt">.error()</span> on failure.</li>
-<li><b>Arguments:</b> <span class="tt">key</span> icon key, <span class="tt">svgSource</span> complete SVG source text.</li>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity, <span class="tt">svgSource</span></li>
 </ul>
-<p>Parses and registers an SVG document from memory. Raster variants are created lazily later when the icon is drawn at a particular size.</p>
+<p>Parse and register SVG source for lazy rasterization. Success contains true for insertion or false when the key already exists; a duplicate preserves the original document. Invalid SVG is an error.</p>
+<p>Source bytes are consumed/copied during registration; rasterization occurs later at rendered size and cached variants are reused.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> registered = app.icons().registerSvg(<span class="stringliteral">&quot;check&quot;</span>, checkSvgSource);</div>
-<div class="line"><span class="keywordflow">if</span> (!registered) {</div>
-<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(registered.error());</div>
+<div class="fragment"><div class="line"><span class="keyword">constexpr</span> std::string_view svgSource = R<span class="stringliteral">&quot;svg(&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 16 16&quot;&gt;&lt;path d=&quot;M2 8l4 4 8-8&quot; fill=&quot;none&quot; stroke=&quot;#fff&quot;/&gt;&lt;/svg&gt;)svg&quot;;</span></div>
+<div class="line"><span class="stringliteral"></span><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a534903943084047c080d68be43105ec2">registerSvg</a>(<span class="stringliteral">&quot;status/check&quot;</span>, svgSource);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
 <div class="line">}</div>
-<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> inserted = *result;</div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html_a534903943084047c080d68be43105ec2"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#a534903943084047c080d68be43105ec2">FlowUi::IconManager::registerSvg</a></div><div class="ttdeci">Result&lt; bool &gt; registerSvg(std::string_view key, std::string_view svgSource) noexcept</div><div class="ttdoc">Parse and register SVG source for lazy rasterization.</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
+<h2><b>registerSvg</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; registerSvg(ResourceKey key, std::string_view svgSource) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity, <span class="tt">svgSource</span></li>
+</ul>
+<p>Parse and register SVG source for lazy rasterization. Success contains true for insertion or false when the key already exists; a duplicate preserves the original document. Invalid SVG is an error.</p>
+<p>Source bytes are consumed/copied during registration; rasterization occurs later at rendered size and cached variants are reused. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;status/check&quot;</span>};</div>
+<div class="line"><span class="keyword">constexpr</span> std::string_view svgSource = R<span class="stringliteral">&quot;svg(&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 16 16&quot;&gt;&lt;path d=&quot;M2 8l4 4 8-8&quot; fill=&quot;none&quot; stroke=&quot;#fff&quot;/&gt;&lt;/svg&gt;)svg&quot;;</span></div>
+<div class="line"><span class="stringliteral"></span><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a534903943084047c080d68be43105ec2">registerSvg</a>(key, svgSource);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> inserted = *result;</div>
+<div class="ttc" id="astructFlowUi_1_1ResourceKey_html"><div class="ttname"><a href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a></div><div class="ttdoc">Human-readable logical identity accepted by FlowUi managers.</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:39</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
 <h2><b>registerFromFile</b></h2>
-<h3><span class="tt">Result&lt;bool&gt; registerFromFile(std::string_view key, std::string_view filePath)</span></h3>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; registerFromFile(std::string_view key, std::string_view filePath) noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before reading the value, and use <span class="tt">.error()</span> on failure.</li>
-<li><b>Arguments:</b> <span class="tt">key</span> icon key, <span class="tt">filePath</span> SVG file path.</li>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity, <span class="tt">filePath</span> UTF-8 file path</li>
 </ul>
-<p>Parses and registers an SVG document from disk. A successful result contains <span class="tt">false</span> if the key already exists and the current icon is left unchanged; failures carry a structured error.</p>
+<p>Read, parse, and register an SVG file from a UTF-8 path. Success contains true for insertion or false for an existing unchanged key. File/path/read/parse failures are errors.</p>
+<p>The file path and bytes are consumed synchronously. Registration does not rasterize the SVG.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> registered = app.icons().registerFromFile(<span class="stringliteral">&quot;save&quot;</span>, <span class="stringliteral">&quot;assets/icons/save.svg&quot;</span>);</div>
-<div class="line"><span class="keywordflow">if</span> (!registered) {</div>
-<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(registered.error());</div>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#ac4fb99b7a0794abffd1af94d0c2f1088">registerFromFile</a>(<span class="stringliteral">&quot;status/check&quot;</span>, <span class="stringliteral">&quot;assets/icons/check.svg&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
 <div class="line">}</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> inserted = *result;</div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html_ac4fb99b7a0794abffd1af94d0c2f1088"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#ac4fb99b7a0794abffd1af94d0c2f1088">FlowUi::IconManager::registerFromFile</a></div><div class="ttdeci">Result&lt; bool &gt; registerFromFile(std::string_view key, std::string_view filePath) noexcept</div><div class="ttdoc">Read, parse, and register an SVG file from a UTF-8 path.</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
+<h2><b>registerFromFile</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; registerFromFile(ResourceKey key, std::string_view filePath) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity, <span class="tt">filePath</span> UTF-8 file path</li>
+</ul>
+<p>Read, parse, and register an SVG file from a UTF-8 path. Success contains true for insertion or false for an existing unchanged key. File/path/read/parse failures are errors.</p>
+<p>The file path and bytes are consumed synchronously. Registration does not rasterize the SVG. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;status/check&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#ac4fb99b7a0794abffd1af94d0c2f1088">registerFromFile</a>(key, <span class="stringliteral">&quot;assets/icons/check.svg&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> inserted = *result;</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
+<h2><b>register_file</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; register_file(ResourceKey key, const std::filesystem::path&amp; file_path) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity, <span class="tt">file_path</span> native filesystem path</li>
+</ul>
+<p>Read and register an SVG from a native filesystem path. Success contains true for insertion or false for an existing unchanged key. File/path/read/parse failures are errors.</p>
+<p>Use native filesystem paths where platform path encoding matters; rasterization remains lazy. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;status/check&quot;</span>};</div>
+<div class="line"><span class="keyword">const</span> std::filesystem::path assetPath{<span class="stringliteral">&quot;assets/icons/check.svg&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a41a5e4465b669e624c8c98ec65e71300">register_file</a>(key, assetPath);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> inserted = *result;</div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html_a41a5e4465b669e624c8c98ec65e71300"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#a41a5e4465b669e624c8c98ec65e71300">FlowUi::IconManager::register_file</a></div><div class="ttdeci">Result&lt; bool &gt; register_file(ResourceKey key, const std::filesystem::path &amp;file_path) noexcept</div><div class="ttdoc">Read and register an SVG from a native filesystem path.</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
+<h2><b>register_file</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; register_file(std::string_view key, const std::filesystem::path&amp; file_path) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity, <span class="tt">file_path</span> native filesystem path</li>
+</ul>
+<p>Read and register an SVG from a native filesystem path. Success contains true for insertion or false for an existing unchanged key. File/path/read/parse failures are errors.</p>
+<p>Use native filesystem paths where platform path encoding matters; rasterization remains lazy.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> std::filesystem::path assetPath{<span class="stringliteral">&quot;assets/icons/check.svg&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a41a5e4465b669e624c8c98ec65e71300">register_file</a>(<span class="stringliteral">&quot;status/check&quot;</span>, assetPath);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> inserted = *result;</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
 <h2><b>remove</b></h2>
-<h3><span class="tt">Result&lt;bool&gt; remove(std::string_view key)</span></h3>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; remove(std::string_view key) noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before reading the value, and use <span class="tt">.error()</span> on failure.</li>
-<li><b>Arguments:</b> <span class="tt">key</span> registered icon key.</li>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity</li>
 </ul>
-<p>Removes a registered SVG document and its cached atlas variants. Previously returned texture references for the key should be discarded.</p>
+<p>Remove an SVG document and retire its cached raster generations. Success contains true if removed and false if absent.</p>
+<p>Previously returned request/cached texture generations are invalid after removal. Reacquire after registration; actual GPU allocations retire when recorded uses finish.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removal = app.icons().remove(<span class="stringliteral">&quot;save&quot;</span>);</div>
-<div class="line"><span class="keywordflow">if</span> (!removal) {</div>
-<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(removal.error());</div>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a62eb6bc8f23d0837a79d098c567a023f">remove</a>(<span class="stringliteral">&quot;status/check&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
 <div class="line">}</div>
-<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = *removal;</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = *result;</div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html_a62eb6bc8f23d0837a79d098c567a023f"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#a62eb6bc8f23d0837a79d098c567a023f">FlowUi::IconManager::remove</a></div><div class="ttdeci">Result&lt; bool &gt; remove(std::string_view key) noexcept</div><div class="ttdoc">Remove an SVG document and retire its cached raster generations.</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
+<h2><b>remove</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; remove(ResourceKey key) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity</li>
+</ul>
+<p>Remove an SVG document and retire its cached raster generations. Success contains true if removed and false if absent.</p>
+<p>Previously returned request/cached texture generations are invalid after removal. Reacquire after registration; actual GPU allocations retire when recorded uses finish. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;status/check&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a62eb6bc8f23d0837a79d098c567a023f">remove</a>(key);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = *result;</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
 <h2><b>contains</b></h2>
-<h3><span class="tt">bool contains(std::string_view key) const</span></h3>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; contains(std::string_view key) const noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">bool</span></li>
-<li><b>Arguments:</b> <span class="tt">key</span> icon key to test.</li>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity</li>
 </ul>
-<p>Checks whether an SVG document key is registered. This does not force rasterization or atlas allocation.</p>
+<p>Test whether an SVG key is registered. Success contains true for a registered document or false for absence.</p>
+<p>This does not trigger rasterization.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (!app.icons().contains(<span class="stringliteral">&quot;save&quot;</span>)) {</div>
-<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span> registered = app.icons().registerFromFile(<span class="stringliteral">&quot;save&quot;</span>, <span class="stringliteral">&quot;assets/icons/save.svg&quot;</span>);</div>
-<div class="line">    <span class="keywordflow">if</span> (!registered) {</div>
-<div class="line">        <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(registered.error());</div>
-<div class="line">    }</div>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a403664172e0a98470dd66fdff0d6fa21">contains</a>(<span class="stringliteral">&quot;status/check&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
 <div class="line">}</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
-<h2><b>textureRef</b></h2>
-<h3><span class="tt">TextureRef textureRef(std::string_view key)</span></h3>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> registered = *result;</div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html_a403664172e0a98470dd66fdff0d6fa21"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#a403664172e0a98470dd66fdff0d6fa21">FlowUi::IconManager::contains</a></div><div class="ttdeci">Result&lt; bool &gt; contains(std::string_view key) const noexcept</div><div class="ttdoc">Test whether an SVG key is registered.</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
+<h2><b>contains</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; contains(ResourceKey key) const noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">TextureRef</span></li>
-<li><b>Arguments:</b> <span class="tt">key</span> registered icon key.</li>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity</li>
 </ul>
-<p>Returns a texture request reference for a registered icon. FlowUi later resolves the request into a cached atlas variant sized to the rendered UI image area.</p>
+<p>Test whether an SVG key is registered. Success contains true for a registered document or false for absence.</p>
+<p>This does not trigger rasterization. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> saveIcon = app.icons().textureRef(<span class="stringliteral">&quot;save&quot;</span>);</div>
-<div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> TextureRef.hpp:30</div></div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>. </p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;status/check&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a403664172e0a98470dd66fdff0d6fa21">contains</a>(key);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> registered = *result;</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
+<h2><b>textureRef</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;TextureRef&gt; textureRef(std::string_view key) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;TextureRef&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity</li>
+</ul>
+<p>Resolve an SVG key to a request TextureRef for UI rendering. Missing keys return IconNotFound under IconGenerationFailurePolicy::FailRequest. Other policies successfully return an unavailable reference requesting a fallback or omission, with a once-per-key diagnostic.</p>
+<p>This non-const query may publish a request texture; final size-dependent rasterization occurs during frame preparation. sourceKey is borrowed App-owned metadata. Do not overwrite manager-owned handle/UV fields. Reacquire after removal and keep borrowed metadata within the App lifetime.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a5997178bc80d7aa8d3f7c1c7bfa8cd5c">textureRef</a>(<span class="stringliteral">&quot;status/check&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> texture = *result;</div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html_a5997178bc80d7aa8d3f7c1c7bfa8cd5c"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#a5997178bc80d7aa8d3f7c1c7bfa8cd5c">FlowUi::IconManager::textureRef</a></div><div class="ttdeci">Result&lt; TextureRef &gt; textureRef(std::string_view key) noexcept</div><div class="ttdoc">Resolve an SVG key to a request TextureRef for UI rendering.</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
+<h2><b>textureRef</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;TextureRef&gt; textureRef(ResourceKey key) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;TextureRef&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity</li>
+</ul>
+<p>Resolve an SVG key to a request TextureRef for UI rendering. Missing keys return IconNotFound under IconGenerationFailurePolicy::FailRequest. Other policies successfully return an unavailable reference requesting a fallback or omission, with a once-per-key diagnostic.</p>
+<p>This non-const query may publish a request texture; final size-dependent rasterization occurs during frame preparation. sourceKey is borrowed App-owned metadata. Do not overwrite manager-owned handle/UV fields. Reacquire after removal and keep borrowed metadata within the App lifetime. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;status/check&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a5997178bc80d7aa8d3f7c1c7bfa8cd5c">textureRef</a>(key);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> texture = *result;</div>
+</div><!-- fragment --><h1>Build-gated development hooks</h1>
+<p><span class="tt">FLOW_UI_DEV_MODE</span> and the development memory-level macros expose additional inspection/recording hooks in the header. They are development infrastructure, not the application API described here. Their existing build gates and signatures are unchanged.</p>
+<h1>Checked development inspection examples</h1>
+<p>These hooks require <span class="tt">FLOW_UI_DEV_MODE</span>; viewport hooks also require <span class="tt">FLOWUI_PUBLIC_VULKAN_INTEROP</span>. They are observation/tooling APIs. A visitor returns <span class="tt">true</span> to continue; a successful returned <span class="tt">false</span> is distinct from a failed <span class="tt">Result</span>. Callback arguments and their resource views are borrowed. The examples use the already acquired manager for the owning App/window.</p>
+<p>See: <a href="include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
+<h2><b>visitDevIcons</b></h2>
+<h3><span class="tt">Result&lt;bool&gt; visitDevIcons(void* userData, DevIconVisitor visitor) const noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+</ul>
+<p>Observe development catalogue entries without invoking application operations. Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a detached manager or null visitor. A failed Result is an operational/callback error, not an incomplete-visit bool.</p>
+<p>Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts materialized raster rows (unrasterized SVG rows are excluded); completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to FlowUiError. Earlier callback effects, including the counter, are not rolled back on failure. With icon support disabled, this hook succeeds with true and makes no callbacks.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line">std::size_t count = 0;</div>
+<div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#aa90dbb4de193fbf3f7b4490dfab12d0f">visitDevIcons</a>(&amp;count,</div>
+<div class="line">    [](<span class="keywordtype">void</span>* target, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1IconManager_1_1DevIconView.html">FlowUi::IconManager::DevIconView</a>&amp; icon) {</div>
+<div class="line">        <span class="keyword">auto</span>&amp; observedCount = *<span class="keyword">static_cast&lt;</span>std::size_t*<span class="keyword">&gt;</span>(target);</div>
+<div class="line">        <span class="keywordflow">if</span> (<span class="keyword">static_cast&lt;</span><span class="keywordtype">bool</span><span class="keyword">&gt;</span>(icon.<a class="code hl_variable" href="structFlowUi_1_1IconManager_1_1DevIconView.html#a23a8ef033d6e177c061e0bb80c8da24c">texture</a>)) {</div>
+<div class="line">            ++observedCount;</div>
+<div class="line">        }</div>
+<div class="line">        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">    });</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe">completed</a> = *result;</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html_aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe">FlowUi::devSystems::agentic::AgenticInteractionPhase::completed</a></div><div class="ttdeci">@ completed</div><div class="ttdef"><b>Definition</b> AgenticInteraction.hpp:486</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_1_1DevIconView_html"><div class="ttname"><a href="structFlowUi_1_1IconManager_1_1DevIconView.html">FlowUi::IconManager::DevIconView</a></div><div class="ttdoc">Borrowed SVG raster metadata; reacquire after icon cache mutation.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:59</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_1_1DevIconView_html_a23a8ef033d6e177c061e0bb80c8da24c"><div class="ttname"><a href="structFlowUi_1_1IconManager_1_1DevIconView.html#a23a8ef033d6e177c061e0bb80c8da24c">FlowUi::IconManager::DevIconView::texture</a></div><div class="ttdeci">TextureHandle texture</div><div class="ttdoc">Borrowed generation-checked raster texture binding.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:67</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html_aa90dbb4de193fbf3f7b4490dfab12d0f"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#aa90dbb4de193fbf3f7b4490dfab12d0f">FlowUi::IconManager::visitDevIcons</a></div><div class="ttdeci">Result&lt; bool &gt; visitDevIcons(void *userData, DevIconVisitor visitor) const noexcept</div><div class="ttdoc">Observe development catalogue entries without invoking application operations.</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
+<h2><b>visitDevAtlases</b></h2>
+<h3><span class="tt">Result&lt;bool&gt; visitDevAtlases(void* userData, DevAtlasVisitor visitor) const noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+</ul>
+<p>Observe development catalogue entries without invoking application operations. Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a detached manager or null visitor. A failed Result is an operational/callback error, not an incomplete-visit bool.</p>
+<p>Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts allocated nonempty atlas pages; completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to FlowUiError. Earlier callback effects, including the counter, are not rolled back on failure. With icon support disabled, this hook succeeds with true and makes no callbacks.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line">std::size_t count = 0;</div>
+<div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a8a56630c33ee9c4b7e9fd5083606b50a">visitDevAtlases</a>(&amp;count,</div>
+<div class="line">    [](<span class="keywordtype">void</span>* target, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1IconManager_1_1DevAtlasView.html">FlowUi::IconManager::DevAtlasView</a>&amp; page) {</div>
+<div class="line">        <span class="keyword">auto</span>&amp; observedCount = *<span class="keyword">static_cast&lt;</span>std::size_t*<span class="keyword">&gt;</span>(target);</div>
+<div class="line">        <span class="keywordflow">if</span> (page.<a class="code hl_variable" href="structFlowUi_1_1IconManager_1_1DevAtlasView.html#a0024b465be102f9b97aec442bcab8efd">width</a> != 0 &amp;&amp; page.<a class="code hl_variable" href="structFlowUi_1_1IconManager_1_1DevAtlasView.html#a228dd632776a3e607f8b5e1121438bf7">height</a> != 0) {</div>
+<div class="line">            ++observedCount;</div>
+<div class="line">        }</div>
+<div class="line">        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">    });</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe">completed</a> = *result;</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_1_1DevAtlasView_html"><div class="ttname"><a href="structFlowUi_1_1IconManager_1_1DevAtlasView.html">FlowUi::IconManager::DevAtlasView</a></div><div class="ttdoc">Borrowed SVG atlas-page allocation metrics.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:88</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_1_1DevAtlasView_html_a0024b465be102f9b97aec442bcab8efd"><div class="ttname"><a href="structFlowUi_1_1IconManager_1_1DevAtlasView.html#a0024b465be102f9b97aec442bcab8efd">FlowUi::IconManager::DevAtlasView::width</a></div><div class="ttdeci">std::uint32_t width</div><div class="ttdoc">Page width in pixels.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:94</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_1_1DevAtlasView_html_a228dd632776a3e607f8b5e1121438bf7"><div class="ttname"><a href="structFlowUi_1_1IconManager_1_1DevAtlasView.html#a228dd632776a3e607f8b5e1121438bf7">FlowUi::IconManager::DevAtlasView::height</a></div><div class="ttdeci">std::uint32_t height</div><div class="ttdoc">Page height in pixels.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:96</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html_a8a56630c33ee9c4b7e9fd5083606b50a"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#a8a56630c33ee9c4b7e9fd5083606b50a">FlowUi::IconManager::visitDevAtlases</a></div><div class="ttdeci">Result&lt; bool &gt; visitDevAtlases(void *userData, DevAtlasVisitor visitor) const noexcept</div><div class="ttdoc">Observe development catalogue entries without invoking application operations.</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
+<h2><b>devRasterize</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;DevIconView&gt; devRasterize(std::string_view key, uint32_t width, uint32_t height) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;DevIconView&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+</ul>
+<p>Materialize or reuse one exact development SVG raster. A checked raster view, or initialization, IconRasterInvalid, IconNotFound, publication, allocation, or storage failure.</p>
+<p>The key must name a registered SVG; width and height must be in [1, 512]. The example expects status/check to be registered. The returned DevIconView and texture identity are borrowed and invalidated by raster/document removal or manager destruction. newlyRasterized distinguishes a new cached raster from a reused one. No exception escapes. With icon support disabled, return UnsupportedBuildFeature.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><span class="keyword">auto</span> result = icons.devRasterize(<span class="stringliteral">&quot;status/check&quot;</span>, 32, 32);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> newlyRasterized = result-&gt;newlyRasterized;</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> retained = result-&gt;texture;</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
+<h2><b>devRemoveRaster</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; devRemoveRaster(TextureHandle texture) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+</ul>
+<p>Retire only the exact development raster texture generation. Success contains true when a cached raster was removed or false when the texture did not match any cached raster; initialization/storage/allocation failures are errors.</p>
+<p>The SVG registration remains. A removed raster can be regenerated by later UI usage or devRasterize(). Its previous borrowed texture identity must be discarded; backing allocations retire after their recorded uses. No exception escapes. With icon support disabled, return UnsupportedBuildFeature.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><span class="keyword">auto</span> result = icons.devRemoveRaster(raster);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = *result;</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

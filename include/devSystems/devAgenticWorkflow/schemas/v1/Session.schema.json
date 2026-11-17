@@ -22,9 +22,15 @@
     },
     "status": {
       "enum": [
+        "configuring",
+        "failed",
         "running",
         "stopped"
       ]
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 4096
     },
     "last_app_tick": {
       "type": "string",

@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Catalogue/DevCatalogueModel.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp"
@@ -110,7 +111,7 @@ std::string shortcut_chord(const ShortcutChord& chord) {
 }
 void collect(App& app, DevInterfaceState& interface_state) {
 	auto& state = interface_state.catalogue;
-	auto& catalogues = app.devTooling().catalogues();
+	auto& catalogues = FlowUi::ValueOrThrow(app.devTooling()).get().catalogues();
 	state.domain_status.fill({});
 	const auto theme_status = state.theme_model.refresh(app);
 	if (!theme_status)
@@ -132,7 +133,7 @@ void collect(App& app, DevInterfaceState& interface_state) {
 		state.frozen_viewport_identity = 0;
 	}
 	state.observed_window = window;
-	const auto* tree = app.hasWindow(window) ? &app.ui(window).devTreeSnapshot() : nullptr;
+	const auto* tree = app.hasWindow(window) ? &FlowUi::ValueOrThrow(app.ui(window)).get().devTreeSnapshot() : nullptr;
 	for (const auto& entry : catalogues.queryElements(tree)) {
 		auto& asset = append(assets, Domain::Elements, std::string(entry.definitionName),
 							 "Registered definitions", std::to_string(entry.definition.value));
@@ -141,7 +142,7 @@ void collect(App& app, DevInterfaceState& interface_state) {
 		asset.element.headerSourceFile = {};
 		asset.source = entry.headerSourceFile;
 		asset.status = "Registered definition";
-		const auto adapters = app.devTooling().schemas().elementPreviews();
+		const auto adapters = FlowUi::ValueOrThrow(app.devTooling()).get().schemas().elementPreviews();
 		const auto adapter = std::ranges::find(
 			adapters, entry.definition, &tooling::DevSchemaRegistry::ElementPreview::definition);
 		if (adapter != adapters.end()) {
@@ -278,7 +279,7 @@ void collect(App& app, DevInterfaceState& interface_state) {
 			std::vector<DevCatalogueAsset>* assets;
 			WindowId window;
 		} shortcut_context{&assets, window};
-		const auto observed = app.ui(window).shortcuts().visitDevShortcuts(
+		const auto observed = FlowUi::ValueOrThrow(app.ui(window)).get().shortcuts().visitDevShortcuts(
 			&shortcut_context, [](void* target, const ShortcutManager::DevShortcutView& entry) {
 				const auto& context = *static_cast<ShortcutContext*>(target);
 				const auto scope = entry.scope == ShortcutScope::FocusedInput ? "Focused input"
@@ -318,7 +319,7 @@ void collect(App& app, DevInterfaceState& interface_state) {
 			state.domain_status[domain_index(Domain::Shortcuts)] =
 				"Shortcut manager observation unavailable";
 	}
-	for (const auto& entry : app.devViewportSnapshot(window)) {
+	for (const auto& entry : FlowUi::ValueOrThrow(app.devViewportSnapshot(window))) {
 		const auto stable = std::to_string(window) + "/" + entry.key;
 		auto& asset =
 			append(assets, Domain::Viewports, entry.key, "Selected application window", stable);
@@ -462,7 +463,7 @@ void service_icon_command(App& app, DevCatalogueState& state) {
 		}
 		state.preview_rasters.reserve(state.preview_rasters.size() + 1);
 		DevCataloguePreviewRaster owned{.icon_name = found->name};
-		const auto result = app.icons().devRasterize(found->name, size, size);
+		const auto result = FlowUi::ValueOrThrow(app.icons()).get().devRasterize(found->name, size, size);
 		if (!result) {
 			state.message = "Could not rasterize the requested preview";
 			state.message_is_error = true;
@@ -484,7 +485,7 @@ void service_icon_command(App& app, DevCatalogueState& state) {
 			if (state.pending_identity &&
 				identity(Domain::Icons, owned.icon_name) != state.pending_identity)
 				return false;
-			const auto result = app.icons().devRemoveRaster(owned.texture);
+			const auto result = FlowUi::ValueOrThrow(app.icons()).get().devRemoveRaster(owned.texture);
 			if (!result) {
 				state.message_is_error = true;
 				return false;
@@ -765,7 +766,7 @@ void service_catalogue(App& app, DevInterfaceState& interface_state, bool visibl
 	else if (state.visible_textures.empty())
 		for (size_t index = 0; index < std::min<size_t>(state.visible_assets.size(), 24); ++index)
 			retain_asset(state.assets[state.visible_assets[index]]);
-	state.lease = app.devTooling().catalogues().acquireInspectionLease(textures);
+	state.lease = FlowUi::ValueOrThrow(app.devTooling()).get().catalogues().acquireInspectionLease(textures);
 }
 } // namespace FlowUi::devSystems
 #endif

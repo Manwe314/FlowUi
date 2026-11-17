@@ -486,22 +486,22 @@ void check_public_font_catalogue() {
 	config.window.width = 480;
 	config.window.height = 360;
 	config.vk.enableValidation = true;
-	auto app = FlowUi::makeApplication(config);
-	const auto initial_count = app.fonts().dev_atlas_layers().size();
+	auto app = ::FlowUi::test::requireValue(FlowUi::makeApplication(config));
+	const auto initial_count = ::FlowUi::test::requireValue(app.fonts()).get().dev_atlas_layers().size();
 	FLOWUI_CHECK(initial_count > 0);
-	const auto family = app.fonts().createFamily(FlowUi::FontFamilyCreateInfo{
+	const auto family = ::FlowUi::test::requireValue(app.fonts()).get().createFamily(FlowUi::FontFamilyCreateInfo{
 		.name = "Atlas layer regression",
 		.faces = {FlowUi::FontFaceCreateInfo{.path = FLOWUI_FONT_ATLAS_TEST_FONT_PATH,
 											 .name = "Second atlas layer"}}});
 	FLOWUI_CHECK(family);
-	const auto layers = app.fonts().dev_atlas_layers();
+	const auto layers = ::FlowUi::test::requireValue(app.fonts()).get().dev_atlas_layers();
 	FLOWUI_CHECK(layers.size() == initial_count + 1);
 	FLOWUI_CHECK(layers[0].texture != layers[1].texture &&
 				 layers[0].image_view != layers[1].image_view);
-	const auto summary = app.fonts().devAtlas();
+	const auto summary = ::FlowUi::test::requireValue(app.fonts()).get().devAtlas();
 	FLOWUI_CHECK(summary.texture == layers.front().texture &&
 				 summary.imageView == layers.front().image_view);
-	const auto atlases = app.devTooling().catalogues().queryAtlases();
+	const auto atlases = ::FlowUi::test::requireValue(app.devTooling()).get().catalogues().queryAtlases();
 	size_t font_page_count = 0;
 	for (const auto& atlas : atlases) {
 		if (atlas.kind != FlowUi::devSystems::tooling::DevAtlasKind::FontMsdfAtlas)
@@ -516,7 +516,7 @@ void check_public_font_catalogue() {
 	FLOWUI_CHECK(font_page_count == layers.size());
 
 	const std::vector<Layer> before_failure(layers.begin(), layers.end());
-	const auto failed_family = app.fonts().createFamily(FlowUi::FontFamilyCreateInfo{
+	const auto failed_family = ::FlowUi::test::requireValue(app.fonts()).get().createFamily(FlowUi::FontFamilyCreateInfo{
 		.name = "Atlas rollback regression",
 		.faces = {
 			FlowUi::FontFaceCreateInfo{.path = FLOWUI_FONT_ATLAS_TEST_FONT_PATH},
@@ -524,14 +524,14 @@ void check_public_font_catalogue() {
 				.path = std::filesystem::path(FLOWUI_FONT_ATLAS_TEST_FONT_PATH).parent_path() /
 						"missing-atlas-test-font.arfont"}}});
 	FLOWUI_CHECK(!failed_family);
-	const auto after_failure = app.fonts().dev_atlas_layers();
+	const auto after_failure = ::FlowUi::test::requireValue(app.fonts()).get().dev_atlas_layers();
 	FLOWUI_CHECK(after_failure.size() == before_failure.size());
 	for (size_t layer_index = 0; layer_index < before_failure.size(); ++layer_index) {
 		FLOWUI_CHECK(after_failure[layer_index].texture == before_failure[layer_index].texture);
 		FLOWUI_CHECK(after_failure[layer_index].image_view ==
 					 before_failure[layer_index].image_view);
 	}
-	FLOWUI_CHECK(app.fonts().getFamilyId("Atlas rollback regression") ==
+	FLOWUI_CHECK(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.fonts()).get().getFamilyId("Atlas rollback regression")) ==
 				 std::numeric_limits<FlowUi::FontFamilyId>::max());
 	FlowUi::devSystems::DevInterfaceState session{};
 	FlowUi::devSystems::service_catalogue(app, session, true);

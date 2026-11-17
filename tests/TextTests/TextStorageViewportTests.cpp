@@ -1,15 +1,35 @@
 #include <algorithm>
 #include <concepts>
+#include <cstdlib>
 #include <fstream>
+#include <new>
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 #include "TestHarness.hpp"
 #include "FlowUi/Private/inputService/InputFieldManagerState.hpp"
 #include "FlowUi/Private/textLayoutService/TextLineBreaker.hpp"
 #include "FlowUi/Private/textLayoutService/TextStorage.hpp"
 #include "FlowUi/Public/managers/InputFieldManager.hpp"
+
+namespace {
+thread_local std::ptrdiff_t allocationsBeforeFailure = -1;
+}
+
+// Exercise the actual standard-container allocation paths without production hooks.
+void* operator new(std::size_t bytes) {
+	if (allocationsBeforeFailure >= 0 && allocationsBeforeFailure-- == 0) {
+		allocationsBeforeFailure = -1;
+		throw std::bad_alloc{};
+	}
+	if (void* allocation = std::malloc(bytes == 0 ? 1 : bytes)) return allocation;
+	throw std::bad_alloc{};
+}
+
+void operator delete(void* allocation) noexcept { std::free(allocation); }
+void operator delete(void* allocation, std::size_t) noexcept { std::free(allocation); }
 
 namespace {
 
@@ -74,6 +94,38 @@ void testUtf8AndCrossChunkEdits() {
 	FLOWUI_CHECK(text::copy(storage, text::lineRange(storage, 2u)) == "last");
 }
 
+void testAllocationFailurePreservesMultilineDocument() {
+	std::string original(text::MultiLineStorage::TargetChunkBytes * 8u, 'a');
+	for (size_t offset = 79; offset < original.size(); offset += 80) original[offset] = '\n';
+	const TextRange range{2u * text::MultiLineStorage::TargetChunkBytes + 17u,
+		4u * text::MultiLineStorage::TargetChunkBytes + 31u};
+	const std::string insertion(text::MultiLineStorage::TargetChunkBytes * 3u, 'b');
+	std::string expected = original;
+	expected.replace(range.startByte, range.endByte - range.startByte, insertion);
+	size_t injectedFailures = 0;
+	bool completed = false;
+	for (std::ptrdiff_t checkpoint = 0; checkpoint < 64; ++checkpoint) {
+		text::FieldStorage storage = text::makeFieldStorage(TextFieldMode::MultiLine, original);
+		const auto originalLineStarts = std::get<text::MultiLineStorage>(storage).lineStarts;
+		allocationsBeforeFailure = checkpoint;
+		try {
+			text::replace(storage, range, insertion);
+			allocationsBeforeFailure = -1;
+			FLOWUI_CHECK(text::copy(storage) == expected);
+			completed = true;
+			break;
+		} catch (const std::bad_alloc&) {
+			allocationsBeforeFailure = -1;
+			++injectedFailures;
+			FLOWUI_CHECK(text::byteCount(storage) == original.size());
+			FLOWUI_CHECK(text::copy(storage) == original);
+			FLOWUI_CHECK(std::get<text::MultiLineStorage>(storage).lineStarts == originalLineStarts);
+		}
+	}
+	FLOWUI_CHECK(injectedFailures > 0);
+	FLOWUI_CHECK(completed);
+}
+
 void testClusterLineBreaking() {
 	text::TextLayoutResult layout{};
 	layout.success = true;
@@ -98,12 +150,18 @@ void testPublicAndConsumerBoundary() {
 	static_assert(!std::is_convertible_v<FieldTextView, std::string_view>);
 	static_assert(!std::is_constructible_v<std::string, FieldTextView>);
 	static_assert(!HasLegacyNewlineFlag<FieldConfig>);
+	static_assert(std::same_as<decltype(std::declval<const FieldTextView&>().forEachChunk(
+		std::declval<TextRange>(), std::declval<const TextChunkVisitor&>())), void>);
+	static_assert(!noexcept(std::declval<const FieldTextView&>().forEachChunk(
+		std::declval<TextRange>(), std::declval<const TextChunkVisitor&>())));
 	static_assert(std::is_same_v<decltype(FieldQueryResult{}.visibleLines),
 		std::span<const VisibleTextLine>>);
 	static_assert(requires(InputFieldManager& manager, FieldHandle handle,
 		const FieldTextSpanSubmission& span) {
 		{ manager.submitTextSpan(handle, span) } -> std::same_as<bool>;
 	});
+	static_assert(!noexcept(std::declval<InputFieldManager&>().submitTextSpan(
+		std::declval<FieldHandle>(), std::declval<const FieldTextSpanSubmission&>())));
 	FLOWUI_CHECK(std::holds_alternative<text::SingleLineStorage>(
 		detail::manager_storage::InputFieldState{}.storage));
 
@@ -123,6 +181,7 @@ int main() {
 	FlowUi::test::Runner runner;
 	runner.run("single and multiline storage remain distinct", testStorageStrategiesAndViews);
 	runner.run("chunk boundaries preserve UTF-8 and newline lookup", testUtf8AndCrossChunkEdits);
+	runner.run("failed multiline edit preserves chunks and line index", testAllocationFailurePreservesMultilineDocument);
 	runner.run("soft wrapping breaks only at layout clusters", testClusterLineBreaking);
 	runner.run("multiline API and manager boundary are explicit", testPublicAndConsumerBoundary);
 	return runner.finish();

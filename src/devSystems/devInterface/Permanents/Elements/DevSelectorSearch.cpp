@@ -1,3 +1,4 @@
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevSelectorSearch.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/TextInput.hpp"

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,18 +106,79 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::TimingClockCalibration Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevTimingTypes_8hpp_source.html">DevTimingTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a2cfca8ee54d890514b53b69aede5deb2" id="r_a2cfca8ee54d890514b53b69aede5deb2"><td class="memItemLeft"><a id="a2cfca8ee54d890514b53b69aede5deb2" name="a2cfca8ee54d890514b53b69aede5deb2"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>minimumPairNs</b> = 0u</td></tr>
-<tr class="memitem:a15cda6d6ce3a6cab624b1946677fc4ac" id="r_a15cda6d6ce3a6cab624b1946677fc4ac"><td class="memItemLeft"><a id="a15cda6d6ce3a6cab624b1946677fc4ac" name="a15cda6d6ce3a6cab624b1946677fc4ac"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>medianPairNs</b> = 0u</td></tr>
-<tr class="memitem:a304a2f4ebfad5daf0d73f10169828a70" id="r_a304a2f4ebfad5daf0d73f10169828a70"><td class="memItemLeft"><a id="a304a2f4ebfad5daf0d73f10169828a70" name="a304a2f4ebfad5daf0d73f10169828a70"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>p95PairNs</b> = 0u</td></tr>
-<tr class="memitem:a918072cf5548c311db6f88a62ec39a5a" id="r_a918072cf5548c311db6f88a62ec39a5a"><td class="memItemLeft"><a id="a918072cf5548c311db6f88a62ec39a5a" name="a918072cf5548c311db6f88a62ec39a5a"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>sampleCount</b> = 0u</td></tr>
+<tr class="memitem:a2cfca8ee54d890514b53b69aede5deb2" id="r_a2cfca8ee54d890514b53b69aede5deb2"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a2cfca8ee54d890514b53b69aede5deb2">minimumPairNs</a> = 0u</td></tr>
+<tr class="memitem:a15cda6d6ce3a6cab624b1946677fc4ac" id="r_a15cda6d6ce3a6cab624b1946677fc4ac"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a15cda6d6ce3a6cab624b1946677fc4ac">medianPairNs</a> = 0u</td></tr>
+<tr class="memitem:a304a2f4ebfad5daf0d73f10169828a70" id="r_a304a2f4ebfad5daf0d73f10169828a70"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a304a2f4ebfad5daf0d73f10169828a70">p95PairNs</a> = 0u</td></tr>
+<tr class="memitem:a918072cf5548c311db6f88a62ec39a5a" id="r_a918072cf5548c311db6f88a62ec39a5a"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a918072cf5548c311db6f88a62ec39a5a">sampleCount</a> = 0u</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Measured CPU clock-read pair costs in nanoseconds; describes instrumentation overhead rather than application work. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a15cda6d6ce3a6cab624b1946677fc4ac" name="a15cda6d6ce3a6cab624b1946677fc4ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15cda6d6ce3a6cab624b1946677fc4ac">&#9670;&#160;</a></span>medianPairNs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingClockCalibration::medianPairNs = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Median measured pair of CPU clock reads, in nanoseconds. </p>
+
+</div>
+</div>
+<a id="a2cfca8ee54d890514b53b69aede5deb2" name="a2cfca8ee54d890514b53b69aede5deb2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2cfca8ee54d890514b53b69aede5deb2">&#9670;&#160;</a></span>minimumPairNs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingClockCalibration::minimumPairNs = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Minimum measured pair of CPU clock reads, in nanoseconds. </p>
+
+</div>
+</div>
+<a id="a304a2f4ebfad5daf0d73f10169828a70" name="a304a2f4ebfad5daf0d73f10169828a70"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a304a2f4ebfad5daf0d73f10169828a70">&#9670;&#160;</a></span>p95PairNs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingClockCalibration::p95PairNs = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>95th percentile pair of CPU clock reads, in nanoseconds. </p>
+
+</div>
+</div>
+<a id="a918072cf5548c311db6f88a62ec39a5a" name="a918072cf5548c311db6f88a62ec39a5a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a918072cf5548c311db6f88a62ec39a5a">&#9670;&#160;</a></span>sampleCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::TimingClockCalibration::sampleCount = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of samples included in this measurement. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/timing/<a class="el" href="DevTimingTypes_8hpp_source.html">DevTimingTypes.hpp</a></li>
 </ul>
@@ -134,7 +195,7 @@ uint32_t&#160;</td><td class="memItemRight"><b>sampleCount</b> = 0u</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1TimingClockCalibration.html">TimingClockCalibration</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1TimingClockCalibration.html">TimingClockCalibration</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

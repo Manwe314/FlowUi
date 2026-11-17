@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInspectSelection.hpp"
 
@@ -161,7 +162,7 @@ void drawEmptyForestMessage(
 	empty.layout.padding = Clay_Padding{10, 10, 12, 12};
 	empty.layout.childAlignment = {CLAY_ALIGN_X_LEFT, CLAY_ALIGN_Y_CENTER};
 	const Clay_TextElementConfig style = textConfig(interface_theme::kTextMuted, 11);
-	CLAY(context.clayID("empty"), empty) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("empty")), empty) {
 		CLAY_TEXT(context.uiManager.toClayString(message), CLAY_TEXT_CONFIG(style));
 	}
 }
@@ -200,7 +201,7 @@ void DevInterfaceSelectorControls::buildElement(BuildContext& context) {
 		Clay_ElementDeclaration toggle = selector_choice_track();
 		toggle.layout.sizing.width = CLAY_SIZING_FIXED(176);
 
-		CLAY(context.clayID(kForestToggle), toggle) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kForestToggle)), toggle) {
 			drawForestChoice(
 				context, kFlowChoice, "Flow", kDevInterfaceFlowForest, true);
 			drawForestChoice(
@@ -250,7 +251,7 @@ void DevNode::onReleased(InteractionContext& context) {
 	nodeState.mouseUpObserved = false;
 
 	if (context.params.hasChildren &&
-		context.previousInteraction.isReleased(context.clayID(kNodeDisclosure))) {
+		context.previousInteraction.isReleased(FlowUi::ValueOrThrow(context.clayID(kNodeDisclosure)))) {
 		if (context.params.expanded) {
 			*context.params.expanded = !*context.params.expanded;
 			nodeState.isExpanded = *context.params.expanded;
@@ -274,13 +275,13 @@ void DevNode::onReleased(InteractionContext& context) {
 
 DevNodeResources::DevNodeResources(App& app) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
-	IconManager& icons = app.icons();
+	IconManager& icons = FlowUi::ValueOrThrow(app.icons()).get();
 	interface_icons::registerDevInterfaceIcons(icons);
-	if (icons.contains(interface_icons::kTreeExpandedKey)) {
-		expandedIcon = icons.textureRef(interface_icons::kTreeExpandedKey);
+	if (FlowUi::ValueOrThrow(icons.contains(interface_icons::kTreeExpandedKey))) {
+		expandedIcon = FlowUi::ValueOrThrow(icons.textureRef(interface_icons::kTreeExpandedKey));
 	}
-	if (icons.contains(interface_icons::kTreeCollapsedKey)) {
-		collapsedIcon = icons.textureRef(interface_icons::kTreeCollapsedKey);
+	if (FlowUi::ValueOrThrow(icons.contains(interface_icons::kTreeCollapsedKey))) {
+		collapsedIcon = FlowUi::ValueOrThrow(icons.textureRef(interface_icons::kTreeCollapsedKey));
 	}
 #else
 	(void)app;
@@ -353,14 +354,14 @@ void DevNode::buildElement(BuildContext& context) {
 			.height = CLAY_SIZING_GROW(0),
 		};
 		indicator.backgroundColor = selected ? interface_theme::kAccentCurrent : rowColor;
-		CLAY(context.clayID(kNodeIndicator), indicator);
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kNodeIndicator)), indicator);
 
 		Clay_ElementDeclaration depth{};
 		depth.layout.sizing = {
 			.width = CLAY_SIZING_FIXED(nodeInset(context.params.depth)),
 			.height = CLAY_SIZING_GROW(0),
 		};
-		CLAY(context.clayID(kNodeDepth), depth);
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kNodeDepth)), depth);
 
 		if (context.params.hasChildren) {
 			Clay_ElementDeclaration disclosure{};
@@ -370,7 +371,7 @@ void DevNode::buildElement(BuildContext& context) {
 			};
 			disclosure.layout.childAlignment = {
 				CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
-			CLAY(context.clayID(kNodeDisclosure), disclosure) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(kNodeDisclosure)), disclosure) {
 				TextureRef icon = context.state().isExpanded
 					? context.resources().expandedIcon
 					: context.resources().collapsedIcon;
@@ -383,7 +384,7 @@ void DevNode::buildElement(BuildContext& context) {
 					};
 					image.backgroundColor = interface_theme::kTextSecondary;
 					image.image = {.imageData = context.uiManager.imageData(icon)};
-					CLAY(context.clayID("disclosure-icon"), image);
+					CLAY(FlowUi::ValueOrThrow(context.clayID("disclosure-icon")), image);
 				} else {
 					const Clay_TextElementConfig fallback = textConfig(
 						interface_theme::kTextSecondary, 10);
@@ -399,7 +400,7 @@ void DevNode::buildElement(BuildContext& context) {
 				.width = CLAY_SIZING_FIXED(18),
 				.height = CLAY_SIZING_GROW(0),
 			};
-			CLAY(context.clayID(kNodeDisclosure), disclosureSpacer);
+			CLAY(FlowUi::ValueOrThrow(context.clayID(kNodeDisclosure)), disclosureSpacer);
 		}
 
 		Clay_ElementDeclaration label{};
@@ -416,7 +417,7 @@ void DevNode::buildElement(BuildContext& context) {
 			(selected || hovered) ? interface_theme::kTextCanvas
 				: interface_theme::kTextSecondary,
 			11);
-		CLAY(context.clayID(kNodeLabel), label) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kNodeLabel)), label) {
 			const bool hasBadge = !context.params.badgeText.empty();
 			if (hasBadge) {
 				Clay_ElementDeclaration titleRow{};
@@ -428,7 +429,7 @@ void DevNode::buildElement(BuildContext& context) {
 				titleRow.layout.childGap = 6;
 				titleRow.layout.childAlignment = {CLAY_ALIGN_X_LEFT, CLAY_ALIGN_Y_CENTER};
 
-				CLAY(context.clayID("title-row"), titleRow) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("title-row")), titleRow) {
 					Clay_ElementDeclaration badge{};
 					badge.layout.sizing = {
 						.width = CLAY_SIZING_FIT(0),
@@ -439,7 +440,7 @@ void DevNode::buildElement(BuildContext& context) {
 					badge.backgroundColor = context.params.badgeColor;
 					badge.cornerRadius = CLAY_CORNER_RADIUS(3);
 
-					CLAY(context.clayID("badge"), badge) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("badge")), badge) {
 						CLAY_TEXT(
 							context.uiManager.toClayString(context.params.badgeText),
 							CLAY_TEXT_CONFIG(textConfig(Clay_Color{255, 255, 255, 255}, 9)));
@@ -470,7 +471,7 @@ void DevNode::buildElement(BuildContext& context) {
 			.width = CLAY_SIZING_GROW(0),
 			.height = CLAY_SIZING_GROW(0),
 		};
-		CLAY(context.clayID(kNodeSpacer), spacer);
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kNodeSpacer)), spacer);
 
 		Clay_ElementDeclaration status{};
 		status.layout.sizing = {
@@ -478,7 +479,7 @@ void DevNode::buildElement(BuildContext& context) {
 			.height = CLAY_SIZING_GROW(0),
 		};
 		status.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
-		CLAY(context.clayID(kNodeStatus), status) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kNodeStatus)), status) {
 			if (context.params.hasChanges) {
 				Clay_ElementDeclaration dot{};
 				dot.layout.sizing = {
@@ -487,7 +488,7 @@ void DevNode::buildElement(BuildContext& context) {
 				};
 				dot.backgroundColor = interface_theme::kAccentSignalCoral;
 				dot.cornerRadius = CLAY_CORNER_RADIUS(3);
-				CLAY(context.clayID("changes"), dot);
+				CLAY(FlowUi::ValueOrThrow(context.clayID("changes")), dot);
 			}
 		}
 	}
@@ -519,12 +520,12 @@ void DevInterfaceSelectorForest::buildElement(BuildContext& context) {
 			.height = CLAY_SIZING_FIT(0),
 		};
 		content.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
-		CLAY(context.clayID(kForestContent), content) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kForestContent)), content) {
 			DevInterfaceState* state = context.params.interfaceState;
 			App* app = context.params.app;
 			const tooling::DevTreeSnapshot* snapshotPointer =
 				state && app && app->hasWindow(state->selectedWindowId)
-					? &app->ui(state->selectedWindowId).devTreeSnapshot() : nullptr;
+					? &FlowUi::ValueOrThrow(app->ui(state->selectedWindowId)).get().devTreeSnapshot() : nullptr;
 			if (!snapshotPointer) {
 				drawEmptyForestMessage(context, "No captured UI tree");
 			} else {

@@ -72,9 +72,9 @@ public:
 	[[nodiscard]] ManagerRecordHandle findManagerRecord(
 		ResourceKey key, ResourceKind kind) const noexcept override;
 	[[nodiscard]] void* managerRecordData(
-		ManagerRecordHandle handle, ResourceKind kind) noexcept override;
+		ManagerRecordHandle handle, ResourceKind kind) override;
 	[[nodiscard]] const void* managerRecordData(
-		ManagerRecordHandle handle, ResourceKind kind) const noexcept override;
+		ManagerRecordHandle handle, ResourceKind kind) const override;
 	bool removeManagerRecord(ResourceKey key, ResourceKind kind) override;
 	void releaseWindowManagerRecords(WindowId window) noexcept override;
 	[[nodiscard]] PersistentRecordHandle createPersistentRecord(

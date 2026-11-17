@@ -1,3 +1,4 @@
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "FlowUi/Public/managers/ActionManager.hpp"
 #include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
 #if FLOW_UI_DEV_MODE
@@ -50,7 +51,7 @@ std::size_t ActionManager::devActionCount() const noexcept {
 	catch (...) { return 0; }
 }
 
-bool ActionManager::visitDevActions(void* userData, DevActionVisitor visitor) const {
+Result<bool> ActionManager::visitDevActions(void* userData, DevActionVisitor visitor) const noexcept try {
 	if (!storage_ || !stateHandle_ || !visitor) return false;
 	for (const auto& [id, handle] : state().bindings) {
 		const storage::ConstPersistentRecordView record =
@@ -91,6 +92,8 @@ bool ActionManager::visitDevActions(void* userData, DevActionVisitor visitor) co
 		})) return false;
 	}
 	return true;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ActionInvoke));
 }
 
 std::optional<ActionCall> ActionManager::makeDevActionCall(
@@ -213,21 +216,21 @@ void ActionManager::destroy() noexcept {
 #if FLOW_UI_DEV_MODE
 	++devRevision_;
 #endif
-	if (storage_ && stateHandle_ != 0) {
-		if (auto* current = manager_storage::state<manager_storage::ActionManagerState>(
-				storage_,
-				storage::ManagerRecordHandle::fromPacked(stateHandle_),
-				storage::ResourceKind::ActionManager)) {
-			for (const auto& [_, handle] : current->bindings) {
-				(void)storage_->removePersistentRecord(handle, storage::ResourceKind::AppActionBinding);
+	try {
+		if (storage_ && stateHandle_ != 0) {
+			if (auto* current = manager_storage::state<manager_storage::ActionManagerState>(
+					storage_,
+					storage::ManagerRecordHandle::fromPacked(stateHandle_),
+					storage::ResourceKind::ActionManager)) {
+				for (const auto& [_, handle] : current->bindings) {
+					(void)storage_->removePersistentRecord(handle, storage::ResourceKind::AppActionBinding);
+				}
+				for (const auto handle : current->deferredRemovals) {
+					(void)storage_->removePersistentRecord(handle, storage::ResourceKind::AppActionBinding);
+				}
+				current->bindings.clear();
+				current->deferredRemovals.clear();
 			}
-			for (const auto handle : current->deferredRemovals) {
-				(void)storage_->removePersistentRecord(handle, storage::ResourceKind::AppActionBinding);
-			}
-			current->bindings.clear();
-			current->deferredRemovals.clear();
-		}
-		try {
 			(void)storage_->removeManagerRecord(
 				storage::ResourceKey{
 					storage::ResourceDomain::Action,
@@ -235,8 +238,9 @@ void ActionManager::destroy() noexcept {
 					InvalidWindowId,
 				},
 				storage::ResourceKind::ActionManager);
-		} catch (...) {
 		}
+	} catch (...) {
+		// Storage remains the final owner of records not released by this facade.
 	}
 	stateHandle_ = 0;
 	stateName_ = 0;
@@ -287,6 +291,7 @@ void ActionManager::publishBinding(
 	storage::PersistentRecordHandle handle,
 	bool replacement) {
 	auto& current = state();
+	storage_->noteManagerMutation(InvalidWindowId);
 	if (!replacement) {
 		const auto [_, inserted] = current.bindings.emplace(id, handle);
 		if (!inserted) {
@@ -303,7 +308,6 @@ void ActionManager::publishBinding(
 		found->second = handle;
 		retireBinding(previous);
 	}
-	storage_->noteManagerMutation(InvalidWindowId);
 #if FLOW_UI_DEV_MODE
 	++devRevision_;
 #endif
@@ -651,22 +655,24 @@ bool AppActions::isBound(AppActionCall call) const noexcept {
 	return call && isBound(call.id);
 }
 
-bool AppActions::unbind(AppActionID id) {
+Result<bool> AppActions::unbind(AppActionID id) noexcept try {
 	if (!owner_ || !owner_->storage_ || !id) return false;
 	auto& current = owner_->state();
 	const auto found = current.bindings.find(id);
 	if (found == current.bindings.end()) return false;
 	const storage::PersistentRecordHandle handle = found->second;
+	owner_->storage_->noteManagerMutation(InvalidWindowId);
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
 								FlowUi::detail::InitialCapacityTarget::actions_bindings,
 								current.bindings.size());
 	current.bindings.erase(found);
 	owner_->retireBinding(handle);
-	owner_->storage_->noteManagerMutation(InvalidWindowId);
 #if FLOW_UI_DEV_MODE
 	++owner_->devRevision_;
 #endif
 	return true;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ActionInvoke));
 }
 
 ActionInvocationStatus AppActions::invoke(AppActionCall call) {
@@ -691,9 +697,9 @@ AppActionAvailability AppActions::availability(AppActionCall call) const noexcep
 	}
 }
 
-bool AppActions::setAvailability(
+Result<bool> AppActions::setAvailability(
 	AppActionID id,
-	AppActionAvailability availabilityValue) {
+	AppActionAvailability availabilityValue) noexcept try {
 	if (!owner_ || !owner_->storage_ || !id) return false;
 	auto& current = owner_->state();
 	const auto found = current.bindings.find(id);
@@ -704,12 +710,14 @@ bool AppActions::setAvailability(
 	auto& header = *static_cast<action::AppActionBindingHeader*>(view.header);
 	if (header.tombstoned) return false;
 	if (header.availability.enabled == availabilityValue.enabled) return true;
-	header.availability = availabilityValue;
 	owner_->storage_->noteManagerMutation(InvalidWindowId);
+	header.availability = availabilityValue;
 #if FLOW_UI_DEV_MODE
 	++owner_->devRevision_;
 #endif
 	return true;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ActionInvoke));
 }
 
 } // namespace FlowUi

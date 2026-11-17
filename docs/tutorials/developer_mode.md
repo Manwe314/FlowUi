@@ -31,7 +31,7 @@ The default toggle is Ctrl+Shift+D. `App` owns the modern `DevInterface`, its de
 
 ## Describe editable values
 
-Schema descriptors live in [DevSchemaDescriptor.hpp](../../include/devSystems/devTooling/schema/DevSchemaDescriptor.hpp), in `FlowUi::devSystems::tooling`. Put schema declarations in the same namespace as their C++ types so argument-dependent lookup can find them.
+Schema descriptors live in [DevSchemaDescriptor.hpp](include/devSystems/devTooling/schema/DevSchemaDescriptor.hpp), in `FlowUi::devSystems::tooling`. Put schema declarations in the same namespace as their C++ types so argument-dependent lookup can find them.
 
 ```cpp
 #include <FlowUi/Public/Flow.hpp>
@@ -94,7 +94,7 @@ static_assert(FlowUi::FlowElement<Card>);
 
 These are descriptor macros, not global mutable registration. With the feature disabled they expand away. `FLOWUI_DEV_FIELD` records source metadata; the underlying `devField`, `devFieldAt`, `devStruct`, and `devEnum` factories support explicit descriptors. A type can instead expose `static consteval auto devSchema()`, or a third-party type can use a `DevTypeAdapter`/`DevEnumAdapter`. Use one descriptor route per type.
 
-Field options can mark a value read-only or hidden and supply numeric, text, choice, and editor constraints. Unsupported values retain explicit capability reasons instead of being presented as editable scalar data. Clay and FlowUi adapters are provided by [DevClayTypeAdapters.hpp](../../include/devSystems/devTooling/schema/DevClayTypeAdapters.hpp) and [DevFlowUiTypeAdapters.hpp](../../include/devSystems/devTooling/schema/DevFlowUiTypeAdapters.hpp).
+Field options can mark a value read-only or hidden and supply numeric, text, choice, and editor constraints. Unsupported values retain explicit capability reasons instead of being presented as editable scalar data. Clay and FlowUi adapters are provided by [DevClayTypeAdapters.hpp](include/devSystems/devTooling/schema/DevClayTypeAdapters.hpp) and [DevFlowUiTypeAdapters.hpp](include/devSystems/devTooling/schema/DevFlowUiTypeAdapters.hpp).
 
 ## Publish schema and catalogue entries
 
@@ -111,7 +111,7 @@ application.devTooling().schemas().ingest(catalogue);
 #endif
 ```
 
-[DevSchemaRegistry](../../include/devSystems/devTooling/schema/DevSchemaRegistry.hpp) queues roots and publishes immutable schema generations at the application safe point. `schemas().view()` returns a generation-owning view; snapshots retain their corresponding schema rather than borrowing a mutable global registry.
+[DevSchemaRegistry](include/devSystems/devTooling/schema/DevSchemaRegistry.hpp) queues roots and publishes immutable schema generations at the application safe point. `schemas().view()` returns a generation-owning view; snapshots retain their corresponding schema rather than borrowing a mutable global registry.
 
 `application.devTooling().catalogues()` exposes current element, theme, action, image, icon, font, and atlas metadata. Reflection discovery does not authorize arbitrary application element execution in the catalogue. A passive preview must be explicitly admitted with `registerElementPreview<Element>(set_name, true)` and must be safe to draw with default parameters.
 
@@ -120,7 +120,7 @@ application.devTooling().schemas().ingest(catalogue);
 Build the application UI normally:
 
 ```cpp
-application.ui().createElement(dashboard::kCard, "dashboard/summary")
+FlowUi::ValueOrThrow(application.ui()).get().createElement(dashboard::kCard, "dashboard/summary")
     .setParameters({.tone = dashboard::CardTone::Warning})
     .draw();
 ```
@@ -153,8 +153,8 @@ if (!result.applied) {
 
 For revision-checked review, use `bakePipeline().query_review()` and `commit_review()` with the reviewed plan. The interface uses this path to keep staged changes and revision checks consistent. Query `queryBakeStatus()` and `queryBakeDiff()` to inspect diagnostics and authored/live/baked values.
 
-`FLOW_UI_ENABLE_BAKED_CHANGES` enables the [CMake baking integration](../../cmake/FlowUiBaking.cmake). Its generator reads the active manifest, validates entries, and produces `FlowUiBakedChanges.hpp`/`.cpp` in the build tree. Rebuild to compile durable changes into the application, including production builds. This workflow generates a typed overlay; it does not apply the removed JSON-to-source updater workflow or silently rewrite application source.
+`FLOW_UI_ENABLE_BAKED_CHANGES` enables the [CMake baking integration](cmake/FlowUiBaking.cmake). Its generator reads the active manifest, validates entries, and produces `FlowUiBakedChanges.hpp`/`.cpp` in the build tree. Rebuild to compile durable changes into the application, including production builds. This workflow generates a typed overlay; it does not apply the removed JSON-to-source updater workflow or silently rewrite application source.
 
 Use `imageData(TextureRef)` for frame-owned Clay image payloads, configure input line behavior with `TextFieldMode`, and traverse `FieldTextView` explicitly with `contiguous()`, `copy()`, or `forEachChunk()`. Current schemas and generated values use these same supported runtime contracts.
 
-See [Developer Systems internals](../internals/dev_runtime.md), [agentic workflow](../agentic-workflow.md), and [revision-checked review and baking](../../include/devSystems/devAgenticWorkflow/knowledge/systems/changes.review_and_baking.md) for the corresponding service boundaries.
+See [Developer Systems internals](docs/internals/dev_runtime.md), [agentic workflow](docs/agentic-workflow.md), and [revision-checked review and baking](include/devSystems/devAgenticWorkflow/knowledge/systems/changes.review_and_baking.md) for the corresponding service boundaries.

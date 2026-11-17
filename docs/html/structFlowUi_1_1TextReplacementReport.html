@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,20 +106,95 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::TextReplacementReport Struct Reference<div class="ingroups"><a class="el" href="group__flowui__input__field__manager.html">Input Field Manager</a></div></div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="InputFieldTypes_8hpp_source.html">InputFieldTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:aad2fe3ba7eed77cd59fe273948b3cdfc" id="r_aad2fe3ba7eed77cd59fe273948b3cdfc"><td class="memItemLeft"><a id="aad2fe3ba7eed77cd59fe273948b3cdfc" name="aad2fe3ba7eed77cd59fe273948b3cdfc"></a>
-<a class="el" href="structFlowUi_1_1TextRange.html">TextRange</a>&#160;</td><td class="memItemRight"><b>oldRange</b> {}</td></tr>
-<tr class="memitem:ad21737a79fc9506fe495e44807199fe9" id="r_ad21737a79fc9506fe495e44807199fe9"><td class="memItemLeft"><a id="ad21737a79fc9506fe495e44807199fe9" name="ad21737a79fc9506fe495e44807199fe9"></a>
-size_t&#160;</td><td class="memItemRight"><b>insertedByteCount</b> = 0</td></tr>
-<tr class="memitem:a81edc9b7b61ac6f6ac9469afe176b7be" id="r_a81edc9b7b61ac6f6ac9469afe176b7be"><td class="memItemLeft"><a id="a81edc9b7b61ac6f6ac9469afe176b7be" name="a81edc9b7b61ac6f6ac9469afe176b7be"></a>
-size_t&#160;</td><td class="memItemRight"><b>removedByteCount</b> = 0</td></tr>
-<tr class="memitem:a441ccbaf352dd76a2845f2f851b9a531" id="r_a441ccbaf352dd76a2845f2f851b9a531"><td class="memItemLeft"><a id="a441ccbaf352dd76a2845f2f851b9a531" name="a441ccbaf352dd76a2845f2f851b9a531"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>removedText</b> {}</td></tr>
-<tr class="memitem:a829117f8550736f1ef509409f7dd43b1" id="r_a829117f8550736f1ef509409f7dd43b1"><td class="memItemLeft"><a id="a829117f8550736f1ef509409f7dd43b1" name="a829117f8550736f1ef509409f7dd43b1"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>insertedText</b> {}</td></tr>
+<tr class="memitem:aad2fe3ba7eed77cd59fe273948b3cdfc" id="r_aad2fe3ba7eed77cd59fe273948b3cdfc"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1TextRange.html">TextRange</a>&#160;</td><td class="memItemRight"><a class="el" href="#aad2fe3ba7eed77cd59fe273948b3cdfc">oldRange</a> {}</td></tr>
+<tr class="memitem:ad21737a79fc9506fe495e44807199fe9" id="r_ad21737a79fc9506fe495e44807199fe9"><td class="memItemLeft">size_t&#160;</td><td class="memItemRight"><a class="el" href="#ad21737a79fc9506fe495e44807199fe9">insertedByteCount</a> = 0</td></tr>
+<tr class="memitem:a81edc9b7b61ac6f6ac9469afe176b7be" id="r_a81edc9b7b61ac6f6ac9469afe176b7be"><td class="memItemLeft">size_t&#160;</td><td class="memItemRight"><a class="el" href="#a81edc9b7b61ac6f6ac9469afe176b7be">removedByteCount</a> = 0</td></tr>
+<tr class="memitem:a441ccbaf352dd76a2845f2f851b9a531" id="r_a441ccbaf352dd76a2845f2f851b9a531"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a441ccbaf352dd76a2845f2f851b9a531">removedText</a> {}</td></tr>
+<tr class="memitem:a829117f8550736f1ef509409f7dd43b1" id="r_a829117f8550736f1ef509409f7dd43b1"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a829117f8550736f1ef509409f7dd43b1">insertedText</a> {}</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>One applied replacement, addressed in the pre-edit document. Text views are populated for reversible reports and remain frame-scoped. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="ad21737a79fc9506fe495e44807199fe9" name="ad21737a79fc9506fe495e44807199fe9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad21737a79fc9506fe495e44807199fe9">&#9670;&#160;</a></span>insertedByteCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t FlowUi::TextReplacementReport::insertedByteCount = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of normalized UTF-8 bytes inserted. </p>
+
+</div>
+</div>
+<a id="a829117f8550736f1ef509409f7dd43b1" name="a829117f8550736f1ef509409f7dd43b1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a829117f8550736f1ef509409f7dd43b1">&#9670;&#160;</a></span>insertedText</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::TextReplacementReport::insertedText {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>UTF-8 replacement bytes; ownership remains with the caller or report storage. </p>
+
+</div>
+</div>
+<a id="aad2fe3ba7eed77cd59fe273948b3cdfc" name="aad2fe3ba7eed77cd59fe273948b3cdfc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aad2fe3ba7eed77cd59fe273948b3cdfc">&#9670;&#160;</a></span>oldRange</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1TextRange.html">TextRange</a> FlowUi::TextReplacementReport::oldRange {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Half-open interval in the document before this replacement. </p>
+
+</div>
+</div>
+<a id="a81edc9b7b61ac6f6ac9469afe176b7be" name="a81edc9b7b61ac6f6ac9469afe176b7be"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a81edc9b7b61ac6f6ac9469afe176b7be">&#9670;&#160;</a></span>removedByteCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t FlowUi::TextReplacementReport::removedByteCount = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of UTF-8 bytes removed. </p>
+
+</div>
+</div>
+<a id="a441ccbaf352dd76a2845f2f851b9a531" name="a441ccbaf352dd76a2845f2f851b9a531"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a441ccbaf352dd76a2845f2f851b9a531">&#9670;&#160;</a></span>removedText</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::TextReplacementReport::removedText {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Removed bytes in reversible reports; empty in summary reports. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="InputFieldTypes_8hpp_source.html">InputFieldTypes.hpp</a></li>
 </ul>
@@ -136,7 +211,7 @@ std::string_view&#160;</td><td class="memItemRight"><b>insertedText</b> {}</td><
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1TextReplacementReport.html">TextReplacementReport</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1TextReplacementReport.html">TextReplacementReport</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

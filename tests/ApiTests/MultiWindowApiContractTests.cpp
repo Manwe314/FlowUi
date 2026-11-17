@@ -75,28 +75,28 @@ void testPublicSurface() {
 	using FlowUi::WindowId;
 
 	static_assert(std::is_same_v<
-		decltype(static_cast<Result<WindowId> (App::*)()>(&App::createWindowLikeMain)),
-		Result<WindowId> (App::*)()>);
+		decltype(static_cast<Result<WindowId> (App::*)() noexcept>(&App::createWindowLikeMain)),
+		Result<WindowId> (App::*)() noexcept>);
 	static_assert(std::is_same_v<
-		decltype(static_cast<Result<WindowId> (App::*)(const WindowConfigOverrides&)>(&App::createWindow)),
-		Result<WindowId> (App::*)(const WindowConfigOverrides&)>);
+		decltype(static_cast<Result<WindowId> (App::*)(const WindowConfigOverrides&) noexcept>(&App::createWindow)),
+		Result<WindowId> (App::*)(const WindowConfigOverrides&) noexcept>);
 	static_assert(std::is_same_v<
-		decltype(static_cast<Result<WindowId> (App::*)(std::string_view, int, int)>(&App::createWindow)),
-		Result<WindowId> (App::*)(std::string_view, int, int)>);
+		decltype(static_cast<Result<WindowId> (App::*)(std::string_view, int, int) noexcept>(&App::createWindow)),
+		Result<WindowId> (App::*)(std::string_view, int, int) noexcept>);
 	static_assert(std::is_same_v<
-		decltype(static_cast<Status (App::*)(WindowId, FlowUi::UiBuildCallback, FlowUi::ManagedWindowFlags)>(
+		decltype(static_cast<Status (App::*)(WindowId, const FlowUi::UiBuildCallback&, FlowUi::ManagedWindowFlags) noexcept>(
 			&App::setWindowUiCallback)),
-		Status (App::*)(WindowId, FlowUi::UiBuildCallback, FlowUi::ManagedWindowFlags)>);
-	static_assert(std::is_same_v<decltype(&App::dispatchManagedWindows), Status (App::*)()>);
+		Status (App::*)(WindowId, const FlowUi::UiBuildCallback&, FlowUi::ManagedWindowFlags) noexcept>);
+	static_assert(std::is_same_v<decltype(&App::dispatchManagedWindows), Status (App::*)() noexcept>);
 	static_assert(noexcept(std::declval<FlowUi::UiManager&>().inputFields()));
 	static_assert(noexcept(std::declval<const FlowUi::UiManager&>().shortcuts()));
 	static_assert(noexcept(std::declval<FlowUi::UiManager&>().popups()));
 	static_assert(noexcept(FlowUi::Font::FontVariantData::kerningKey(0u, 0u)));
 	static_assert(noexcept(std::declval<const FlowUi::Font::FontFaceData&>().defaultVariant()));
-	static_assert(!noexcept(std::declval<App&>().ui(FlowUi::InvalidWindowId)));
+	static_assert(noexcept(std::declval<App&>().ui(FlowUi::InvalidWindowId)));
 	static_assert(!noexcept(std::declval<FlowUi::UiManager&>().toClayString(std::string_view{})));
 	static_assert(
-		!noexcept(std::declval<const FlowUi::ImageManager&>().getTexture(std::string_view{})));
+		noexcept(std::declval<const FlowUi::ImageManager&>().getTexture(std::string_view{})));
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 	static_assert(noexcept(std::declval<const FlowUi::ViewPort&>().getKey()));
 	static_assert(noexcept(std::declval<const FlowUi::ViewPort&>().getSize()));
@@ -184,7 +184,7 @@ void testPublicSurface() {
 		FlowUi::devSystems::interface_elements::DevInterfaceFooterParameters>);
 	static_assert(std::same_as<
 		decltype(std::declval<const App&>().devWindowSnapshot()),
-		std::vector<FlowUi::DevWindowInfo>>);
+		FlowUi::Result<std::vector<FlowUi::DevWindowInfo>>>);
 	static_assert(std::same_as<
 		decltype(std::declval<FlowUi::AppConfig&>().dev.monitoring.timing),
 		FlowUi::devSystems::DevTimingConfig>);

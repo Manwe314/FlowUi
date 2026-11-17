@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,24 +106,37 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevBakeManifest Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Owned manifest envelope for reflected assignments and optional memory capacities.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevBakeTypes_8hpp_source.html">DevBakeTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:afdddc7d5200a97aa2bce345009f22e3c" id="r_afdddc7d5200a97aa2bce345009f22e3c"><td class="memItemLeft"><a id="afdddc7d5200a97aa2bce345009f22e3c" name="afdddc7d5200a97aa2bce345009f22e3c"></a>
 std::optional&lt; FlowUi::detail::MemoryCapacityManifest &gt;&#160;</td><td class="memItemRight"><b>memoryCapacity</b> {}</td></tr>
+<tr class="memdesc:afdddc7d5200a97aa2bce345009f22e3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optional persisted capacity selections and growth policy. <br /></td></tr>
 <tr class="memitem:a00b1abb2eb19ef58ed1483c26704a2f2" id="r_a00b1abb2eb19ef58ed1483c26704a2f2"><td class="memItemLeft"><a id="a00b1abb2eb19ef58ed1483c26704a2f2" name="a00b1abb2eb19ef58ed1483c26704a2f2"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>manifestVersion</b> = 1</td></tr>
+<tr class="memdesc:a00b1abb2eb19ef58ed1483c26704a2f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Supported envelope format version; defaults to version one. <br /></td></tr>
 <tr class="memitem:adde0404db88c75652d1c9a8326ea4744" id="r_adde0404db88c75652d1c9a8326ea4744"><td class="memItemLeft"><a id="adde0404db88c75652d1c9a8326ea4744" name="adde0404db88c75652d1c9a8326ea4744"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>schemaFingerprint</b> = 0</td></tr>
+<tr class="memdesc:adde0404db88c75652d1c9a8326ea4744"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fingerprint of the schema used to materialize assignments. <br /></td></tr>
 <tr class="memitem:ac14ee67b03775a4e26161e1c2794874b" id="r_ac14ee67b03775a4e26161e1c2794874b"><td class="memItemLeft"><a id="ac14ee67b03775a4e26161e1c2794874b" name="ac14ee67b03775a4e26161e1c2794874b"></a>
 std::string&#160;</td><td class="memItemRight"><b>buildFingerprint</b> {}</td></tr>
+<tr class="memdesc:ac14ee67b03775a4e26161e1c2794874b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build provenance string retained with the manifest. <br /></td></tr>
 <tr class="memitem:aa78f1005b64a467e4fe9ed080517513a" id="r_aa78f1005b64a467e4fe9ed080517513a"><td class="memItemLeft"><a id="aa78f1005b64a467e4fe9ed080517513a" name="aa78f1005b64a467e4fe9ed080517513a"></a>
 std::string&#160;</td><td class="memItemRight"><b>createdTimestamp</b> {}</td></tr>
+<tr class="memdesc:aa78f1005b64a467e4fe9ed080517513a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manifest creation timestamp retained as metadata. <br /></td></tr>
 <tr class="memitem:a791e6f52f1c74b40c644462d9455afb5" id="r_a791e6f52f1c74b40c644462d9455afb5"><td class="memItemLeft"><a id="a791e6f52f1c74b40c644462d9455afb5" name="a791e6f52f1c74b40c644462d9455afb5"></a>
 std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevBakeEntry.html">DevBakeEntry</a> &gt;&#160;</td><td class="memItemRight"><b>entries</b> {}</td></tr>
+<tr class="memdesc:a791e6f52f1c74b40c644462d9455afb5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Owned element/theme assignments in persisted order. <br /></td></tr>
 <tr class="memitem:a8db1e1e903a092f7098da85adb505da1" id="r_a8db1e1e903a092f7098da85adb505da1"><td class="memItemLeft">std::vector&lt; std::pair&lt; std::string, std::string &gt; &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a8db1e1e903a092f7098da85adb505da1">preserved_metadata</a> {}</td></tr>
 </table>
-<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Owned manifest envelope for reflected assignments and optional memory capacities. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a8db1e1e903a092f7098da85adb505da1" name="a8db1e1e903a092f7098da85adb505da1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8db1e1e903a092f7098da85adb505da1">&#9670;&#160;</a></span>preserved_metadata</h2>
 
@@ -155,7 +168,7 @@ std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1Dev
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevBakeManifest.html">DevBakeManifest</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevBakeManifest.html">DevBakeManifest</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,38 +111,299 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a014fbcbb5f0ed16a912b30208264825e" id="r_a014fbcbb5f0ed16a912b30208264825e"><td class="memItemLeft"><a id="a014fbcbb5f0ed16a912b30208264825e" name="a014fbcbb5f0ed16a912b30208264825e"></a>
-constexpr bool&#160;</td><td class="memItemRight"><b>hasError</b> () const noexcept</td></tr>
-<tr class="memitem:a5ff6e51d491fd83419e231be5a37a2bb" id="r_a5ff6e51d491fd83419e231be5a37a2bb"><td class="memItemLeft"><a id="a5ff6e51d491fd83419e231be5a37a2bb" name="a5ff6e51d491fd83419e231be5a37a2bb"></a>
-constexpr&#160;</td><td class="memItemRight"><b>operator bool</b> () const noexcept</td></tr>
-<tr class="memitem:ab4fc8242db661452697c1c3347f3fcbd" id="r_ab4fc8242db661452697c1c3347f3fcbd"><td class="memItemLeft"><a id="ab4fc8242db661452697c1c3347f3fcbd" name="ab4fc8242db661452697c1c3347f3fcbd"></a>
-constexpr <a class="el" href="structFlowUi_1_1ErrorDescriptor.html">ErrorDescriptor</a>&#160;</td><td class="memItemRight"><b>descriptor</b> () const noexcept</td></tr>
-<tr class="memitem:ae191861d53fd5793a6f13e038c05e7b9" id="r_ae191861d53fd5793a6f13e038c05e7b9"><td class="memItemLeft"><a id="ae191861d53fd5793a6f13e038c05e7b9" name="ae191861d53fd5793a6f13e038c05e7b9"></a>
-constexpr <a class="el" href="structFlowUi_1_1ErrorSiteDescriptor.html">ErrorSiteDescriptor</a>&#160;</td><td class="memItemRight"><b>siteDescriptor</b> () const noexcept</td></tr>
-<tr class="memitem:a104ebdcad889a9674f54ef2c3199a463" id="r_a104ebdcad889a9674f54ef2c3199a463"><td class="memItemLeft"><a id="a104ebdcad889a9674f54ef2c3199a463" name="a104ebdcad889a9674f54ef2c3199a463"></a>
-constexpr ErrorDomain&#160;</td><td class="memItemRight"><b>domain</b> () const noexcept</td></tr>
-<tr class="memitem:adbfcdbdde1d2d7da7858d2e3496b8278" id="r_adbfcdbdde1d2d7da7858d2e3496b8278"><td class="memItemLeft"><a id="adbfcdbdde1d2d7da7858d2e3496b8278" name="adbfcdbdde1d2d7da7858d2e3496b8278"></a>
-constexpr ErrorSubjectKind&#160;</td><td class="memItemRight"><b>subjectKind</b> () const noexcept</td></tr>
-<tr class="memitem:ae8968a8e89150f667e50bcfdeffd56e2" id="r_ae8968a8e89150f667e50bcfdeffd56e2"><td class="memItemLeft"><a id="ae8968a8e89150f667e50bcfdeffd56e2" name="ae8968a8e89150f667e50bcfdeffd56e2"></a>
-constexpr std::string_view&#160;</td><td class="memItemRight"><b>message</b> () const noexcept</td></tr>
+<tr class="memitem:a014fbcbb5f0ed16a912b30208264825e" id="r_a014fbcbb5f0ed16a912b30208264825e"><td class="memItemLeft">constexpr bool&#160;</td><td class="memItemRight"><a class="el" href="#a014fbcbb5f0ed16a912b30208264825e">hasError</a> () const noexcept</td></tr>
+<tr class="memitem:a5ff6e51d491fd83419e231be5a37a2bb" id="r_a5ff6e51d491fd83419e231be5a37a2bb"><td class="memItemLeft">constexpr&#160;</td><td class="memItemRight"><a class="el" href="#a5ff6e51d491fd83419e231be5a37a2bb">operator bool</a> () const noexcept</td></tr>
+<tr class="memitem:ab4fc8242db661452697c1c3347f3fcbd" id="r_ab4fc8242db661452697c1c3347f3fcbd"><td class="memItemLeft">constexpr <a class="el" href="structFlowUi_1_1ErrorDescriptor.html">ErrorDescriptor</a>&#160;</td><td class="memItemRight"><a class="el" href="#ab4fc8242db661452697c1c3347f3fcbd">descriptor</a> () const noexcept</td></tr>
+<tr class="memitem:ae191861d53fd5793a6f13e038c05e7b9" id="r_ae191861d53fd5793a6f13e038c05e7b9"><td class="memItemLeft">constexpr <a class="el" href="structFlowUi_1_1ErrorSiteDescriptor.html">ErrorSiteDescriptor</a>&#160;</td><td class="memItemRight"><a class="el" href="#ae191861d53fd5793a6f13e038c05e7b9">siteDescriptor</a> () const noexcept</td></tr>
+<tr class="memitem:a104ebdcad889a9674f54ef2c3199a463" id="r_a104ebdcad889a9674f54ef2c3199a463"><td class="memItemLeft">constexpr <a class="el" href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818">ErrorDomain</a>&#160;</td><td class="memItemRight"><a class="el" href="#a104ebdcad889a9674f54ef2c3199a463">domain</a> () const noexcept</td></tr>
+<tr class="memitem:adbfcdbdde1d2d7da7858d2e3496b8278" id="r_adbfcdbdde1d2d7da7858d2e3496b8278"><td class="memItemLeft">constexpr <a class="el" href="namespaceFlowUi.html#a7821a5de823913fe5d71048c0f8c629c">ErrorSubjectKind</a>&#160;</td><td class="memItemRight"><a class="el" href="#adbfcdbdde1d2d7da7858d2e3496b8278">subjectKind</a> () const noexcept</td></tr>
+<tr class="memitem:ae8968a8e89150f667e50bcfdeffd56e2" id="r_ae8968a8e89150f667e50bcfdeffd56e2"><td class="memItemLeft">constexpr std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#ae8968a8e89150f667e50bcfdeffd56e2">message</a> () const noexcept</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a53400c99881f530bd0cf1c51315ac1b3" id="r_a53400c99881f530bd0cf1c51315ac1b3"><td class="memItemLeft"><a id="a53400c99881f530bd0cf1c51315ac1b3" name="a53400c99881f530bd0cf1c51315ac1b3"></a>
-std::uint64_t&#160;</td><td class="memItemRight"><b>subject</b> = 0u</td></tr>
-<tr class="memitem:a9badc9bfe2a3e2fb14afc8ff3cba5d4d" id="r_a9badc9bfe2a3e2fb14afc8ff3cba5d4d"><td class="memItemLeft"><a id="a9badc9bfe2a3e2fb14afc8ff3cba5d4d" name="a9badc9bfe2a3e2fb14afc8ff3cba5d4d"></a>
-std::uint64_t&#160;</td><td class="memItemRight"><b>auxiliary</b> = 0u</td></tr>
-<tr class="memitem:a36140ba79c786991e54d4c2287573c56" id="r_a36140ba79c786991e54d4c2287573c56"><td class="memItemLeft"><a id="a36140ba79c786991e54d4c2287573c56" name="a36140ba79c786991e54d4c2287573c56"></a>
-std::uint32_t&#160;</td><td class="memItemRight"><b>nativeCode</b> = 0u</td></tr>
-<tr class="memitem:aeb6680b9ea7e5230bf10b9a5c9592f16" id="r_aeb6680b9ea7e5230bf10b9a5c9592f16"><td class="memItemLeft"><a id="aeb6680b9ea7e5230bf10b9a5c9592f16" name="aeb6680b9ea7e5230bf10b9a5c9592f16"></a>
-ErrorCode&#160;</td><td class="memItemRight"><b>code</b> = ErrorCode::None</td></tr>
-<tr class="memitem:ab3eaaa41951a7147c1b0b26f21cb108d" id="r_ab3eaaa41951a7147c1b0b26f21cb108d"><td class="memItemLeft"><a id="ab3eaaa41951a7147c1b0b26f21cb108d" name="ab3eaaa41951a7147c1b0b26f21cb108d"></a>
-ErrorSite&#160;</td><td class="memItemRight"><b>site</b> = ErrorSite::None</td></tr>
+<tr class="memitem:a53400c99881f530bd0cf1c51315ac1b3" id="r_a53400c99881f530bd0cf1c51315ac1b3"><td class="memItemLeft">std::uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a53400c99881f530bd0cf1c51315ac1b3">subject</a> = 0u</td></tr>
+<tr class="memitem:a9badc9bfe2a3e2fb14afc8ff3cba5d4d" id="r_a9badc9bfe2a3e2fb14afc8ff3cba5d4d"><td class="memItemLeft">std::uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a9badc9bfe2a3e2fb14afc8ff3cba5d4d">auxiliary</a> = 0u</td></tr>
+<tr class="memitem:a36140ba79c786991e54d4c2287573c56" id="r_a36140ba79c786991e54d4c2287573c56"><td class="memItemLeft">std::uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a36140ba79c786991e54d4c2287573c56">nativeCode</a> = 0u</td></tr>
+<tr class="memitem:aeb6680b9ea7e5230bf10b9a5c9592f16" id="r_aeb6680b9ea7e5230bf10b9a5c9592f16"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76">ErrorCode</a>&#160;</td><td class="memItemRight"><a class="el" href="#aeb6680b9ea7e5230bf10b9a5c9592f16">code</a> = <a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a6adf97f83acf6453d4a6a4b1070f3754">ErrorCode::None</a></td></tr>
+<tr class="memitem:ab3eaaa41951a7147c1b0b26f21cb108d" id="r_ab3eaaa41951a7147c1b0b26f21cb108d"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2">ErrorSite</a>&#160;</td><td class="memItemRight"><a class="el" href="#ab3eaaa41951a7147c1b0b26f21cb108d">site</a> = <a class="el" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2a6adf97f83acf6453d4a6a4b1070f3754">ErrorSite::None</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Small, allocation-free production error value.</p>
 <p>Debug names, source locations, stack traces, and state snapshots belong to the optional development sidecar keyed by occurrence. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="ab4fc8242db661452697c1c3347f3fcbd" name="ab4fc8242db661452697c1c3347f3fcbd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab4fc8242db661452697c1c3347f3fcbd">&#9670;&#160;</a></span>descriptor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1ErrorDescriptor.html">ErrorDescriptor</a> FlowUi::FlowUiError::descriptor </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return static code metadata without allocating. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ErrorDescriptor.html">FlowUi::ErrorDescriptor</a> metadata = error.descriptor();</div>
+<div class="ttc" id="astructFlowUi_1_1ErrorDescriptor_html"><div class="ttname"><a href="structFlowUi_1_1ErrorDescriptor.html">FlowUi::ErrorDescriptor</a></div><div class="ttdef"><b>Definition</b> ErrorCodeTypes.hpp:185</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="a104ebdcad889a9674f54ef2c3199a463" name="a104ebdcad889a9674f54ef2c3199a463"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a104ebdcad889a9674f54ef2c3199a463">&#9670;&#160;</a></span>domain()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818">ErrorDomain</a> FlowUi::FlowUiError::domain </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Decode the owning domain from the stable code value. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_enumeration" href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818">FlowUi::ErrorDomain</a> <a class="code hl_function" href="#a104ebdcad889a9674f54ef2c3199a463">domain</a> = error.domain();</div>
+<div class="ttc" id="anamespaceFlowUi_html_a84c8eba1ce3d492712d1998687e6d818"><div class="ttname"><a href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818">FlowUi::ErrorDomain</a></div><div class="ttdeci">ErrorDomain</div><div class="ttdef"><b>Definition</b> ErrorTypes.hpp:19</div></div>
+<div class="ttc" id="astructFlowUi_1_1FlowUiError_html_a104ebdcad889a9674f54ef2c3199a463"><div class="ttname"><a href="#a104ebdcad889a9674f54ef2c3199a463">FlowUi::FlowUiError::domain</a></div><div class="ttdeci">constexpr ErrorDomain domain() const noexcept</div><div class="ttdef"><b>Definition</b> ErrorValue.hpp:75</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="a014fbcbb5f0ed16a912b30208264825e" name="a014fbcbb5f0ed16a912b30208264825e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a014fbcbb5f0ed16a912b30208264825e">&#9670;&#160;</a></span>hasError()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::FlowUiError::hasError </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return whether code represents an error. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> failed = error.hasError();</div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="ae8968a8e89150f667e50bcfdeffd56e2" name="ae8968a8e89150f667e50bcfdeffd56e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae8968a8e89150f667e50bcfdeffd56e2">&#9670;&#160;</a></span>message()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::FlowUiError::message </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Borrow the static, null-terminated message associated with code. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> std::string_view <a class="code hl_function" href="#ae8968a8e89150f667e50bcfdeffd56e2">message</a> = error.message();</div>
+<div class="ttc" id="astructFlowUi_1_1FlowUiError_html_ae8968a8e89150f667e50bcfdeffd56e2"><div class="ttname"><a href="#ae8968a8e89150f667e50bcfdeffd56e2">FlowUi::FlowUiError::message</a></div><div class="ttdeci">constexpr std::string_view message() const noexcept</div><div class="ttdef"><b>Definition</b> ErrorValue.hpp:97</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="a5ff6e51d491fd83419e231be5a37a2bb" name="a5ff6e51d491fd83419e231be5a37a2bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ff6e51d491fd83419e231be5a37a2bb">&#9670;&#160;</a></span>operator bool()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::FlowUiError::operator bool </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel explicit">explicit</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return whether this value contains an error. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> failed = <span class="keyword">static_cast&lt;</span><span class="keywordtype">bool</span><span class="keyword">&gt;</span>(error);</div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="ae191861d53fd5793a6f13e038c05e7b9" name="ae191861d53fd5793a6f13e038c05e7b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae191861d53fd5793a6f13e038c05e7b9">&#9670;&#160;</a></span>siteDescriptor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1ErrorSiteDescriptor.html">ErrorSiteDescriptor</a> FlowUi::FlowUiError::siteDescriptor </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return static operation and subject-kind metadata. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ErrorSiteDescriptor.html">FlowUi::ErrorSiteDescriptor</a> metadata = error.siteDescriptor();</div>
+<div class="ttc" id="astructFlowUi_1_1ErrorSiteDescriptor_html"><div class="ttname"><a href="structFlowUi_1_1ErrorSiteDescriptor.html">FlowUi::ErrorSiteDescriptor</a></div><div class="ttdef"><b>Definition</b> ErrorSites.hpp:291</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="adbfcdbdde1d2d7da7858d2e3496b8278" name="adbfcdbdde1d2d7da7858d2e3496b8278"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adbfcdbdde1d2d7da7858d2e3496b8278">&#9670;&#160;</a></span>subjectKind()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a7821a5de823913fe5d71048c0f8c629c">ErrorSubjectKind</a> FlowUi::FlowUiError::subjectKind </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return how to interpret the numeric subject for the detecting site. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_enumeration" href="namespaceFlowUi.html#a7821a5de823913fe5d71048c0f8c629c">FlowUi::ErrorSubjectKind</a> <a class="code hl_function" href="#adbfcdbdde1d2d7da7858d2e3496b8278">subjectKind</a> = error.subjectKind();</div>
+<div class="ttc" id="anamespaceFlowUi_html_a7821a5de823913fe5d71048c0f8c629c"><div class="ttname"><a href="namespaceFlowUi.html#a7821a5de823913fe5d71048c0f8c629c">FlowUi::ErrorSubjectKind</a></div><div class="ttdeci">ErrorSubjectKind</div><div class="ttdef"><b>Definition</b> ErrorTypes.hpp:105</div></div>
+<div class="ttc" id="astructFlowUi_1_1FlowUiError_html_adbfcdbdde1d2d7da7858d2e3496b8278"><div class="ttname"><a href="#adbfcdbdde1d2d7da7858d2e3496b8278">FlowUi::FlowUiError::subjectKind</a></div><div class="ttdeci">constexpr ErrorSubjectKind subjectKind() const noexcept</div><div class="ttdef"><b>Definition</b> ErrorValue.hpp:86</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a9badc9bfe2a3e2fb14afc8ff3cba5d4d" name="a9badc9bfe2a3e2fb14afc8ff3cba5d4d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9badc9bfe2a3e2fb14afc8ff3cba5d4d">&#9670;&#160;</a></span>auxiliary</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::uint64_t FlowUi::FlowUiError::auxiliary = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Site-specific secondary identity, count, or size; zero when unused. </p>
+
+</div>
+</div>
+<a id="aeb6680b9ea7e5230bf10b9a5c9592f16" name="aeb6680b9ea7e5230bf10b9a5c9592f16"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb6680b9ea7e5230bf10b9a5c9592f16">&#9670;&#160;</a></span>code</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76">ErrorCode</a> FlowUi::FlowUiError::code = <a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a6adf97f83acf6453d4a6a4b1070f3754">ErrorCode::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Stable failure code; None represents success/no error. </p>
+
+</div>
+</div>
+<a id="a36140ba79c786991e54d4c2287573c56" name="a36140ba79c786991e54d4c2287573c56"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a36140ba79c786991e54d4c2287573c56">&#9670;&#160;</a></span>nativeCode</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::uint32_t FlowUi::FlowUiError::nativeCode = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Backend status code encoded in 32 bits; zero when no backend code applies. </p>
+
+</div>
+</div>
+<a id="ab3eaaa41951a7147c1b0b26f21cb108d" name="ab3eaaa41951a7147c1b0b26f21cb108d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab3eaaa41951a7147c1b0b26f21cb108d">&#9670;&#160;</a></span>site</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2">ErrorSite</a> FlowUi::FlowUiError::site = <a class="el" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2a6adf97f83acf6453d4a6a4b1070f3754">ErrorSite::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Operation that detected the failure. </p>
+
+</div>
+</div>
+<a id="a53400c99881f530bd0cf1c51315ac1b3" name="a53400c99881f530bd0cf1c51315ac1b3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a53400c99881f530bd0cf1c51315ac1b3">&#9670;&#160;</a></span>subject</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::uint64_t FlowUi::FlowUiError::subject = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Stable numeric subject interpreted according to <a class="el" href="#ae191861d53fd5793a6f13e038c05e7b9">siteDescriptor()</a>.expectedSubject. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/errorManagement/<a class="el" href="ErrorValue_8hpp_source.html">ErrorValue.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -158,7 +419,7 @@ ErrorSite&#160;</td><td class="memItemRight"><b>site</b> = ErrorSite::None</td><
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1FlowUiError.html">FlowUiError</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1FlowUiError.html">FlowUiError</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

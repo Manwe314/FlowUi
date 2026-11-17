@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,24 +106,127 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::FieldEditTransaction Struct Reference<div class="ingroups"><a class="el" href="group__flowui__input__field__manager.html">Input Field Manager</a></div></div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="InputFieldTypes_8hpp_source.html">InputFieldTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a137c2377c73a57146397c83d6784d0e3" id="r_a137c2377c73a57146397c83d6784d0e3"><td class="memItemLeft"><a id="a137c2377c73a57146397c83d6784d0e3" name="a137c2377c73a57146397c83d6784d0e3"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>sequence</b> = 0</td></tr>
-<tr class="memitem:a2f2266fa96771181dd5bf775d3331ec6" id="r_a2f2266fa96771181dd5bf775d3331ec6"><td class="memItemLeft"><a id="a2f2266fa96771181dd5bf775d3331ec6" name="a2f2266fa96771181dd5bf775d3331ec6"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>revisionBefore</b> = 0</td></tr>
-<tr class="memitem:ac63a672c64432ed0eb749dfcbe142f43" id="r_ac63a672c64432ed0eb749dfcbe142f43"><td class="memItemLeft"><a id="ac63a672c64432ed0eb749dfcbe142f43" name="ac63a672c64432ed0eb749dfcbe142f43"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>revisionAfter</b> = 0</td></tr>
-<tr class="memitem:adafe2ae43de343567dc0147981e7dc9c" id="r_adafe2ae43de343567dc0147981e7dc9c"><td class="memItemLeft"><a id="adafe2ae43de343567dc0147981e7dc9c" name="adafe2ae43de343567dc0147981e7dc9c"></a>
-EditOrigin&#160;</td><td class="memItemRight"><b>origin</b> = EditOrigin::Programmatic</td></tr>
-<tr class="memitem:af72518d0d20949c9b273c6a15c348f37" id="r_af72518d0d20949c9b273c6a15c348f37"><td class="memItemLeft"><a id="af72518d0d20949c9b273c6a15c348f37" name="af72518d0d20949c9b273c6a15c348f37"></a>
-std::span&lt; const <a class="el" href="structFlowUi_1_1TextReplacementReport.html">TextReplacementReport</a> &gt;&#160;</td><td class="memItemRight"><b>replacements</b> {}</td></tr>
-<tr class="memitem:acc3838e9cf4159fd7456147274267602" id="r_acc3838e9cf4159fd7456147274267602"><td class="memItemLeft"><a id="acc3838e9cf4159fd7456147274267602" name="acc3838e9cf4159fd7456147274267602"></a>
-std::span&lt; const <a class="el" href="structFlowUi_1_1TextSelection.html">TextSelection</a> &gt;&#160;</td><td class="memItemRight"><b>selectionsBefore</b> {}</td></tr>
-<tr class="memitem:ac748d4b1870f31a2c01d1cd1822e9724" id="r_ac748d4b1870f31a2c01d1cd1822e9724"><td class="memItemLeft"><a id="ac748d4b1870f31a2c01d1cd1822e9724" name="ac748d4b1870f31a2c01d1cd1822e9724"></a>
-std::span&lt; const <a class="el" href="structFlowUi_1_1TextSelection.html">TextSelection</a> &gt;&#160;</td><td class="memItemRight"><b>selectionsAfter</b> {}</td></tr>
+<tr class="memitem:a137c2377c73a57146397c83d6784d0e3" id="r_a137c2377c73a57146397c83d6784d0e3"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a137c2377c73a57146397c83d6784d0e3">sequence</a> = 0</td></tr>
+<tr class="memitem:a2f2266fa96771181dd5bf775d3331ec6" id="r_a2f2266fa96771181dd5bf775d3331ec6"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a2f2266fa96771181dd5bf775d3331ec6">revisionBefore</a> = 0</td></tr>
+<tr class="memitem:ac63a672c64432ed0eb749dfcbe142f43" id="r_ac63a672c64432ed0eb749dfcbe142f43"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ac63a672c64432ed0eb749dfcbe142f43">revisionAfter</a> = 0</td></tr>
+<tr class="memitem:adafe2ae43de343567dc0147981e7dc9c" id="r_adafe2ae43de343567dc0147981e7dc9c"><td class="memItemLeft"><a class="el" href="group__flowui__input__field__manager.html#gac4c000112c00c4b93f0377f4718508e6">EditOrigin</a>&#160;</td><td class="memItemRight"><a class="el" href="#adafe2ae43de343567dc0147981e7dc9c">origin</a> = <a class="el" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">EditOrigin::Programmatic</a></td></tr>
+<tr class="memitem:af72518d0d20949c9b273c6a15c348f37" id="r_af72518d0d20949c9b273c6a15c348f37"><td class="memItemLeft">std::span&lt; const <a class="el" href="structFlowUi_1_1TextReplacementReport.html">TextReplacementReport</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#af72518d0d20949c9b273c6a15c348f37">replacements</a> {}</td></tr>
+<tr class="memitem:acc3838e9cf4159fd7456147274267602" id="r_acc3838e9cf4159fd7456147274267602"><td class="memItemLeft">std::span&lt; const <a class="el" href="structFlowUi_1_1TextSelection.html">TextSelection</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#acc3838e9cf4159fd7456147274267602">selectionsBefore</a> {}</td></tr>
+<tr class="memitem:ac748d4b1870f31a2c01d1cd1822e9724" id="r_ac748d4b1870f31a2c01d1cd1822e9724"><td class="memItemLeft">std::span&lt; const <a class="el" href="structFlowUi_1_1TextSelection.html">TextSelection</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ac748d4b1870f31a2c01d1cd1822e9724">selectionsAfter</a> {}</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Successful atomic field edit and before/after selections. All spans and text views are manager- owned, frame-scoped reports; copy them to retain undo history. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="adafe2ae43de343567dc0147981e7dc9c" name="adafe2ae43de343567dc0147981e7dc9c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adafe2ae43de343567dc0147981e7dc9c">&#9670;&#160;</a></span>origin</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__flowui__input__field__manager.html#gac4c000112c00c4b93f0377f4718508e6">EditOrigin</a> FlowUi::FieldEditTransaction::origin = <a class="el" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">EditOrigin::Programmatic</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Source attribution for this edit. </p>
+
+</div>
+</div>
+<a id="af72518d0d20949c9b273c6a15c348f37" name="af72518d0d20949c9b273c6a15c348f37"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af72518d0d20949c9b273c6a15c348f37">&#9670;&#160;</a></span>replacements</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::span&lt;const <a class="el" href="structFlowUi_1_1TextReplacementReport.html">TextReplacementReport</a>&gt; FlowUi::FieldEditTransaction::replacements {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Applied replacements addressed against revisionBefore. </p>
+
+</div>
+</div>
+<a id="ac63a672c64432ed0eb749dfcbe142f43" name="ac63a672c64432ed0eb749dfcbe142f43"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac63a672c64432ed0eb749dfcbe142f43">&#9670;&#160;</a></span>revisionAfter</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::FieldEditTransaction::revisionAfter = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Field revision immediately after the atomic edit. </p>
+
+</div>
+</div>
+<a id="a2f2266fa96771181dd5bf775d3331ec6" name="a2f2266fa96771181dd5bf775d3331ec6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2f2266fa96771181dd5bf775d3331ec6">&#9670;&#160;</a></span>revisionBefore</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::FieldEditTransaction::revisionBefore = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Field revision immediately before the atomic edit. </p>
+
+</div>
+</div>
+<a id="ac748d4b1870f31a2c01d1cd1822e9724" name="ac748d4b1870f31a2c01d1cd1822e9724"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac748d4b1870f31a2c01d1cd1822e9724">&#9670;&#160;</a></span>selectionsAfter</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::span&lt;const <a class="el" href="structFlowUi_1_1TextSelection.html">TextSelection</a>&gt; FlowUi::FieldEditTransaction::selectionsAfter {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed selections after applying replacements. </p>
+
+</div>
+</div>
+<a id="acc3838e9cf4159fd7456147274267602" name="acc3838e9cf4159fd7456147274267602"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc3838e9cf4159fd7456147274267602">&#9670;&#160;</a></span>selectionsBefore</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::span&lt;const <a class="el" href="structFlowUi_1_1TextSelection.html">TextSelection</a>&gt; FlowUi::FieldEditTransaction::selectionsBefore {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed selections before applying replacements. </p>
+
+</div>
+</div>
+<a id="a137c2377c73a57146397c83d6784d0e3" name="a137c2377c73a57146397c83d6784d0e3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a137c2377c73a57146397c83d6784d0e3">&#9670;&#160;</a></span>sequence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::FieldEditTransaction::sequence = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Monotonic transaction sequence assigned by the manager. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="InputFieldTypes_8hpp_source.html">InputFieldTypes.hpp</a></li>
 </ul>
@@ -140,7 +243,7 @@ std::span&lt; const <a class="el" href="structFlowUi_1_1TextSelection.html">Text
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1FieldEditTransaction.html">FieldEditTransaction</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1FieldEditTransaction.html">FieldEditTransaction</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,24 +107,67 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Human-readable logical identity accepted by FlowUi managers.  
+<p>Human-readable logical identity accepted by <a class="el" href="namespaceFlowUi.html">FlowUi</a> managers.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="ResourceKey_8hpp_source.html">ResourceKey.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a3365831bf233733a76a91fd3b9e82dd6" id="r_a3365831bf233733a76a91fd3b9e82dd6"><td class="memItemLeft"><a id="a3365831bf233733a76a91fd3b9e82dd6" name="a3365831bf233733a76a91fd3b9e82dd6"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>name</b> {}</td></tr>
-<tr class="memitem:a2d3cdf94676c83f0dfbdb25de931c361" id="r_a2d3cdf94676c83f0dfbdb25de931c361"><td class="memItemLeft"><a id="a2d3cdf94676c83f0dfbdb25de931c361" name="a2d3cdf94676c83f0dfbdb25de931c361"></a>
-ResourceDomain&#160;</td><td class="memItemRight"><b>domain</b> = ResourceDomain::Auto</td></tr>
-<tr class="memitem:a41907aebfbc2c317c9a8176454f81a0e" id="r_a41907aebfbc2c317c9a8176454f81a0e"><td class="memItemLeft"><a id="a41907aebfbc2c317c9a8176454f81a0e" name="a41907aebfbc2c317c9a8176454f81a0e"></a>
-WindowId&#160;</td><td class="memItemRight"><b>window</b> = InvalidWindowId</td></tr>
+<tr class="memitem:a3365831bf233733a76a91fd3b9e82dd6" id="r_a3365831bf233733a76a91fd3b9e82dd6"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a3365831bf233733a76a91fd3b9e82dd6">name</a> {}</td></tr>
+<tr class="memitem:a2d3cdf94676c83f0dfbdb25de931c361" id="r_a2d3cdf94676c83f0dfbdb25de931c361"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040f">ResourceDomain</a>&#160;</td><td class="memItemRight"><a class="el" href="#a2d3cdf94676c83f0dfbdb25de931c361">domain</a> = <a class="el" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa06b9281e396db002010bde1de57262eb">ResourceDomain::Auto</a></td></tr>
+<tr class="memitem:a41907aebfbc2c317c9a8176454f81a0e" id="r_a41907aebfbc2c317c9a8176454f81a0e"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a41907aebfbc2c317c9a8176454f81a0e">window</a> = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Human-readable logical identity accepted by FlowUi managers. </p>
-<p><a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> is a non-owning call-site value. Managers intern name before the call returns. <span class="tt">ResourceDomain::Auto</span> selects the receiving manager's domain. A zero window selects app scope for app-shared managers and the manager's owning window for window-local managers. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<div class="textblock"><p>Human-readable logical identity accepted by <a class="el" href="namespaceFlowUi.html">FlowUi</a> managers. </p>
+<p><a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> is a non-owning call-site value. Managers intern name before the call returns. <span class="tt"><a class="el" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa06b9281e396db002010bde1de57262eb" title="Let the receiving manager select its own domain.">ResourceDomain::Auto</a></span> selects the receiving manager's domain. A zero window selects app scope for app-shared managers and the manager's owning window for window-local managers. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a2d3cdf94676c83f0dfbdb25de931c361" name="a2d3cdf94676c83f0dfbdb25de931c361"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2d3cdf94676c83f0dfbdb25de931c361">&#9670;&#160;</a></span>domain</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040f">ResourceDomain</a> FlowUi::ResourceKey::domain = <a class="el" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa06b9281e396db002010bde1de57262eb">ResourceDomain::Auto</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Explicit manager namespace, or Auto to select the receiving manager. </p>
+
+</div>
+</div>
+<a id="a3365831bf233733a76a91fd3b9e82dd6" name="a3365831bf233733a76a91fd3b9e82dd6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3365831bf233733a76a91fd3b9e82dd6">&#9670;&#160;</a></span>name</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::ResourceKey::name {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed logical name; the receiving manager interns it before returning. </p>
+
+</div>
+</div>
+<a id="a41907aebfbc2c317c9a8176454f81a0e" name="a41907aebfbc2c317c9a8176454f81a0e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a41907aebfbc2c317c9a8176454f81a0e">&#9670;&#160;</a></span>window</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> FlowUi::ResourceKey::window = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Window attribution; zero selects the manager's natural app/window scope. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/identificationTypes/<a class="el" href="ResourceKey_8hpp_source.html">ResourceKey.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -140,7 +183,7 @@ WindowId&#160;</td><td class="memItemRight"><b>window</b> = InvalidWindowId</td>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

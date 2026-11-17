@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -113,17 +113,23 @@ $(function() {
 Public Attributes</h2></td></tr>
 <tr class="memitem:a8e02e9e34c3e52ceb8c7688351569a2a" id="r_a8e02e9e34c3e52ceb8c7688351569a2a"><td class="memItemLeft"><a id="a8e02e9e34c3e52ceb8c7688351569a2a" name="a8e02e9e34c3e52ceb8c7688351569a2a"></a>
 std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevChangesDecisionEntry.html">DevChangesDecisionEntry</a> &gt;&#160;</td><td class="memItemRight"><b>decisions</b> {}</td></tr>
+<tr class="memdesc:a8e02e9e34c3e52ceb8c7688351569a2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Owned per-destination decisions to apply when building the candidate. <br /></td></tr>
 <tr class="memitem:a0f8e1f505da6de18a4a5838adbb476fc" id="r_a0f8e1f505da6de18a4a5838adbb476fc"><td class="memItemLeft"><a id="a0f8e1f505da6de18a4a5838adbb476fc" name="a0f8e1f505da6de18a4a5838adbb476fc"></a>
 std::optional&lt; FlowUi::detail::MemoryCapacityManifest &gt;&#160;</td><td class="memItemRight"><b>prepared_memory</b> {}</td></tr>
+<tr class="memdesc:a0f8e1f505da6de18a4a5838adbb476fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optional staged capacity selection payload. <br /></td></tr>
 <tr class="memitem:a31e1ac66751aba8be0f781d9dfe5ea05" id="r_a31e1ac66751aba8be0f781d9dfe5ea05"><td class="memItemLeft">std::optional&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevBakeManifest.html">DevBakeManifest</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a31e1ac66751aba8be0f781d9dfe5ea05">opened_manifest</a> {}</td></tr>
 <tr class="memitem:af7d7b473442821035b806dd888ee3aeb" id="r_af7d7b473442821035b806dd888ee3aeb"><td class="memItemLeft"><a id="af7d7b473442821035b806dd888ee3aeb" name="af7d7b473442821035b806dd888ee3aeb"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>memory_revision</b> = 0</td></tr>
+<tr class="memdesc:af7d7b473442821035b806dd888ee3aeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Revision of the staged memory selection that this request reviewed. <br /></td></tr>
 <tr class="memitem:a50f3ba99cf4ed0ddcc739ea096c271eb" id="r_a50f3ba99cf4ed0ddcc739ea096c271eb"><td class="memItemLeft"><a id="a50f3ba99cf4ed0ddcc739ea096c271eb" name="a50f3ba99cf4ed0ddcc739ea096c271eb"></a>
 bool&#160;</td><td class="memItemRight"><b>clear_memory_section</b> = false</td></tr>
+<tr class="memdesc:a50f3ba99cf4ed0ddcc739ea096c271eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Explicitly remove all persisted memory settings. <br /></td></tr>
 <tr class="memitem:abdec796c051c6d9aa3f0ec565eee9734" id="r_abdec796c051c6d9aa3f0ec565eee9734"><td class="memItemLeft"><a id="abdec796c051c6d9aa3f0ec565eee9734" name="abdec796c051c6d9aa3f0ec565eee9734"></a>
 bool&#160;</td><td class="memItemRight"><b>clear_growth_factor</b> = false</td></tr>
+<tr class="memdesc:abdec796c051c6d9aa3f0ec565eee9734"><td class="mdescLeft">&#160;</td><td class="mdescRight">Explicitly remove the saved growth-factor control. <br /></td></tr>
 <tr class="memitem:a2a16da7fc211feacc19058be60fa7aa9" id="r_a2a16da7fc211feacc19058be60fa7aa9"><td class="memItemLeft"><a id="a2a16da7fc211feacc19058be60fa7aa9" name="a2a16da7fc211feacc19058be60fa7aa9"></a>
 bool&#160;</td><td class="memItemRight"><b>clear_runtime_growth</b> = false</td></tr>
+<tr class="memdesc:a2a16da7fc211feacc19058be60fa7aa9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Explicitly remove the saved runtime-growth control. <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Owned adapter snapshot. Missing optional controls retain disk values unless explicitly cleared. </p>
@@ -159,7 +165,7 @@ bool&#160;</td><td class="memItemRight"><b>clear_runtime_growth</b> = false</td>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevChangesReviewRequest.html">DevChangesReviewRequest</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevChangesReviewRequest.html">DevChangesReviewRequest</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

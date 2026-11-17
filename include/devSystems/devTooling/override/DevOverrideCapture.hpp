@@ -81,6 +81,14 @@ public:
 	[[nodiscard]] std::uint64_t capturedThemeFieldCount() const noexcept {
 		return capturedThemeFieldCount_;
 	}
+	/** @brief Return cumulative omitted element observations. */
+	[[nodiscard]] std::uint64_t droppedElementCaptureCount() const noexcept {
+		return droppedElementCaptureCount_;
+	}
+	/** @brief Return cumulative failed theme publication attempts. */
+	[[nodiscard]] std::uint64_t failedThemeCaptureCount() const noexcept {
+		return failedThemeCaptureCount_;
+	}
 
 private:
 	struct WindowBuffers {
@@ -99,6 +107,8 @@ private:
 	std::uint64_t nextThemeGeneration_ = 1;
 	std::uint64_t capturedElementFieldCount_ = 0;
 	std::uint64_t capturedThemeFieldCount_ = 0;
+	std::uint64_t droppedElementCaptureCount_ = 0;
+	std::uint64_t failedThemeCaptureCount_ = 0;
 };
 
 } // namespace FlowUi::devSystems::tooling

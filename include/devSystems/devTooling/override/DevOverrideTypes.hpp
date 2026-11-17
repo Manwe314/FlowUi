@@ -102,8 +102,9 @@ struct DevOverrideFieldKey {
 
 /**
  * Owned, schema-typed value used by commands, retained overrides, and captures.
- * Common scalar and Clay values stay inline; larger values use one aligned
- * allocation. The object never owns or copies schema descriptors.
+ * Values with a proven non-throwing transfer stay inline when they fit; other
+ * values use stable aligned ownership. Capture requires non-throwing destruction.
+ * The object never owns schema descriptors.
  */
 class DevOwnedValue {
 public:
@@ -114,10 +115,10 @@ public:
 	DevOwnedValue() noexcept = default;
 	/** @brief Destroy the value and release its aligned payload storage. */
 	~DevOwnedValue() { reset(); }
-	/** @brief Copy the owned value and retained text references; failure leaves this value empty. */
-	DevOwnedValue(const DevOwnedValue& other) noexcept;
-	/** @brief Replace this value with an owned copy; copy failure produces an empty destination. */
-	DevOwnedValue& operator=(const DevOwnedValue& other) noexcept;
+	/** @brief Copy payload and retained text; allocation/payload failures propagate to the caller. */
+	DevOwnedValue(const DevOwnedValue& other);
+	/** @brief Prepare an owned copy before replacement; failure preserves the previous value. */
+	DevOwnedValue& operator=(const DevOwnedValue& other);
 	/** @brief Move the constructed value and its retained text ownership from other. */
 	DevOwnedValue(DevOwnedValue&& other) noexcept;
 	/** @brief Destroy the previous payload, then move the constructed value and retained references from other. */
@@ -141,7 +142,7 @@ public:
 	/** Own a string view inside this value; copies and moves preserve its referent lifetime. */
 	[[nodiscard]] bool retain_text_reference(std::string_view& field, std::string text) noexcept;
 
-	/** @brief Copy a correctly typed source using schema/type metadata into destination. Destination owns its payload; the operation reports null, unsupported, or copy failures explicitly. */
+	/** @brief Copy a correctly typed source using schema/type metadata. Failure is explicit and preserves destination; successful ownership transfer cannot fail. */
 	static tooling::DevValueOperationStatus copyFrom(
 		const tooling::DevSchemaGeneration& schema,
 		tooling::DevTypeIndex type,
@@ -149,6 +150,12 @@ public:
 		DevOwnedValue& destination) noexcept;
 
 private:
+	struct AlignedPayloadDeleter {
+		std::uint32_t alignment = alignof(std::max_align_t);
+		void operator()(std::byte* payload) const noexcept {
+			::operator delete(payload, std::align_val_t{alignment});
+		}
+	};
 	struct RetainedTextReference {
 		std::unique_ptr<const std::string> text{};
 		std::size_t offset = 0;
@@ -158,16 +165,12 @@ private:
 	tooling::DevValueOperationStatus initializeCopy(
 		const tooling::DevTypeSchema& schema,
 		const tooling::DevTypeOps& operations,
-		const void* source) noexcept;
-	tooling::DevValueOperationStatus initializeMove(
-		const tooling::DevTypeSchema& schema,
-		const tooling::DevTypeOps& operations,
-		void* source) noexcept;
+		const void* source);
 	void moveFrom(DevOwnedValue&& other) noexcept;
 
 	alignas(std::max_align_t) std::array<std::byte, InlineBytes> inline_{};
+	std::unique_ptr<std::byte, AlignedPayloadDeleter> allocation_{nullptr, AlignedPayloadDeleter{}};
 	std::unique_ptr<std::vector<RetainedTextReference>> retained_text_{};
-	void* allocation_ = nullptr;
 	const tooling::DevTypeOps* operations_ = nullptr;
 	std::uint32_t size_ = 0;
 	std::uint32_t alignment_ = 0;
@@ -268,10 +271,16 @@ struct DevCommandResult {
 	std::uint64_t transaction = 0;
 	/** @brief Zero-based command position within the submitted change set. */
 	std::uint32_t command = 0;
+	/** @brief Number of leading commands known to have completed, identifying the committed prefix. */
+	std::uint32_t completedCommandCount = 0;
+	/** @brief Number of commands whose execution began; validation alone does not count. */
+	std::uint32_t attemptedCommandCount = 0;
 	/** @brief Applied state or machine-readable rejection reason. */
 	DevCommandStatus status = DevCommandStatus::Applied;
-	/** @brief Whether the command was committed to live override state. */
+	/** @brief Whether every command completed; false does not imply rollback of earlier commands. */
 	bool applied = false;
+	/** @brief A failed attempted command may have changed application/library state; do not retry blindly. */
+	bool mayHavePartialEffects = false;
 };
 
 /** Availability of an owned value at a named capture stage. */
@@ -358,6 +367,8 @@ struct DevElementCaptureSnapshot {
 	std::vector<DevCapturedElement> elements{};
 	/** @brief Contiguous owned field values referenced by element ranges. */
 	std::vector<DevCapturedField> fields{};
+	/** @brief Invocations omitted from this publication because observation failed. */
+	std::uint64_t droppedElementCount = 0;
 };
 
 /** @brief One named theme variant and its range in a theme capture publication. */
@@ -390,6 +401,10 @@ struct DevThemeCaptureSnapshot {
 	std::vector<DevCapturedTheme> themes{};
 	/** @brief Contiguous owned field values referenced by theme ranges. */
 	std::vector<DevCapturedField> fields{};
+	/** @brief Cumulative failed theme collections; generation stays unchanged after failure. */
+	std::uint64_t failedCaptureCount = 0;
+	/** @brief The latest collection failed; retained values belong to the previous generation. */
+	bool collectionFailed = false;
 
 	/** @brief Borrow a captured theme's variant name from this snapshot; return empty for an invalid range. */
 	[[nodiscard]] std::string_view variant(const DevCapturedTheme& theme) const noexcept {
@@ -411,6 +426,10 @@ struct DevOverrideStats {
 	std::uint64_t capturedElementFields = 0;
 	/** @brief Cumulative captured theme field values. */
 	std::uint64_t capturedThemeFields = 0;
+	/** @brief Cumulative element observations omitted after collection failure. */
+	std::uint64_t droppedElementCaptures = 0;
+	/** @brief Cumulative theme publications retained after collection failure. */
+	std::uint64_t failedThemeCaptures = 0;
 	/** @brief Current retained element assignments. */
 	std::uint32_t activeElementOverrides = 0;
 	/** @brief Current retained theme assignments. */

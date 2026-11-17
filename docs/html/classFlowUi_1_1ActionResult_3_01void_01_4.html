@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,25 +106,138 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::ActionResult&lt; void &gt; Class Reference<div class="ingroups"><a class="el" href="group__flowui__action__manager.html">Action Manager</a></div></div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="ActionTypes_8hpp_source.html">ActionTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a4a805d51ad21e4bbb180bde7de620094" id="r_a4a805d51ad21e4bbb180bde7de620094"><td class="memItemLeft"><a id="a4a805d51ad21e4bbb180bde7de620094" name="a4a805d51ad21e4bbb180bde7de620094"></a>
-&#160;</td><td class="memItemRight"><b>ActionResult</b> (ActionInvokeError error) noexcept</td></tr>
-<tr class="memitem:ae440a27ccc5eaee56155aa96287a9219" id="r_ae440a27ccc5eaee56155aa96287a9219"><td class="memItemLeft"><a id="ae440a27ccc5eaee56155aa96287a9219" name="ae440a27ccc5eaee56155aa96287a9219"></a>
-bool&#160;</td><td class="memItemRight"><b>hasValue</b> () const noexcept</td></tr>
-<tr class="memitem:a575b074d2db03b42e1f24a91224c9329" id="r_a575b074d2db03b42e1f24a91224c9329"><td class="memItemLeft"><a id="a575b074d2db03b42e1f24a91224c9329" name="a575b074d2db03b42e1f24a91224c9329"></a>
-&#160;</td><td class="memItemRight"><b>operator bool</b> () const noexcept</td></tr>
-<tr class="memitem:a9ccb877e78d9951b26ed36fe6d86c74f" id="r_a9ccb877e78d9951b26ed36fe6d86c74f"><td class="memItemLeft"><a id="a9ccb877e78d9951b26ed36fe6d86c74f" name="a9ccb877e78d9951b26ed36fe6d86c74f"></a>
-void&#160;</td><td class="memItemRight"><b>value</b> () const</td></tr>
-<tr class="memitem:a5729f689ae0c74702b79ab6b2725ad0f" id="r_a5729f689ae0c74702b79ab6b2725ad0f"><td class="memItemLeft"><a id="a5729f689ae0c74702b79ab6b2725ad0f" name="a5729f689ae0c74702b79ab6b2725ad0f"></a>
-ActionInvokeError&#160;</td><td class="memItemRight"><b>error</b> () const noexcept</td></tr>
+<tr class="memitem:a4a805d51ad21e4bbb180bde7de620094" id="r_a4a805d51ad21e4bbb180bde7de620094"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a4a805d51ad21e4bbb180bde7de620094">ActionResult</a> (<a class="el" href="group__flowui__action__manager.html#gab6bb8ae73c3f5aa724070004f2095cc2">ActionInvokeError</a> <a class="el" href="#a5729f689ae0c74702b79ab6b2725ad0f">error</a>) noexcept</td></tr>
+<tr class="memitem:ae440a27ccc5eaee56155aa96287a9219" id="r_ae440a27ccc5eaee56155aa96287a9219"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ae440a27ccc5eaee56155aa96287a9219">hasValue</a> () const noexcept</td></tr>
+<tr class="memitem:a575b074d2db03b42e1f24a91224c9329" id="r_a575b074d2db03b42e1f24a91224c9329"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a575b074d2db03b42e1f24a91224c9329">operator bool</a> () const noexcept</td></tr>
+<tr class="memitem:a2ff553989de846f8d3b08c5c49f22a7e" id="r_a2ff553989de846f8d3b08c5c49f22a7e"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a2ff553989de846f8d3b08c5c49f22a7e">value</a> () const noexcept</td></tr>
+<tr class="memitem:a5729f689ae0c74702b79ab6b2725ad0f" id="r_a5729f689ae0c74702b79ab6b2725ad0f"><td class="memItemLeft"><a class="el" href="group__flowui__action__manager.html#gab6bb8ae73c3f5aa724070004f2095cc2">ActionInvokeError</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5729f689ae0c74702b79ab6b2725ad0f">error</a> () const noexcept</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-methods" class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a05742849ee281a40718b5f56d80799fb" id="r_a05742849ee281a40718b5f56d80799fb"><td class="memItemLeft">static ActionResult&#160;</td><td class="memItemRight"><a class="el" href="#a05742849ee281a40718b5f56d80799fb">success</a> () noexcept</td></tr>
+<tr class="memitem:a05742849ee281a40718b5f56d80799fb" id="r_a05742849ee281a40718b5f56d80799fb"><td class="memItemLeft">static <a class="el" href="#a4a805d51ad21e4bbb180bde7de620094">ActionResult</a>&#160;</td><td class="memItemRight"><a class="el" href="#a05742849ee281a40718b5f56d80799fb">success</a> () noexcept</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Success/failure outcome for an action that returns no value. <a class="el" href="#a5729f689ae0c74702b79ab6b2725ad0f">error()</a> is meaningful only on failure.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">auto</span> result = actions.invokeFor&lt;<span class="keywordtype">void</span>&gt;(save);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keyword">const</span> <a class="code hl_enumeration" href="group__flowui__action__manager.html#gab6bb8ae73c3f5aa724070004f2095cc2">FlowUi::ActionInvokeError</a> <a class="code hl_function" href="#a5729f689ae0c74702b79ab6b2725ad0f">error</a> = result.error();</div>
+<div class="line">    <span class="keywordflow">return</span>; <span class="comment">// Handle the dispatch failure before continuing.</span></div>
+<div class="line">}</div>
+<div class="line">result.value(); <span class="comment">// No payload; the invocation&#39;s success was checked above.</span></div>
+<div class="ttc" id="aclassFlowUi_1_1ActionResult_3_01void_01_4_html_a5729f689ae0c74702b79ab6b2725ad0f"><div class="ttname"><a href="#a5729f689ae0c74702b79ab6b2725ad0f">FlowUi::ActionResult&lt; void &gt;::error</a></div><div class="ttdeci">ActionInvokeError error() const noexcept</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:344</div></div>
+<div class="ttc" id="agroup__flowui__action__manager_html_gab6bb8ae73c3f5aa724070004f2095cc2"><div class="ttname"><a href="group__flowui__action__manager.html#gab6bb8ae73c3f5aa724070004f2095cc2">FlowUi::ActionInvokeError</a></div><div class="ttdeci">ActionInvokeError</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:252</div></div>
+</div><!-- fragment --> </dd></dl>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a4a805d51ad21e4bbb180bde7de620094" name="a4a805d51ad21e4bbb180bde7de620094"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a805d51ad21e4bbb180bde7de620094">&#9670;&#160;</a></span>ActionResult()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1ActionResult.html">FlowUi::ActionResult</a>&lt; void &gt;::ActionResult </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="group__flowui__action__manager.html#gab6bb8ae73c3f5aa724070004f2095cc2">ActionInvokeError</a></td>          <td class="paramname"><span class="paramname"><em>error</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Construct a failed no-value invocation outcome. </p>
+
+</div>
+</div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a5729f689ae0c74702b79ab6b2725ad0f" name="a5729f689ae0c74702b79ab6b2725ad0f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5729f689ae0c74702b79ab6b2725ad0f">&#9670;&#160;</a></span>error()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__flowui__action__manager.html#gab6bb8ae73c3f5aa724070004f2095cc2">ActionInvokeError</a> <a class="el" href="classFlowUi_1_1ActionResult.html">FlowUi::ActionResult</a>&lt; void &gt;::error </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return the dispatch error; meaningful only when <a class="el" href="#ae440a27ccc5eaee56155aa96287a9219">hasValue()</a> is false. </p>
+
+</div>
+</div>
+<a id="ae440a27ccc5eaee56155aa96287a9219" name="ae440a27ccc5eaee56155aa96287a9219"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae440a27ccc5eaee56155aa96287a9219">&#9670;&#160;</a></span>hasValue()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classFlowUi_1_1ActionResult.html">FlowUi::ActionResult</a>&lt; void &gt;::hasValue </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return whether the void operation completed successfully. </p>
+
+</div>
+</div>
+<a id="a575b074d2db03b42e1f24a91224c9329" name="a575b074d2db03b42e1f24a91224c9329"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a575b074d2db03b42e1f24a91224c9329">&#9670;&#160;</a></span>operator bool()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1ActionResult.html">FlowUi::ActionResult</a>&lt; void &gt;::operator bool </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel explicit">explicit</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return whether invocation succeeded. </p>
+
+</div>
+</div>
 <a id="a05742849ee281a40718b5f56d80799fb" name="a05742849ee281a40718b5f56d80799fb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a05742849ee281a40718b5f56d80799fb">&#9670;&#160;</a></span>success()</h2>
 
@@ -135,7 +248,7 @@ Static Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">ActionResult <a class="el" href="classFlowUi_1_1ActionResult.html">FlowUi::ActionResult</a>&lt; void &gt;::success </td>
+          <td class="memname"><a class="el" href="#a4a805d51ad21e4bbb180bde7de620094">ActionResult</a> <a class="el" href="classFlowUi_1_1ActionResult.html">FlowUi::ActionResult</a>&lt; void &gt;::success </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
@@ -147,7 +260,33 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Return a successful action invocation with no value. </p>
+<p>Create a successful no-value outcome without invoking an action. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classFlowUi_1_1ActionResult_3_01void_01_4.html">ActionResult&lt;void&gt;</a> for checked invocation and <a class="el" href="#a05742849ee281a40718b5f56d80799fb">success()</a> usage. </dd></dl>
+
+</div>
+</div>
+<a id="a2ff553989de846f8d3b08c5c49f22a7e" name="a2ff553989de846f8d3b08c5c49f22a7e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ff553989de846f8d3b08c5c49f22a7e">&#9670;&#160;</a></span>value()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classFlowUi_1_1ActionResult.html">FlowUi::ActionResult</a>&lt; void &gt;::value </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>No-value compatibility observer; it performs no validation. </p>
 
 </div>
 </div>
@@ -167,7 +306,7 @@ Static Public Member Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1ActionResult_3_01void_01_4.html">ActionResult&lt; void &gt;</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1ActionResult_3_01void_01_4.html">ActionResult&lt; void &gt;</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

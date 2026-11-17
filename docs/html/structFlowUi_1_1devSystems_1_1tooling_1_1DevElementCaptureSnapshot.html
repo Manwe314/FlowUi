@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,23 +106,39 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevElementCaptureSnapshot Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Owned immutable window publication; consumers borrow its arrays until the next publication.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevOverrideTypes_8hpp_source.html">DevOverrideTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a8003b2a9d11ec7a656a1a4325df1a4f7" id="r_a8003b2a9d11ec7a656a1a4325df1a4f7"><td class="memItemLeft"><a id="a8003b2a9d11ec7a656a1a4325df1a4f7" name="a8003b2a9d11ec7a656a1a4325df1a4f7"></a>
-WindowId&#160;</td><td class="memItemRight"><b>window</b> = InvalidWindowId</td></tr>
+<a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a>&#160;</td><td class="memItemRight"><b>window</b> = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td></tr>
+<tr class="memdesc:a8003b2a9d11ec7a656a1a4325df1a4f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Application window represented by this publication. <br /></td></tr>
 <tr class="memitem:acdef759a6308c32d23b51283e64813f2" id="r_acdef759a6308c32d23b51283e64813f2"><td class="memItemLeft"><a id="acdef759a6308c32d23b51283e64813f2" name="acdef759a6308c32d23b51283e64813f2"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>frameNumber</b> = 0</td></tr>
+<tr class="memdesc:acdef759a6308c32d23b51283e64813f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Window frame associated with these values. <br /></td></tr>
 <tr class="memitem:ad62451664863df41c9d1e27a7e96f11f" id="r_ad62451664863df41c9d1e27a7e96f11f"><td class="memItemLeft"><a id="ad62451664863df41c9d1e27a7e96f11f" name="ad62451664863df41c9d1e27a7e96f11f"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>generation</b> = 0</td></tr>
+<tr class="memdesc:ad62451664863df41c9d1e27a7e96f11f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Monotonic capture publication identity. <br /></td></tr>
 <tr class="memitem:ad7e3f3bd02b869185193b88ff9e41612" id="r_ad7e3f3bd02b869185193b88ff9e41612"><td class="memItemLeft"><a id="ad7e3f3bd02b869185193b88ff9e41612" name="ad7e3f3bd02b869185193b88ff9e41612"></a>
 <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaView.html">tooling::DevSchemaView</a>&#160;</td><td class="memItemRight"><b>schema</b> {}</td></tr>
+<tr class="memdesc:ad7e3f3bd02b869185193b88ff9e41612"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shared immutable schema generation pinning field metadata. <br /></td></tr>
 <tr class="memitem:a1d7629a8157b0e0c328260d05267c679" id="r_a1d7629a8157b0e0c328260d05267c679"><td class="memItemLeft"><a id="a1d7629a8157b0e0c328260d05267c679" name="a1d7629a8157b0e0c328260d05267c679"></a>
 std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCapturedElement.html">DevCapturedElement</a> &gt;&#160;</td><td class="memItemRight"><b>elements</b> {}</td></tr>
+<tr class="memdesc:a1d7629a8157b0e0c328260d05267c679"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contiguous captured invocation records. <br /></td></tr>
 <tr class="memitem:a69ff231ea4772024eb1cd01d3cffb6bf" id="r_a69ff231ea4772024eb1cd01d3cffb6bf"><td class="memItemLeft"><a id="a69ff231ea4772024eb1cd01d3cffb6bf" name="a69ff231ea4772024eb1cd01d3cffb6bf"></a>
 std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCapturedField.html">DevCapturedField</a> &gt;&#160;</td><td class="memItemRight"><b>fields</b> {}</td></tr>
+<tr class="memdesc:a69ff231ea4772024eb1cd01d3cffb6bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contiguous owned field values referenced by element ranges. <br /></td></tr>
+<tr class="memitem:aca21dfa58934990c04b186371361cf37" id="r_aca21dfa58934990c04b186371361cf37"><td class="memItemLeft"><a id="aca21dfa58934990c04b186371361cf37" name="aca21dfa58934990c04b186371361cf37"></a>
+std::uint64_t&#160;</td><td class="memItemRight"><b>droppedElementCount</b> = 0</td></tr>
+<tr class="memdesc:aca21dfa58934990c04b186371361cf37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invocations omitted from this publication because observation failed. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Owned immutable window publication; consumers borrow its arrays until the next publication. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/override/<a class="el" href="DevOverrideTypes_8hpp_source.html">DevOverrideTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -138,7 +154,7 @@ std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1Dev
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevElementCaptureSnapshot.html">DevElementCaptureSnapshot</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevElementCaptureSnapshot.html">DevElementCaptureSnapshot</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

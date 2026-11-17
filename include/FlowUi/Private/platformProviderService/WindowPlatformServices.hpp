@@ -18,12 +18,12 @@ public:
 	void detach() noexcept;
 	/** Whether this attached window supports immediate clipboard reads and writes. */
 	[[nodiscard]] bool hasClipboardAccess() const noexcept;
-	/** Write text immediately and report failures through the application's error observer. */
-	void setClipboardText(std::string_view text) const;
-	/** Read text immediately, reporting failures and returning an empty compatibility value. */
-	[[nodiscard]] std::string clipboardText() const;
+	/** Write text immediately, preserving provider failures. */
+	[[nodiscard]] Status setClipboardText(std::string_view text) const noexcept;
+	/** Read text immediately, preserving provider failures. */
+	[[nodiscard]] Result<std::string> clipboardText() const noexcept;
 	/** Apply the final cursor chosen by the frame's priority arbitration. */
-	void setCursor(CursorType cursor) const;
+	[[nodiscard]] Status setCursor(CursorType cursor) const noexcept;
 
 private:
 	ActivePlatformProviderService* service_ = nullptr;

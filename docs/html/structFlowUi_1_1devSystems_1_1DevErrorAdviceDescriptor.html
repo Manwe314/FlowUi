@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,36 +106,223 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevErrorAdviceDescriptor Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevErrorAdvice_8hpp_source.html">DevErrorAdvice.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:aaa925fe893094060b1915fa7ef3c4b72" id="r_aaa925fe893094060b1915fa7ef3c4b72"><td class="memItemLeft"><a id="aaa925fe893094060b1915fa7ef3c4b72" name="aaa925fe893094060b1915fa7ef3c4b72"></a>
-DevErrorAdviceId&#160;</td><td class="memItemRight"><b>id</b> = 0u</td></tr>
-<tr class="memitem:a6e47ff4918d97f531685844d303ae41f" id="r_a6e47ff4918d97f531685844d303ae41f"><td class="memItemLeft"><a id="a6e47ff4918d97f531685844d303ae41f" name="a6e47ff4918d97f531685844d303ae41f"></a>
-ErrorCode&#160;</td><td class="memItemRight"><b>code</b> = ErrorCode::None</td></tr>
-<tr class="memitem:a789b610025f907c17ebe200c0d13b0cd" id="r_a789b610025f907c17ebe200c0d13b0cd"><td class="memItemLeft"><a id="a789b610025f907c17ebe200c0d13b0cd" name="a789b610025f907c17ebe200c0d13b0cd"></a>
-ErrorSite&#160;</td><td class="memItemRight"><b>site</b> = ErrorSite::None</td></tr>
-<tr class="memitem:a89ccaf43372502a738380d0f14fb5149" id="r_a89ccaf43372502a738380d0f14fb5149"><td class="memItemLeft"><a id="a89ccaf43372502a738380d0f14fb5149" name="a89ccaf43372502a738380d0f14fb5149"></a>
-DevErrorAdviceCategory&#160;</td><td class="memItemRight"><b>category</b> = DevErrorAdviceCategory::Resource</td></tr>
-<tr class="memitem:ac58ad2f50a853136882e9fb3450430ee" id="r_ac58ad2f50a853136882e9fb3450430ee"><td class="memItemLeft"><a id="ac58ad2f50a853136882e9fb3450430ee" name="ac58ad2f50a853136882e9fb3450430ee"></a>
-DevErrorAdvicePredicate&#160;</td><td class="memItemRight"><b>predicate</b> = DevErrorAdvicePredicate::Always</td></tr>
-<tr class="memitem:a99bce6a9e519dc9c3a5c4cfd6a9e980a" id="r_a99bce6a9e519dc9c3a5c4cfd6a9e980a"><td class="memItemLeft"><a id="a99bce6a9e519dc9c3a5c4cfd6a9e980a" name="a99bce6a9e519dc9c3a5c4cfd6a9e980a"></a>
-uint16_t&#160;</td><td class="memItemRight"><b>priority</b> = 0u</td></tr>
-<tr class="memitem:ada87bbcce33f76070541fa070218de1b" id="r_ada87bbcce33f76070541fa070218de1b"><td class="memItemLeft"><a id="ada87bbcce33f76070541fa070218de1b" name="ada87bbcce33f76070541fa070218de1b"></a>
-DevErrorAdviceConfidence&#160;</td><td class="memItemRight"><b>baseConfidence</b> = DevErrorAdviceConfidence::Possible</td></tr>
-<tr class="memitem:a781ed4456d8f12de792c0f49c325fa8f" id="r_a781ed4456d8f12de792c0f49c325fa8f"><td class="memItemLeft"><a id="a781ed4456d8f12de792c0f49c325fa8f" name="a781ed4456d8f12de792c0f49c325fa8f"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>title</b> {}</td></tr>
-<tr class="memitem:a876e8e6eddda9fab5cfeaf6047e82e95" id="r_a876e8e6eddda9fab5cfeaf6047e82e95"><td class="memItemLeft"><a id="a876e8e6eddda9fab5cfeaf6047e82e95" name="a876e8e6eddda9fab5cfeaf6047e82e95"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>explanation</b> {}</td></tr>
-<tr class="memitem:a19fbde911a4febd041228e7878b156ab" id="r_a19fbde911a4febd041228e7878b156ab"><td class="memItemLeft"><a id="a19fbde911a4febd041228e7878b156ab" name="a19fbde911a4febd041228e7878b156ab"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>suggestedAction</b> {}</td></tr>
-<tr class="memitem:a72d50d17890513a3f347ded89c3bb53c" id="r_a72d50d17890513a3f347ded89c3bb53c"><td class="memItemLeft"><a id="a72d50d17890513a3f347ded89c3bb53c" name="a72d50d17890513a3f347ded89c3bb53c"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>configurationKey</b> {}</td></tr>
-<tr class="memitem:ab470499f53c78fea18c5938342a65588" id="r_ab470499f53c78fea18c5938342a65588"><td class="memItemLeft"><a id="ab470499f53c78fea18c5938342a65588" name="ab470499f53c78fea18c5938342a65588"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>documentation</b> {}</td></tr>
-<tr class="memitem:a9dc3afcda4b3e82177f35fd30f7da0f4" id="r_a9dc3afcda4b3e82177f35fd30f7da0f4"><td class="memItemLeft"><a id="a9dc3afcda4b3e82177f35fd30f7da0f4" name="a9dc3afcda4b3e82177f35fd30f7da0f4"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>limitation</b> {}</td></tr>
+<tr class="memitem:aaa925fe893094060b1915fa7ef3c4b72" id="r_aaa925fe893094060b1915fa7ef3c4b72"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a2e01aa1bae9042aff160ba99afddb2f8">DevErrorAdviceId</a>&#160;</td><td class="memItemRight"><a class="el" href="#aaa925fe893094060b1915fa7ef3c4b72">id</a> = 0u</td></tr>
+<tr class="memitem:a6e47ff4918d97f531685844d303ae41f" id="r_a6e47ff4918d97f531685844d303ae41f"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76">ErrorCode</a>&#160;</td><td class="memItemRight"><a class="el" href="#a6e47ff4918d97f531685844d303ae41f">code</a> = <a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a6adf97f83acf6453d4a6a4b1070f3754">ErrorCode::None</a></td></tr>
+<tr class="memitem:a789b610025f907c17ebe200c0d13b0cd" id="r_a789b610025f907c17ebe200c0d13b0cd"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2">ErrorSite</a>&#160;</td><td class="memItemRight"><a class="el" href="#a789b610025f907c17ebe200c0d13b0cd">site</a> = <a class="el" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2a6adf97f83acf6453d4a6a4b1070f3754">ErrorSite::None</a></td></tr>
+<tr class="memitem:a89ccaf43372502a738380d0f14fb5149" id="r_a89ccaf43372502a738380d0f14fb5149"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad79b261d5e2f47794f3f33ef7f93b7fe">DevErrorAdviceCategory</a>&#160;</td><td class="memItemRight"><a class="el" href="#a89ccaf43372502a738380d0f14fb5149">category</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ad79b261d5e2f47794f3f33ef7f93b7feabe8545ae7ab0276e15898aae7acfbd7a">DevErrorAdviceCategory::Resource</a></td></tr>
+<tr class="memitem:ac58ad2f50a853136882e9fb3450430ee" id="r_ac58ad2f50a853136882e9fb3450430ee"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a9413d350b330988b41435e002292cefd">DevErrorAdvicePredicate</a>&#160;</td><td class="memItemRight"><a class="el" href="#ac58ad2f50a853136882e9fb3450430ee">predicate</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a9413d350b330988b41435e002292cefda68eec46437c384d8dad18d5464ebc35c">DevErrorAdvicePredicate::Always</a></td></tr>
+<tr class="memitem:a99bce6a9e519dc9c3a5c4cfd6a9e980a" id="r_a99bce6a9e519dc9c3a5c4cfd6a9e980a"><td class="memItemLeft">uint16_t&#160;</td><td class="memItemRight"><a class="el" href="#a99bce6a9e519dc9c3a5c4cfd6a9e980a">priority</a> = 0u</td></tr>
+<tr class="memitem:ada87bbcce33f76070541fa070218de1b" id="r_ada87bbcce33f76070541fa070218de1b"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#aa44a61f9dde58fb97b106445f1c1091b">DevErrorAdviceConfidence</a>&#160;</td><td class="memItemRight"><a class="el" href="#ada87bbcce33f76070541fa070218de1b">baseConfidence</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#aa44a61f9dde58fb97b106445f1c1091ba7ed6c322b81093217dd80a7d098736eb">DevErrorAdviceConfidence::Possible</a></td></tr>
+<tr class="memitem:a781ed4456d8f12de792c0f49c325fa8f" id="r_a781ed4456d8f12de792c0f49c325fa8f"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a781ed4456d8f12de792c0f49c325fa8f">title</a> {}</td></tr>
+<tr class="memitem:a876e8e6eddda9fab5cfeaf6047e82e95" id="r_a876e8e6eddda9fab5cfeaf6047e82e95"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a876e8e6eddda9fab5cfeaf6047e82e95">explanation</a> {}</td></tr>
+<tr class="memitem:a19fbde911a4febd041228e7878b156ab" id="r_a19fbde911a4febd041228e7878b156ab"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a19fbde911a4febd041228e7878b156ab">suggestedAction</a> {}</td></tr>
+<tr class="memitem:a72d50d17890513a3f347ded89c3bb53c" id="r_a72d50d17890513a3f347ded89c3bb53c"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a72d50d17890513a3f347ded89c3bb53c">configurationKey</a> {}</td></tr>
+<tr class="memitem:ab470499f53c78fea18c5938342a65588" id="r_ab470499f53c78fea18c5938342a65588"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#ab470499f53c78fea18c5938342a65588">documentation</a> {}</td></tr>
+<tr class="memitem:a9dc3afcda4b3e82177f35fd30f7da0f4" id="r_a9dc3afcda4b3e82177f35fd30f7da0f4"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a9dc3afcda4b3e82177f35fd30f7da0f4">limitation</a> {}</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Static advice rule with borrowed immutable prose, matching contract and evidence predicate. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="ada87bbcce33f76070541fa070218de1b" name="ada87bbcce33f76070541fa070218de1b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ada87bbcce33f76070541fa070218de1b">&#9670;&#160;</a></span>baseConfidence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#aa44a61f9dde58fb97b106445f1c1091b">DevErrorAdviceConfidence</a> FlowUi::devSystems::DevErrorAdviceDescriptor::baseConfidence = <a class="el" href="namespaceFlowUi_1_1devSystems.html#aa44a61f9dde58fb97b106445f1c1091ba7ed6c322b81093217dd80a7d098736eb">DevErrorAdviceConfidence::Possible</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Initial confidence before evaluating captured evidence. </p>
+
+</div>
+</div>
+<a id="a89ccaf43372502a738380d0f14fb5149" name="a89ccaf43372502a738380d0f14fb5149"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a89ccaf43372502a738380d0f14fb5149">&#9670;&#160;</a></span>category</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad79b261d5e2f47794f3f33ef7f93b7fe">DevErrorAdviceCategory</a> FlowUi::devSystems::DevErrorAdviceDescriptor::category = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ad79b261d5e2f47794f3f33ef7f93b7feabe8545ae7ab0276e15898aae7acfbd7a">DevErrorAdviceCategory::Resource</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Subsystem category used for filtering and presentation. </p>
+
+</div>
+</div>
+<a id="a6e47ff4918d97f531685844d303ae41f" name="a6e47ff4918d97f531685844d303ae41f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6e47ff4918d97f531685844d303ae41f">&#9670;&#160;</a></span>code</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76">ErrorCode</a> FlowUi::devSystems::DevErrorAdviceDescriptor::code = <a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a6adf97f83acf6453d4a6a4b1070f3754">ErrorCode::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Production error code matched by this rule, query or group. </p>
+
+</div>
+</div>
+<a id="a72d50d17890513a3f347ded89c3bb53c" name="a72d50d17890513a3f347ded89c3bb53c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a72d50d17890513a3f347ded89c3bb53c">&#9670;&#160;</a></span>configurationKey</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::devSystems::DevErrorAdviceDescriptor::configurationKey {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed configuration key relevant to the suggestion. </p>
+
+</div>
+</div>
+<a id="ab470499f53c78fea18c5938342a65588" name="ab470499f53c78fea18c5938342a65588"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab470499f53c78fea18c5938342a65588">&#9670;&#160;</a></span>documentation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::devSystems::DevErrorAdviceDescriptor::documentation {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed documentation reference relevant to the suggestion. </p>
+
+</div>
+</div>
+<a id="a876e8e6eddda9fab5cfeaf6047e82e95" name="a876e8e6eddda9fab5cfeaf6047e82e95"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a876e8e6eddda9fab5cfeaf6047e82e95">&#9670;&#160;</a></span>explanation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::devSystems::DevErrorAdviceDescriptor::explanation {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed explanation of the diagnostic guidance. </p>
+
+</div>
+</div>
+<a id="aaa925fe893094060b1915fa7ef3c4b72" name="aaa925fe893094060b1915fa7ef3c4b72"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaa925fe893094060b1915fa7ef3c4b72">&#9670;&#160;</a></span>id</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a2e01aa1bae9042aff160ba99afddb2f8">DevErrorAdviceId</a> FlowUi::devSystems::DevErrorAdviceDescriptor::id = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Stable identity of this retained entity; zero means unassigned. </p>
+
+</div>
+</div>
+<a id="a9dc3afcda4b3e82177f35fd30f7da0f4" name="a9dc3afcda4b3e82177f35fd30f7da0f4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9dc3afcda4b3e82177f35fd30f7da0f4">&#9670;&#160;</a></span>limitation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::devSystems::DevErrorAdviceDescriptor::limitation {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed explanation of evidence or confidence limitations. </p>
+
+</div>
+</div>
+<a id="ac58ad2f50a853136882e9fb3450430ee" name="ac58ad2f50a853136882e9fb3450430ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac58ad2f50a853136882e9fb3450430ee">&#9670;&#160;</a></span>predicate</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a9413d350b330988b41435e002292cefd">DevErrorAdvicePredicate</a> FlowUi::devSystems::DevErrorAdviceDescriptor::predicate = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a9413d350b330988b41435e002292cefda68eec46437c384d8dad18d5464ebc35c">DevErrorAdvicePredicate::Always</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Evidence condition required for the advice rule to apply. </p>
+
+</div>
+</div>
+<a id="a99bce6a9e519dc9c3a5c4cfd6a9e980a" name="a99bce6a9e519dc9c3a5c4cfd6a9e980a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a99bce6a9e519dc9c3a5c4cfd6a9e980a">&#9670;&#160;</a></span>priority</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint16_t FlowUi::devSystems::DevErrorAdviceDescriptor::priority = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Advice ordering priority; interpreted by the catalogue evaluator. </p>
+
+</div>
+</div>
+<a id="a789b610025f907c17ebe200c0d13b0cd" name="a789b610025f907c17ebe200c0d13b0cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a789b610025f907c17ebe200c0d13b0cd">&#9670;&#160;</a></span>site</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2">ErrorSite</a> FlowUi::devSystems::DevErrorAdviceDescriptor::site = <a class="el" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2a6adf97f83acf6453d4a6a4b1070f3754">ErrorSite::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Production error site matched by this rule, query or group. </p>
+
+</div>
+</div>
+<a id="a19fbde911a4febd041228e7878b156ab" name="a19fbde911a4febd041228e7878b156ab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a19fbde911a4febd041228e7878b156ab">&#9670;&#160;</a></span>suggestedAction</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::devSystems::DevErrorAdviceDescriptor::suggestedAction {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed human-readable suggested action; storage must outlive this view. </p>
+
+</div>
+</div>
+<a id="a781ed4456d8f12de792c0f49c325fa8f" name="a781ed4456d8f12de792c0f49c325fa8f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a781ed4456d8f12de792c0f49c325fa8f">&#9670;&#160;</a></span>title</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::devSystems::DevErrorAdviceDescriptor::title {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Human-readable guidance title. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevErrorAdvice_8hpp_source.html">DevErrorAdvice.hpp</a></li>
 </ul>
@@ -152,7 +339,7 @@ std::string_view&#160;</td><td class="memItemRight"><b>limitation</b> {}</td></t
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorAdviceDescriptor.html">DevErrorAdviceDescriptor</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorAdviceDescriptor.html">DevErrorAdviceDescriptor</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

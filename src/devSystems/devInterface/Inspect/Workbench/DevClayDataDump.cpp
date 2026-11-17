@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Inspect/Workbench/DevClayDataDump.hpp"
 
 #if FLOW_UI_DEV_MODE && FLOW_UI_DEV_CAPTURE_CLAY
@@ -130,7 +131,7 @@ void drawSectionHeader(
 		.width = Clay_BorderWidth{0, 0, 1, 0, 0},
 	};
 
-	CLAY(context.clayID(headerName), header) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(headerName)), header) {
 		CLAY_TEXT(
 			context.uiManager.toClayString(sectionTitle),
 			CLAY_TEXT_CONFIG(textStyle(interface_theme::kAccentCurrent, 9)));
@@ -164,14 +165,14 @@ void drawPropertyRow(
 		.width = Clay_BorderWidth{0, 0, 0, 1, 0},
 	};
 
-	CLAY(context.clayID(rowName), row) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(rowName)), row) {
 		// Property Name
 		Clay_ElementDeclaration nameContainer{};
 		nameContainer.layout.sizing = {
 			.width = CLAY_SIZING_FIXED(160),
 			.height = CLAY_SIZING_FIT(0),
 		};
-		CLAY(context.clayID(nameBox), nameContainer) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(nameBox)), nameContainer) {
 			CLAY_TEXT(
 				context.uiManager.toClayString(propertyName),
 				CLAY_TEXT_CONFIG(textStyle(interface_theme::kTextSecondary, 9)));
@@ -183,7 +184,7 @@ void drawPropertyRow(
 			.width = CLAY_SIZING_GROW(0),
 			.height = CLAY_SIZING_FIT(0),
 		};
-		CLAY(context.clayID(valBox), valueContainer) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(valBox)), valueContainer) {
 			const Clay_Color valueColor = isDefault ? interface_theme::kTextMuted
 													: interface_theme::kTextCanvas;
 			CLAY_TEXT(
@@ -208,7 +209,7 @@ void drawPropertyRow(
 			.width = Clay_BorderWidth{1, 1, 1, 1, 0},
 		};
 
-		CLAY(context.clayID(badgeBox), badgeContainer) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(badgeBox)), badgeContainer) {
 			const Clay_Color badgeColor = isDefault ? interface_theme::kTextMuted
 													: interface_theme::kAccentCurrent;
 			CLAY_TEXT(
@@ -227,7 +228,7 @@ void DevClayDataDump::buildElement(BuildContext& context) {
 
 	if (interfaceState && context.params.inspect.app &&
 		context.params.inspect.app->hasWindow(interfaceState->selectedWindowId)) {
-		snapshot = &context.params.inspect.app->ui(interfaceState->selectedWindowId).devTreeSnapshot();
+		snapshot = &FlowUi::ValueOrThrow(context.params.inspect.app->ui(interfaceState->selectedWindowId)).get().devTreeSnapshot();
 		if (snapshot && context.params.selectionKey != 0u) {
 			selectedClayNode = findClayNode(*snapshot, context.params.selectionKey);
 		}
@@ -263,7 +264,7 @@ void DevClayDataDump::buildElement(BuildContext& context) {
 			.width = Clay_BorderWidth{0, 0, 0, 1, 0},
 		};
 
-		CLAY(context.clayID("dump-header"), header) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("dump-header")), header) {
 			CLAY_TEXT(
 				context.uiManager.toClayString("Clay_ElementDeclaration Struct Dump"),
 				CLAY_TEXT_CONFIG(textStyle(interface_theme::kTextCanvas, 10)));
@@ -276,7 +277,7 @@ void DevClayDataDump::buildElement(BuildContext& context) {
 				.height = CLAY_SIZING_GROW(0),
 			};
 			empty.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
-			CLAY(context.clayID("empty"), empty) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("empty")), empty) {
 				CLAY_TEXT(
 					context.uiManager.toClayString("No Clay element selected"),
 					CLAY_TEXT_CONFIG(textStyle(interface_theme::kTextMuted, 11)));
@@ -285,7 +286,7 @@ void DevClayDataDump::buildElement(BuildContext& context) {
 		}
 
 		// Scrollable Body
-		const Clay_ElementId scrollId = context.clayID("data-dump-scroll");
+		const Clay_ElementId scrollId = FlowUi::ValueOrThrow(context.clayID("data-dump-scroll"));
 		const Clay_ScrollContainerData scroll = Clay_GetScrollContainerData(scrollId);
 
 		Clay_ElementDeclaration scrollRegion{};
@@ -310,7 +311,7 @@ void DevClayDataDump::buildElement(BuildContext& context) {
 			};
 			contentStack.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 
-			CLAY(context.clayID("dump-content-stack"), contentStack) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("dump-content-stack")), contentStack) {
 				const auto& decl = selectedClayNode->declaration;
 				uint32_t sectionCounter = 0;
 				uint32_t rowCounter = 0;

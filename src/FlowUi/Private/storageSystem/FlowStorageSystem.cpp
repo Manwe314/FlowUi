@@ -1260,7 +1260,9 @@ struct FlowStorageSystem::Impl {
 			return index;
 		}
 		if (records.size() >= std::numeric_limits<uint32_t>::max()) storageError(ErrorCode::ResourceGenerationExhausted, ErrorSite::ResourceValidateHandle);
-		freeIndices.reserve(freeIndices.size() + 1u);
+		// Every published slot may later be released together inside noexcept cleanup.
+		// Follow record-table growth so those releases never need to grow this list.
+		freeIndices.reserve(std::max(records.capacity(), records.size() + 1u));
 		records.emplace_back();
 		return static_cast<uint32_t>(records.size() - 1u);
 	}
@@ -1368,7 +1370,7 @@ struct FlowStorageSystem::Impl {
 			freeTextures.pop_back();
 		} else {
 			if (textureHot.size() >= std::numeric_limits<uint32_t>::max()) storageError(ErrorCode::ResourceGenerationExhausted, ErrorSite::ResourceValidateHandle);
-			freeTextures.reserve(freeTextures.size() + 1u);
+			freeTextures.reserve(std::max(textureHot.capacity(), textureHot.size() + 1u));
 			textureHot.reserve(textureHot.size() + 1u);
 			textureCold.reserve(textureCold.size() + 1u);
 			index = static_cast<uint32_t>(textureHot.size());
@@ -3173,7 +3175,7 @@ ManagerRecordHandle FlowStorageSystem::findManagerRecord(
 }
 
 void* FlowStorageSystem::managerRecordData(
-	ManagerRecordHandle handle, ResourceKind kind) noexcept {
+	ManagerRecordHandle handle, ResourceKind kind) {
 	std::scoped_lock lock(impl_->mutex);
 	return impl_->usableManagerRecord(handle, kind)
 		? impl_->managerRecords[handle.index].memory.data
@@ -3181,7 +3183,7 @@ void* FlowStorageSystem::managerRecordData(
 }
 
 const void* FlowStorageSystem::managerRecordData(
-	ManagerRecordHandle handle, ResourceKind kind) const noexcept {
+	ManagerRecordHandle handle, ResourceKind kind) const {
 	std::scoped_lock lock(impl_->mutex);
 	return impl_->usableManagerRecord(handle, kind)
 		? impl_->managerRecords[handle.index].memory.data

@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevContentHeader.hpp"
 
 #if FLOW_UI_DEV_MODE
@@ -72,11 +73,11 @@ constexpr auto kExportCapture =
 		if (generation && state.performance_export_generation == generation)
 			return;
 		const auto result =
-			export_performance_capture_csv(app.devMonitoring().timingReporting(), generation,
-										   app.devMonitoring().performance_capture().status());
+			export_performance_capture_csv(FlowUi::ValueOrThrow(app.devMonitoring()).get().timingReporting(), generation,
+										   FlowUi::ValueOrThrow(app.devMonitoring()).get().performance_capture().status());
 		if (result) {
 			state.performance_export_generation = generation;
-			state.performance_export_path = path_to_utf8(*result);
+			state.performance_export_path = FlowUi::ValueOrThrow(path_to_utf8(*result));
 			state.lastActionMessage = "Exported capture to " + state.performance_export_path;
 		} else {
 			state.lastActionMessage =
@@ -107,7 +108,7 @@ constexpr auto kMainCapture = UiAction(
 		state.capture_error =
 			requested ? "" : "Capture unavailable: check shortcut conflict and settings.";
 		if (requested) {
-			state.pending_capture_windows = app.devWindowSnapshot();
+			state.pending_capture_windows = FlowUi::ValueOrThrow(app.devWindowSnapshot());
 			state.lastActionMessage = "Main Capture queued";
 		}
 	});
@@ -126,9 +127,9 @@ constexpr auto kApplyCpuReportingLevel = UiAction(
 	"flowui.dev_interface.apply-cpu-reporting-level", [](App& app, DevInterfaceState& state) {
 		state.cpuReportingLevel =
 			std::min<uint64_t>(state.cpuReportingLevel, FLOWUI_DEV_TIMING_LEVEL);
-		DevTimingConfig config = app.devMonitoring().timing().config();
+		DevTimingConfig config = FlowUi::ValueOrThrow(app.devMonitoring()).get().timing().config();
 		config.cpuLevel = static_cast<CpuTimingLevel>(state.cpuReportingLevel);
-		app.devMonitoring().timing().setConfig(config);
+		FlowUi::ValueOrThrow(app.devMonitoring()).get().timing().setConfig(config);
 		state.performance_selection.cpu_detail_level = config.cpuLevel;
 		state.lastActionMessage = "CPU timeline and recording detail changed";
 	});
@@ -218,7 +219,7 @@ void drawTabs(
 	strip.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 	strip.backgroundColor = interface_theme::kDepth2Ink;
 
-	CLAY(context.clayID(kTabStrip), strip) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(kTabStrip)), strip) {
 		for (const TabSpec& tab : kTabs) drawTab(context, state, tab);
 	}
 }
@@ -238,8 +239,8 @@ void drawInsetSeparator(DevContentHeader::BuildContext& context) {
 	};
 	line.backgroundColor = interface_theme::kBorderVisible;
 
-	CLAY(context.clayID(kSectionSeparatorInset), inset) {
-		CLAY(context.clayID(kSectionSeparatorLine), line);
+	CLAY(FlowUi::ValueOrThrow(context.clayID(kSectionSeparatorInset)), inset) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kSectionSeparatorLine)), line);
 	}
 }
 
@@ -286,11 +287,11 @@ void drawControl(DevContentHeader::BuildContext& context, LocalElementName id,
 	TextureRef icon{};
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	if (context.params.app && !icon_key.empty()) {
-		auto& icons = context.params.app->icons();
-		if (!icons.contains(icon_key))
+		auto& icons = FlowUi::ValueOrThrow(context.params.app->icons()).get();
+		if (!FlowUi::ValueOrThrow(icons.contains(icon_key)))
 			interface_icons::registerDevInterfaceIcons(icons);
-		if (icons.contains(icon_key))
-			icon = icons.textureRef(icon_key);
+		if (FlowUi::ValueOrThrow(icons.contains(icon_key)))
+			icon = FlowUi::ValueOrThrow(icons.textureRef(icon_key));
 	}
 #endif
 	action_button::set_icon(parameters, icon);
@@ -323,7 +324,7 @@ void drawReportingText(
 	};
 	label.cornerRadius = CLAY_CORNER_RADIUS(3);
 	const Clay_TextElementConfig style = textConfig(interface_theme::kTextSecondary, 12);
-	CLAY(context.clayID(id), label) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(id)), label) {
 		CLAY_TEXT(context.uiManager.toClayString(text), CLAY_TEXT_CONFIG(style));
 	}
 }
@@ -333,7 +334,7 @@ void drawCpuReportingSelector(DevContentHeader::BuildContext& context, App* app,
 	ActionCall changedAction{};
 	if (app) {
 		changedAction =
-			ActionCall{app->actions().uiActions().make(kApplyCpuReportingLevel, *app, state)};
+			ActionCall{FlowUi::ValueOrThrow(app->actions()).get().uiActions().make(kApplyCpuReportingLevel, *app, state)};
 	}
 
 	FSEL::ComboBoxParameters parameters{};
@@ -371,7 +372,7 @@ constexpr auto kChangeInspectWindow =
 	});
 
 void drawWindowTarget(DevContentHeader::BuildContext& context, App* app, DevInterfaceState& state) {
-	const auto windows = app ? app->devWindowSnapshot() : std::vector<DevWindowInfo>{};
+	const auto windows = app ? FlowUi::ValueOrThrow(app->devWindowSnapshot()) : std::vector<DevWindowInfo>{};
 	std::vector<std::string> labels;
 	std::vector<FSEL::ComboBoxOption> options;
 	labels.reserve(windows.size());
@@ -387,7 +388,7 @@ void drawWindowTarget(DevContentHeader::BuildContext& context, App* app, DevInte
 	parameters.options = options;
 	parameters.selectedValue = &state.selectedWindowId;
 	parameters.onChanged =
-		app ? ActionCall{app->actions().uiActions().make(kChangeInspectWindow, *app, state)}
+		app ? ActionCall{FlowUi::ValueOrThrow(app->actions()).get().uiActions().make(kChangeInspectWindow, *app, state)}
 			: ActionCall{};
 	parameters.enabled = app && !options.empty();
 	parameters.placeholder = "No application windows";
@@ -418,17 +419,17 @@ void drawContextualControls(DevContentHeader::BuildContext& context, App* app,
 		break;
 	case DevInterfaceTab::Performance: {
 		drawControl(context, kFrameSelector, "Main Capture",
-					app ? ActionCall{app->actions().uiActions().make(kMainCapture, *app, state)}
+					app ? ActionCall{FlowUi::ValueOrThrow(app->actions()).get().uiActions().make(kMainCapture, *app, state)}
 						: ActionCall{},
 					app != nullptr, true);
 		const auto status =
-			app ? app->devMonitoring().timingReporting().status() : TimingReportingStatus{};
+			app ? FlowUi::ValueOrThrow(app->devMonitoring()).get().timingReporting().status() : TimingReportingStatus{};
 		const auto generation = state.performance_timeline.capture_generation;
 		const bool exported = generation && state.performance_export_generation == generation;
 		const bool can_export = app && status.capture_sealed && status.hasRetainedTicks &&
 								generation == status.capture_generation;
 		drawControl(context, LocalElementName{"export-capture"}, exported ? "Exported" : "Export",
-					app ? ActionCall{app->actions().uiActions().make(kExportCapture, *app, state)}
+					app ? ActionCall{FlowUi::ValueOrThrow(app->actions()).get().uiActions().make(kExportCapture, *app, state)}
 						: ActionCall{},
 					can_export && !exported, false, interface_icons::kExportKey);
 		drawCpuReportingSelector(context, app, state);
@@ -463,7 +464,7 @@ void DevContentHeader::buildElement(BuildContext& context) {
 	const DevInterfaceTab activeTab = normalizedTab(*state);
 	if (context.params.app) {
 		state->cpuReportingLevel = std::min<uint64_t>(
-			static_cast<uint64_t>(context.params.app->devMonitoring().timing().config().cpuLevel),
+			static_cast<uint64_t>(FlowUi::ValueOrThrow(context.params.app->devMonitoring()).get().timing().config().cpuLevel),
 			static_cast<uint64_t>(FLOWUI_DEV_TIMING_LEVEL));
 		state->performance_selection.cpu_detail_level =
 			static_cast<CpuTimingLevel>(state->cpuReportingLevel);
@@ -503,20 +504,20 @@ void DevContentHeader::buildElement(BuildContext& context) {
 			.y = CLAY_ALIGN_Y_CENTER,
 		};
 		controls.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
-		CLAY(context.clayID(kContextualControls), controls) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kContextualControls)), controls) {
 			if (state->diagnostics.return_available &&
 				(activeTab == DevInterfaceTab::Performance ||
 				 activeTab == DevInterfaceTab::Memory) &&
 				context.params.app) {
 				drawControl(context, LocalElementName{"back-to-diagnostics"}, "Back to Diagnostics",
-							ActionCall{context.params.app->actions().uiActions().make(
+							ActionCall{FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(
 								kBackToDiagnostics, *state)},
 							true, false, interface_icons::kBackKey);
 			}
 			if (state->changes.return_available && activeTab != DevInterfaceTab::Changes &&
 				context.params.app) {
 				drawControl(context, LocalElementName{"back-to-changes"}, "Back to Changes",
-							ActionCall{context.params.app->actions().uiActions().make(
+							ActionCall{FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(
 								kBackToChanges, *state)},
 							true, false, interface_icons::kBackKey);
 			}

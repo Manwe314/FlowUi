@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryWorkbenchControls.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"
@@ -7,10 +8,10 @@ namespace FlowUi::devSystems::interface_elements {
 namespace interaction = FSEL::detail::selectable_surface;
 DevMemoryControlResources::DevMemoryControlResources([[maybe_unused]] App& app) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
-	auto& icons = app.icons();
+	auto& icons = FlowUi::ValueOrThrow(app.icons()).get();
 	interface_icons::registerDevInterfaceIcons(icons);
 	for (size_t key_index = 0; key_index < keys.size(); ++key_index)
-		textures[key_index] = icons.textureRef(keys[key_index]);
+		textures[key_index] = FlowUi::ValueOrThrow(icons.textureRef(keys[key_index]));
 #endif
 }
 namespace {
@@ -153,7 +154,7 @@ void DevMemoryControl::buildElement(BuildContext& context) {
 			image.layout.sizing = {.width = CLAY_SIZING_FIXED(14), .height = CLAY_SIZING_FIXED(14)};
 			image.backgroundColor = text.textColor;
 			image.image.imageData = context.uiManager.imageData(icon);
-			CLAY(context.clayID("action-icon"), image) {}
+			CLAY(FlowUi::ValueOrThrow(context.clayID("action-icon")), image) {}
 		} else
 			CLAY_TEXT(context.uiManager.toClayString(context.params.label), CLAY_TEXT_CONFIG(text));
 		if (!icon_key.empty() &&

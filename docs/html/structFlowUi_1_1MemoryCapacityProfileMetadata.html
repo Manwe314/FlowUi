@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,26 +106,143 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::MemoryCapacityProfileMetadata Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="MemoryCapacityProfile_8hpp_source.html">MemoryCapacityProfile.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a84fa69bbb0fb0e5684302d5d0a11b157" id="r_a84fa69bbb0fb0e5684302d5d0a11b157"><td class="memItemLeft"><a id="a84fa69bbb0fb0e5684302d5d0a11b157" name="a84fa69bbb0fb0e5684302d5d0a11b157"></a>
-std::string&#160;</td><td class="memItemRight"><b>platform</b> {}</td></tr>
-<tr class="memitem:a90a0128923b4ab7f659f43271515ec4f" id="r_a90a0128923b4ab7f659f43271515ec4f"><td class="memItemLeft"><a id="a90a0128923b4ab7f659f43271515ec4f" name="a90a0128923b4ab7f659f43271515ec4f"></a>
-std::string&#160;</td><td class="memItemRight"><b>build</b> {}</td></tr>
-<tr class="memitem:a79e1b4302f26d10d621dedee20cfce7d" id="r_a79e1b4302f26d10d621dedee20cfce7d"><td class="memItemLeft"><a id="a79e1b4302f26d10d621dedee20cfce7d" name="a79e1b4302f26d10d621dedee20cfce7d"></a>
-std::string&#160;</td><td class="memItemRight"><b>gpu</b> {}</td></tr>
-<tr class="memitem:a7d2688b2347829d620471f32fe78ac75" id="r_a7d2688b2347829d620471f32fe78ac75"><td class="memItemLeft"><a id="a7d2688b2347829d620471f32fe78ac75" name="a7d2688b2347829d620471f32fe78ac75"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>captureBeginTick</b> = 0u</td></tr>
-<tr class="memitem:a7fbfecefb2b20295d20a93904a3caa7e" id="r_a7fbfecefb2b20295d20a93904a3caa7e"><td class="memItemLeft"><a id="a7fbfecefb2b20295d20a93904a3caa7e" name="a7fbfecefb2b20295d20a93904a3caa7e"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>captureEndTickExclusive</b> = 0u</td></tr>
-<tr class="memitem:a27760e8f8436ed8a959b55ad2d447204" id="r_a27760e8f8436ed8a959b55ad2d447204"><td class="memItemLeft"><a id="a27760e8f8436ed8a959b55ad2d447204" name="a27760e8f8436ed8a959b55ad2d447204"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>warmUpTicks</b> = 0u</td></tr>
-<tr class="memitem:a5fe228d4fa4626dc574ee23c8792e75a" id="r_a5fe228d4fa4626dc574ee23c8792e75a"><td class="memItemLeft"><a id="a5fe228d4fa4626dc574ee23c8792e75a" name="a5fe228d4fa4626dc574ee23c8792e75a"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>framesInFlight</b> = 0u</td></tr>
-<tr class="memitem:aebcb146d6b244ec34ae0a0f03a191f79" id="r_aebcb146d6b244ec34ae0a0f03a191f79"><td class="memItemLeft"><a id="aebcb146d6b244ec34ae0a0f03a191f79" name="aebcb146d6b244ec34ae0a0f03a191f79"></a>
-bool&#160;</td><td class="memItemRight"><b>complete</b> = false</td></tr>
+<tr class="memitem:a84fa69bbb0fb0e5684302d5d0a11b157" id="r_a84fa69bbb0fb0e5684302d5d0a11b157"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a84fa69bbb0fb0e5684302d5d0a11b157">platform</a> {}</td></tr>
+<tr class="memitem:a90a0128923b4ab7f659f43271515ec4f" id="r_a90a0128923b4ab7f659f43271515ec4f"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a90a0128923b4ab7f659f43271515ec4f">build</a> {}</td></tr>
+<tr class="memitem:a79e1b4302f26d10d621dedee20cfce7d" id="r_a79e1b4302f26d10d621dedee20cfce7d"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a79e1b4302f26d10d621dedee20cfce7d">gpu</a> {}</td></tr>
+<tr class="memitem:a7d2688b2347829d620471f32fe78ac75" id="r_a7d2688b2347829d620471f32fe78ac75"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a7d2688b2347829d620471f32fe78ac75">captureBeginTick</a> = 0u</td></tr>
+<tr class="memitem:a7fbfecefb2b20295d20a93904a3caa7e" id="r_a7fbfecefb2b20295d20a93904a3caa7e"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a7fbfecefb2b20295d20a93904a3caa7e">captureEndTickExclusive</a> = 0u</td></tr>
+<tr class="memitem:a27760e8f8436ed8a959b55ad2d447204" id="r_a27760e8f8436ed8a959b55ad2d447204"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a27760e8f8436ed8a959b55ad2d447204">warmUpTicks</a> = 0u</td></tr>
+<tr class="memitem:a5fe228d4fa4626dc574ee23c8792e75a" id="r_a5fe228d4fa4626dc574ee23c8792e75a"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a5fe228d4fa4626dc574ee23c8792e75a">framesInFlight</a> = 0u</td></tr>
+<tr class="memitem:aebcb146d6b244ec34ae0a0f03a191f79" id="r_aebcb146d6b244ec34ae0a0f03a191f79"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#aebcb146d6b244ec34ae0a0f03a191f79">complete</a> = false</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Owned provenance copied from the profiling run that produced a capacity profile; metadata does not change allocation policy. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a90a0128923b4ab7f659f43271515ec4f" name="a90a0128923b4ab7f659f43271515ec4f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a90a0128923b4ab7f659f43271515ec4f">&#9670;&#160;</a></span>build</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string FlowUi::MemoryCapacityProfileMetadata::build {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Build description from the capture environment. </p>
+
+</div>
+</div>
+<a id="a7d2688b2347829d620471f32fe78ac75" name="a7d2688b2347829d620471f32fe78ac75"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d2688b2347829d620471f32fe78ac75">&#9670;&#160;</a></span>captureBeginTick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::MemoryCapacityProfileMetadata::captureBeginTick = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>First included application tick. </p>
+
+</div>
+</div>
+<a id="a7fbfecefb2b20295d20a93904a3caa7e" name="a7fbfecefb2b20295d20a93904a3caa7e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7fbfecefb2b20295d20a93904a3caa7e">&#9670;&#160;</a></span>captureEndTickExclusive</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::MemoryCapacityProfileMetadata::captureEndTickExclusive = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>First application tick outside the captured interval. </p>
+
+</div>
+</div>
+<a id="aebcb146d6b244ec34ae0a0f03a191f79" name="aebcb146d6b244ec34ae0a0f03a191f79"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aebcb146d6b244ec34ae0a0f03a191f79">&#9670;&#160;</a></span>complete</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::MemoryCapacityProfileMetadata::complete = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether the profile producer considers the captured evidence complete. </p>
+
+</div>
+</div>
+<a id="a5fe228d4fa4626dc574ee23c8792e75a" name="a5fe228d4fa4626dc574ee23c8792e75a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5fe228d4fa4626dc574ee23c8792e75a">&#9670;&#160;</a></span>framesInFlight</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::MemoryCapacityProfileMetadata::framesInFlight = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Frame concurrency observed during capture. </p>
+
+</div>
+</div>
+<a id="a79e1b4302f26d10d621dedee20cfce7d" name="a79e1b4302f26d10d621dedee20cfce7d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a79e1b4302f26d10d621dedee20cfce7d">&#9670;&#160;</a></span>gpu</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string FlowUi::MemoryCapacityProfileMetadata::gpu {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>GPU description from the capture environment. </p>
+
+</div>
+</div>
+<a id="a84fa69bbb0fb0e5684302d5d0a11b157" name="a84fa69bbb0fb0e5684302d5d0a11b157"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a84fa69bbb0fb0e5684302d5d0a11b157">&#9670;&#160;</a></span>platform</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string FlowUi::MemoryCapacityProfileMetadata::platform {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Platform description from the capture environment. </p>
+
+</div>
+</div>
+<a id="a27760e8f8436ed8a959b55ad2d447204" name="a27760e8f8436ed8a959b55ad2d447204"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a27760e8f8436ed8a959b55ad2d447204">&#9670;&#160;</a></span>warmUpTicks</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::MemoryCapacityProfileMetadata::warmUpTicks = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Warm-up ticks excluded from the profile evidence. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/configurationStructs/<a class="el" href="MemoryCapacityProfile_8hpp_source.html">MemoryCapacityProfile.hpp</a></li>
 </ul>
@@ -142,7 +259,7 @@ bool&#160;</td><td class="memItemRight"><b>complete</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1MemoryCapacityProfileMetadata.html">MemoryCapacityProfileMetadata</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1MemoryCapacityProfileMetadata.html">MemoryCapacityProfileMetadata</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

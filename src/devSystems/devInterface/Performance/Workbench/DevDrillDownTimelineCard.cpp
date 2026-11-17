@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevDrillDownTimelineCard.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #if FLOW_UI_DEV_MODE
@@ -33,7 +34,7 @@ void DevDrillDownTimelineCard::buildElement(BuildContext& context) {
 	root.clip.scrollInputDisabled = true;
 	CLAY(context.clayID(), root) {
 		const auto header = timeline_ui::row(28);
-		CLAY(context.clayID("header"), header) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("header")), header) {
 			timeline_ui::text(
 				context, std::string(card.roots.size() > 1		? "Choose a member: "
 									 : target.cpu_clock_aligned ? "Inside: "
@@ -59,7 +60,7 @@ void DevDrillDownTimelineCard::buildElement(BuildContext& context) {
 								interface_icons::kPreviousKey);
 		}
 		const auto breadcrumbs = timeline_ui::row(26);
-		CLAY(context.clayID("breadcrumbs"), breadcrumbs) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("breadcrumbs")), breadcrumbs) {
 			for (size_t history_index = 0; history_index < state.cards.size(); ++history_index) {
 				const auto& focus = state.cards[history_index];
 				const auto& block = state.snapshot.blocks[focus.roots.front()];
@@ -73,7 +74,7 @@ void DevDrillDownTimelineCard::buildElement(BuildContext& context) {
 		plot.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
 		plot.clip.vertical = true;
 		plot.clip.horizontal = true;
-		const auto scroll = Clay_GetScrollContainerData(context.clayID("plot-scroll"));
+		const auto scroll = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("plot-scroll")));
 		if (scroll.found && scroll.scrollPosition) {
 			if (state.restore_minor_scroll)
 				scroll.scrollPosition->y = card.scroll_y;
@@ -83,9 +84,9 @@ void DevDrillDownTimelineCard::buildElement(BuildContext& context) {
 			plot.clip.childOffset = *scroll.scrollPosition;
 		}
 		auto parameters = context.params;
-		parameters.canvas_clip = context.clayID("plot-scroll");
-		CLAY(context.clayID("plot-scroll"), plot) {
-			timeline_viewport(context.uiManager, context.clayID("body"), parameters,
+		parameters.canvas_clip = FlowUi::ValueOrThrow(context.clayID("plot-scroll"));
+		CLAY(FlowUi::ValueOrThrow(context.clayID("plot-scroll")), plot) {
+			timeline_viewport(context.uiManager, FlowUi::ValueOrThrow(context.clayID("body")), parameters,
 							  TimelineSurfaceKind::Card);
 		}
 		if (card.roots.size() == 1 &&

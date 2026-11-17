@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,44 +111,283 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a072fa0a83fa1cfac3cd3c035a36e1dfe" id="r_a072fa0a83fa1cfac3cd3c035a36e1dfe"><td class="memItemLeft"><a id="a072fa0a83fa1cfac3cd3c035a36e1dfe" name="a072fa0a83fa1cfac3cd3c035a36e1dfe"></a>
-std::string&#160;</td><td class="memItemRight"><b>key</b> {}</td></tr>
-<tr class="memitem:ab88129156387952e566c24b21237c85d" id="r_ab88129156387952e566c24b21237c85d"><td class="memItemLeft"><a id="ab88129156387952e566c24b21237c85d" name="ab88129156387952e566c24b21237c85d"></a>
-<a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a>&#160;</td><td class="memItemRight"><b>capture_texture</b> {}</td></tr>
-<tr class="memitem:a1d0ed6823f5107e1d25cfa5866647158" id="r_a1d0ed6823f5107e1d25cfa5866647158"><td class="memItemLeft"><a id="a1d0ed6823f5107e1d25cfa5866647158" name="a1d0ed6823f5107e1d25cfa5866647158"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>generation</b> = 0</td></tr>
-<tr class="memitem:a2a9fe43f6d71989bd358c48acd279cda" id="r_a2a9fe43f6d71989bd358c48acd279cda"><td class="memItemLeft"><a id="a2a9fe43f6d71989bd358c48acd279cda" name="a2a9fe43f6d71989bd358c48acd279cda"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>captured_frame</b> = 0</td></tr>
-<tr class="memitem:a84ec4b23d544d9fda16ffd27012819f1" id="r_a84ec4b23d544d9fda16ffd27012819f1"><td class="memItemLeft"><a id="a84ec4b23d544d9fda16ffd27012819f1" name="a84ec4b23d544d9fda16ffd27012819f1"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>captured_generation</b> = 0</td></tr>
-<tr class="memitem:a4d9fd045b0759b530061981aa07cf4a8" id="r_a4d9fd045b0759b530061981aa07cf4a8"><td class="memItemLeft"><a id="a4d9fd045b0759b530061981aa07cf4a8" name="a4d9fd045b0759b530061981aa07cf4a8"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>captured_submission</b> = 0</td></tr>
-<tr class="memitem:aec5eb47f32e546abefe5b8e064198aed" id="r_aec5eb47f32e546abefe5b8e064198aed"><td class="memItemLeft"><a id="aec5eb47f32e546abefe5b8e064198aed" name="aec5eb47f32e546abefe5b8e064198aed"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>width</b> = 0</td></tr>
-<tr class="memitem:abb9ca765d96f85d026efef91bb6d5a22" id="r_abb9ca765d96f85d026efef91bb6d5a22"><td class="memItemLeft"><a id="abb9ca765d96f85d026efef91bb6d5a22" name="abb9ca765d96f85d026efef91bb6d5a22"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>height</b> = 0</td></tr>
-<tr class="memitem:a7cefd211dc69041e1c8d3e3e0e9fadf6" id="r_a7cefd211dc69041e1c8d3e3e0e9fadf6"><td class="memItemLeft"><a id="a7cefd211dc69041e1c8d3e3e0e9fadf6" name="a7cefd211dc69041e1c8d3e3e0e9fadf6"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>format</b> = 0</td></tr>
-<tr class="memitem:a907043d481bd0d4ae71e43a3c13536e6" id="r_a907043d481bd0d4ae71e43a3c13536e6"><td class="memItemLeft"><a id="a907043d481bd0d4ae71e43a3c13536e6" name="a907043d481bd0d4ae71e43a3c13536e6"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>captured_width</b> = 0</td></tr>
-<tr class="memitem:a5e42f69e2ae08c299df84a66d112981a" id="r_a5e42f69e2ae08c299df84a66d112981a"><td class="memItemLeft"><a id="a5e42f69e2ae08c299df84a66d112981a" name="a5e42f69e2ae08c299df84a66d112981a"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>captured_height</b> = 0</td></tr>
-<tr class="memitem:a21e9fd84f68b507fa90d157e20b51150" id="r_a21e9fd84f68b507fa90d157e20b51150"><td class="memItemLeft"><a id="a21e9fd84f68b507fa90d157e20b51150" name="a21e9fd84f68b507fa90d157e20b51150"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>captured_format</b> = 0</td></tr>
-<tr class="memitem:afc21d90c0a375256de6988e68a8170f9" id="r_afc21d90c0a375256de6988e68a8170f9"><td class="memItemLeft"><a id="afc21d90c0a375256de6988e68a8170f9" name="afc21d90c0a375256de6988e68a8170f9"></a>
-bool&#160;</td><td class="memItemRight"><b>has_callback</b> = false</td></tr>
-<tr class="memitem:a8767621753be6cf2f77d37ccad908380" id="r_a8767621753be6cf2f77d37ccad908380"><td class="memItemLeft"><a id="a8767621753be6cf2f77d37ccad908380" name="a8767621753be6cf2f77d37ccad908380"></a>
-bool&#160;</td><td class="memItemRight"><b>clear_every_frame</b> = true</td></tr>
-<tr class="memitem:ac0584da998db4379b67301d3c814c05a" id="r_ac0584da998db4379b67301d3c814c05a"><td class="memItemLeft"><a id="ac0584da998db4379b67301d3c814c05a" name="ac0584da998db4379b67301d3c814c05a"></a>
-bool&#160;</td><td class="memItemRight"><b>capture_supported</b> = false</td></tr>
-<tr class="memitem:a0b48acaf9a4d3121ebc5b99e68deb195" id="r_a0b48acaf9a4d3121ebc5b99e68deb195"><td class="memItemLeft"><a id="a0b48acaf9a4d3121ebc5b99e68deb195" name="a0b48acaf9a4d3121ebc5b99e68deb195"></a>
-bool&#160;</td><td class="memItemRight"><b>capture_pending</b> = false</td></tr>
-<tr class="memitem:a3b5f4c5d004944960825615028767ea6" id="r_a3b5f4c5d004944960825615028767ea6"><td class="memItemLeft"><a id="a3b5f4c5d004944960825615028767ea6" name="a3b5f4c5d004944960825615028767ea6"></a>
-bool&#160;</td><td class="memItemRight"><b>capture_failed</b> = false</td></tr>
+<tr class="memitem:a072fa0a83fa1cfac3cd3c035a36e1dfe" id="r_a072fa0a83fa1cfac3cd3c035a36e1dfe"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a072fa0a83fa1cfac3cd3c035a36e1dfe">key</a> {}</td></tr>
+<tr class="memitem:ab88129156387952e566c24b21237c85d" id="r_ab88129156387952e566c24b21237c85d"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a>&#160;</td><td class="memItemRight"><a class="el" href="#ab88129156387952e566c24b21237c85d">capture_texture</a> {}</td></tr>
+<tr class="memitem:a1d0ed6823f5107e1d25cfa5866647158" id="r_a1d0ed6823f5107e1d25cfa5866647158"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a1d0ed6823f5107e1d25cfa5866647158">generation</a> = 0</td></tr>
+<tr class="memitem:a2a9fe43f6d71989bd358c48acd279cda" id="r_a2a9fe43f6d71989bd358c48acd279cda"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a2a9fe43f6d71989bd358c48acd279cda">captured_frame</a> = 0</td></tr>
+<tr class="memitem:a84ec4b23d544d9fda16ffd27012819f1" id="r_a84ec4b23d544d9fda16ffd27012819f1"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a84ec4b23d544d9fda16ffd27012819f1">captured_generation</a> = 0</td></tr>
+<tr class="memitem:a4d9fd045b0759b530061981aa07cf4a8" id="r_a4d9fd045b0759b530061981aa07cf4a8"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a4d9fd045b0759b530061981aa07cf4a8">captured_submission</a> = 0</td></tr>
+<tr class="memitem:aec5eb47f32e546abefe5b8e064198aed" id="r_aec5eb47f32e546abefe5b8e064198aed"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#aec5eb47f32e546abefe5b8e064198aed">width</a> = 0</td></tr>
+<tr class="memitem:abb9ca765d96f85d026efef91bb6d5a22" id="r_abb9ca765d96f85d026efef91bb6d5a22"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#abb9ca765d96f85d026efef91bb6d5a22">height</a> = 0</td></tr>
+<tr class="memitem:a7cefd211dc69041e1c8d3e3e0e9fadf6" id="r_a7cefd211dc69041e1c8d3e3e0e9fadf6"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a7cefd211dc69041e1c8d3e3e0e9fadf6">format</a> = 0</td></tr>
+<tr class="memitem:a907043d481bd0d4ae71e43a3c13536e6" id="r_a907043d481bd0d4ae71e43a3c13536e6"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a907043d481bd0d4ae71e43a3c13536e6">captured_width</a> = 0</td></tr>
+<tr class="memitem:a5e42f69e2ae08c299df84a66d112981a" id="r_a5e42f69e2ae08c299df84a66d112981a"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a5e42f69e2ae08c299df84a66d112981a">captured_height</a> = 0</td></tr>
+<tr class="memitem:a21e9fd84f68b507fa90d157e20b51150" id="r_a21e9fd84f68b507fa90d157e20b51150"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a21e9fd84f68b507fa90d157e20b51150">captured_format</a> = 0</td></tr>
+<tr class="memitem:afc21d90c0a375256de6988e68a8170f9" id="r_afc21d90c0a375256de6988e68a8170f9"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#afc21d90c0a375256de6988e68a8170f9">has_callback</a> = false</td></tr>
+<tr class="memitem:a8767621753be6cf2f77d37ccad908380" id="r_a8767621753be6cf2f77d37ccad908380"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a8767621753be6cf2f77d37ccad908380">clear_every_frame</a> = true</td></tr>
+<tr class="memitem:ac0584da998db4379b67301d3c814c05a" id="r_ac0584da998db4379b67301d3c814c05a"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ac0584da998db4379b67301d3c814c05a">capture_supported</a> = false</td></tr>
+<tr class="memitem:a0b48acaf9a4d3121ebc5b99e68deb195" id="r_a0b48acaf9a4d3121ebc5b99e68deb195"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a0b48acaf9a4d3121ebc5b99e68deb195">capture_pending</a> = false</td></tr>
+<tr class="memitem:a3b5f4c5d004944960825615028767ea6" id="r_a3b5f4c5d004944960825615028767ea6"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a3b5f4c5d004944960825615028767ea6">capture_failed</a> = false</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Portable copied viewport metadata; discovery never causes viewport rendering. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a3b5f4c5d004944960825615028767ea6" name="a3b5f4c5d004944960825615028767ea6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b5f4c5d004944960825615028767ea6">&#9670;&#160;</a></span>capture_failed</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::DevViewportInfo::capture_failed = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether the most recent capture failed. </p>
+
+</div>
+</div>
+<a id="a0b48acaf9a4d3121ebc5b99e68deb195" name="a0b48acaf9a4d3121ebc5b99e68deb195"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b48acaf9a4d3121ebc5b99e68deb195">&#9670;&#160;</a></span>capture_pending</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::DevViewportInfo::capture_pending = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether a capture request is awaiting completion. </p>
+
+</div>
+</div>
+<a id="ac0584da998db4379b67301d3c814c05a" name="ac0584da998db4379b67301d3c814c05a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac0584da998db4379b67301d3c814c05a">&#9670;&#160;</a></span>capture_supported</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::DevViewportInfo::capture_supported = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether this viewport can produce capture evidence. </p>
+
+</div>
+</div>
+<a id="ab88129156387952e566c24b21237c85d" name="ab88129156387952e566c24b21237c85d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab88129156387952e566c24b21237c85d">&#9670;&#160;</a></span>capture_texture</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a> FlowUi::DevViewportInfo::capture_texture {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Opaque texture identity associated with viewport capture. </p>
+
+</div>
+</div>
+<a id="a21e9fd84f68b507fa90d157e20b51150" name="a21e9fd84f68b507fa90d157e20b51150"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a21e9fd84f68b507fa90d157e20b51150">&#9670;&#160;</a></span>captured_format</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::DevViewportInfo::captured_format = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Captured backend pixel-format value. </p>
+
+</div>
+</div>
+<a id="a2a9fe43f6d71989bd358c48acd279cda" name="a2a9fe43f6d71989bd358c48acd279cda"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a9fe43f6d71989bd358c48acd279cda">&#9670;&#160;</a></span>captured_frame</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::DevViewportInfo::captured_frame = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Application frame of the most recent capture. </p>
+
+</div>
+</div>
+<a id="a84ec4b23d544d9fda16ffd27012819f1" name="a84ec4b23d544d9fda16ffd27012819f1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a84ec4b23d544d9fda16ffd27012819f1">&#9670;&#160;</a></span>captured_generation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::DevViewportInfo::captured_generation = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Target generation of the most recent capture. </p>
+
+</div>
+</div>
+<a id="a5e42f69e2ae08c299df84a66d112981a" name="a5e42f69e2ae08c299df84a66d112981a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5e42f69e2ae08c299df84a66d112981a">&#9670;&#160;</a></span>captured_height</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::DevViewportInfo::captured_height = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Captured image height in pixels. </p>
+
+</div>
+</div>
+<a id="a4d9fd045b0759b530061981aa07cf4a8" name="a4d9fd045b0759b530061981aa07cf4a8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4d9fd045b0759b530061981aa07cf4a8">&#9670;&#160;</a></span>captured_submission</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::DevViewportInfo::captured_submission = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>GPU submission of the most recent capture. </p>
+
+</div>
+</div>
+<a id="a907043d481bd0d4ae71e43a3c13536e6" name="a907043d481bd0d4ae71e43a3c13536e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a907043d481bd0d4ae71e43a3c13536e6">&#9670;&#160;</a></span>captured_width</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::DevViewportInfo::captured_width = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Captured image width in pixels. </p>
+
+</div>
+</div>
+<a id="a8767621753be6cf2f77d37ccad908380" name="a8767621753be6cf2f77d37ccad908380"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8767621753be6cf2f77d37ccad908380">&#9670;&#160;</a></span>clear_every_frame</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::DevViewportInfo::clear_every_frame = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether each viewport pass clears its target. </p>
+
+</div>
+</div>
+<a id="a7cefd211dc69041e1c8d3e3e0e9fadf6" name="a7cefd211dc69041e1c8d3e3e0e9fadf6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7cefd211dc69041e1c8d3e3e0e9fadf6">&#9670;&#160;</a></span>format</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::DevViewportInfo::format = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Current backend pixel-format value. </p>
+
+</div>
+</div>
+<a id="a1d0ed6823f5107e1d25cfa5866647158" name="a1d0ed6823f5107e1d25cfa5866647158"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1d0ed6823f5107e1d25cfa5866647158">&#9670;&#160;</a></span>generation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::DevViewportInfo::generation = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Current viewport target generation. </p>
+
+</div>
+</div>
+<a id="afc21d90c0a375256de6988e68a8170f9" name="afc21d90c0a375256de6988e68a8170f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afc21d90c0a375256de6988e68a8170f9">&#9670;&#160;</a></span>has_callback</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::DevViewportInfo::has_callback = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether a render callback is registered. </p>
+
+</div>
+</div>
+<a id="abb9ca765d96f85d026efef91bb6d5a22" name="abb9ca765d96f85d026efef91bb6d5a22"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abb9ca765d96f85d026efef91bb6d5a22">&#9670;&#160;</a></span>height</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::DevViewportInfo::height = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Current target height in pixels. </p>
+
+</div>
+</div>
+<a id="a072fa0a83fa1cfac3cd3c035a36e1dfe" name="a072fa0a83fa1cfac3cd3c035a36e1dfe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a072fa0a83fa1cfac3cd3c035a36e1dfe">&#9670;&#160;</a></span>key</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string FlowUi::DevViewportInfo::key {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned viewport resource key. </p>
+
+</div>
+</div>
+<a id="aec5eb47f32e546abefe5b8e064198aed" name="aec5eb47f32e546abefe5b8e064198aed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aec5eb47f32e546abefe5b8e064198aed">&#9670;&#160;</a></span>width</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::DevViewportInfo::width = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Current target width in pixels. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="DevSnapshotTypes_8hpp_source.html">DevSnapshotTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -164,7 +403,7 @@ bool&#160;</td><td class="memItemRight"><b>capture_failed</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1DevViewportInfo.html">DevViewportInfo</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1DevViewportInfo.html">DevViewportInfo</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

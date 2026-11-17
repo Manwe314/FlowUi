@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,22 +106,95 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::MemoryCapacityProfile Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="MemoryCapacityProfile_8hpp_source.html">MemoryCapacityProfile.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:ae292915460be89c975b898cee68a1696" id="r_ae292915460be89c975b898cee68a1696"><td class="memItemLeft"><a id="ae292915460be89c975b898cee68a1696" name="ae292915460be89c975b898cee68a1696"></a>
-<a class="el" href="structFlowUi_1_1StorageMemoryCapacities.html">StorageMemoryCapacities</a>&#160;</td><td class="memItemRight"><b>storage</b> {}</td></tr>
-<tr class="memitem:aeed99ab719365479858c918afe694dd9" id="r_aeed99ab719365479858c918afe694dd9"><td class="memItemLeft"><a id="aeed99ab719365479858c918afe694dd9" name="aeed99ab719365479858c918afe694dd9"></a>
-<a class="el" href="structFlowUi_1_1ManagerMemoryCapacities.html">ManagerMemoryCapacities</a>&#160;</td><td class="memItemRight"><b>managers</b> {}</td></tr>
-<tr class="memitem:aa21fba8535ff12f2f799c61631f6e9ba" id="r_aa21fba8535ff12f2f799c61631f6e9ba"><td class="memItemLeft"><a id="aa21fba8535ff12f2f799c61631f6e9ba" name="aa21fba8535ff12f2f799c61631f6e9ba"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1MemoryCapacitySetting.html">MemoryCapacitySetting</a> &gt;&#160;</td><td class="memItemRight"><b>settings</b> {}</td></tr>
-<tr class="memitem:afc6efa8745ec0614286cb68b9ea63811" id="r_afc6efa8745ec0614286cb68b9ea63811"><td class="memItemLeft"><a id="afc6efa8745ec0614286cb68b9ea63811" name="afc6efa8745ec0614286cb68b9ea63811"></a>
-float&#160;</td><td class="memItemRight"><b>growthFactor</b> = 1.5f</td></tr>
-<tr class="memitem:aba9f9a5c17d70d321bfffac82fadf0aa" id="r_aba9f9a5c17d70d321bfffac82fadf0aa"><td class="memItemLeft"><a id="aba9f9a5c17d70d321bfffac82fadf0aa" name="aba9f9a5c17d70d321bfffac82fadf0aa"></a>
-bool&#160;</td><td class="memItemRight"><b>allowRuntimeGrowth</b> = true</td></tr>
-<tr class="memitem:a188ce17702b97e4075569cd3921e1337" id="r_a188ce17702b97e4075569cd3921e1337"><td class="memItemLeft"><a id="a188ce17702b97e4075569cd3921e1337" name="a188ce17702b97e4075569cd3921e1337"></a>
-<a class="el" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html">MemoryCapacityProfileMetadata</a>&#160;</td><td class="memItemRight"><b>metadata</b> {}</td></tr>
+<tr class="memitem:ae292915460be89c975b898cee68a1696" id="r_ae292915460be89c975b898cee68a1696"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1StorageMemoryCapacities.html">StorageMemoryCapacities</a>&#160;</td><td class="memItemRight"><a class="el" href="#ae292915460be89c975b898cee68a1696">storage</a> {}</td></tr>
+<tr class="memitem:aa21fba8535ff12f2f799c61631f6e9ba" id="r_aa21fba8535ff12f2f799c61631f6e9ba"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1MemoryCapacitySetting.html">MemoryCapacitySetting</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aa21fba8535ff12f2f799c61631f6e9ba">settings</a> {}</td></tr>
+<tr class="memitem:afc6efa8745ec0614286cb68b9ea63811" id="r_afc6efa8745ec0614286cb68b9ea63811"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#afc6efa8745ec0614286cb68b9ea63811">growthFactor</a> = 1.5f</td></tr>
+<tr class="memitem:aba9f9a5c17d70d321bfffac82fadf0aa" id="r_aba9f9a5c17d70d321bfffac82fadf0aa"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#aba9f9a5c17d70d321bfffac82fadf0aa">allowRuntimeGrowth</a> = true</td></tr>
+<tr class="memitem:a188ce17702b97e4075569cd3921e1337" id="r_a188ce17702b97e4075569cd3921e1337"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html">MemoryCapacityProfileMetadata</a>&#160;</td><td class="memItemRight"><a class="el" href="#a188ce17702b97e4075569cd3921e1337">metadata</a> {}</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Startup storage capacities, explicit container reserves, growth policy, and profiling provenance. storage provides typed byte-capacity hints for storage pools and buffers. settings addresses individual registered targets by stable ID, including storage byte capacities and manager container capacities in each target's registered units (bytes or entries). Nonzero storage hints are converted to settings during startup resolution; zero storage hints preserve library defaults. Explicit settings override storage hints for the same target, and a zero setting selects that target's default. Enabled baked capacities take precedence over both. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="aba9f9a5c17d70d321bfffac82fadf0aa" name="aba9f9a5c17d70d321bfffac82fadf0aa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba9f9a5c17d70d321bfffac82fadf0aa">&#9670;&#160;</a></span>allowRuntimeGrowth</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::MemoryCapacityProfile::allowRuntimeGrowth = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Permit storage growth subject to error policies and budgets; does not cap manager containers. </p>
+
+</div>
+</div>
+<a id="afc6efa8745ec0614286cb68b9ea63811" name="afc6efa8745ec0614286cb68b9ea63811"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afc6efa8745ec0614286cb68b9ea63811">&#9670;&#160;</a></span>growthFactor</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float FlowUi::MemoryCapacityProfile::growthFactor = 1.5f</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Storage growth multiplier; must be finite and greater than one. </p>
+
+</div>
+</div>
+<a id="a188ce17702b97e4075569cd3921e1337" name="a188ce17702b97e4075569cd3921e1337"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a188ce17702b97e4075569cd3921e1337">&#9670;&#160;</a></span>metadata</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html">MemoryCapacityProfileMetadata</a> FlowUi::MemoryCapacityProfile::metadata {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Optional evidence provenance retained with the profile. </p>
+
+</div>
+</div>
+<a id="aa21fba8535ff12f2f799c61631f6e9ba" name="aa21fba8535ff12f2f799c61631f6e9ba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa21fba8535ff12f2f799c61631f6e9ba">&#9670;&#160;</a></span>settings</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="structFlowUi_1_1MemoryCapacitySetting.html">MemoryCapacitySetting</a>&gt; FlowUi::MemoryCapacityProfile::settings {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned per-target startup hints in registered units; override matching storage hints. Zero selects the target default. Unknown targets and conflicting duplicates reject app creation; identical duplicates are accepted. </p>
+
+</div>
+</div>
+<a id="ae292915460be89c975b898cee68a1696" name="ae292915460be89c975b898cee68a1696"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae292915460be89c975b898cee68a1696">&#9670;&#160;</a></span>storage</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1StorageMemoryCapacities.html">StorageMemoryCapacities</a> FlowUi::MemoryCapacityProfile::storage {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Typed startup byte-capacity hints for storage pools and buffers; zero preserves defaults. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/configurationStructs/<a class="el" href="MemoryCapacityProfile_8hpp_source.html">MemoryCapacityProfile.hpp</a></li>
 </ul>
@@ -138,7 +211,7 @@ bool&#160;</td><td class="memItemRight"><b>allowRuntimeGrowth</b> = true</td></t
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1MemoryCapacityProfile.html">MemoryCapacityProfile</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1MemoryCapacityProfile.html">MemoryCapacityProfile</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

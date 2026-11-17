@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,26 +111,139 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a8f39649e78cb5a6fdd9f58c161c3651c" id="r_a8f39649e78cb5a6fdd9f58c161c3651c"><td class="memItemLeft"><a id="a8f39649e78cb5a6fdd9f58c161c3651c" name="a8f39649e78cb5a6fdd9f58c161c3651c"></a>
-std::array&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryCapacityHighWater.html">MemoryCapacityHighWater</a>, static_cast&lt; size_t &gt;(FlowUi::detail::InitialCapacityTarget::count)&gt;&#160;</td><td class="memItemRight"><b>capacity_high_water</b> {}</td></tr>
-<tr class="memitem:a87b407327549e264d257f7c0e6d6e2f8" id="r_a87b407327549e264d257f7c0e6d6e2f8"><td class="memItemLeft"><a id="a87b407327549e264d257f7c0e6d6e2f8" name="a87b407327549e264d257f7c0e6d6e2f8"></a>
-FlowUi::detail::InitialMemoryCapacities&#160;</td><td class="memItemRight"><b>initial_capacities</b> {}</td></tr>
-<tr class="memitem:a1fe417fd13fb1d97af294b228b89d383" id="r_a1fe417fd13fb1d97af294b228b89d383"><td class="memItemLeft"><a id="a1fe417fd13fb1d97af294b228b89d383" name="a1fe417fd13fb1d97af294b228b89d383"></a>
-float&#160;</td><td class="memItemRight"><b>storage_growth_factor</b> = 1.5f</td></tr>
-<tr class="memitem:affe32326d196eb4b2a810d7f92828e72" id="r_affe32326d196eb4b2a810d7f92828e72"><td class="memItemLeft"><a id="affe32326d196eb4b2a810d7f92828e72" name="affe32326d196eb4b2a810d7f92828e72"></a>
-bool&#160;</td><td class="memItemRight"><b>allow_runtime_growth</b> = true</td></tr>
-<tr class="memitem:a5ab602f8440840f9daaae22a4296ce90" id="r_a5ab602f8440840f9daaae22a4296ce90"><td class="memItemLeft"><a id="a5ab602f8440840f9daaae22a4296ce90" name="a5ab602f8440840f9daaae22a4296ce90"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryCurrentSource.html">MemoryCurrentSource</a> &gt;&#160;</td><td class="memItemRight"><b>sources</b> {}</td></tr>
-<tr class="memitem:a8191ed9deb411a903b96ed3eff0bf38b" id="r_a8191ed9deb411a903b96ed3eff0bf38b"><td class="memItemLeft"><a id="a8191ed9deb411a903b96ed3eff0bf38b" name="a8191ed9deb411a903b96ed3eff0bf38b"></a>
-std::optional&lt;::FlowUi::detail::storage::StorageMemorySnapshot &gt;&#160;</td><td class="memItemRight"><b>storage</b> {}</td></tr>
-<tr class="memitem:ae692016ce15694cf4c32185cbdff8c66" id="r_ae692016ce15694cf4c32185cbdff8c66"><td class="memItemLeft"><a id="ae692016ce15694cf4c32185cbdff8c66" name="ae692016ce15694cf4c32185cbdff8c66"></a>
-std::optional&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryEnvironmentSnapshot.html">MemoryEnvironmentSnapshot</a> &gt;&#160;</td><td class="memItemRight"><b>environment</b> {}</td></tr>
-<tr class="memitem:a576018d1a829348810fe68c6960f7660" id="r_a576018d1a829348810fe68c6960f7660"><td class="memItemLeft"><a id="a576018d1a829348810fe68c6960f7660" name="a576018d1a829348810fe68c6960f7660"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1MemoryReportingStatus.html">MemoryReportingStatus</a>&#160;</td><td class="memItemRight"><b>status</b> {}</td></tr>
+<tr class="memitem:a8f39649e78cb5a6fdd9f58c161c3651c" id="r_a8f39649e78cb5a6fdd9f58c161c3651c"><td class="memItemLeft">std::array&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryCapacityHighWater.html">MemoryCapacityHighWater</a>, static_cast&lt; size_t &gt;(FlowUi::detail::InitialCapacityTarget::count)&gt;&#160;</td><td class="memItemRight"><a class="el" href="#a8f39649e78cb5a6fdd9f58c161c3651c">capacity_high_water</a> {}</td></tr>
+<tr class="memitem:a87b407327549e264d257f7c0e6d6e2f8" id="r_a87b407327549e264d257f7c0e6d6e2f8"><td class="memItemLeft">FlowUi::detail::InitialMemoryCapacities&#160;</td><td class="memItemRight"><a class="el" href="#a87b407327549e264d257f7c0e6d6e2f8">initial_capacities</a> {}</td></tr>
+<tr class="memitem:a1fe417fd13fb1d97af294b228b89d383" id="r_a1fe417fd13fb1d97af294b228b89d383"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#a1fe417fd13fb1d97af294b228b89d383">storage_growth_factor</a> = 1.5f</td></tr>
+<tr class="memitem:affe32326d196eb4b2a810d7f92828e72" id="r_affe32326d196eb4b2a810d7f92828e72"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#affe32326d196eb4b2a810d7f92828e72">allow_runtime_growth</a> = true</td></tr>
+<tr class="memitem:a5ab602f8440840f9daaae22a4296ce90" id="r_a5ab602f8440840f9daaae22a4296ce90"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryCurrentSource.html">MemoryCurrentSource</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a5ab602f8440840f9daaae22a4296ce90">sources</a> {}</td></tr>
+<tr class="memitem:a8191ed9deb411a903b96ed3eff0bf38b" id="r_a8191ed9deb411a903b96ed3eff0bf38b"><td class="memItemLeft">std::optional&lt;::FlowUi::detail::storage::StorageMemorySnapshot &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a8191ed9deb411a903b96ed3eff0bf38b">storage</a> {}</td></tr>
+<tr class="memitem:ae692016ce15694cf4c32185cbdff8c66" id="r_ae692016ce15694cf4c32185cbdff8c66"><td class="memItemLeft">std::optional&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryEnvironmentSnapshot.html">MemoryEnvironmentSnapshot</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ae692016ce15694cf4c32185cbdff8c66">environment</a> {}</td></tr>
+<tr class="memitem:a576018d1a829348810fe68c6960f7660" id="r_a576018d1a829348810fe68c6960f7660"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryReportingStatus.html">MemoryReportingStatus</a>&#160;</td><td class="memItemRight"><a class="el" href="#a576018d1a829348810fe68c6960f7660">status</a> {}</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Coherent live inputs; deliberately contains no retained history copy. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="affe32326d196eb4b2a810d7f92828e72" name="affe32326d196eb4b2a810d7f92828e72"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#affe32326d196eb4b2a810d7f92828e72">&#9670;&#160;</a></span>allow_runtime_growth</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::MemoryLiveRead::allow_runtime_growth = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether runtime storage growth is enabled. </p>
+
+</div>
+</div>
+<a id="a8f39649e78cb5a6fdd9f58c161c3651c" name="a8f39649e78cb5a6fdd9f58c161c3651c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8f39649e78cb5a6fdd9f58c161c3651c">&#9670;&#160;</a></span>capacity_high_water</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::array&lt;<a class="el" href="structFlowUi_1_1devSystems_1_1MemoryCapacityHighWater.html">MemoryCapacityHighWater</a>, static_cast&lt;size_t&gt;(FlowUi::detail::InitialCapacityTarget::count)&gt; FlowUi::devSystems::MemoryLiveRead::capacity_high_water {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Per-target run-owned active demand maxima in registered target order. </p>
+
+</div>
+</div>
+<a id="ae692016ce15694cf4c32185cbdff8c66" name="ae692016ce15694cf4c32185cbdff8c66"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae692016ce15694cf4c32185cbdff8c66">&#9670;&#160;</a></span>environment</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;<a class="el" href="structFlowUi_1_1devSystems_1_1MemoryEnvironmentSnapshot.html">MemoryEnvironmentSnapshot</a>&gt; FlowUi::devSystems::MemoryLiveRead::environment {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Optional owned process/GPU checkpoint. </p>
+
+</div>
+</div>
+<a id="a87b407327549e264d257f7c0e6d6e2f8" name="a87b407327549e264d257f7c0e6d6e2f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a87b407327549e264d257f7c0e6d6e2f8">&#9670;&#160;</a></span>initial_capacities</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::detail::InitialMemoryCapacities FlowUi::devSystems::MemoryLiveRead::initial_capacities {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Resolved startup reserves copied before owner creation. </p>
+
+</div>
+</div>
+<a id="a5ab602f8440840f9daaae22a4296ce90" name="a5ab602f8440840f9daaae22a4296ce90"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ab602f8440840f9daaae22a4296ce90">&#9670;&#160;</a></span>sources</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="structFlowUi_1_1devSystems_1_1MemoryCurrentSource.html">MemoryCurrentSource</a>&gt; FlowUi::devSystems::MemoryLiveRead::sources {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned coherent live source snapshots. </p>
+
+</div>
+</div>
+<a id="a576018d1a829348810fe68c6960f7660" name="a576018d1a829348810fe68c6960f7660"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a576018d1a829348810fe68c6960f7660">&#9670;&#160;</a></span>status</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryReportingStatus.html">MemoryReportingStatus</a> FlowUi::devSystems::MemoryLiveRead::status {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Coherent reporting status sampled with the live inputs. </p>
+
+</div>
+</div>
+<a id="a8191ed9deb411a903b96ed3eff0bf38b" name="a8191ed9deb411a903b96ed3eff0bf38b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8191ed9deb411a903b96ed3eff0bf38b">&#9670;&#160;</a></span>storage</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;::FlowUi::detail::storage::StorageMemorySnapshot&gt; FlowUi::devSystems::MemoryLiveRead::storage {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Optional owned storage checkpoint. </p>
+
+</div>
+</div>
+<a id="a1fe417fd13fb1d97af294b228b89d383" name="a1fe417fd13fb1d97af294b228b89d383"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1fe417fd13fb1d97af294b228b89d383">&#9670;&#160;</a></span>storage_growth_factor</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float FlowUi::devSystems::MemoryLiveRead::storage_growth_factor = 1.5f</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Effective storage growth multiplier. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevMemoryReporting_8hpp_source.html">DevMemoryReporting.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -146,7 +259,7 @@ std::optional&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryEnviro
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1MemoryLiveRead.html">MemoryLiveRead</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1MemoryLiveRead.html">MemoryLiveRead</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

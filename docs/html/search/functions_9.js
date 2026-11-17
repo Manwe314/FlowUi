@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['kerningadvance_0',['kerningAdvance',['../structFlowUi_1_1Font_1_1FontVariantData.html#a4464d6512f5c1f1845fe8803c95a34e6',1,'FlowUi::Font::FontVariantData']]],
-  ['kerningkey_1',['kerningKey',['../structFlowUi_1_1Font_1_1FontVariantData.html#a1bd3d5a33200280271ef25d523b78b2b',1,'FlowUi::Font::FontVariantData']]]
+  ['json_0',['Json',['../structFlowUi_1_1devSystems_1_1agentic_1_1Json.html#acee634ba91f47004a7205f62f98ec054',1,'FlowUi::devSystems::agentic::Json::Json()=default'],['../structFlowUi_1_1devSystems_1_1agentic_1_1Json.html#af9698fb126606f00b0b3e7e754db383f',1,'FlowUi::devSystems::agentic::Json::Json(std::string value)'],['../structFlowUi_1_1devSystems_1_1agentic_1_1Json.html#a1e5e6fa0c3f9576998b53c38f19b4ec2',1,'FlowUi::devSystems::agentic::Json::Json(std::string_view value)'],['../structFlowUi_1_1devSystems_1_1agentic_1_1Json.html#abf81c5163c4fb8dbdbbf14a3dd8d18c8',1,'FlowUi::devSystems::agentic::Json::Json(const char *value)'],['../structFlowUi_1_1devSystems_1_1agentic_1_1Json.html#a48e9dd410075f2dbc2bf2f017a428d59',1,'FlowUi::devSystems::agentic::Json::Json(bool value)'],['../structFlowUi_1_1devSystems_1_1agentic_1_1Json.html#a50f6bcd56a224d8c9586674e9433049f',1,'FlowUi::devSystems::agentic::Json::Json(double value)']]]
 ];

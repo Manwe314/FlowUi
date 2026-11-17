@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,34 +111,203 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a907750aede0652e8ac8a6c8fe933e410" id="r_a907750aede0652e8ac8a6c8fe933e410"><td class="memItemLeft"><a id="a907750aede0652e8ac8a6c8fe933e410" name="a907750aede0652e8ac8a6c8fe933e410"></a>
-DefaultFontFailurePolicy&#160;</td><td class="memItemRight"><b>defaultFont</b> = DefaultFontFailurePolicy::TryFallbackThenDisableText</td></tr>
-<tr class="memitem:ade22781d781ba0d12572eb0d041d2d57" id="r_ade22781d781ba0d12572eb0d041d2d57"><td class="memItemLeft"><a id="ade22781d781ba0d12572eb0d041d2d57" name="ade22781d781ba0d12572eb0d041d2d57"></a>
-MissingVisualPolicy&#160;</td><td class="memItemRight"><b>missingImage</b> = MissingVisualPolicy::UseFallbackTexture</td></tr>
-<tr class="memitem:aabb85718d5c89a3fe09fb8114bebb936" id="r_aabb85718d5c89a3fe09fb8114bebb936"><td class="memItemLeft"><a id="aabb85718d5c89a3fe09fb8114bebb936" name="aabb85718d5c89a3fe09fb8114bebb936"></a>
-MissingVisualPolicy&#160;</td><td class="memItemRight"><b>missingViewport</b> = MissingVisualPolicy::UseFallbackTexture</td></tr>
-<tr class="memitem:a7d78e119c477f4b44a4f1c71e6712693" id="r_a7d78e119c477f4b44a4f1c71e6712693"><td class="memItemLeft"><a id="a7d78e119c477f4b44a4f1c71e6712693" name="a7d78e119c477f4b44a4f1c71e6712693"></a>
-IconGenerationFailurePolicy&#160;</td><td class="memItemRight"><b>iconGeneration</b> = IconGenerationFailurePolicy::UseFallbackTexture</td></tr>
-<tr class="memitem:a65017d22ed8753abe4f6407f5357399e" id="r_a65017d22ed8753abe4f6407f5357399e"><td class="memItemLeft"><a id="a65017d22ed8753abe4f6407f5357399e" name="a65017d22ed8753abe4f6407f5357399e"></a>
-StorageCapacityPolicy&#160;</td><td class="memItemRight"><b>transientCapacity</b> = StorageCapacityPolicy::GrowWithinBudget</td></tr>
-<tr class="memitem:ab41c0bc777f0fde1aaf49da8bb9415e2" id="r_ab41c0bc777f0fde1aaf49da8bb9415e2"><td class="memItemLeft"><a id="ab41c0bc777f0fde1aaf49da8bb9415e2" name="ab41c0bc777f0fde1aaf49da8bb9415e2"></a>
-StorageCapacityPolicy&#160;</td><td class="memItemRight"><b>persistentCapacity</b> = StorageCapacityPolicy::GrowWithinBudget</td></tr>
-<tr class="memitem:a2cfc2d1b961837027bdcaddf72cb755d" id="r_a2cfc2d1b961837027bdcaddf72cb755d"><td class="memItemLeft"><a id="a2cfc2d1b961837027bdcaddf72cb755d" name="a2cfc2d1b961837027bdcaddf72cb755d"></a>
-CacheCapacityPolicy&#160;</td><td class="memItemRight"><b>descriptorCapacity</b> = CacheCapacityPolicy::RejectOperation</td></tr>
-<tr class="memitem:af7b6786b572e58dad57363b713669386" id="r_af7b6786b572e58dad57363b713669386"><td class="memItemLeft"><a id="af7b6786b572e58dad57363b713669386" name="af7b6786b572e58dad57363b713669386"></a>
-PopupDuplicatePolicy&#160;</td><td class="memItemRight"><b>duplicatePopup</b> = PopupDuplicatePolicy::FirstSubmissionWins</td></tr>
-<tr class="memitem:a27263e856f0c4f62876453518208d5c3" id="r_a27263e856f0c4f62876453518208d5c3"><td class="memItemLeft"><a id="a27263e856f0c4f62876453518208d5c3" name="a27263e856f0c4f62876453518208d5c3"></a>
-PopupMissingAnchorPolicy&#160;</td><td class="memItemRight"><b>missingPopupAnchor</b> = PopupMissingAnchorPolicy::SkipPopup</td></tr>
-<tr class="memitem:a35c3ce8261e46d3a1fd3c90a095a0eff" id="r_a35c3ce8261e46d3a1fd3c90a095a0eff"><td class="memItemLeft"><a id="a35c3ce8261e46d3a1fd3c90a095a0eff" name="a35c3ce8261e46d3a1fd3c90a095a0eff"></a>
-PopupCapacityPolicy&#160;</td><td class="memItemRight"><b>popupCapacity</b> = PopupCapacityPolicy::ClampLayer</td></tr>
-<tr class="memitem:a952c6489483d63f66fb535722d25a13a" id="r_a952c6489483d63f66fb535722d25a13a"><td class="memItemLeft"><a id="a952c6489483d63f66fb535722d25a13a" name="a952c6489483d63f66fb535722d25a13a"></a>
-InputQueueOverflowPolicy&#160;</td><td class="memItemRight"><b>inputQueueOverflow</b> = InputQueueOverflowPolicy::DropNewest</td></tr>
-<tr class="memitem:a07d8d3709dc15834939854971be09293" id="r_a07d8d3709dc15834939854971be09293"><td class="memItemLeft"><a id="a07d8d3709dc15834939854971be09293" name="a07d8d3709dc15834939854971be09293"></a>
-std::uint32_t&#160;</td><td class="memItemRight"><b>inputTextQueueCapacity</b> = 4096</td></tr>
+<tr class="memitem:a907750aede0652e8ac8a6c8fe933e410" id="r_a907750aede0652e8ac8a6c8fe933e410"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#ab99f2bc31c0134cf68926832fbf1f6b8">DefaultFontFailurePolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#a907750aede0652e8ac8a6c8fe933e410">defaultFont</a> = <a class="el" href="namespaceFlowUi.html#ab99f2bc31c0134cf68926832fbf1f6b8afdad28654b800ed3c6eac9d64a2b5d5a">DefaultFontFailurePolicy::TryFallbackThenDisableText</a></td></tr>
+<tr class="memitem:ade22781d781ba0d12572eb0d041d2d57" id="r_ade22781d781ba0d12572eb0d041d2d57"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#afcb760c51c186ef7833830d669eb6324">MissingVisualPolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#ade22781d781ba0d12572eb0d041d2d57">missingImage</a> = <a class="el" href="namespaceFlowUi.html#afcb760c51c186ef7833830d669eb6324aa2075dfa99fd802c4dc45da7c1a5d730">MissingVisualPolicy::UseFallbackTexture</a></td></tr>
+<tr class="memitem:aabb85718d5c89a3fe09fb8114bebb936" id="r_aabb85718d5c89a3fe09fb8114bebb936"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#afcb760c51c186ef7833830d669eb6324">MissingVisualPolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#aabb85718d5c89a3fe09fb8114bebb936">missingViewport</a> = <a class="el" href="namespaceFlowUi.html#afcb760c51c186ef7833830d669eb6324aa2075dfa99fd802c4dc45da7c1a5d730">MissingVisualPolicy::UseFallbackTexture</a></td></tr>
+<tr class="memitem:a7d78e119c477f4b44a4f1c71e6712693" id="r_a7d78e119c477f4b44a4f1c71e6712693"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#aad5959c752865996fd9c8799c8aa4b9a">IconGenerationFailurePolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#a7d78e119c477f4b44a4f1c71e6712693">iconGeneration</a> = <a class="el" href="namespaceFlowUi.html#aad5959c752865996fd9c8799c8aa4b9aaa2075dfa99fd802c4dc45da7c1a5d730">IconGenerationFailurePolicy::UseFallbackTexture</a></td></tr>
+<tr class="memitem:a65017d22ed8753abe4f6407f5357399e" id="r_a65017d22ed8753abe4f6407f5357399e"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a8b03168d025ebfbcc85c2cdccd1954b4">StorageCapacityPolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#a65017d22ed8753abe4f6407f5357399e">transientCapacity</a> = <a class="el" href="namespaceFlowUi.html#a8b03168d025ebfbcc85c2cdccd1954b4af41231d3428c83008559bc66029f607f">StorageCapacityPolicy::GrowWithinBudget</a></td></tr>
+<tr class="memitem:ab41c0bc777f0fde1aaf49da8bb9415e2" id="r_ab41c0bc777f0fde1aaf49da8bb9415e2"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a8b03168d025ebfbcc85c2cdccd1954b4">StorageCapacityPolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#ab41c0bc777f0fde1aaf49da8bb9415e2">persistentCapacity</a> = <a class="el" href="namespaceFlowUi.html#a8b03168d025ebfbcc85c2cdccd1954b4af41231d3428c83008559bc66029f607f">StorageCapacityPolicy::GrowWithinBudget</a></td></tr>
+<tr class="memitem:a2cfc2d1b961837027bdcaddf72cb755d" id="r_a2cfc2d1b961837027bdcaddf72cb755d"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a1951f0ba5e038c1333c91885211a8c5e">CacheCapacityPolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#a2cfc2d1b961837027bdcaddf72cb755d">descriptorCapacity</a> = <a class="el" href="namespaceFlowUi.html#a1951f0ba5e038c1333c91885211a8c5eadcf866bb967341cb55c9ee1dc683e31d">CacheCapacityPolicy::RejectOperation</a></td></tr>
+<tr class="memitem:af7b6786b572e58dad57363b713669386" id="r_af7b6786b572e58dad57363b713669386"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#af3ce3c5651559f0a2cfcbd6e3b131722">PopupDuplicatePolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#af7b6786b572e58dad57363b713669386">duplicatePopup</a> = <a class="el" href="namespaceFlowUi.html#af3ce3c5651559f0a2cfcbd6e3b131722a6094458b7a4658de69127cbdc6f97c7e">PopupDuplicatePolicy::FirstSubmissionWins</a></td></tr>
+<tr class="memitem:a27263e856f0c4f62876453518208d5c3" id="r_a27263e856f0c4f62876453518208d5c3"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#abe1cf5c41707b3bc5f134532bb46b769">PopupMissingAnchorPolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#a27263e856f0c4f62876453518208d5c3">missingPopupAnchor</a> = <a class="el" href="namespaceFlowUi.html#abe1cf5c41707b3bc5f134532bb46b769a4ea804a3e3b0a1199e8a42685aec391e">PopupMissingAnchorPolicy::SkipPopup</a></td></tr>
+<tr class="memitem:a35c3ce8261e46d3a1fd3c90a095a0eff" id="r_a35c3ce8261e46d3a1fd3c90a095a0eff"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#ad935257f16b2ac111787d12f4a106dd3">PopupCapacityPolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#a35c3ce8261e46d3a1fd3c90a095a0eff">popupCapacity</a> = <a class="el" href="namespaceFlowUi.html#ad935257f16b2ac111787d12f4a106dd3a1895fb13bfcbb8a3aca52b6f1bac9377">PopupCapacityPolicy::ClampLayer</a></td></tr>
+<tr class="memitem:a952c6489483d63f66fb535722d25a13a" id="r_a952c6489483d63f66fb535722d25a13a"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#ab438f8ec9ff73d2a46df313dbd7f2937">InputQueueOverflowPolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#a952c6489483d63f66fb535722d25a13a">inputQueueOverflow</a> = <a class="el" href="namespaceFlowUi.html#ab438f8ec9ff73d2a46df313dbd7f2937aeeea1e87070782ec3cdd75c78984baaa">InputQueueOverflowPolicy::DropNewest</a></td></tr>
+<tr class="memitem:a07d8d3709dc15834939854971be09293" id="r_a07d8d3709dc15834939854971be09293"><td class="memItemLeft">std::uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a07d8d3709dc15834939854971be09293">inputTextQueueCapacity</a> = 4096</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Error resolutions and reporting behavior selected for the <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> lifetime. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<div class="textblock"><p>Recovery choices copied at app creation; reporting destinations are in <a class="el" href="structFlowUi_1_1ErrorObserverConfig.html">ErrorObserverConfig</a>. Storage growth also requires <a class="el" href="structFlowUi_1_1MemoryCapacityProfile.html#aba9f9a5c17d70d321bfffac82fadf0aa">MemoryCapacityProfile::allowRuntimeGrowth</a> and available budget. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a907750aede0652e8ac8a6c8fe933e410" name="a907750aede0652e8ac8a6c8fe933e410"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a907750aede0652e8ac8a6c8fe933e410">&#9670;&#160;</a></span>defaultFont</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#ab99f2bc31c0134cf68926832fbf1f6b8">DefaultFontFailurePolicy</a> FlowUi::ErrorPolicy::defaultFont = <a class="el" href="namespaceFlowUi.html#ab99f2bc31c0134cf68926832fbf1f6b8afdad28654b800ed3c6eac9d64a2b5d5a">DefaultFontFailurePolicy::TryFallbackThenDisableText</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Default-font startup recovery policy. </p>
+
+</div>
+</div>
+<a id="a2cfc2d1b961837027bdcaddf72cb755d" name="a2cfc2d1b961837027bdcaddf72cb755d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2cfc2d1b961837027bdcaddf72cb755d">&#9670;&#160;</a></span>descriptorCapacity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a1951f0ba5e038c1333c91885211a8c5e">CacheCapacityPolicy</a> FlowUi::ErrorPolicy::descriptorCapacity = <a class="el" href="namespaceFlowUi.html#a1951f0ba5e038c1333c91885211a8c5eadcf866bb967341cb55c9ee1dc683e31d">CacheCapacityPolicy::RejectOperation</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Texture descriptor-cache exhaustion response; does not increase the cache capacity. </p>
+
+</div>
+</div>
+<a id="af7b6786b572e58dad57363b713669386" name="af7b6786b572e58dad57363b713669386"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af7b6786b572e58dad57363b713669386">&#9670;&#160;</a></span>duplicatePopup</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#af3ce3c5651559f0a2cfcbd6e3b131722">PopupDuplicatePolicy</a> FlowUi::ErrorPolicy::duplicatePopup = <a class="el" href="namespaceFlowUi.html#af3ce3c5651559f0a2cfcbd6e3b131722a6094458b7a4658de69127cbdc6f97c7e">PopupDuplicatePolicy::FirstSubmissionWins</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Duplicate popup-submission policy. </p>
+
+</div>
+</div>
+<a id="a7d78e119c477f4b44a4f1c71e6712693" name="a7d78e119c477f4b44a4f1c71e6712693"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d78e119c477f4b44a4f1c71e6712693">&#9670;&#160;</a></span>iconGeneration</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#aad5959c752865996fd9c8799c8aa4b9a">IconGenerationFailurePolicy</a> FlowUi::ErrorPolicy::iconGeneration = <a class="el" href="namespaceFlowUi.html#aad5959c752865996fd9c8799c8aa4b9aaa2075dfa99fd802c4dc45da7c1a5d730">IconGenerationFailurePolicy::UseFallbackTexture</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>SVG rasterization failure policy. </p>
+
+</div>
+</div>
+<a id="a952c6489483d63f66fb535722d25a13a" name="a952c6489483d63f66fb535722d25a13a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a952c6489483d63f66fb535722d25a13a">&#9670;&#160;</a></span>inputQueueOverflow</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#ab438f8ec9ff73d2a46df313dbd7f2937">InputQueueOverflowPolicy</a> FlowUi::ErrorPolicy::inputQueueOverflow = <a class="el" href="namespaceFlowUi.html#ab438f8ec9ff73d2a46df313dbd7f2937aeeea1e87070782ec3cdd75c78984baaa">InputQueueOverflowPolicy::DropNewest</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Unicode text queue overflow policy. </p>
+
+</div>
+</div>
+<a id="a07d8d3709dc15834939854971be09293" name="a07d8d3709dc15834939854971be09293"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a07d8d3709dc15834939854971be09293">&#9670;&#160;</a></span>inputTextQueueCapacity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::uint32_t FlowUi::ErrorPolicy::inputTextQueueCapacity = 4096</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Per-window Unicode input queue capacity in codepoints, rather than UTF-8 bytes. </p>
+
+</div>
+</div>
+<a id="ade22781d781ba0d12572eb0d041d2d57" name="ade22781d781ba0d12572eb0d041d2d57"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ade22781d781ba0d12572eb0d041d2d57">&#9670;&#160;</a></span>missingImage</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#afcb760c51c186ef7833830d669eb6324">MissingVisualPolicy</a> FlowUi::ErrorPolicy::missingImage = <a class="el" href="namespaceFlowUi.html#afcb760c51c186ef7833830d669eb6324aa2075dfa99fd802c4dc45da7c1a5d730">MissingVisualPolicy::UseFallbackTexture</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Rendering policy for missing images. </p>
+
+</div>
+</div>
+<a id="a27263e856f0c4f62876453518208d5c3" name="a27263e856f0c4f62876453518208d5c3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a27263e856f0c4f62876453518208d5c3">&#9670;&#160;</a></span>missingPopupAnchor</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#abe1cf5c41707b3bc5f134532bb46b769">PopupMissingAnchorPolicy</a> FlowUi::ErrorPolicy::missingPopupAnchor = <a class="el" href="namespaceFlowUi.html#abe1cf5c41707b3bc5f134532bb46b769a4ea804a3e3b0a1199e8a42685aec391e">PopupMissingAnchorPolicy::SkipPopup</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Unavailable popup-anchor policy. </p>
+
+</div>
+</div>
+<a id="aabb85718d5c89a3fe09fb8114bebb936" name="aabb85718d5c89a3fe09fb8114bebb936"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aabb85718d5c89a3fe09fb8114bebb936">&#9670;&#160;</a></span>missingViewport</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#afcb760c51c186ef7833830d669eb6324">MissingVisualPolicy</a> FlowUi::ErrorPolicy::missingViewport = <a class="el" href="namespaceFlowUi.html#afcb760c51c186ef7833830d669eb6324aa2075dfa99fd802c4dc45da7c1a5d730">MissingVisualPolicy::UseFallbackTexture</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Rendering policy for missing viewports. </p>
+
+</div>
+</div>
+<a id="ab41c0bc777f0fde1aaf49da8bb9415e2" name="ab41c0bc777f0fde1aaf49da8bb9415e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab41c0bc777f0fde1aaf49da8bb9415e2">&#9670;&#160;</a></span>persistentCapacity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a8b03168d025ebfbcc85c2cdccd1954b4">StorageCapacityPolicy</a> FlowUi::ErrorPolicy::persistentCapacity = <a class="el" href="namespaceFlowUi.html#a8b03168d025ebfbcc85c2cdccd1954b4af41231d3428c83008559bc66029f607f">StorageCapacityPolicy::GrowWithinBudget</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Persistent storage growth policy. </p>
+
+</div>
+</div>
+<a id="a35c3ce8261e46d3a1fd3c90a095a0eff" name="a35c3ce8261e46d3a1fd3c90a095a0eff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a35c3ce8261e46d3a1fd3c90a095a0eff">&#9670;&#160;</a></span>popupCapacity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#ad935257f16b2ac111787d12f4a106dd3">PopupCapacityPolicy</a> FlowUi::ErrorPolicy::popupCapacity = <a class="el" href="namespaceFlowUi.html#ad935257f16b2ac111787d12f4a106dd3a1895fb13bfcbb8a3aca52b6f1bac9377">PopupCapacityPolicy::ClampLayer</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Popup layer-capacity policy. </p>
+
+</div>
+</div>
+<a id="a65017d22ed8753abe4f6407f5357399e" name="a65017d22ed8753abe4f6407f5357399e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a65017d22ed8753abe4f6407f5357399e">&#9670;&#160;</a></span>transientCapacity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a8b03168d025ebfbcc85c2cdccd1954b4">StorageCapacityPolicy</a> FlowUi::ErrorPolicy::transientCapacity = <a class="el" href="namespaceFlowUi.html#a8b03168d025ebfbcc85c2cdccd1954b4af41231d3428c83008559bc66029f607f">StorageCapacityPolicy::GrowWithinBudget</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Transient CPU/GPU storage growth policy. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/errorManagement/<a class="el" href="ErrorPolicy_8hpp_source.html">ErrorPolicy.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -154,7 +323,7 @@ std::uint32_t&#160;</td><td class="memItemRight"><b>inputTextQueueCapacity</b> =
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1ErrorPolicy.html">ErrorPolicy</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1ErrorPolicy.html">ErrorPolicy</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

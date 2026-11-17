@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,40 +106,255 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::GpuTimingFrameSlot Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevGpuTiming_8hpp_source.html">DevGpuTiming.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:ad1f744c13c05cf325678a08c7cefd297" id="r_ad1f744c13c05cf325678a08c7cefd297"><td class="memItemLeft"><a id="ad1f744c13c05cf325678a08c7cefd297" name="ad1f744c13c05cf325678a08c7cefd297"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1GpuTimingZonePlan.html">GpuTimingZonePlan</a> &gt;&#160;</td><td class="memItemRight"><b>zones</b> {}</td></tr>
-<tr class="memitem:a6574d71e8092aedccde56a6d1f4d7d74" id="r_a6574d71e8092aedccde56a6d1f4d7d74"><td class="memItemLeft"><a id="a6574d71e8092aedccde56a6d1f4d7d74" name="a6574d71e8092aedccde56a6d1f4d7d74"></a>
-std::vector&lt; uint32_t &gt;&#160;</td><td class="memItemRight"><b>activeZones</b> {}</td></tr>
-<tr class="memitem:a130615c8835608617f4cad42961908ed" id="r_a130615c8835608617f4cad42961908ed"><td class="memItemLeft"><a id="a130615c8835608617f4cad42961908ed" name="a130615c8835608617f4cad42961908ed"></a>
-std::vector&lt; uint64_t &gt;&#160;</td><td class="memItemRight"><b>queryResults</b> {}</td></tr>
-<tr class="memitem:a6fda4ea619b12e2f9280877adb33cd0a" id="r_a6fda4ea619b12e2f9280877adb33cd0a"><td class="memItemLeft"><a id="a6fda4ea619b12e2f9280877adb33cd0a" name="a6fda4ea619b12e2f9280877adb33cd0a"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1WindowFrameKey.html">WindowFrameKey</a>&#160;</td><td class="memItemRight"><b>frame</b> {}</td></tr>
-<tr class="memitem:a96a7ffff16812c647659115fb1095d97" id="r_a96a7ffff16812c647659115fb1095d97"><td class="memItemLeft"><a id="a96a7ffff16812c647659115fb1095d97" name="a96a7ffff16812c647659115fb1095d97"></a>
-VkQueryPool&#160;</td><td class="memItemRight"><b>queryPool</b> = VK_NULL_HANDLE</td></tr>
-<tr class="memitem:a0091a0f891a6d96fca7c9ce7eff81100" id="r_a0091a0f891a6d96fca7c9ce7eff81100"><td class="memItemLeft"><a id="a0091a0f891a6d96fca7c9ce7eff81100" name="a0091a0f891a6d96fca7c9ce7eff81100"></a>
-AppTickId&#160;</td><td class="memItemRight"><b>appTick</b> = 0u</td></tr>
-<tr class="memitem:a278e31c519d9dd33b4b74adc5d6989c8" id="r_a278e31c519d9dd33b4b74adc5d6989c8"><td class="memItemLeft"><a id="a278e31c519d9dd33b4b74adc5d6989c8" name="a278e31c519d9dd33b4b74adc5d6989c8"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>submissionSerial</b> = 0u</td></tr>
-<tr class="memitem:a146ea9975f72a66f400fafcd5548439b" id="r_a146ea9975f72a66f400fafcd5548439b"><td class="memItemLeft"><a id="a146ea9975f72a66f400fafcd5548439b" name="a146ea9975f72a66f400fafcd5548439b"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>device_identity</b> = 0</td></tr>
-<tr class="memitem:ab613472052f9dd5a79822feea9bb431e" id="r_ab613472052f9dd5a79822feea9bb431e"><td class="memItemLeft"><a id="ab613472052f9dd5a79822feea9bb431e" name="ab613472052f9dd5a79822feea9bb431e"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>queue_identity</b> = 0</td></tr>
-<tr class="memitem:a0d6fa61cfec185953e5c30522e74feca" id="r_a0d6fa61cfec185953e5c30522e74feca"><td class="memItemLeft"><a id="a0d6fa61cfec185953e5c30522e74feca" name="a0d6fa61cfec185953e5c30522e74feca"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>queryCapacity</b> = 0u</td></tr>
-<tr class="memitem:a79f028854187a49092b11c107a807a88" id="r_a79f028854187a49092b11c107a807a88"><td class="memItemLeft"><a id="a79f028854187a49092b11c107a807a88" name="a79f028854187a49092b11c107a807a88"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>usedQueries</b> = 0u</td></tr>
-<tr class="memitem:abcda13e1967442d0c322504136c9b2bc" id="r_abcda13e1967442d0c322504136c9b2bc"><td class="memItemLeft"><a id="abcda13e1967442d0c322504136c9b2bc" name="abcda13e1967442d0c322504136c9b2bc"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>queueFamilyIndex</b> = UINT32_MAX</td></tr>
-<tr class="memitem:aedc8cada74f48ae982ccf92065f7fec7" id="r_aedc8cada74f48ae982ccf92065f7fec7"><td class="memItemLeft"><a id="aedc8cada74f48ae982ccf92065f7fec7" name="aedc8cada74f48ae982ccf92065f7fec7"></a>
-bool&#160;</td><td class="memItemRight"><b>recording</b> = false</td></tr>
-<tr class="memitem:a656c0a2ff9d06044b21c853994670546" id="r_a656c0a2ff9d06044b21c853994670546"><td class="memItemLeft"><a id="a656c0a2ff9d06044b21c853994670546" name="a656c0a2ff9d06044b21c853994670546"></a>
-bool&#160;</td><td class="memItemRight"><b>submitted</b> = false</td></tr>
-<tr class="memitem:ac05e2c440cae0cfb8356002ee4a1bd9c" id="r_ac05e2c440cae0cfb8356002ee4a1bd9c"><td class="memItemLeft"><a id="ac05e2c440cae0cfb8356002ee4a1bd9c" name="ac05e2c440cae0cfb8356002ee4a1bd9c"></a>
-bool&#160;</td><td class="memItemRight"><b>detailTruncated</b> = false</td></tr>
+<tr class="memitem:ad1f744c13c05cf325678a08c7cefd297" id="r_ad1f744c13c05cf325678a08c7cefd297"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1GpuTimingZonePlan.html">GpuTimingZonePlan</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ad1f744c13c05cf325678a08c7cefd297">zones</a> {}</td></tr>
+<tr class="memitem:a6574d71e8092aedccde56a6d1f4d7d74" id="r_a6574d71e8092aedccde56a6d1f4d7d74"><td class="memItemLeft">std::vector&lt; uint32_t &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a6574d71e8092aedccde56a6d1f4d7d74">activeZones</a> {}</td></tr>
+<tr class="memitem:a130615c8835608617f4cad42961908ed" id="r_a130615c8835608617f4cad42961908ed"><td class="memItemLeft">std::vector&lt; uint64_t &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a130615c8835608617f4cad42961908ed">queryResults</a> {}</td></tr>
+<tr class="memitem:a6fda4ea619b12e2f9280877adb33cd0a" id="r_a6fda4ea619b12e2f9280877adb33cd0a"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1WindowFrameKey.html">WindowFrameKey</a>&#160;</td><td class="memItemRight"><a class="el" href="#a6fda4ea619b12e2f9280877adb33cd0a">frame</a> {}</td></tr>
+<tr class="memitem:a96a7ffff16812c647659115fb1095d97" id="r_a96a7ffff16812c647659115fb1095d97"><td class="memItemLeft">VkQueryPool&#160;</td><td class="memItemRight"><a class="el" href="#a96a7ffff16812c647659115fb1095d97">queryPool</a> = VK_NULL_HANDLE</td></tr>
+<tr class="memitem:a0091a0f891a6d96fca7c9ce7eff81100" id="r_a0091a0f891a6d96fca7c9ce7eff81100"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a0091a0f891a6d96fca7c9ce7eff81100">appTick</a> = 0u</td></tr>
+<tr class="memitem:a278e31c519d9dd33b4b74adc5d6989c8" id="r_a278e31c519d9dd33b4b74adc5d6989c8"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a278e31c519d9dd33b4b74adc5d6989c8">submissionSerial</a> = 0u</td></tr>
+<tr class="memitem:a146ea9975f72a66f400fafcd5548439b" id="r_a146ea9975f72a66f400fafcd5548439b"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a146ea9975f72a66f400fafcd5548439b">device_identity</a> = 0</td></tr>
+<tr class="memitem:ab613472052f9dd5a79822feea9bb431e" id="r_ab613472052f9dd5a79822feea9bb431e"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ab613472052f9dd5a79822feea9bb431e">queue_identity</a> = 0</td></tr>
+<tr class="memitem:a0d6fa61cfec185953e5c30522e74feca" id="r_a0d6fa61cfec185953e5c30522e74feca"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a0d6fa61cfec185953e5c30522e74feca">queryCapacity</a> = 0u</td></tr>
+<tr class="memitem:a79f028854187a49092b11c107a807a88" id="r_a79f028854187a49092b11c107a807a88"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a79f028854187a49092b11c107a807a88">usedQueries</a> = 0u</td></tr>
+<tr class="memitem:abcda13e1967442d0c322504136c9b2bc" id="r_abcda13e1967442d0c322504136c9b2bc"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#abcda13e1967442d0c322504136c9b2bc">queueFamilyIndex</a> = UINT32_MAX</td></tr>
+<tr class="memitem:aedc8cada74f48ae982ccf92065f7fec7" id="r_aedc8cada74f48ae982ccf92065f7fec7"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#aedc8cada74f48ae982ccf92065f7fec7">recording</a> = false</td></tr>
+<tr class="memitem:a656c0a2ff9d06044b21c853994670546" id="r_a656c0a2ff9d06044b21c853994670546"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a656c0a2ff9d06044b21c853994670546">submitted</a> = false</td></tr>
+<tr class="memitem:ac05e2c440cae0cfb8356002ee4a1bd9c" id="r_ac05e2c440cae0cfb8356002ee4a1bd9c"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ac05e2c440cae0cfb8356002ee4a1bd9c">detailTruncated</a> = false</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Reusable renderer-owned query storage for one in-flight frame. Resolve completed submissions before reusing its query pool. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a6574d71e8092aedccde56a6d1f4d7d74" name="a6574d71e8092aedccde56a6d1f4d7d74"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6574d71e8092aedccde56a6d1f4d7d74">&#9670;&#160;</a></span>activeZones</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;uint32_t&gt; FlowUi::devSystems::GpuTimingFrameSlot::activeZones {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Indices of currently open GPU zones in nesting order. </p>
+
+</div>
+</div>
+<a id="a0091a0f891a6d96fca7c9ce7eff81100" name="a0091a0f891a6d96fca7c9ce7eff81100"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0091a0f891a6d96fca7c9ce7eff81100">&#9670;&#160;</a></span>appTick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> FlowUi::devSystems::GpuTimingFrameSlot::appTick = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Application tick associated with this evidence; zero means unassigned. </p>
+
+</div>
+</div>
+<a id="ac05e2c440cae0cfb8356002ee4a1bd9c" name="ac05e2c440cae0cfb8356002ee4a1bd9c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac05e2c440cae0cfb8356002ee4a1bd9c">&#9670;&#160;</a></span>detailTruncated</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::GpuTimingFrameSlot::detailTruncated = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether zone detail exceeded the configured query capacity. </p>
+
+</div>
+</div>
+<a id="a146ea9975f72a66f400fafcd5548439b" name="a146ea9975f72a66f400fafcd5548439b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a146ea9975f72a66f400fafcd5548439b">&#9670;&#160;</a></span>device_identity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuTimingFrameSlot::device_identity = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Opaque device identity used to distinguish GPU timelines. </p>
+
+</div>
+</div>
+<a id="a6fda4ea619b12e2f9280877adb33cd0a" name="a6fda4ea619b12e2f9280877adb33cd0a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6fda4ea619b12e2f9280877adb33cd0a">&#9670;&#160;</a></span>frame</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1WindowFrameKey.html">WindowFrameKey</a> FlowUi::devSystems::GpuTimingFrameSlot::frame {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Window and frame sequence associated with this evidence. </p>
+
+</div>
+</div>
+<a id="a0d6fa61cfec185953e5c30522e74feca" name="a0d6fa61cfec185953e5c30522e74feca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d6fa61cfec185953e5c30522e74feca">&#9670;&#160;</a></span>queryCapacity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::GpuTimingFrameSlot::queryCapacity = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of timestamps supported by the current query pool. </p>
+
+</div>
+</div>
+<a id="a96a7ffff16812c647659115fb1095d97" name="a96a7ffff16812c647659115fb1095d97"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a96a7ffff16812c647659115fb1095d97">&#9670;&#160;</a></span>queryPool</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">VkQueryPool FlowUi::devSystems::GpuTimingFrameSlot::queryPool = VK_NULL_HANDLE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Vulkan timestamp query pool owned by the renderer frame slot. </p>
+
+</div>
+</div>
+<a id="a130615c8835608617f4cad42961908ed" name="a130615c8835608617f4cad42961908ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a130615c8835608617f4cad42961908ed">&#9670;&#160;</a></span>queryResults</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;uint64_t&gt; FlowUi::devSystems::GpuTimingFrameSlot::queryResults {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Reusable storage for raw query values and availability results. </p>
+
+</div>
+</div>
+<a id="ab613472052f9dd5a79822feea9bb431e" name="ab613472052f9dd5a79822feea9bb431e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab613472052f9dd5a79822feea9bb431e">&#9670;&#160;</a></span>queue_identity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuTimingFrameSlot::queue_identity = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Opaque queue identity used to distinguish GPU timelines. </p>
+
+</div>
+</div>
+<a id="abcda13e1967442d0c322504136c9b2bc" name="abcda13e1967442d0c322504136c9b2bc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abcda13e1967442d0c322504136c9b2bc">&#9670;&#160;</a></span>queueFamilyIndex</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::GpuTimingFrameSlot::queueFamilyIndex = UINT32_MAX</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Vulkan queue family for the captured command buffer. </p>
+
+</div>
+</div>
+<a id="aedc8cada74f48ae982ccf92065f7fec7" name="aedc8cada74f48ae982ccf92065f7fec7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aedc8cada74f48ae982ccf92065f7fec7">&#9670;&#160;</a></span>recording</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::GpuTimingFrameSlot::recording = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether commands are currently being recorded into this frame slot. </p>
+
+</div>
+</div>
+<a id="a278e31c519d9dd33b4b74adc5d6989c8" name="a278e31c519d9dd33b4b74adc5d6989c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a278e31c519d9dd33b4b74adc5d6989c8">&#9670;&#160;</a></span>submissionSerial</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuTimingFrameSlot::submissionSerial = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Renderer submission sequence associated with this evidence. </p>
+
+</div>
+</div>
+<a id="a656c0a2ff9d06044b21c853994670546" name="a656c0a2ff9d06044b21c853994670546"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a656c0a2ff9d06044b21c853994670546">&#9670;&#160;</a></span>submitted</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::GpuTimingFrameSlot::submitted = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether this slot has an outstanding submission awaiting resolution. </p>
+
+</div>
+</div>
+<a id="a79f028854187a49092b11c107a807a88" name="a79f028854187a49092b11c107a807a88"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a79f028854187a49092b11c107a807a88">&#9670;&#160;</a></span>usedQueries</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::GpuTimingFrameSlot::usedQueries = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of query indices reserved for this recording. </p>
+
+</div>
+</div>
+<a id="ad1f744c13c05cf325678a08c7cefd297" name="ad1f744c13c05cf325678a08c7cefd297"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad1f744c13c05cf325678a08c7cefd297">&#9670;&#160;</a></span>zones</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="structFlowUi_1_1devSystems_1_1GpuTimingZonePlan.html">GpuTimingZonePlan</a>&gt; FlowUi::devSystems::GpuTimingFrameSlot::zones {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned zone plans for the current frame-slot recording. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/timing/<a class="el" href="DevGpuTiming_8hpp_source.html">DevGpuTiming.hpp</a></li>
 </ul>
@@ -156,7 +371,7 @@ bool&#160;</td><td class="memItemRight"><b>detailTruncated</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1GpuTimingFrameSlot.html">GpuTimingFrameSlot</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1GpuTimingFrameSlot.html">GpuTimingFrameSlot</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

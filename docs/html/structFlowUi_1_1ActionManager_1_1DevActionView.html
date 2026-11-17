@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,19 +106,30 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::ActionManager::DevActionView Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Callable-free action metadata borrowed during a developer visitor.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ActionManager_8hpp_source.html">ActionManager.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a9c3d73cd6e93b214603fe72391fcbe3c" id="r_a9c3d73cd6e93b214603fe72391fcbe3c"><td class="memItemLeft"><a id="a9c3d73cd6e93b214603fe72391fcbe3c" name="a9c3d73cd6e93b214603fe72391fcbe3c"></a>
 <a class="el" href="structFlowUi_1_1ActionDebugInfo.html">ActionDebugInfo</a>&#160;</td><td class="memItemRight"><b>debug</b> {}</td></tr>
+<tr class="memdesc:a9c3d73cd6e93b214603fe72391fcbe3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Identity, availability, counters, and diagnostic source snapshot. <br /></td></tr>
 <tr class="memitem:a9f5696b9c4aa38e20702f769832a9170" id="r_a9f5696b9c4aa38e20702f769832a9170"><td class="memItemLeft"><a id="a9f5696b9c4aa38e20702f769832a9170" name="a9f5696b9c4aa38e20702f769832a9170"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>callableTypeHash</b> = 0</td></tr>
+<tr class="memdesc:a9f5696b9c4aa38e20702f769832a9170"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process-local callable type fingerprint; zero when unavailable. <br /></td></tr>
 <tr class="memitem:a49d30559eb0d4934f091a4d864b68068" id="r_a49d30559eb0d4934f091a4d864b68068"><td class="memItemLeft"><a id="a49d30559eb0d4934f091a4d864b68068" name="a49d30559eb0d4934f091a4d864b68068"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>resultTypeHash</b> = 0</td></tr>
+<tr class="memdesc:a49d30559eb0d4934f091a4d864b68068"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process-local result type fingerprint; zero denotes void. <br /></td></tr>
 <tr class="memitem:a67dcf7d1c20a8989383ee2b79795c1c7" id="r_a67dcf7d1c20a8989383ee2b79795c1c7"><td class="memItemLeft"><a id="a67dcf7d1c20a8989383ee2b79795c1c7" name="a67dcf7d1c20a8989383ee2b79795c1c7"></a>
 bool&#160;</td><td class="memItemRight"><b>reconstructable</b> = false</td></tr>
+<tr class="memdesc:a67dcf7d1c20a8989383ee2b79795c1c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether tooling may reconstruct this call without borrowed resources. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Callable-free action metadata borrowed during a developer visitor. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managers/<a class="el" href="ActionManager_8hpp_source.html">ActionManager.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -134,7 +145,7 @@ bool&#160;</td><td class="memItemRight"><b>reconstructable</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1ActionManager.html">ActionManager</a></li><li class="navelem"><a href="structFlowUi_1_1ActionManager_1_1DevActionView.html">DevActionView</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1ActionManager.html">ActionManager</a></li><li class="navelem"><a href="structFlowUi_1_1ActionManager_1_1DevActionView.html">DevActionView</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

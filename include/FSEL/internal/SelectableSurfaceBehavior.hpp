@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include "FSEL/SelectableSurfaceStyle.hpp"
 #include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
@@ -138,8 +140,7 @@ template <typename Context>
 	bool selected,
 	bool enabled,
 	const SelectableSurfaceStyle& style) {
-	const auto& theme = context.uiManager
-		.template theme<FSELTheme>()
+	const auto& theme = FlowUi::ValueOrThrow(context.uiManager.template theme<FSELTheme>()).get()
 		.selectableSurfaceTheme;
 	const FSELSelectableSurfaceStateTheme appearance = resolveAppearance(
 		context,

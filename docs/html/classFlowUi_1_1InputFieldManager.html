@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,88 +107,88 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Manages text input fields, focus, caret state, and edit operations.  
+<p>Window-owned editable text, caret state, and atomic edit operations.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="InputFieldManager_8hpp_source.html">InputFieldManager.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:af891e357c521563e6dbd976320e02d71" id="r_af891e357c521563e6dbd976320e02d71"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#af891e357c521563e6dbd976320e02d71">frameStatus</a> () const noexcept</td></tr>
+<tr class="memdesc:af891e357c521563e6dbd976320e02d71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the latched failure for the current input-field frame.  <br /></td></tr>
+<tr class="memitem:a65969172cc22a4b49a5ed97b0ecf2da7" id="r_a65969172cc22a4b49a5ed97b0ecf2da7"><td class="memItemLeft"><a id="a65969172cc22a4b49a5ed97b0ecf2da7" name="a65969172cc22a4b49a5ed97b0ecf2da7"></a>
+void&#160;</td><td class="memItemRight"><b>appendDevMemorySamples</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1MemorySampleSink.html">devSystems::MemorySampleSink</a> &amp;sink) const noexcept</td></tr>
+<tr class="memdesc:a65969172cc22a4b49a5ed97b0ecf2da7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append observation-only development memory accounting to the borrowed sink. <br /></td></tr>
 <tr class="memitem:a7f1ce20bf8737644ac1ae01bfb5da5f7" id="r_a7f1ce20bf8737644ac1ae01bfb5da5f7"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1FieldQueryResult.html">FieldQueryResult</a>&#160;</td><td class="memItemRight"><a class="el" href="#a7f1ce20bf8737644ac1ae01bfb5da5f7">requestField</a> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> fieldId, const <a class="el" href="structFlowUi_1_1FieldRequest.html">FieldRequest</a> &amp;request)</td></tr>
-<tr class="memdesc:a7f1ce20bf8737644ac1ae01bfb5da5f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register or update an input field for the current frame.  <br /></td></tr>
-<tr class="memitem:a88e3df15e73302c5f1e15d853ac80231" id="r_a88e3df15e73302c5f1e15d853ac80231"><td class="memItemLeft"><a id="a88e3df15e73302c5f1e15d853ac80231" name="a88e3df15e73302c5f1e15d853ac80231"></a>
-<a class="el" href="structFlowUi_1_1FieldQueryResult.html">FieldQueryResult</a>&#160;</td><td class="memItemRight"><b>requestField</b> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> fieldId, const <a class="el" href="structFlowUi_1_1FieldRequest.html">FieldRequest</a> &amp;request)</td></tr>
-<tr class="memitem:a25eb7ae9c1999afa0ec9d9864fb68c85" id="r_a25eb7ae9c1999afa0ec9d9864fb68c85"><td class="memItemLeft"><a id="a25eb7ae9c1999afa0ec9d9864fb68c85" name="a25eb7ae9c1999afa0ec9d9864fb68c85"></a>
-<a class="el" href="structFlowUi_1_1FieldQueryResult.html">FieldQueryResult</a>&#160;</td><td class="memItemRight"><b>requestField</b> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> fieldId, const <a class="el" href="structFlowUi_1_1FieldRequest.html">FieldRequest</a> &amp;request)</td></tr>
-<tr class="memitem:a1fd3655b8fe20288d46553b45bb4a028" id="r_a1fd3655b8fe20288d46553b45bb4a028"><td class="memItemLeft"><a id="a1fd3655b8fe20288d46553b45bb4a028" name="a1fd3655b8fe20288d46553b45bb4a028"></a>
-<a class="el" href="structFlowUi_1_1FieldQueryResult.html">FieldQueryResult</a>&#160;</td><td class="memItemRight"><b>requestField</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, const <a class="el" href="structFlowUi_1_1FieldRequest.html">FieldRequest</a> &amp;request)</td></tr>
+<tr class="memdesc:a7f1ce20bf8737644ac1ae01bfb5da5f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register or update a field and borrow its current frame snapshot.  <br /></td></tr>
+<tr class="memitem:a88e3df15e73302c5f1e15d853ac80231" id="r_a88e3df15e73302c5f1e15d853ac80231"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1FieldQueryResult.html">FieldQueryResult</a>&#160;</td><td class="memItemRight"><a class="el" href="#a88e3df15e73302c5f1e15d853ac80231">requestField</a> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> fieldId, const <a class="el" href="structFlowUi_1_1FieldRequest.html">FieldRequest</a> &amp;request)</td></tr>
+<tr class="memdesc:a88e3df15e73302c5f1e15d853ac80231"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register or update a field and borrow its current frame snapshot.  <br /></td></tr>
+<tr class="memitem:a25eb7ae9c1999afa0ec9d9864fb68c85" id="r_a25eb7ae9c1999afa0ec9d9864fb68c85"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1FieldQueryResult.html">FieldQueryResult</a>&#160;</td><td class="memItemRight"><a class="el" href="#a25eb7ae9c1999afa0ec9d9864fb68c85">requestField</a> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> fieldId, const <a class="el" href="structFlowUi_1_1FieldRequest.html">FieldRequest</a> &amp;request)</td></tr>
+<tr class="memdesc:a25eb7ae9c1999afa0ec9d9864fb68c85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register or update a field and borrow its current frame snapshot.  <br /></td></tr>
+<tr class="memitem:a1fd3655b8fe20288d46553b45bb4a028" id="r_a1fd3655b8fe20288d46553b45bb4a028"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1FieldQueryResult.html">FieldQueryResult</a>&#160;</td><td class="memItemRight"><a class="el" href="#a1fd3655b8fe20288d46553b45bb4a028">requestField</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, const <a class="el" href="structFlowUi_1_1FieldRequest.html">FieldRequest</a> &amp;request)</td></tr>
+<tr class="memdesc:a1fd3655b8fe20288d46553b45bb4a028"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register or update a field and borrow its current frame snapshot.  <br /></td></tr>
 <tr class="memitem:a2893b0895f3c91ba67ad24df396f939c" id="r_a2893b0895f3c91ba67ad24df396f939c"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a2893b0895f3c91ba67ad24df396f939c">submitTextSpan</a> (<a class="el" href="structFlowUi_1_1FieldHandle.html">FieldHandle</a> field, const <a class="el" href="structFlowUi_1_1FieldTextSpanSubmission.html">FieldTextSpanSubmission</a> &amp;span)</td></tr>
-<tr class="memdesc:a2893b0895f3c91ba67ad24df396f939c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Associate a rendered visible line with its logical document range.  <br /></td></tr>
+<tr class="memdesc:a2893b0895f3c91ba67ad24df396f939c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Associate a visible multiline Clay text node with its document range.  <br /></td></tr>
 <tr class="memitem:a2feded7de456bf809a173015de21e9fb" id="r_a2feded7de456bf809a173015de21e9fb"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a2feded7de456bf809a173015de21e9fb">requestCaret</a> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> fieldId, <a class="el" href="group__flowui__input__field__manager.html#gafeb7e7dce488c324629200446fdbf6c0">CaretRequestKind</a> kind)</td></tr>
-<tr class="memdesc:a2feded7de456bf809a173015de21e9fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request focus or caret changes for an input field.  <br /></td></tr>
-<tr class="memitem:a73f9780939de7f8dc9cad7fa2820c153" id="r_a73f9780939de7f8dc9cad7fa2820c153"><td class="memItemLeft"><a id="a73f9780939de7f8dc9cad7fa2820c153" name="a73f9780939de7f8dc9cad7fa2820c153"></a>
-void&#160;</td><td class="memItemRight"><b>requestCaret</b> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> fieldId, <a class="el" href="group__flowui__input__field__manager.html#gafeb7e7dce488c324629200446fdbf6c0">CaretRequestKind</a> kind)</td></tr>
-<tr class="memitem:a23f0f300d0aa98f918f8725bc219de65" id="r_a23f0f300d0aa98f918f8725bc219de65"><td class="memItemLeft"><a id="a23f0f300d0aa98f918f8725bc219de65" name="a23f0f300d0aa98f918f8725bc219de65"></a>
-void&#160;</td><td class="memItemRight"><b>requestCaret</b> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> fieldId, <a class="el" href="group__flowui__input__field__manager.html#gafeb7e7dce488c324629200446fdbf6c0">CaretRequestKind</a> kind)</td></tr>
-<tr class="memitem:a9eceb54793ca9eecb371df49fbbbf8f8" id="r_a9eceb54793ca9eecb371df49fbbbf8f8"><td class="memItemLeft"><a id="a9eceb54793ca9eecb371df49fbbbf8f8" name="a9eceb54793ca9eecb371df49fbbbf8f8"></a>
-void&#160;</td><td class="memItemRight"><b>requestCaret</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, <a class="el" href="group__flowui__input__field__manager.html#gafeb7e7dce488c324629200446fdbf6c0">CaretRequestKind</a> kind)</td></tr>
+<tr class="memdesc:a2feded7de456bf809a173015de21e9fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a focus or caret request to persistent field state.  <br /></td></tr>
+<tr class="memitem:a73f9780939de7f8dc9cad7fa2820c153" id="r_a73f9780939de7f8dc9cad7fa2820c153"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a73f9780939de7f8dc9cad7fa2820c153">requestCaret</a> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> fieldId, <a class="el" href="group__flowui__input__field__manager.html#gafeb7e7dce488c324629200446fdbf6c0">CaretRequestKind</a> kind)</td></tr>
+<tr class="memdesc:a73f9780939de7f8dc9cad7fa2820c153"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a focus or caret request to persistent field state.  <br /></td></tr>
+<tr class="memitem:a23f0f300d0aa98f918f8725bc219de65" id="r_a23f0f300d0aa98f918f8725bc219de65"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a23f0f300d0aa98f918f8725bc219de65">requestCaret</a> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> fieldId, <a class="el" href="group__flowui__input__field__manager.html#gafeb7e7dce488c324629200446fdbf6c0">CaretRequestKind</a> kind)</td></tr>
+<tr class="memdesc:a23f0f300d0aa98f918f8725bc219de65"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a focus or caret request to persistent field state.  <br /></td></tr>
+<tr class="memitem:a9eceb54793ca9eecb371df49fbbbf8f8" id="r_a9eceb54793ca9eecb371df49fbbbf8f8"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a9eceb54793ca9eecb371df49fbbbf8f8">requestCaret</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, <a class="el" href="group__flowui__input__field__manager.html#gafeb7e7dce488c324629200446fdbf6c0">CaretRequestKind</a> kind)</td></tr>
+<tr class="memdesc:a9eceb54793ca9eecb371df49fbbbf8f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a focus or caret request to persistent field state.  <br /></td></tr>
 <tr class="memitem:a8c351197479be04ee54f912367c31204" id="r_a8c351197479be04ee54f912367c31204"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a8c351197479be04ee54f912367c31204">removeField</a> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> fieldId)</td></tr>
-<tr class="memdesc:a8c351197479be04ee54f912367c31204"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a managed field by id.  <br /></td></tr>
-<tr class="memitem:a94ca01cdb8568e6a4e84b9ff12b9a4b8" id="r_a94ca01cdb8568e6a4e84b9ff12b9a4b8"><td class="memItemLeft"><a id="a94ca01cdb8568e6a4e84b9ff12b9a4b8" name="a94ca01cdb8568e6a4e84b9ff12b9a4b8"></a>
-bool&#160;</td><td class="memItemRight"><b>removeField</b> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> fieldId)</td></tr>
-<tr class="memitem:a3c71c1006e2feec7121729b4dc545120" id="r_a3c71c1006e2feec7121729b4dc545120"><td class="memItemLeft"><a id="a3c71c1006e2feec7121729b4dc545120" name="a3c71c1006e2feec7121729b4dc545120"></a>
-bool&#160;</td><td class="memItemRight"><b>removeField</b> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> fieldId)</td></tr>
-<tr class="memitem:a2ff96f70c06c272ce269c6b2a6278048" id="r_a2ff96f70c06c272ce269c6b2a6278048"><td class="memItemLeft"><a id="a2ff96f70c06c272ce269c6b2a6278048" name="a2ff96f70c06c272ce269c6b2a6278048"></a>
-bool&#160;</td><td class="memItemRight"><b>removeField</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key)</td></tr>
+<tr class="memdesc:a8c351197479be04ee54f912367c31204"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a field's text, configuration, carets, and selection.  <br /></td></tr>
+<tr class="memitem:a94ca01cdb8568e6a4e84b9ff12b9a4b8" id="r_a94ca01cdb8568e6a4e84b9ff12b9a4b8"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a94ca01cdb8568e6a4e84b9ff12b9a4b8">removeField</a> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> fieldId)</td></tr>
+<tr class="memdesc:a94ca01cdb8568e6a4e84b9ff12b9a4b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a field's text, configuration, carets, and selection.  <br /></td></tr>
+<tr class="memitem:a3c71c1006e2feec7121729b4dc545120" id="r_a3c71c1006e2feec7121729b4dc545120"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a3c71c1006e2feec7121729b4dc545120">removeField</a> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> fieldId)</td></tr>
+<tr class="memdesc:a3c71c1006e2feec7121729b4dc545120"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a field's text, configuration, carets, and selection.  <br /></td></tr>
+<tr class="memitem:a2ff96f70c06c272ce269c6b2a6278048" id="r_a2ff96f70c06c272ce269c6b2a6278048"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a2ff96f70c06c272ce269c6b2a6278048">removeField</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key)</td></tr>
+<tr class="memdesc:a2ff96f70c06c272ce269c6b2a6278048"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a field's text, configuration, carets, and selection.  <br /></td></tr>
 <tr class="memitem:a8264832fb2b6f83e8537380971b9ac95" id="r_a8264832fb2b6f83e8537380971b9ac95"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a8264832fb2b6f83e8537380971b9ac95">replaceText</a> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> fieldId, std::string_view text, bool preserveCaret=true)</td></tr>
-<tr class="memdesc:a8264832fb2b6f83e8537380971b9ac95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace the managed text for an existing input field.  <br /></td></tr>
-<tr class="memitem:aa9b84ba0866b2fdfac59b6db8d603afa" id="r_aa9b84ba0866b2fdfac59b6db8d603afa"><td class="memItemLeft"><a id="aa9b84ba0866b2fdfac59b6db8d603afa" name="aa9b84ba0866b2fdfac59b6db8d603afa"></a>
-bool&#160;</td><td class="memItemRight"><b>replaceText</b> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> fieldId, std::string_view text, bool preserveCaret=true)</td></tr>
-<tr class="memitem:a724c5c0700ed9827c836c2b572af8a64" id="r_a724c5c0700ed9827c836c2b572af8a64"><td class="memItemLeft"><a id="a724c5c0700ed9827c836c2b572af8a64" name="a724c5c0700ed9827c836c2b572af8a64"></a>
-bool&#160;</td><td class="memItemRight"><b>replaceText</b> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> fieldId, std::string_view text, bool preserveCaret=true)</td></tr>
-<tr class="memitem:a04978a6e5fb860093eb873940ed68189" id="r_a04978a6e5fb860093eb873940ed68189"><td class="memItemLeft"><a id="a04978a6e5fb860093eb873940ed68189" name="a04978a6e5fb860093eb873940ed68189"></a>
-bool&#160;</td><td class="memItemRight"><b>replaceText</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, std::string_view text, bool preserveCaret=true)</td></tr>
+<tr class="memdesc:a8264832fb2b6f83e8537380971b9ac95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace an existing field's text while retaining its configuration.  <br /></td></tr>
+<tr class="memitem:aa9b84ba0866b2fdfac59b6db8d603afa" id="r_aa9b84ba0866b2fdfac59b6db8d603afa"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#aa9b84ba0866b2fdfac59b6db8d603afa">replaceText</a> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> fieldId, std::string_view text, bool preserveCaret=true)</td></tr>
+<tr class="memdesc:aa9b84ba0866b2fdfac59b6db8d603afa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace an existing field's text while retaining its configuration.  <br /></td></tr>
+<tr class="memitem:a724c5c0700ed9827c836c2b572af8a64" id="r_a724c5c0700ed9827c836c2b572af8a64"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a724c5c0700ed9827c836c2b572af8a64">replaceText</a> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> fieldId, std::string_view text, bool preserveCaret=true)</td></tr>
+<tr class="memdesc:a724c5c0700ed9827c836c2b572af8a64"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace an existing field's text while retaining its configuration.  <br /></td></tr>
+<tr class="memitem:a04978a6e5fb860093eb873940ed68189" id="r_a04978a6e5fb860093eb873940ed68189"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a04978a6e5fb860093eb873940ed68189">replaceText</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, std::string_view text, bool preserveCaret=true)</td></tr>
+<tr class="memdesc:a04978a6e5fb860093eb873940ed68189"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace an existing field's text while retaining its configuration.  <br /></td></tr>
 <tr class="memitem:a7ac0604f2391bfe2ea5d16b008b68d18" id="r_a7ac0604f2391bfe2ea5d16b008b68d18"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a7ac0604f2391bfe2ea5d16b008b68d18">clear</a> ()</td></tr>
-<tr class="memdesc:a7ac0604f2391bfe2ea5d16b008b68d18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear all managed input field state.  <br /></td></tr>
-<tr class="memitem:a4f494c501874c594a05a8e28f8e9954f" id="r_a4f494c501874c594a05a8e28f8e9954f"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a4f494c501874c594a05a8e28f8e9954f">hasPrimaryFieldFocus</a> () const</td></tr>
-<tr class="memdesc:a4f494c501874c594a05a8e28f8e9954f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether any field owns primary input focus.  <br /></td></tr>
-<tr class="memitem:ad7d2a2c8a9b988178316935f2250c77a" id="r_ad7d2a2c8a9b988178316935f2250c77a"><td class="memItemLeft"><a id="ad7d2a2c8a9b988178316935f2250c77a" name="ad7d2a2c8a9b988178316935f2250c77a"></a>
-bool&#160;</td><td class="memItemRight"><b>canEditPrimaryField</b> () const</td></tr>
+<tr class="memdesc:a7ac0604f2391bfe2ea5d16b008b68d18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear every field and reset focus, repeat, drag, and frame overrides.  <br /></td></tr>
+<tr class="memitem:acd44db372a18fea18be9a03a57b519ae" id="r_acd44db372a18fea18be9a03a57b519ae"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#acd44db372a18fea18be9a03a57b519ae">hasPrimaryFieldFocus</a> () const noexcept</td></tr>
+<tr class="memdesc:acd44db372a18fea18be9a03a57b519ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test whether a primary field has at least one caret.  <br /></td></tr>
+<tr class="memitem:a6a902b1a401dfc0c4fd2740720e0ec76" id="r_a6a902b1a401dfc0c4fd2740720e0ec76"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a6a902b1a401dfc0c4fd2740720e0ec76">canEditPrimaryField</a> () const noexcept</td></tr>
+<tr class="memdesc:a6a902b1a401dfc0c4fd2740720e0ec76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test whether the primary field exists, has a caret, and is writable.  <br /></td></tr>
 <tr class="memitem:a997c4fea775ebe55ae427e901c38f50c" id="r_a997c4fea775ebe55ae427e901c38f50c"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a997c4fea775ebe55ae427e901c38f50c">getSelectedText</a> () const</td></tr>
-<tr class="memdesc:a997c4fea775ebe55ae427e901c38f50c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return selected text from the primary input field.  <br /></td></tr>
+<tr class="memdesc:a997c4fea775ebe55ae427e901c38f50c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the earliest selected range in the primary field.  <br /></td></tr>
 <tr class="memitem:a109309cb439eaa40a24f8ada6409da8e" id="r_a109309cb439eaa40a24f8ada6409da8e"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a109309cb439eaa40a24f8ada6409da8e">insertTextAtPrimaryCaret</a> (std::string_view utf8Text)</td></tr>
-<tr class="memdesc:a109309cb439eaa40a24f8ada6409da8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert UTF-8 text at the primary caret.  <br /></td></tr>
-<tr class="memitem:a86f48428bface03fdbf92b16d4bf47dc" id="r_a86f48428bface03fdbf92b16d4bf47dc"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a86f48428bface03fdbf92b16d4bf47dc">enqueueCommand</a> (TextCommand command, std::string_view payload={})</td></tr>
-<tr class="memitem:ad44da13b90aa9c71975cd9af2725f0be" id="r_ad44da13b90aa9c71975cd9af2725f0be"><td class="memItemLeft">EditResult&#160;</td><td class="memItemRight"><a class="el" href="#ad44da13b90aa9c71975cd9af2725f0be">applyEdits</a> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> fieldId, std::span&lt; const <a class="el" href="structFlowUi_1_1TextReplacement.html">TextReplacement</a> &gt; edits, EditOrigin origin=EditOrigin::Programmatic)</td></tr>
-<tr class="memitem:a262623d76bd0734deb1a219bbb8b0797" id="r_a262623d76bd0734deb1a219bbb8b0797"><td class="memItemLeft"><a id="a262623d76bd0734deb1a219bbb8b0797" name="a262623d76bd0734deb1a219bbb8b0797"></a>
-EditResult&#160;</td><td class="memItemRight"><b>applyEdits</b> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> fieldId, std::span&lt; const <a class="el" href="structFlowUi_1_1TextReplacement.html">TextReplacement</a> &gt; edits, EditOrigin origin=EditOrigin::Programmatic)</td></tr>
-<tr class="memitem:a1ba755ca15053d37299efa94ac201a67" id="r_a1ba755ca15053d37299efa94ac201a67"><td class="memItemLeft"><a id="a1ba755ca15053d37299efa94ac201a67" name="a1ba755ca15053d37299efa94ac201a67"></a>
-EditResult&#160;</td><td class="memItemRight"><b>applyEdits</b> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> fieldId, std::span&lt; const <a class="el" href="structFlowUi_1_1TextReplacement.html">TextReplacement</a> &gt; edits, EditOrigin origin=EditOrigin::Programmatic)</td></tr>
-<tr class="memitem:a4fc839b258c92d687a15377996c7afb1" id="r_a4fc839b258c92d687a15377996c7afb1"><td class="memItemLeft"><a id="a4fc839b258c92d687a15377996c7afb1" name="a4fc839b258c92d687a15377996c7afb1"></a>
-EditResult&#160;</td><td class="memItemRight"><b>applyEdits</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, std::span&lt; const <a class="el" href="structFlowUi_1_1TextReplacement.html">TextReplacement</a> &gt; edits, EditOrigin origin=EditOrigin::Programmatic)</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:aedcadf9ffa4a2a8a0069d732c7c3374c" id="r_aedcadf9ffa4a2a8a0069d732c7c3374c"><td class="memItemLeft"><a id="aedcadf9ffa4a2a8a0069d732c7c3374c" name="aedcadf9ffa4a2a8a0069d732c7c3374c"></a>
-class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
+<tr class="memdesc:a109309cb439eaa40a24f8ada6409da8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert UTF-8 text at every caret in the primary field, replacing selections.  <br /></td></tr>
+<tr class="memitem:a86f48428bface03fdbf92b16d4bf47dc" id="r_a86f48428bface03fdbf92b16d4bf47dc"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a86f48428bface03fdbf92b16d4bf47dc">enqueueCommand</a> (<a class="el" href="group__flowui__input__field__manager.html#gabc15f2937e19384daee25f8b38ccd88b">TextCommand</a> command, std::string_view payload={})</td></tr>
+<tr class="memdesc:a86f48428bface03fdbf92b16d4bf47dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Queue a semantic text command for the field focused now.  <br /></td></tr>
+<tr class="memitem:ad44da13b90aa9c71975cd9af2725f0be" id="r_ad44da13b90aa9c71975cd9af2725f0be"><td class="memItemLeft"><a class="el" href="group__flowui__input__field__manager.html#ga0dd0f56785ef61ed5789a6389c071875">EditResult</a>&#160;</td><td class="memItemRight"><a class="el" href="#ad44da13b90aa9c71975cd9af2725f0be">applyEdits</a> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> fieldId, std::span&lt; const <a class="el" href="structFlowUi_1_1TextReplacement.html">TextReplacement</a> &gt; edits, <a class="el" href="group__flowui__input__field__manager.html#gac4c000112c00c4b93f0377f4718508e6">EditOrigin</a> origin=<a class="el" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">EditOrigin::Programmatic</a>)</td></tr>
+<tr class="memdesc:ad44da13b90aa9c71975cd9af2725f0be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validate and atomically apply a replacement batch to an existing field.  <br /></td></tr>
+<tr class="memitem:a262623d76bd0734deb1a219bbb8b0797" id="r_a262623d76bd0734deb1a219bbb8b0797"><td class="memItemLeft"><a class="el" href="group__flowui__input__field__manager.html#ga0dd0f56785ef61ed5789a6389c071875">EditResult</a>&#160;</td><td class="memItemRight"><a class="el" href="#a262623d76bd0734deb1a219bbb8b0797">applyEdits</a> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> fieldId, std::span&lt; const <a class="el" href="structFlowUi_1_1TextReplacement.html">TextReplacement</a> &gt; edits, <a class="el" href="group__flowui__input__field__manager.html#gac4c000112c00c4b93f0377f4718508e6">EditOrigin</a> origin=<a class="el" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">EditOrigin::Programmatic</a>)</td></tr>
+<tr class="memdesc:a262623d76bd0734deb1a219bbb8b0797"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validate and atomically apply a replacement batch to an existing field.  <br /></td></tr>
+<tr class="memitem:a1ba755ca15053d37299efa94ac201a67" id="r_a1ba755ca15053d37299efa94ac201a67"><td class="memItemLeft"><a class="el" href="group__flowui__input__field__manager.html#ga0dd0f56785ef61ed5789a6389c071875">EditResult</a>&#160;</td><td class="memItemRight"><a class="el" href="#a1ba755ca15053d37299efa94ac201a67">applyEdits</a> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> fieldId, std::span&lt; const <a class="el" href="structFlowUi_1_1TextReplacement.html">TextReplacement</a> &gt; edits, <a class="el" href="group__flowui__input__field__manager.html#gac4c000112c00c4b93f0377f4718508e6">EditOrigin</a> origin=<a class="el" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">EditOrigin::Programmatic</a>)</td></tr>
+<tr class="memdesc:a1ba755ca15053d37299efa94ac201a67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validate and atomically apply a replacement batch to an existing field.  <br /></td></tr>
+<tr class="memitem:a4fc839b258c92d687a15377996c7afb1" id="r_a4fc839b258c92d687a15377996c7afb1"><td class="memItemLeft"><a class="el" href="group__flowui__input__field__manager.html#ga0dd0f56785ef61ed5789a6389c071875">EditResult</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4fc839b258c92d687a15377996c7afb1">applyEdits</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, std::span&lt; const <a class="el" href="structFlowUi_1_1TextReplacement.html">TextReplacement</a> &gt; edits, <a class="el" href="group__flowui__input__field__manager.html#gac4c000112c00c4b93f0377f4718508e6">EditOrigin</a> origin=<a class="el" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">EditOrigin::Programmatic</a>)</td></tr>
+<tr class="memdesc:a4fc839b258c92d687a15377996c7afb1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validate and atomically apply a replacement batch to an existing field.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Manages text input fields, focus, caret state, and edit operations. </p>
-<p><a class="el" href="classFlowUi_1_1InputFieldManager.html" title="Manages text input fields, focus, caret state, and edit operations.">InputFieldManager</a> is the public entry point for custom FlowUi elements that need editable text. The manager owns persistent field state, keyed by an explicit strong Flow ID or <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a>, while the element remains responsible for drawing the Clay containers and text node for that field.</p>
-<p>A field becomes part of the current frame when custom UI code calls <a class="el" href="#a7f1ce20bf8737644ac1ae01bfb5da5f7" title="Register or update an input field for the current frame.">requestField()</a>. The request updates the field configuration and Clay element ids, then returns the current manager-owned text. The initial text is copied only when a field id is first seen; later requests with the same id keep the edited text until <a class="el" href="#a8c351197479be04ee54f912367c31204" title="Remove a managed field by id.">removeField()</a> or <a class="el" href="#a7ac0604f2391bfe2ea5d16b008b68d18" title="Clear all managed input field state.">clear()</a> resets it.</p>
-<p>Focus and caret changes are requested separately through <a class="el" href="#a2feded7de456bf809a173015de21e9fb" title="Request focus or caret changes for an input field.">requestCaret()</a>, normally from an element interaction callback. FlowUi's frame lifecycle then handles pointer hit testing, keyboard input, caret movement, selection rendering, and text mutation before the frame is rendered.</p>
-<div class="fragment"></div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2input__fields__and__shortcuts.html" title="Input Fields and Shortcuts">Input Fields and Shortcuts</a> </dd>
-<dd>
-<a class="el" href="md_docs_2tutorials_2custom__elements.html" title="Custom Elements">Custom Elements</a> </dd></dl>
+<div class="textblock"><p>Window-owned editable text, caret state, and atomic edit operations. </p>
+<p>Authoring operations return direct values and propagate exceptions to the frame boundary. Operational exceptions latch frame failure. False, empty snapshots and <a class="el" href="group__flowui__input__field__manager.html#ga0dd0f56785ef61ed5789a6389c071875">EditResult</a> rejection values are ordinary outcomes; <a class="el" href="#af891e357c521563e6dbd976320e02d71" title="Read the latched failure for the current input-field frame.">frameStatus()</a> remains the checked query for a latched failure. Obtain App-owned managers through the checked <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> getter and unwrap its reference_wrapper with result-&gt;get(). Returned text, metadata, resource views, and pointers remain borrowed under each operation's documented invalidation rules. </p>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="ad44da13b90aa9c71975cd9af2725f0be" name="ad44da13b90aa9c71975cd9af2725f0be"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad44da13b90aa9c71975cd9af2725f0be">&#9670;&#160;</a></span>applyEdits()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ad44da13b90aa9c71975cd9af2725f0be">&#9670;&#160;</a></span>applyEdits() <span class="overload">[1/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">EditResult FlowUi::InputFieldManager::applyEdits </td>
+          <td class="memname"><a class="el" href="group__flowui__input__field__manager.html#ga0dd0f56785ef61ed5789a6389c071875">EditResult</a> FlowUi::InputFieldManager::applyEdits </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a></td>          <td class="paramname"><span class="paramname"><em>fieldId</em></span>, </td>
         </tr>
@@ -200,11 +200,210 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">EditOrigin</td>          <td class="paramname"><span class="paramname"><em>origin</em></span><span class="paramdefsep"> = </span><span class="paramdefval">EditOrigin::Programmatic</span>&#160;)</td>
+          <td class="paramtype"><a class="el" href="group__flowui__input__field__manager.html#gac4c000112c00c4b93f0377f4718508e6">EditOrigin</a></td>          <td class="paramname"><span class="paramname"><em>origin</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">EditOrigin::Programmatic</a></span>&#160;)</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
-<p>Apply a validated replacement batch atomically to an existing field. </p>
+
+<p>Validate and atomically apply a replacement batch to an existing field. </p>
+<p>Ranges use original-document UTF-8 byte coordinates, must be in bounds, nonoverlapping, and on codepoint boundaries. Rejections leave text unchanged. No primary focus is needed; readOnly, newline policy, valid UTF-8, and maxBytes are enforced. Input spans/strings are consumed synchronously. origin defaults to Programmatic.</p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="group__flowui__input__field__manager.html#ga0dd0f56785ef61ed5789a6389c071875">EditResult</a>: Applied, NoChange, or a Rejected* outcome. Rejection is an ordinary edit outcome and leaves text unchanged. Operational failures propagate to the frame boundary. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> std::array edits{<a class="code hl_struct" href="structFlowUi_1_1TextReplacement.html">FlowUi::TextReplacement</a>{</div>
+<div class="line">    .oldRange = {0, 0},</div>
+<div class="line">    .insertedText = <span class="stringliteral">&quot;Hello&quot;</span>,</div>
+<div class="line">}};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> edit = manager.applyEdits(fieldId, edits, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">FlowUi::EditOrigin::Programmatic</a>);</div>
+<div class="ttc" id="agroup__flowui__input__field__manager_html_ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc"><div class="ttname"><a href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">FlowUi::EditOrigin::Programmatic</a></div><div class="ttdeci">@ Programmatic</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:292</div></div>
+<div class="ttc" id="astructFlowUi_1_1TextReplacement_html"><div class="ttname"><a href="structFlowUi_1_1TextReplacement.html">FlowUi::TextReplacement</a></div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:317</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a1ba755ca15053d37299efa94ac201a67" name="a1ba755ca15053d37299efa94ac201a67"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1ba755ca15053d37299efa94ac201a67">&#9670;&#160;</a></span>applyEdits() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__flowui__input__field__manager.html#ga0dd0f56785ef61ed5789a6389c071875">EditResult</a> FlowUi::InputFieldManager::applyEdits </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a></td>          <td class="paramname"><span class="paramname"><em>fieldId</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::span&lt; const <a class="el" href="structFlowUi_1_1TextReplacement.html">TextReplacement</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>edits</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__flowui__input__field__manager.html#gac4c000112c00c4b93f0377f4718508e6">EditOrigin</a></td>          <td class="paramname"><span class="paramname"><em>origin</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">EditOrigin::Programmatic</a></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Validate and atomically apply a replacement batch to an existing field. </p>
+<p>Ranges use original-document UTF-8 byte coordinates, must be in bounds, nonoverlapping, and on codepoint boundaries. Rejections leave text unchanged. No primary focus is needed; readOnly, newline policy, valid UTF-8, and maxBytes are enforced. Input spans/strings are consumed synchronously. origin defaults to Programmatic.</p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="group__flowui__input__field__manager.html#ga0dd0f56785ef61ed5789a6389c071875">EditResult</a>: Applied, NoChange, or a Rejected* outcome. Rejection is an ordinary edit outcome and leaves text unchanged. Operational failures propagate to the frame boundary. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> std::array edits{<a class="code hl_struct" href="structFlowUi_1_1TextReplacement.html">FlowUi::TextReplacement</a>{</div>
+<div class="line">    .oldRange = {0, 0},</div>
+<div class="line">    .insertedText = <span class="stringliteral">&quot;Hello&quot;</span>,</div>
+<div class="line">}};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> edit = manager.applyEdits(fieldId, edits, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">FlowUi::EditOrigin::Programmatic</a>);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a262623d76bd0734deb1a219bbb8b0797" name="a262623d76bd0734deb1a219bbb8b0797"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a262623d76bd0734deb1a219bbb8b0797">&#9670;&#160;</a></span>applyEdits() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__flowui__input__field__manager.html#ga0dd0f56785ef61ed5789a6389c071875">EditResult</a> FlowUi::InputFieldManager::applyEdits </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a></td>          <td class="paramname"><span class="paramname"><em>fieldId</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::span&lt; const <a class="el" href="structFlowUi_1_1TextReplacement.html">TextReplacement</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>edits</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__flowui__input__field__manager.html#gac4c000112c00c4b93f0377f4718508e6">EditOrigin</a></td>          <td class="paramname"><span class="paramname"><em>origin</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">EditOrigin::Programmatic</a></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Validate and atomically apply a replacement batch to an existing field. </p>
+<p>Ranges use original-document UTF-8 byte coordinates, must be in bounds, nonoverlapping, and on codepoint boundaries. Rejections leave text unchanged. No primary focus is needed; readOnly, newline policy, valid UTF-8, and maxBytes are enforced. Input spans/strings are consumed synchronously. origin defaults to Programmatic.</p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="group__flowui__input__field__manager.html#ga0dd0f56785ef61ed5789a6389c071875">EditResult</a>: Applied, NoChange, or a Rejected* outcome. Rejection is an ordinary edit outcome and leaves text unchanged. Operational failures propagate to the frame boundary. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> std::array edits{<a class="code hl_struct" href="structFlowUi_1_1TextReplacement.html">FlowUi::TextReplacement</a>{</div>
+<div class="line">    .oldRange = {0, 0},</div>
+<div class="line">    .insertedText = <span class="stringliteral">&quot;Hello&quot;</span>,</div>
+<div class="line">}};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> edit = manager.applyEdits(fieldId, edits, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">FlowUi::EditOrigin::Programmatic</a>);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a4fc839b258c92d687a15377996c7afb1" name="a4fc839b258c92d687a15377996c7afb1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4fc839b258c92d687a15377996c7afb1">&#9670;&#160;</a></span>applyEdits() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__flowui__input__field__manager.html#ga0dd0f56785ef61ed5789a6389c071875">EditResult</a> FlowUi::InputFieldManager::applyEdits </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::span&lt; const <a class="el" href="structFlowUi_1_1TextReplacement.html">TextReplacement</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>edits</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__flowui__input__field__manager.html#gac4c000112c00c4b93f0377f4718508e6">EditOrigin</a></td>          <td class="paramname"><span class="paramname"><em>origin</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">EditOrigin::Programmatic</a></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Validate and atomically apply a replacement batch to an existing field. </p>
+<p>Ranges use original-document UTF-8 byte coordinates, must be in bounds, nonoverlapping, and on codepoint boundaries. Rejections leave text unchanged. No primary focus is needed; readOnly, newline policy, valid UTF-8, and maxBytes are enforced. Input spans/strings are consumed synchronously. origin defaults to Programmatic. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="group__flowui__input__field__manager.html#ga0dd0f56785ef61ed5789a6389c071875">EditResult</a>: Applied, NoChange, or a Rejected* outcome. Rejection is an ordinary edit outcome and leaves text unchanged. Operational failures propagate to the frame boundary. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;search&quot;</span>};</div>
+<div class="line"><span class="keyword">const</span> std::array edits{<a class="code hl_struct" href="structFlowUi_1_1TextReplacement.html">FlowUi::TextReplacement</a>{</div>
+<div class="line">    .oldRange = {0, 0},</div>
+<div class="line">    .insertedText = <span class="stringliteral">&quot;Hello&quot;</span>,</div>
+<div class="line">}};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> edit = manager.applyEdits(key, edits, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">FlowUi::EditOrigin::Programmatic</a>);</div>
+<div class="ttc" id="astructFlowUi_1_1ResourceKey_html"><div class="ttname"><a href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a></div><div class="ttdoc">Human-readable logical identity accepted by FlowUi managers.</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:39</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a6a902b1a401dfc0c4fd2740720e0ec76" name="a6a902b1a401dfc0c4fd2740720e0ec76"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6a902b1a401dfc0c4fd2740720e0ec76">&#9670;&#160;</a></span>canEditPrimaryField()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::InputFieldManager::canEditPrimaryField </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Test whether the primary field exists, has a caret, and is writable. </p>
+<p>This is a direct noexcept query.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns false for detached, unfocused, missing, caret-free, or read-only fields. </dd></dl>
 
 </div>
 </div>
@@ -223,9 +422,17 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Clear all managed input field state. </p>
-<p><a class="el" href="#a7ac0604f2391bfe2ea5d16b008b68d18" title="Clear all managed input field state.">clear()</a> removes every field, clears primary focus, resets key repeat and pointer drag state, and drops any frame render overrides. It is a global reset for the input field system.</p>
-<div class="fragment"></div><!-- fragment --> 
+<p>Clear every field and reset focus, repeat, drag, and frame overrides. </p>
+<p>All previously borrowed field views, spans, text, and handles must be discarded.</p>
+<dl class="section post"><dt>Postcondition</dt><dd>The reset has completed. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line">manager.clear();</div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a86f48428bface03fdbf92b16d4bf47dc" name="a86f48428bface03fdbf92b16d4bf47dc"></a>
@@ -233,11 +440,14 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool FlowUi::InputFieldManager::enqueueCommand </td>
           <td>(</td>
-          <td class="paramtype">TextCommand</td>          <td class="paramname"><span class="paramname"><em>command</em></span>, </td>
+          <td class="paramtype"><a class="el" href="group__flowui__input__field__manager.html#gabc15f2937e19384daee25f8b38ccd88b">TextCommand</a></td>          <td class="paramname"><span class="paramname"><em>command</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -245,9 +455,61 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
           <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>payload</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
-<p>Queue a semantic command for the currently focused field. </p>
 
+<p>Queue a semantic text command for the field focused now. </p>
+<p>payload is copied. The queue captures field identity and selection-extension state; commands execute during field processing, not necessarily at submission.</p>
+<dl class="section return"><dt>Returns</dt><dd>true when queued or false when no primary field owns focus. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_enumeration" href="group__flowui__input__field__manager.html#gabc15f2937e19384daee25f8b38ccd88b">FlowUi::TextCommand</a> command = <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggabc15f2937e19384daee25f8b38ccd88ba702bbdc91c8e399d7b0807de5b7adc27">FlowUi::TextCommand::SelectAll</a>;</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> queued = manager.enqueueCommand(command);</div>
+<div class="ttc" id="agroup__flowui__input__field__manager_html_gabc15f2937e19384daee25f8b38ccd88b"><div class="ttname"><a href="group__flowui__input__field__manager.html#gabc15f2937e19384daee25f8b38ccd88b">FlowUi::TextCommand</a></div><div class="ttdeci">TextCommand</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:413</div></div>
+<div class="ttc" id="agroup__flowui__input__field__manager_html_ggabc15f2937e19384daee25f8b38ccd88ba702bbdc91c8e399d7b0807de5b7adc27"><div class="ttname"><a href="group__flowui__input__field__manager.html#ggabc15f2937e19384daee25f8b38ccd88ba702bbdc91c8e399d7b0807de5b7adc27">FlowUi::TextCommand::SelectAll</a></div><div class="ttdeci">@ SelectAll</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:414</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="af891e357c521563e6dbd976320e02d71" name="af891e357c521563e6dbd976320e02d71"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af891e357c521563e6dbd976320e02d71">&#9670;&#160;</a></span>frameStatus()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::InputFieldManager::frameStatus </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Read the latched failure for the current input-field frame. </p>
+<p>A successful later call does not clear an earlier frame failure. <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> checks this status when completing the frame.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success means no failure was latched; an error means the surrounding frame must be canceled. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.frameStatus();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a997c4fea775ebe55ae427e901c38f50c" name="a997c4fea775ebe55ae427e901c38f50c"></a>
@@ -273,14 +535,21 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return selected text from the primary input field. </p>
-<p>When the focused field has multiple selections, the earliest selected range is returned. If no primary field exists, the primary field is gone, or no selection is active, the returned view is empty.</p>
-<dl class="section return"><dt>Returns</dt><dd>View of the selected text in manager-owned storage, or an empty view when there is no active selection. The view remains valid until the selected field text changes or the field is removed.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Borrow the earliest selected range in the primary field. </p>
+<p>Single-line selections borrow field storage; chunked selections borrow scratch storage reused by a later <a class="el" href="#a997c4fea775ebe55ae427e901c38f50c" title="Borrow the earliest selected range in the primary field.">getSelectedText()</a> call. Copy to std::string immediately to retain it across another query, text mutation, removal, or frame/lifetime change.</p>
+<dl class="section return"><dt>Returns</dt><dd>an empty view if there is no primary field or active selection. Detached state and copy/allocation failures throw. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> std::string selectedText{manager.getSelectedText()};</div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a4f494c501874c594a05a8e28f8e9954f" name="a4f494c501874c594a05a8e28f8e9954f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4f494c501874c594a05a8e28f8e9954f">&#9670;&#160;</a></span>hasPrimaryFieldFocus()</h2>
+<a id="acd44db372a18fea18be9a03a57b519ae" name="acd44db372a18fea18be9a03a57b519ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acd44db372a18fea18be9a03a57b519ae">&#9670;&#160;</a></span>hasPrimaryFieldFocus()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -297,21 +566,15 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return whether any field owns primary input focus. </p>
-<p>This is useful when global shortcuts should be suppressed while the user is editing text. <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a> uses the same state for <a class="el" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeac39487764c47d7394c716eb92cf51694" title="Run only while an input field owns primary text focus.">ShortcutScope::FocusedInput</a>.</p>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">true</td><td>a primary field id is set and that field has at least one caret. </td></tr>
-    <tr><td class="paramname">false</td><td>no primary field id is set.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Test whether a primary field has at least one caret. </p>
+<p>This is a direct noexcept query; it does not report initialization errors.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns false if detached, no primary field exists, or its caret list is empty. </dd></dl>
+
 </div>
 </div>
 <a id="a109309cb439eaa40a24f8ada6409da8e" name="a109309cb439eaa40a24f8ada6409da8e"></a>
@@ -319,6 +582,9 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool FlowUi::InputFieldManager::insertTextAtPrimaryCaret </td>
@@ -327,38 +593,34 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Insert UTF-8 text at the primary caret. </p>
-<p>The text is inserted into the focused field at each caret position. Active selections are replaced. The operation respects <a class="el" href="structFlowUi_1_1FieldConfig.html#a58e48e6172c02b7c03adfea1208f5779" title="Whether the field rejects text edits.">FieldConfig::readOnly</a> and <a class="el" href="structFlowUi_1_1FieldConfig.html#abe7381874b2dd1222a019466249ff434" title="Maximum stored UTF-8 byte count.">FieldConfig::maxBytes</a> for the target field.</p>
-<p>This function is intended for paste commands, virtual keyboards, or other application-driven text insertion. Normal keyboard text input is collected by FlowUi's frame input pipeline and applied automatically.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">utf8Text</td><td>UTF-8 text to insert. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">true</td><td>the focused field text or caret positions changed. </td></tr>
-    <tr><td class="paramname">false</td><td>utf8Text is empty, no field is focused, the field is read-only, the field has no caret, or the insertion was rejected by maxBytes.</td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Insert UTF-8 text at every caret in the primary field, replacing selections. </p>
+<p>The input is consumed synchronously. <a class="el" href="structFlowUi_1_1FieldConfig.html">FieldConfig</a> readOnly/maxBytes rules apply; normal keyboard text already comes through the frame pipeline.</p>
+<dl class="section return"><dt>Returns</dt><dd>true when text/caret state changed; false for empty text, absent focus/carets, read-only fields, unchanged text/carets, or rejected UTF-8/newline/size policies. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::bad_alloc</td><td>if copying or inserting text requires allocation and allocation fails.</td></tr>
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"></div><!-- fragment --> 
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> changed = manager.insertTextAtPrimaryCaret(<span class="stringliteral">&quot;Pasted text&quot;</span>);</div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a8c351197479be04ee54f912367c31204" name="a8c351197479be04ee54f912367c31204"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8c351197479be04ee54f912367c31204">&#9670;&#160;</a></span>removeField()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a8c351197479be04ee54f912367c31204">&#9670;&#160;</a></span>removeField() <span class="overload">[1/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool FlowUi::InputFieldManager::removeField </td>
@@ -367,32 +629,143 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Remove a managed field by id. </p>
-<p>This discards the field's stored text, config, Clay element ids, carets, and selection state. Use it when an external value should replace the current editable text, or when a dynamic field is permanently removed from the UI.</p>
-<p>If the removed field owns primary input focus, focus is cleared or moved to another field that still has carets.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">fieldId</td><td>Stable id of the field state to remove. </td></tr>
+<p>Remove a field's text, configuration, carets, and selection. </p>
+<p>Removing a focused field clears or transfers primary focus. All borrowed field text/views/reports become invalid.</p>
+<dl class="section return"><dt>Returns</dt><dd>true if a field was removed or false for an empty strong ID/missing field. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">true</td><td>a field with fieldId existed and was removed. </td></tr>
-    <tr><td class="paramname">false</td><td>fieldId is empty or no matching field exists.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --> 
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = manager.removeField(fieldId);</div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a8264832fb2b6f83e8537380971b9ac95" name="a8264832fb2b6f83e8537380971b9ac95"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8264832fb2b6f83e8537380971b9ac95">&#9670;&#160;</a></span>replaceText()</h2>
+<a id="a3c71c1006e2feec7121729b4dc545120" name="a3c71c1006e2feec7121729b4dc545120"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c71c1006e2feec7121729b4dc545120">&#9670;&#160;</a></span>removeField() <span class="overload">[2/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::InputFieldManager::removeField </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a></td>          <td class="paramname"><span class="paramname"><em>fieldId</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Remove a field's text, configuration, carets, and selection. </p>
+<p>Removing a focused field clears or transfers primary focus. All borrowed field text/views/reports become invalid.</p>
+<dl class="section return"><dt>Returns</dt><dd>true if a field was removed or false for an empty strong ID/missing field. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = manager.removeField(fieldId);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a94ca01cdb8568e6a4e84b9ff12b9a4b8" name="a94ca01cdb8568e6a4e84b9ff12b9a4b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a94ca01cdb8568e6a4e84b9ff12b9a4b8">&#9670;&#160;</a></span>removeField() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::InputFieldManager::removeField </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a></td>          <td class="paramname"><span class="paramname"><em>fieldId</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Remove a field's text, configuration, carets, and selection. </p>
+<p>Removing a focused field clears or transfers primary focus. All borrowed field text/views/reports become invalid.</p>
+<dl class="section return"><dt>Returns</dt><dd>true if a field was removed or false for an empty strong ID/missing field. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = manager.removeField(fieldId);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a2ff96f70c06c272ce269c6b2a6278048" name="a2ff96f70c06c272ce269c6b2a6278048"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ff96f70c06c272ce269c6b2a6278048">&#9670;&#160;</a></span>removeField() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::InputFieldManager::removeField </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Remove a field's text, configuration, carets, and selection. </p>
+<p>Removing a focused field clears or transfers primary focus. All borrowed field text/views/reports become invalid. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<dl class="section return"><dt>Returns</dt><dd>true if a field was removed or false for an empty strong ID/missing field. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;search&quot;</span>};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = manager.removeField(key);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a8264832fb2b6f83e8537380971b9ac95" name="a8264832fb2b6f83e8537380971b9ac95"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8264832fb2b6f83e8537380971b9ac95">&#9670;&#160;</a></span>replaceText() <span class="overload">[1/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool FlowUi::InputFieldManager::replaceText </td>
@@ -410,36 +783,164 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
           <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>preserveCaret</em></span><span class="paramdefsep"> = </span><span class="paramdefval">true</span>&#160;)</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Replace the managed text for an existing input field. </p>
-<p><a class="el" href="#a8264832fb2b6f83e8537380971b9ac95" title="Replace the managed text for an existing input field.">replaceText()</a> updates a field without removing its config, Clay element ids, or frame presence state. By default, existing carets and selections are remapped through the smallest differing UTF-8 range and then clamped to valid boundaries in the replacement text. This keeps carets before and after an edited numeric or formatted segment stable. Pass false to clear any active carets from the field after updating the text.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">fieldId</td><td>Stable id of the field state to update. </td></tr>
-    <tr><td class="paramname">text</td><td>Replacement text to store for the field. </td></tr>
-    <tr><td class="paramname">preserveCaret</td><td>Whether to preserve and clamp existing caret state. Defaults to true. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">true</td><td>the field existed and its stored text changed. </td></tr>
-    <tr><td class="paramname">false</td><td>fieldId is empty, no matching field exists, or text already matches the stored field text.</td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Replace an existing field's text while retaining its configuration. </p>
+<p>preserveCaret defaults to true: carets/selections are remapped through the smallest differing UTF-8 range and clamped. false clears active carets only after an applied replacement. Programmatic replacement bypasses readOnly, while UTF-8/newline/maxBytes validation still applies. Any field text mutation invalidates borrowed field text/views.</p>
+<dl class="section return"><dt>Returns</dt><dd>true if text changed; false for an empty strong ID, missing field, unchanged text, or a rejected edit (invalid UTF-8/range, newline policy, or maxBytes). </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::bad_alloc</td><td>if copying replacement text requires allocation and allocation fails.</td></tr>
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"></div><!-- fragment --> 
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> changed = manager.replaceText(fieldId, <span class="stringliteral">&quot;Updated text&quot;</span>, <span class="keyword">true</span>);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a724c5c0700ed9827c836c2b572af8a64" name="a724c5c0700ed9827c836c2b572af8a64"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a724c5c0700ed9827c836c2b572af8a64">&#9670;&#160;</a></span>replaceText() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::InputFieldManager::replaceText </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a></td>          <td class="paramname"><span class="paramname"><em>fieldId</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>text</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>preserveCaret</em></span><span class="paramdefsep"> = </span><span class="paramdefval">true</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Replace an existing field's text while retaining its configuration. </p>
+<p>preserveCaret defaults to true: carets/selections are remapped through the smallest differing UTF-8 range and clamped. false clears active carets only after an applied replacement. Programmatic replacement bypasses readOnly, while UTF-8/newline/maxBytes validation still applies. Any field text mutation invalidates borrowed field text/views.</p>
+<dl class="section return"><dt>Returns</dt><dd>true if text changed; false for an empty strong ID, missing field, unchanged text, or a rejected edit (invalid UTF-8/range, newline policy, or maxBytes). </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> changed = manager.replaceText(fieldId, <span class="stringliteral">&quot;Updated text&quot;</span>, <span class="keyword">true</span>);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="aa9b84ba0866b2fdfac59b6db8d603afa" name="aa9b84ba0866b2fdfac59b6db8d603afa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa9b84ba0866b2fdfac59b6db8d603afa">&#9670;&#160;</a></span>replaceText() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::InputFieldManager::replaceText </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a></td>          <td class="paramname"><span class="paramname"><em>fieldId</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>text</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>preserveCaret</em></span><span class="paramdefsep"> = </span><span class="paramdefval">true</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Replace an existing field's text while retaining its configuration. </p>
+<p>preserveCaret defaults to true: carets/selections are remapped through the smallest differing UTF-8 range and clamped. false clears active carets only after an applied replacement. Programmatic replacement bypasses readOnly, while UTF-8/newline/maxBytes validation still applies. Any field text mutation invalidates borrowed field text/views.</p>
+<dl class="section return"><dt>Returns</dt><dd>true if text changed; false for an empty strong ID, missing field, unchanged text, or a rejected edit (invalid UTF-8/range, newline policy, or maxBytes). </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> changed = manager.replaceText(fieldId, <span class="stringliteral">&quot;Updated text&quot;</span>, <span class="keyword">true</span>);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a04978a6e5fb860093eb873940ed68189" name="a04978a6e5fb860093eb873940ed68189"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a04978a6e5fb860093eb873940ed68189">&#9670;&#160;</a></span>replaceText() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::InputFieldManager::replaceText </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>text</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>preserveCaret</em></span><span class="paramdefsep"> = </span><span class="paramdefval">true</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Replace an existing field's text while retaining its configuration. </p>
+<p>preserveCaret defaults to true: carets/selections are remapped through the smallest differing UTF-8 range and clamped. false clears active carets only after an applied replacement. Programmatic replacement bypasses readOnly, while UTF-8/newline/maxBytes validation still applies. Any field text mutation invalidates borrowed field text/views. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<dl class="section return"><dt>Returns</dt><dd>true if text changed; false for an empty strong ID, missing field, unchanged text, or a rejected edit (invalid UTF-8/range, newline policy, or maxBytes). </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;search&quot;</span>};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> changed = manager.replaceText(key, <span class="stringliteral">&quot;Updated text&quot;</span>, <span class="keyword">true</span>);</div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a2feded7de456bf809a173015de21e9fb" name="a2feded7de456bf809a173015de21e9fb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2feded7de456bf809a173015de21e9fb">&#9670;&#160;</a></span>requestCaret()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a2feded7de456bf809a173015de21e9fb">&#9670;&#160;</a></span>requestCaret() <span class="overload">[1/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -457,27 +958,119 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Request focus or caret changes for an input field. </p>
-<p>Caret requests are applied immediately to manager state. SetPrimary is the normal focus operation for a clicked input field. ClearAll removes focus from every field and ignores fieldId. Add creates another caret for the requested field and is intended for advanced multi-caret editing.</p>
-<p>Calling SetPrimary for a field id that has not been requested yet creates empty manager state for that id. The next <a class="el" href="#a7f1ce20bf8737644ac1ae01bfb5da5f7" title="Register or update an input field for the current frame.">requestField()</a> call for the same id will attach config and Clay element ids to that state.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">fieldId</td><td>Stable id of the field to focus or modify. Ignored when kind is <a class="el" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a7aaf620fe818489b59d52585ff04d995" title="Clear all carets and remove primary input focus.">CaretRequestKind::ClearAll</a>. </td></tr>
-    <tr><td class="paramname">kind</td><td>Caret operation to perform.</td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Apply a focus or caret request to persistent field state. </p>
+<p>SetPrimary is the normal click-focus operation; Add requests an additional caret. Changes take effect immediately in manager state.</p>
+<dl class="section post"><dt>Postcondition</dt><dd>The request has completed. SetPrimary may create empty state before <a class="el" href="#a7f1ce20bf8737644ac1ae01bfb5da5f7" title="Register or update a field and borrow its current frame snapshot.">requestField()</a>; ClearAll clears every field's focus and ignores a strong identity; <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads still validate their key before applying it. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::bad_alloc</td><td>if the request creates a new field state and internal storage allocation fails.</td></tr>
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"></div><!-- fragment --> 
+<div class="fragment"><div class="line">manager.requestCaret(fieldId, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
+<div class="ttc" id="agroup__flowui__input__field__manager_html_ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd"><div class="ttname"><a href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a></div><div class="ttdeci">@ SetPrimary</div><div class="ttdoc">Make the requested field the primary focused input field.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:443</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a23f0f300d0aa98f918f8725bc219de65" name="a23f0f300d0aa98f918f8725bc219de65"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a23f0f300d0aa98f918f8725bc219de65">&#9670;&#160;</a></span>requestCaret() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::InputFieldManager::requestCaret </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a></td>          <td class="paramname"><span class="paramname"><em>fieldId</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__flowui__input__field__manager.html#gafeb7e7dce488c324629200446fdbf6c0">CaretRequestKind</a></td>          <td class="paramname"><span class="paramname"><em>kind</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply a focus or caret request to persistent field state. </p>
+<p>SetPrimary is the normal click-focus operation; Add requests an additional caret. Changes take effect immediately in manager state.</p>
+<dl class="section post"><dt>Postcondition</dt><dd>The request has completed. SetPrimary may create empty state before <a class="el" href="#a7f1ce20bf8737644ac1ae01bfb5da5f7" title="Register or update a field and borrow its current frame snapshot.">requestField()</a>; ClearAll clears every field's focus and ignores a strong identity; <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads still validate their key before applying it. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line">manager.requestCaret(fieldId, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a73f9780939de7f8dc9cad7fa2820c153" name="a73f9780939de7f8dc9cad7fa2820c153"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a73f9780939de7f8dc9cad7fa2820c153">&#9670;&#160;</a></span>requestCaret() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::InputFieldManager::requestCaret </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a></td>          <td class="paramname"><span class="paramname"><em>fieldId</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__flowui__input__field__manager.html#gafeb7e7dce488c324629200446fdbf6c0">CaretRequestKind</a></td>          <td class="paramname"><span class="paramname"><em>kind</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply a focus or caret request to persistent field state. </p>
+<p>SetPrimary is the normal click-focus operation; Add requests an additional caret. Changes take effect immediately in manager state.</p>
+<dl class="section post"><dt>Postcondition</dt><dd>The request has completed. SetPrimary may create empty state before <a class="el" href="#a7f1ce20bf8737644ac1ae01bfb5da5f7" title="Register or update a field and borrow its current frame snapshot.">requestField()</a>; ClearAll clears every field's focus and ignores a strong identity; <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads still validate their key before applying it. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line">manager.requestCaret(fieldId, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a9eceb54793ca9eecb371df49fbbbf8f8" name="a9eceb54793ca9eecb371df49fbbbf8f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9eceb54793ca9eecb371df49fbbbf8f8">&#9670;&#160;</a></span>requestCaret() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::InputFieldManager::requestCaret </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__flowui__input__field__manager.html#gafeb7e7dce488c324629200446fdbf6c0">CaretRequestKind</a></td>          <td class="paramname"><span class="paramname"><em>kind</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply a focus or caret request to persistent field state. </p>
+<p>SetPrimary is the normal click-focus operation; Add requests an additional caret. Changes take effect immediately in manager state. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<dl class="section post"><dt>Postcondition</dt><dd>The request has completed. SetPrimary may create empty state before <a class="el" href="#a7f1ce20bf8737644ac1ae01bfb5da5f7" title="Register or update a field and borrow its current frame snapshot.">requestField()</a>; ClearAll clears every field's focus and ignores a strong identity; <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads still validate their key before applying it. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;search&quot;</span>};</div>
+<div class="line">manager.requestCaret(key, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a7f1ce20bf8737644ac1ae01bfb5da5f7" name="a7f1ce20bf8737644ac1ae01bfb5da5f7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7f1ce20bf8737644ac1ae01bfb5da5f7">&#9670;&#160;</a></span>requestField()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f1ce20bf8737644ac1ae01bfb5da5f7">&#9670;&#160;</a></span>requestField() <span class="overload">[1/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -503,25 +1096,159 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Register or update an input field for the current frame. </p>
-<p><a class="el" href="#a7f1ce20bf8737644ac1ae01bfb5da5f7" title="Register or update an input field for the current frame.">requestField()</a> marks the field as present for this frame, creates manager state when fieldId is new, updates the field config and Clay element ids, and returns the current text/focus snapshot for the field. Call it once per frame from the element that draws the field.</p>
-<p>If the currently focused field is not requested in a frame, FlowUi clears primary input focus for that field when the frame is finalized. Non-focused field state remains cached until <a class="el" href="#a8c351197479be04ee54f912367c31204" title="Remove a managed field by id.">removeField()</a> or <a class="el" href="#a7ac0604f2391bfe2ea5d16b008b68d18" title="Clear all managed input field state.">clear()</a> is called.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">fieldId</td><td>Strong element, global, part, or resource identity used to address the persistent field state. </td></tr>
-    <tr><td class="paramname">request</td><td>First-use text, behavior configuration, and Clay element ids used for text measurement and pointer hit testing. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Current manager-owned text plus focus and selection flags. Returns an empty result when fieldId is empty.</dd></dl>
+<p>Register or update a field and borrow its current frame snapshot. </p>
+<p>Call once per field during its active UI build. Update config and Clay text/content IDs each frame. An unrequested focused field loses primary focus at frame finalization. Text, visible lines, selections, and transaction spans are manager-owned; copy data before field mutation/removal or the next frame invalidates it.</p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structFlowUi_1_1FieldQueryResult.html" title="Result returned from an input field request.">FieldQueryResult</a>; an empty strong ID yields an empty snapshot. New fields copy initialText; later requests preserve edited text. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::bad_alloc</td><td>if internal field storage allocation fails.</td></tr>
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"></div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2input__fields__and__shortcuts.html" title="Input Fields and Shortcuts">Input Fields and Shortcuts</a> </dd></dl>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1FieldRequest.html">FlowUi::FieldRequest</a> request{};</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#a12ef2017e97ede3355dcfc887efc3b03">initialText</a> = <span class="stringliteral">&quot;Search&quot;</span>;</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#a6af8584e0fef10efd0691052b6ee02c9">textElementId</a> = textElementId;</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#aa1e23f55fe98494083ca7147939b6652">contentElementId</a> = contentElementId;</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FieldQueryResult.html">FlowUi::FieldQueryResult</a> field = manager.requestField(fieldId, request);</div>
+<div class="ttc" id="astructFlowUi_1_1FieldQueryResult_html"><div class="ttname"><a href="structFlowUi_1_1FieldQueryResult.html">FlowUi::FieldQueryResult</a></div><div class="ttdoc">Result returned from an input field request.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:551</div></div>
+<div class="ttc" id="astructFlowUi_1_1FieldRequest_html"><div class="ttname"><a href="structFlowUi_1_1FieldRequest.html">FlowUi::FieldRequest</a></div><div class="ttdoc">Input field request submitted by UI code.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:495</div></div>
+<div class="ttc" id="astructFlowUi_1_1FieldRequest_html_a12ef2017e97ede3355dcfc887efc3b03"><div class="ttname"><a href="structFlowUi_1_1FieldRequest.html#a12ef2017e97ede3355dcfc887efc3b03">FlowUi::FieldRequest::initialText</a></div><div class="ttdeci">std::string_view initialText</div><div class="ttdoc">Initial text used when the field state is first created.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:503</div></div>
+<div class="ttc" id="astructFlowUi_1_1FieldRequest_html_a6af8584e0fef10efd0691052b6ee02c9"><div class="ttname"><a href="structFlowUi_1_1FieldRequest.html#a6af8584e0fef10efd0691052b6ee02c9">FlowUi::FieldRequest::textElementId</a></div><div class="ttdeci">Clay_ElementId textElementId</div><div class="ttdoc">Clay text element id for measuring caret and selection positions.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:519</div></div>
+<div class="ttc" id="astructFlowUi_1_1FieldRequest_html_aa1e23f55fe98494083ca7147939b6652"><div class="ttname"><a href="structFlowUi_1_1FieldRequest.html#aa1e23f55fe98494083ca7147939b6652">FlowUi::FieldRequest::contentElementId</a></div><div class="ttdeci">Clay_ElementId contentElementId</div><div class="ttdoc">Clay content element id for pointer hit testing.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:528</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a25eb7ae9c1999afa0ec9d9864fb68c85" name="a25eb7ae9c1999afa0ec9d9864fb68c85"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a25eb7ae9c1999afa0ec9d9864fb68c85">&#9670;&#160;</a></span>requestField() <span class="overload">[2/4]</span></h2>
 
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1FieldQueryResult.html">FieldQueryResult</a> FlowUi::InputFieldManager::requestField </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a></td>          <td class="paramname"><span class="paramname"><em>fieldId</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1FieldRequest.html">FieldRequest</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>request</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Register or update a field and borrow its current frame snapshot. </p>
+<p>Call once per field during its active UI build. Update config and Clay text/content IDs each frame. An unrequested focused field loses primary focus at frame finalization. Text, visible lines, selections, and transaction spans are manager-owned; copy data before field mutation/removal or the next frame invalidates it.</p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structFlowUi_1_1FieldQueryResult.html" title="Result returned from an input field request.">FieldQueryResult</a>; an empty strong ID yields an empty snapshot. New fields copy initialText; later requests preserve edited text. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1FieldRequest.html">FlowUi::FieldRequest</a> request{};</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#a12ef2017e97ede3355dcfc887efc3b03">initialText</a> = <span class="stringliteral">&quot;Search&quot;</span>;</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#a6af8584e0fef10efd0691052b6ee02c9">textElementId</a> = textElementId;</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#aa1e23f55fe98494083ca7147939b6652">contentElementId</a> = contentElementId;</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FieldQueryResult.html">FlowUi::FieldQueryResult</a> field = manager.requestField(fieldId, request);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a88e3df15e73302c5f1e15d853ac80231" name="a88e3df15e73302c5f1e15d853ac80231"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a88e3df15e73302c5f1e15d853ac80231">&#9670;&#160;</a></span>requestField() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1FieldQueryResult.html">FieldQueryResult</a> FlowUi::InputFieldManager::requestField </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a></td>          <td class="paramname"><span class="paramname"><em>fieldId</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1FieldRequest.html">FieldRequest</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>request</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Register or update a field and borrow its current frame snapshot. </p>
+<p>Call once per field during its active UI build. Update config and Clay text/content IDs each frame. An unrequested focused field loses primary focus at frame finalization. Text, visible lines, selections, and transaction spans are manager-owned; copy data before field mutation/removal or the next frame invalidates it.</p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structFlowUi_1_1FieldQueryResult.html" title="Result returned from an input field request.">FieldQueryResult</a>; an empty strong ID yields an empty snapshot. New fields copy initialText; later requests preserve edited text. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1FieldRequest.html">FlowUi::FieldRequest</a> request{};</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#a12ef2017e97ede3355dcfc887efc3b03">initialText</a> = <span class="stringliteral">&quot;Search&quot;</span>;</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#a6af8584e0fef10efd0691052b6ee02c9">textElementId</a> = textElementId;</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#aa1e23f55fe98494083ca7147939b6652">contentElementId</a> = contentElementId;</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FieldQueryResult.html">FlowUi::FieldQueryResult</a> field = manager.requestField(fieldId, request);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a1fd3655b8fe20288d46553b45bb4a028" name="a1fd3655b8fe20288d46553b45bb4a028"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1fd3655b8fe20288d46553b45bb4a028">&#9670;&#160;</a></span>requestField() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1FieldQueryResult.html">FieldQueryResult</a> FlowUi::InputFieldManager::requestField </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1FieldRequest.html">FieldRequest</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>request</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Register or update a field and borrow its current frame snapshot. </p>
+<p>Call once per field during its active UI build. Update config and Clay text/content IDs each frame. An unrequested focused field loses primary focus at frame finalization. Text, visible lines, selections, and transaction spans are manager-owned; copy data before field mutation/removal or the next frame invalidates it. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structFlowUi_1_1FieldQueryResult.html" title="Result returned from an input field request.">FieldQueryResult</a>; an empty strong ID yields an empty snapshot. New fields copy initialText; later requests preserve edited text. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;search&quot;</span>};</div>
+<div class="line"><a class="code hl_struct" href="structFlowUi_1_1FieldRequest.html">FlowUi::FieldRequest</a> request{};</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#a12ef2017e97ede3355dcfc887efc3b03">initialText</a> = <span class="stringliteral">&quot;Search&quot;</span>;</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#a6af8584e0fef10efd0691052b6ee02c9">textElementId</a> = textElementId;</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#aa1e23f55fe98494083ca7147939b6652">contentElementId</a> = contentElementId;</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FieldQueryResult.html">FlowUi::FieldQueryResult</a> field = manager.requestField(key, request);</div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a2893b0895f3c91ba67ad24df396f939c" name="a2893b0895f3c91ba67ad24df396f939c"></a>
@@ -529,6 +1256,9 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool FlowUi::InputFieldManager::submitTextSpan </td>
@@ -541,11 +1271,30 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
           <td class="paramtype">const <a class="el" href="structFlowUi_1_1FieldTextSpanSubmission.html">FieldTextSpanSubmission</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>span</em></span>&#160;)</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Associate a rendered visible line with its logical document range. </p>
-<p>Multiline controls call this once for every <a class="el" href="structFlowUi_1_1VisibleTextLine.html">VisibleTextLine</a> they emit. The frame-scoped handle prevents stale submissions from being accepted. </p>
-
+<p>Associate a visible multiline Clay text node with its document range. </p>
+<p>Submit every emitted <a class="el" href="structFlowUi_1_1VisibleTextLine.html">VisibleTextLine</a> during the same frame as <a class="el" href="#a7f1ce20bf8737644ac1ae01bfb5da5f7" title="Register or update a field and borrow its current frame snapshot.">requestField()</a>. FieldHandle::operator bool only tests its slot and does not validate the epoch.</p>
+<dl class="section return"><dt>Returns</dt><dd>true when accepted; false means an expired handle, unknown field, invalid text ID/range, or range not matching a visible line. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FieldTextSpanSubmission.html">FlowUi::FieldTextSpanSubmission</a> span{</div>
+<div class="line">    .logicalRange = line.logicalRange,</div>
+<div class="line">    .textElementId = textElementId,</div>
+<div class="line">    .visualLineIndex = line.visualLineIndex,</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> accepted = manager.submitTextSpan(field, span);</div>
+<div class="ttc" id="astructFlowUi_1_1FieldTextSpanSubmission_html"><div class="ttname"><a href="structFlowUi_1_1FieldTextSpanSubmission.html">FlowUi::FieldTextSpanSubmission</a></div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:258</div></div>
+</div><!-- fragment -->
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
@@ -564,7 +1313,7 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1InputFieldManager.html">InputFieldManager</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1InputFieldManager.html">InputFieldManager</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

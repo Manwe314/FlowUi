@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,41 +111,57 @@ $(function() {
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &lt;compare&gt;</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="keyword">namespace </span>FlowUi {</div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi.html">FlowUi</a> {</div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint32_t DefaultElementStateGraceFrames = 5;</div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a75674f0b30b2d18f652753b4d5b4361d">    9</a></span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint32_t <a class="code hl_variable" href="namespaceFlowUi.html#a75674f0b30b2d18f652753b4d5b4361d">DefaultElementStateGraceFrames</a> = 5;</div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="keyword">enum class</span> ElementStateRetention : uint8_t {</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    Transient,</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    WindowLifetime,</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>};</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span></div>
-<div class="foldopen" id="foldopen00018" data-start="{" data-end="};">
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ElementStatePolicy.html">   18</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a> {</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    ElementStateRetention retention = ElementStateRetention::Transient;</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    uint32_t graceFrames = DefaultElementStateGraceFrames;</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    [[nodiscard]] <span class="keyword">static</span> <span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a> transient(</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>        uint32_t expiryFrames = DefaultElementStateGraceFrames) <span class="keyword">noexcept</span> {</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>        <span class="keywordflow">return</span> {</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>            .retention = ElementStateRetention::Transient,</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>            .graceFrames = expiryFrames,</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>        };</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    }</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    [[nodiscard]] <span class="keyword">static</span> <span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a> windowLifetime() <span class="keyword">noexcept</span> {</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>        <span class="keywordflow">return</span> {</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>            .retention = ElementStateRetention::WindowLifetime,</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>            .graceFrames = 0,</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>        };</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    }</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    [[nodiscard]] <span class="keyword">auto</span> operator&lt;=&gt;(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a>&amp;) <span class="keyword">const</span> <span class="keyword">noexcept</span> = <span class="keywordflow">default</span>;</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>};</div>
+<div class="foldopen" id="foldopen00012" data-start="{" data-end="};">
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a94cccac6fdb52dc03d209a44823e8aca">   12</a></span><span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceFlowUi.html#a94cccac6fdb52dc03d209a44823e8aca">ElementStateRetention</a> : uint8_t {</div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a94cccac6fdb52dc03d209a44823e8acaab1f023eff9a6b5308d6024e4c6b3d475">   14</a></span>    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a94cccac6fdb52dc03d209a44823e8acaab1f023eff9a6b5308d6024e4c6b3d475">Transient</a>,</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a94cccac6fdb52dc03d209a44823e8acaaf53504c214844bb1bff7fa679b8a6d41">   16</a></span>    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a94cccac6fdb52dc03d209a44823e8acaaf53504c214844bb1bff7fa679b8a6d41">WindowLifetime</a>,</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>};</div>
 </div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>} <span class="comment">// namespace FlowUi</span></div>
-<div class="ttc" id="astructFlowUi_1_1ElementStatePolicy_html"><div class="ttname"><a href="structFlowUi_1_1ElementStatePolicy.html">FlowUi::ElementStatePolicy</a></div><div class="ttdoc">Definition-level retention policy applied whenever an element is invoked.</div><div class="ttdef"><b>Definition</b> ElementStatePolicy.hpp:18</div></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span></div>
+<div class="foldopen" id="foldopen00024" data-start="{" data-end="};">
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ElementStatePolicy.html">   24</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a> {</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ElementStatePolicy.html#a6572ecbadc707dd6473b3e7c9ec8a578">   26</a></span>    <a class="code hl_enumeration" href="namespaceFlowUi.html#a94cccac6fdb52dc03d209a44823e8aca">ElementStateRetention</a> <a class="code hl_variable" href="structFlowUi_1_1ElementStatePolicy.html#a6572ecbadc707dd6473b3e7c9ec8a578">retention</a> = <a class="code hl_enumvalue" href="namespaceFlowUi.html#a94cccac6fdb52dc03d209a44823e8acaab1f023eff9a6b5308d6024e4c6b3d475">ElementStateRetention::Transient</a>;</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ElementStatePolicy.html#a627bcacdc7062c672ba7bbf0a3a36505">   28</a></span>    uint32_t <a class="code hl_variable" href="structFlowUi_1_1ElementStatePolicy.html#a627bcacdc7062c672ba7bbf0a3a36505">graceFrames</a> = <a class="code hl_variable" href="namespaceFlowUi.html#a75674f0b30b2d18f652753b4d5b4361d">DefaultElementStateGraceFrames</a>;</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span></div>
+<div class="foldopen" id="foldopen00035" data-start="{" data-end="}">
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ElementStatePolicy.html#ae2288106c0174be1afef7a9bf584c89b">   35</a></span>    [[nodiscard]] <span class="keyword">static</span> <span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a> <a class="code hl_function" href="structFlowUi_1_1ElementStatePolicy.html#ae2288106c0174be1afef7a9bf584c89b">transient</a>(</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>        uint32_t expiryFrames = <a class="code hl_variable" href="namespaceFlowUi.html#a75674f0b30b2d18f652753b4d5b4361d">DefaultElementStateGraceFrames</a>) <span class="keyword">noexcept</span> {</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>        <span class="keywordflow">return</span> {</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>            .retention = <a class="code hl_enumvalue" href="namespaceFlowUi.html#a94cccac6fdb52dc03d209a44823e8acaab1f023eff9a6b5308d6024e4c6b3d475">ElementStateRetention::Transient</a>,</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>            .graceFrames = expiryFrames,</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>        };</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    }</div>
+</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span></div>
+<div class="foldopen" id="foldopen00048" data-start="{" data-end="}">
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ElementStatePolicy.html#abb04d33bea2c0e2b36c638af76105114">   48</a></span>    [[nodiscard]] <span class="keyword">static</span> <span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a> <a class="code hl_function" href="structFlowUi_1_1ElementStatePolicy.html#abb04d33bea2c0e2b36c638af76105114">windowLifetime</a>() noexcept {</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>        <span class="keywordflow">return</span> {</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>            .retention = <a class="code hl_enumvalue" href="namespaceFlowUi.html#a94cccac6fdb52dc03d209a44823e8acaaf53504c214844bb1bff7fa679b8a6d41">ElementStateRetention::WindowLifetime</a>,</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>            .graceFrames = 0,</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>        };</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    }</div>
+</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span></div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ElementStatePolicy.html#a966794a7d614a76e487960232380bd2f">   60</a></span>    [[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="structFlowUi_1_1ElementStatePolicy.html#a966794a7d614a76e487960232380bd2f">operator&lt;=&gt;</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a>&amp;) <span class="keyword">const</span> <span class="keyword">noexcept</span> = <span class="keywordflow">default</span>;</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>};</div>
+</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="ttc" id="anamespaceFlowUi_html"><div class="ttname"><a href="namespaceFlowUi.html">FlowUi</a></div><div class="ttdef"><b>Definition</b> App.hpp:29</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a75674f0b30b2d18f652753b4d5b4361d"><div class="ttname"><a href="namespaceFlowUi.html#a75674f0b30b2d18f652753b4d5b4361d">FlowUi::DefaultElementStateGraceFrames</a></div><div class="ttdeci">constexpr uint32_t DefaultElementStateGraceFrames</div><div class="ttdoc">Number of successfully committed absent frames retained by default.</div><div class="ttdef"><b>Definition</b> ElementStatePolicy.hpp:9</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a94cccac6fdb52dc03d209a44823e8aca"><div class="ttname"><a href="namespaceFlowUi.html#a94cccac6fdb52dc03d209a44823e8aca">FlowUi::ElementStateRetention</a></div><div class="ttdeci">ElementStateRetention</div><div class="ttdoc">Lifetime policy for state owned by one Flow element instance.</div><div class="ttdef"><b>Definition</b> ElementStatePolicy.hpp:12</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a94cccac6fdb52dc03d209a44823e8acaab1f023eff9a6b5308d6024e4c6b3d475"><div class="ttname"><a href="namespaceFlowUi.html#a94cccac6fdb52dc03d209a44823e8acaab1f023eff9a6b5308d6024e4c6b3d475">FlowUi::ElementStateRetention::Transient</a></div><div class="ttdeci">@ Transient</div><div class="ttdef"><b>Definition</b> ElementStatePolicy.hpp:14</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a94cccac6fdb52dc03d209a44823e8acaaf53504c214844bb1bff7fa679b8a6d41"><div class="ttname"><a href="namespaceFlowUi.html#a94cccac6fdb52dc03d209a44823e8acaaf53504c214844bb1bff7fa679b8a6d41">FlowUi::ElementStateRetention::WindowLifetime</a></div><div class="ttdeci">@ WindowLifetime</div><div class="ttdef"><b>Definition</b> ElementStatePolicy.hpp:16</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementStatePolicy_html"><div class="ttname"><a href="structFlowUi_1_1ElementStatePolicy.html">FlowUi::ElementStatePolicy</a></div><div class="ttdef"><b>Definition</b> ElementStatePolicy.hpp:24</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementStatePolicy_html_a627bcacdc7062c672ba7bbf0a3a36505"><div class="ttname"><a href="structFlowUi_1_1ElementStatePolicy.html#a627bcacdc7062c672ba7bbf0a3a36505">FlowUi::ElementStatePolicy::graceFrames</a></div><div class="ttdeci">uint32_t graceFrames</div><div class="ttdef"><b>Definition</b> ElementStatePolicy.hpp:28</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementStatePolicy_html_a6572ecbadc707dd6473b3e7c9ec8a578"><div class="ttname"><a href="structFlowUi_1_1ElementStatePolicy.html#a6572ecbadc707dd6473b3e7c9ec8a578">FlowUi::ElementStatePolicy::retention</a></div><div class="ttdeci">ElementStateRetention retention</div><div class="ttdef"><b>Definition</b> ElementStatePolicy.hpp:26</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementStatePolicy_html_a966794a7d614a76e487960232380bd2f"><div class="ttname"><a href="structFlowUi_1_1ElementStatePolicy.html#a966794a7d614a76e487960232380bd2f">FlowUi::ElementStatePolicy::operator&lt;=&gt;</a></div><div class="ttdeci">auto operator&lt;=&gt;(const ElementStatePolicy &amp;) const noexcept=default</div><div class="ttdoc">Compare retention mode and grace period by value.</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementStatePolicy_html_abb04d33bea2c0e2b36c638af76105114"><div class="ttname"><a href="structFlowUi_1_1ElementStatePolicy.html#abb04d33bea2c0e2b36c638af76105114">FlowUi::ElementStatePolicy::windowLifetime</a></div><div class="ttdeci">static constexpr ElementStatePolicy windowLifetime() noexcept</div><div class="ttdoc">Create a policy retaining state until explicit erasure or owning-window destruction.</div><div class="ttdef"><b>Definition</b> ElementStatePolicy.hpp:48</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementStatePolicy_html_ae2288106c0174be1afef7a9bf584c89b"><div class="ttname"><a href="structFlowUi_1_1ElementStatePolicy.html#ae2288106c0174be1afef7a9bf584c89b">FlowUi::ElementStatePolicy::transient</a></div><div class="ttdeci">static constexpr ElementStatePolicy transient(uint32_t expiryFrames=DefaultElementStateGraceFrames) noexcept</div><div class="ttdoc">Create a transient policy retaining state for expiryFrames successfully committed absent frames,...</div><div class="ttdef"><b>Definition</b> ElementStatePolicy.hpp:35</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,7 +107,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Context passed to event and logic callbacks.  
+<p>Context passed to event and logic callbacks.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="ElementContexts_8hpp_source.html">ElementContexts.hpp</a>&gt;</code></p>
@@ -117,36 +117,47 @@ Public Types</h2></td></tr>
 <tr class="memitem:a0b60168cedc70f473c76dd95b6d85e8b" id="r_a0b60168cedc70f473c76dd95b6d85e8b"><td class="memItemLeft"><a id="a0b60168cedc70f473c76dd95b6d85e8b" name="a0b60168cedc70f473c76dd95b6d85e8b"></a>
 using&#160;</td><td class="memItemRight"><b>ElementType</b> = std::remove_cvref_t&lt;Element&gt;</td></tr>
 <tr class="memdesc:a0b60168cedc70f473c76dd95b6d85e8b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Complete element definition type associated with this callback. <br /></td></tr>
-<tr class="memitem:a5810253fdbc2ee15206b3752b2e827b8" id="r_a5810253fdbc2ee15206b3752b2e827b8"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a5810253fdbc2ee15206b3752b2e827b8">ParametersType</a> = ParametersOf&lt;<a class="el" href="#a0b60168cedc70f473c76dd95b6d85e8b">ElementType</a>&gt;</td></tr>
+<tr class="memitem:a5810253fdbc2ee15206b3752b2e827b8" id="r_a5810253fdbc2ee15206b3752b2e827b8"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a5810253fdbc2ee15206b3752b2e827b8">ParametersType</a> = <a class="el" href="namespaceFlowUi.html#a59018466ca1c85e41b73f6e6c11666cd">ParametersOf</a>&lt;<a class="el" href="#a0b60168cedc70f473c76dd95b6d85e8b">ElementType</a>&gt;</td></tr>
 <tr class="memdesc:a5810253fdbc2ee15206b3752b2e827b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parameter type exposed through params.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a19b0efdf0ccd58d56ecd7fea5adde2e2" id="r_a19b0efdf0ccd58d56ecd7fea5adde2e2"><td class="memItemLeft"><a id="a19b0efdf0ccd58d56ecd7fea5adde2e2" name="a19b0efdf0ccd58d56ecd7fea5adde2e2"></a>
-&#160;</td><td class="memItemRight"><b>ElementInteractionContext</b> (<a class="el" href="classFlowUi_1_1detail_1_1element_1_1ElementInvocation.html">detail::element::ElementInvocation</a>&lt; <a class="el" href="#a0b60168cedc70f473c76dd95b6d85e8b">ElementType</a> &gt; &amp;invocation, <a class="el" href="#a5810253fdbc2ee15206b3752b2e827b8">ParametersType</a> &amp;parameters, const <a class="el" href="structFlowUi_1_1InteractionSnapshot.html">InteractionSnapshot</a> &amp;interaction) noexcept</td></tr>
+<tr class="memitem:a19b0efdf0ccd58d56ecd7fea5adde2e2" id="r_a19b0efdf0ccd58d56ecd7fea5adde2e2"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a19b0efdf0ccd58d56ecd7fea5adde2e2">ElementInteractionContext</a> (detail::element::ElementInvocation&lt; <a class="el" href="#a0b60168cedc70f473c76dd95b6d85e8b">ElementType</a> &gt; &amp;invocation, <a class="el" href="#a5810253fdbc2ee15206b3752b2e827b8">ParametersType</a> &amp;parameters, const <a class="el" href="structFlowUi_1_1InteractionSnapshot.html">InteractionSnapshot</a> &amp;interaction) noexcept</td></tr>
+<tr class="memdesc:a19b0efdf0ccd58d56ecd7fea5adde2e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Framework-created callback context with the previous completed interaction snapshot. Application hooks receive this by reference; do not retain it.  <br /></td></tr>
 <tr class="memitem:a5b2041ef0c4efdc246daf9cb852af6dd" id="r_a5b2041ef0c4efdc246daf9cb852af6dd"><td class="memTemplParams" colspan="2">template&lt;typename E = ElementType&gt; </td></tr>
-<tr class="memitem:a5b2041ef0c4efdc246daf9cb852af6dd template"><td class="memItemLeft">StateOf&lt; E &gt; &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a5b2041ef0c4efdc246daf9cb852af6dd">state</a> ()</td></tr>
+<tr class="memitem:a5b2041ef0c4efdc246daf9cb852af6dd template"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a0cbe3a297b3db506b29c699f3b2d792d">StateOf</a>&lt; E &gt; &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a5b2041ef0c4efdc246daf9cb852af6dd">state</a> ()</td></tr>
+<tr class="memdesc:a5b2041ef0c4efdc246daf9cb852af6dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a direct mutable or const state reference for this exact element type. Available only with <a class="el" href="conceptFlowUi_1_1HasState.html">HasState</a>; the template argument cannot select another element type.  <br /></td></tr>
 <tr class="memitem:aa05a5a54b644831c8a4e66ca9ac7d15b" id="r_aa05a5a54b644831c8a4e66ca9ac7d15b"><td class="memTemplParams" colspan="2">template&lt;typename E = ElementType&gt; </td></tr>
-<tr class="memitem:aa05a5a54b644831c8a4e66ca9ac7d15b template"><td class="memItemLeft">const StateOf&lt; E &gt; &amp;&#160;</td><td class="memItemRight"><a class="el" href="#aa05a5a54b644831c8a4e66ca9ac7d15b">state</a> () const</td></tr>
+<tr class="memitem:aa05a5a54b644831c8a4e66ca9ac7d15b template"><td class="memItemLeft">const <a class="el" href="namespaceFlowUi.html#a0cbe3a297b3db506b29c699f3b2d792d">StateOf</a>&lt; E &gt; &amp;&#160;</td><td class="memItemRight"><a class="el" href="#aa05a5a54b644831c8a4e66ca9ac7d15b">state</a> () const</td></tr>
+<tr class="memdesc:aa05a5a54b644831c8a4e66ca9ac7d15b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a direct mutable or const state reference for this exact element type. Available only with <a class="el" href="conceptFlowUi_1_1HasState.html">HasState</a>; the template argument cannot select another element type.  <br /></td></tr>
 <tr class="memitem:a7903827d895d42e8e0ef6b5ceb524d92" id="r_a7903827d895d42e8e0ef6b5ceb524d92"><td class="memTemplParams" colspan="2">template&lt;typename E = ElementType&gt; </td></tr>
-<tr class="memitem:a7903827d895d42e8e0ef6b5ceb524d92 template"><td class="memItemLeft">const ResourcesOf&lt; E &gt; &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a7903827d895d42e8e0ef6b5ceb524d92">resources</a> () const</td></tr>
+<tr class="memitem:a7903827d895d42e8e0ef6b5ceb524d92 template"><td class="memItemLeft">const <a class="el" href="namespaceFlowUi.html#a4a7ea53ea51b3fd5e1d963eae1d4617c">ResourcesOf</a>&lt; E &gt; &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a7903827d895d42e8e0ef6b5ceb524d92">resources</a> () const</td></tr>
+<tr class="memdesc:a7903827d895d42e8e0ef6b5ceb524d92"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lazily initialize and return this exact definition immutable app-wide resources by const reference. Available only with <a class="el" href="conceptFlowUi_1_1HasResources.html">HasResources</a>.  <br /></td></tr>
 <tr class="memitem:gaeeaa0e4c984a4c5d85e96db214e4ba79" id="r_gaeeaa0e4c984a4c5d85e96db214e4ba79"><td class="memItemLeft">Clay_ElementId&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#gaeeaa0e4c984a4c5d85e96db214e4ba79">clayID</a> () const</td></tr>
-<tr class="memitem:ga1ee806e7d92014131a6ace12aede2de0" id="r_ga1ee806e7d92014131a6ace12aede2de0"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a>&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#ga1ee806e7d92014131a6ace12aede2de0">childID</a> (<a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> name) const</td></tr>
-<tr class="memitem:ga1295d0523fac0c200da40929bf194d02" id="r_ga1295d0523fac0c200da40929bf194d02"><td class="memItemLeft">
-<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a>&#160;</td><td class="memItemRight"><b>childID</b> (<a class="el" href="structFlowUi_1_1RuntimeElementName.html">RuntimeElementName</a> name) const</td></tr>
-<tr class="memitem:ga6770bc45c11a20de231a776b481094bb" id="r_ga6770bc45c11a20de231a776b481094bb"><td class="memItemLeft">
-<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a>&#160;</td><td class="memItemRight"><b>childID</b> (<a class="el" href="structFlowUi_1_1IndexedElementName.html">IndexedElementName</a> name) const</td></tr>
-<tr class="memitem:gab90bca3eea23da84eefe7d3951f447a0" id="r_gab90bca3eea23da84eefe7d3951f447a0"><td class="memItemLeft">Clay_ElementId&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#gab90bca3eea23da84eefe7d3951f447a0">clayID</a> (<a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> name) const</td></tr>
-<tr class="memitem:gaec1f2c98ba4904548a878e4f8fcbc325" id="r_gaec1f2c98ba4904548a878e4f8fcbc325"><td class="memItemLeft">
-Clay_ElementId&#160;</td><td class="memItemRight"><b>clayID</b> (<a class="el" href="structFlowUi_1_1RuntimeElementName.html">RuntimeElementName</a> name) const</td></tr>
-<tr class="memitem:gad15bb15a3c195809aa89a1843e0f64da" id="r_gad15bb15a3c195809aa89a1843e0f64da"><td class="memItemLeft">
-Clay_ElementId&#160;</td><td class="memItemRight"><b>clayID</b> (<a class="el" href="structFlowUi_1_1IndexedElementName.html">IndexedElementName</a> name) const</td></tr>
-<tr class="memitem:ga769797343a838239fecbe6789e6c1b86" id="r_ga769797343a838239fecbe6789e6c1b86"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a>&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#ga769797343a838239fecbe6789e6c1b86">part</a> (<a class="el" href="structFlowUi_1_1FlowElementPart.html">FlowElementPart</a> declaration) const</td></tr>
+<tr class="memdesc:gaeeaa0e4c984a4c5d85e96db214e4ba79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return this element root Clay ID directly. Library failures throw <a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a> and latch frame failure; abandon the failed frame.  <br /></td></tr>
+<tr class="memitem:ga9a1a45b7df03258830116ecc468d94e6" id="r_ga9a1a45b7df03258830116ecc468d94e6"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#ga9a1a45b7df03258830116ecc468d94e6">childID</a> (<a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> name) const noexcept</td></tr>
+<tr class="memdesc:ga9a1a45b7df03258830116ecc468d94e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve a local, runtime or indexed/keyed child name under this concrete element and return its strong <a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a>. Runtime text is hashed, not retained.  <br /></td></tr>
+<tr class="memitem:gaa5a47a7455cf606239eb7e0252c46ac1" id="r_gaa5a47a7455cf606239eb7e0252c46ac1"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#gaa5a47a7455cf606239eb7e0252c46ac1">childID</a> (<a class="el" href="structFlowUi_1_1RuntimeElementName.html">RuntimeElementName</a> name) const noexcept</td></tr>
+<tr class="memdesc:gaa5a47a7455cf606239eb7e0252c46ac1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve a local, runtime or indexed/keyed child name under this concrete element and return its strong <a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a>. Runtime text is hashed, not retained.  <br /></td></tr>
+<tr class="memitem:gafb746d5404b5998f4d7f0cc30b12656b" id="r_gafb746d5404b5998f4d7f0cc30b12656b"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#gafb746d5404b5998f4d7f0cc30b12656b">childID</a> (<a class="el" href="structFlowUi_1_1IndexedElementName.html">IndexedElementName</a> name) const noexcept</td></tr>
+<tr class="memdesc:gafb746d5404b5998f4d7f0cc30b12656b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve a local, runtime or indexed/keyed child name under this concrete element and return its strong <a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a>. Runtime text is hashed, not retained.  <br /></td></tr>
+<tr class="memitem:ga009af8f7a0056f753227607c64e2a2b9" id="r_ga009af8f7a0056f753227607c64e2a2b9"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; Clay_ElementId &gt;&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#ga009af8f7a0056f753227607c64e2a2b9">clayID</a> (<a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> name) const noexcept</td></tr>
+<tr class="memdesc:ga009af8f7a0056f753227607c64e2a2b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve and bridge a named child through a checked <a class="el" href="classFlowUi_1_1Result.html">Result</a>. Invalid child names can be rejected locally; bridge/storage failures latch the frame and require cancellation.  <br /></td></tr>
+<tr class="memitem:gaf1fc95b7c97dfd20894100e81875b3de" id="r_gaf1fc95b7c97dfd20894100e81875b3de"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; Clay_ElementId &gt;&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#gaf1fc95b7c97dfd20894100e81875b3de">clayID</a> (<a class="el" href="structFlowUi_1_1RuntimeElementName.html">RuntimeElementName</a> name) const noexcept</td></tr>
+<tr class="memdesc:gaf1fc95b7c97dfd20894100e81875b3de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve and bridge a named child through a checked <a class="el" href="classFlowUi_1_1Result.html">Result</a>. Invalid child names can be rejected locally; bridge/storage failures latch the frame and require cancellation.  <br /></td></tr>
+<tr class="memitem:ga7b7e4426707983b616ce17bba5d5317e" id="r_ga7b7e4426707983b616ce17bba5d5317e"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; Clay_ElementId &gt;&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#ga7b7e4426707983b616ce17bba5d5317e">clayID</a> (<a class="el" href="structFlowUi_1_1IndexedElementName.html">IndexedElementName</a> name) const noexcept</td></tr>
+<tr class="memdesc:ga7b7e4426707983b616ce17bba5d5317e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve and bridge a named child through a checked <a class="el" href="classFlowUi_1_1Result.html">Result</a>. Invalid child names can be rejected locally; bridge/storage failures latch the frame and require cancellation.  <br /></td></tr>
+<tr class="memitem:ga8dec4472d1f871d3dbf27d3953d3173a" id="r_ga8dec4472d1f871d3dbf27d3953d3173a"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#ga8dec4472d1f871d3dbf27d3953d3173a">part</a> (<a class="el" href="structFlowUi_1_1FlowElementPart.html">FlowElementPart</a> declaration) const noexcept</td></tr>
+<tr class="memdesc:ga8dec4472d1f871d3dbf27d3953d3173a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bind a definition-time semantic part declaration to this concrete owner and return its <a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a>.  <br /></td></tr>
 <tr class="memitem:ga18a436badc247d75f31fc2e069acd0b7" id="r_ga18a436badc247d75f31fc2e069acd0b7"><td class="memTemplParams" colspan="2">template&lt;FlowElement PartElement&gt; </td></tr>
 <tr class="memitem:ga18a436badc247d75f31fc2e069acd0b7 template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1ElementBuilder.html">ElementBuilder</a>&lt; PartElement &gt;&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#ga18a436badc247d75f31fc2e069acd0b7">createPart</a> (const PartElement &amp;element, <a class="el" href="structFlowUi_1_1FlowElementPart.html">FlowElementPart</a> declaration) const</td></tr>
+<tr class="memdesc:ga18a436badc247d75f31fc2e069acd0b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a direct child builder at a semantic part address. Validation and parameter-construction exceptions propagate and fail the frame.  <br /></td></tr>
 <tr class="memitem:ad43cac79a92c0f6b6966e63bd65d0669" id="r_ad43cac79a92c0f6b6966e63bd65d0669"><td class="memItemLeft">constexpr <a class="el" href="classFlowUi_1_1IndexedElementIDSequence.html">IndexedElementIDSequence</a>&#160;</td><td class="memItemRight"><a class="el" href="#ad43cac79a92c0f6b6966e63bd65d0669">indexedIDs</a> (<a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> baseName, uint64_t firstIndex=0) const noexcept</td></tr>
-<tr class="memitem:ga9e06eb3ce46ac7553c04f68077d8566b" id="r_ga9e06eb3ce46ac7553c04f68077d8566b"><td class="memItemLeft">ActionInvocationStatus&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#ga9e06eb3ce46ac7553c04f68077d8566b">invoke</a> (<a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a> call)</td></tr>
-<tr class="memitem:ga7b23903647b2b905818f5d5805ca7748" id="r_ga7b23903647b2b905818f5d5805ca7748"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1ActionAvailability.html">ActionAvailability</a>&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#ga7b23903647b2b905818f5d5805ca7748">actionAvailability</a> (<a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a> call) const</td></tr>
+<tr class="memdesc:ad43cac79a92c0f6b6966e63bd65d0669"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a positional child-name sequence. Names follow position after reordering; use Keyed names for stable data identity.  <br /></td></tr>
+<tr class="memitem:ga9e06eb3ce46ac7553c04f68077d8566b" id="r_ga9e06eb3ce46ac7553c04f68077d8566b"><td class="memItemLeft"><a class="el" href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">ActionInvocationStatus</a>&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#ga9e06eb3ce46ac7553c04f68077d8566b">invoke</a> (<a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a> call)</td></tr>
+<tr class="memdesc:ga9e06eb3ce46ac7553c04f68077d8566b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke this action synchronously with this window/element/hook as source. Return a direct <a class="el" href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">ActionInvocationStatus</a>; callback exceptions propagate unchanged.  <br /></td></tr>
+<tr class="memitem:ga65e5fc41972527d722b539fb532ffafa" id="r_ga65e5fc41972527d722b539fb532ffafa"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1ActionAvailability.html">ActionAvailability</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#ga65e5fc41972527d722b539fb532ffafa">actionAvailability</a> (<a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a> call) const noexcept</td></tr>
+<tr class="memdesc:ga65e5fc41972527d722b539fb532ffafa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return checked effective action availability without invoking the call. Unavailable/empty/unbound calls have enabled=false; structured resolution failures remain distinct errors.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -157,16 +168,11 @@ Public Attributes</h2></td></tr>
 <tr class="memdesc:a6822d2aa590cec5ef02cecad5c4f0d9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parameters for this element instance.  <br /></td></tr>
 <tr class="memitem:aabe5c09d3f4c861c1076b1b842b783cf" id="r_aabe5c09d3f4c861c1076b1b842b783cf"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1InteractionSnapshot.html">InteractionSnapshot</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#aabe5c09d3f4c861c1076b1b842b783cf">previousInteraction</a></td></tr>
 <tr class="memdesc:aabe5c09d3f4c861c1076b1b842b783cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interaction state captured from the previous completed frame.  <br /></td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a2fe84d7ac8837e8b29eff6be7b27beca" id="r_a2fe84d7ac8837e8b29eff6be7b27beca"><td class="memItemLeft"><a id="a2fe84d7ac8837e8b29eff6be7b27beca" name="a2fe84d7ac8837e8b29eff6be7b27beca"></a>
-class&#160;</td><td class="memItemRight"><b>ElementBuilder&lt; ElementType &gt;</b></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;typename Element&gt;<br />
 struct FlowUi::ElementInteractionContext&lt; Element &gt;</div><p>Context passed to event and logic callbacks. </p>
-<p><a class="el" href="structFlowUi_1_1ElementInteractionContext.html" title="Context passed to event and logic callbacks.">ElementInteractionContext</a> provides the element instance data available while processing onHovered, onPressed, onHeld, onReleased, and runLogic callbacks. Event callbacks are invoked from the previous completed frame interaction snapshot. Logic callbacks receive the same context type when enabled. </p>
+<p><a class="el" href="structFlowUi_1_1ElementInteractionContext.html" title="Context passed to event and logic callbacks.">ElementInteractionContext</a> provides the element instance data available while processing onHovered, onPressed, onHeld, onReleased, and runLogic callbacks. Event callbacks are invoked from the previous completed frame interaction snapshot. Logic callbacks receive the same context type when enabled. The context and its borrowed references are valid only for the callback. </p>
 </div><a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Member Typedef Documentation</h2>
 <a id="a5810253fdbc2ee15206b3752b2e827b8" name="a5810253fdbc2ee15206b3752b2e827b8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5810253fdbc2ee15206b3752b2e827b8">&#9670;&#160;</a></span>ParametersType</h2>
@@ -177,13 +183,53 @@ struct FlowUi::ElementInteractionContext&lt; Element &gt;</div><p>Context passed
 template&lt;typename Element&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::ParametersType = ParametersOf&lt;<a class="el" href="#a0b60168cedc70f473c76dd95b6d85e8b">ElementType</a>&gt;</td>
+          <td class="memname">using <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::ParametersType = <a class="el" href="namespaceFlowUi.html#a59018466ca1c85e41b73f6e6c11666cd">ParametersOf</a>&lt;<a class="el" href="#a0b60168cedc70f473c76dd95b6d85e8b">ElementType</a>&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Parameter type exposed through params. </p>
 <p>Elements that omit Parameters resolve to <a class="el" href="structFlowUi_1_1NoElementParameters.html">NoElementParameters</a> so interaction callbacks always receive a valid params reference. </p>
+
+</div>
+</div>
+<a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a19b0efdf0ccd58d56ecd7fea5adde2e2" name="a19b0efdf0ccd58d56ecd7fea5adde2e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a19b0efdf0ccd58d56ecd7fea5adde2e2">&#9670;&#160;</a></span>ElementInteractionContext()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Element&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::ElementInteractionContext </td>
+          <td>(</td>
+          <td class="paramtype">detail::element::ElementInvocation&lt; <a class="el" href="#a0b60168cedc70f473c76dd95b6d85e8b">ElementType</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>invocation</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#a5810253fdbc2ee15206b3752b2e827b8">ParametersType</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>parameters</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1InteractionSnapshot.html">InteractionSnapshot</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>interaction</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Framework-created callback context with the previous completed interaction snapshot. Application hooks receive this by reference; do not retain it. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -216,7 +262,9 @@ template&lt;typename Element&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Create a local positional sequence. State follows position after reordering. </p>
+
+<p>Create a positional child-name sequence. Names follow position after reordering; use Keyed names for stable data identity. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -234,7 +282,7 @@ template&lt;typename E = ElementType&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const ResourcesOf&lt; E &gt; &amp; <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::resources </td>
+          <td class="memname">const <a class="el" href="namespaceFlowUi.html#a4a7ea53ea51b3fd5e1d963eae1d4617c">ResourcesOf</a>&lt; E &gt; &amp; <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::resources </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
@@ -246,7 +294,10 @@ template&lt;typename E = ElementType&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Lazily resolve and return this definition's immutable app-wide resources. </p>
+
+<p>Lazily initialize and return this exact definition immutable app-wide resources by const reference. Available only with <a class="el" href="conceptFlowUi_1_1HasResources.html">HasResources</a>. </p>
+<p>The reference borrows manager-owned app-wide data for this callback. Resource-constructor and allocation exceptions propagate and latch frame failure; cancel the failed frame. Resources are shared across all instances of this definition.</p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -264,7 +315,7 @@ template&lt;typename E = ElementType&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">StateOf&lt; E &gt; &amp; <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::state </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a0cbe3a297b3db506b29c699f3b2d792d">StateOf</a>&lt; E &gt; &amp; <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::state </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
@@ -276,7 +327,10 @@ template&lt;typename E = ElementType&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Return the state resolved once and cached for this element invocation. </p>
+
+<p>Return a direct mutable or const state reference for this exact element type. Available only with <a class="el" href="conceptFlowUi_1_1HasState.html">HasState</a>; the template argument cannot select another element type. </p>
+<p>The reference borrows manager-owned per-window state for this callback through the active invocation lease. State validation failures propagate and latch frame failure; cancel the failed frame.</p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -294,7 +348,7 @@ template&lt;typename E = ElementType&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const StateOf&lt; E &gt; &amp; <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::state </td>
+          <td class="memname">const <a class="el" href="namespaceFlowUi.html#a0cbe3a297b3db506b29c699f3b2d792d">StateOf</a>&lt; E &gt; &amp; <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::state </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
@@ -306,7 +360,10 @@ template&lt;typename E = ElementType&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Return immutable cached state from a const context. </p>
+
+<p>Return a direct mutable or const state reference for this exact element type. Available only with <a class="el" href="conceptFlowUi_1_1HasState.html">HasState</a>; the template argument cannot select another element type. </p>
+<p>The reference borrows manager-owned per-window state for this callback through the active invocation lease. State validation failures propagate and latch frame failure; cancel the failed frame.</p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
 
 </div>
 </div>
@@ -381,7 +438,7 @@ template&lt;typename Element&gt; </div>
 </div><div class="memdoc">
 
 <p>UI manager that owns the active frame. </p>
-<p>Interaction callbacks use this reference for frame-scoped FlowUi services and for accessing manager state needed by the callback. </p>
+<p>Interaction callbacks use this reference for frame-scoped <a class="el" href="namespaceFlowUi.html">FlowUi</a> services and for accessing manager state needed by the callback. </p>
 
 </div>
 </div>
@@ -402,7 +459,7 @@ template&lt;typename Element&gt; </div>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1ElementInteractionContext.html">ElementInteractionContext</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1ElementInteractionContext.html">ElementInteractionContext</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include <algorithm>
 #include <cstddef>
 #include <optional>
@@ -236,7 +238,7 @@ BuildResult requestAndSynchronize(
 	if (changedThisFrame) {
 		state.editSessionDirty = true;
 		if (params.value && params.syncPolicy == TextFieldSyncPolicy::Live) {
-			*params.value = field.text.copy();
+			*params.value = FlowUi::ValueOrThrow(field.text.copy());
 		}
 		notifications.changed = true;
 	}
@@ -248,7 +250,7 @@ BuildResult requestAndSynchronize(
 	if (state.wasFocused && !focused) {
 		if (params.value && state.editSessionDirty &&
 			params.syncPolicy == TextFieldSyncPolicy::OnCommit) {
-			*params.value = field.text.copy();
+			*params.value = FlowUi::ValueOrThrow(field.text.copy());
 		}
 		if (state.editSessionDirty) {
 			notifications.committed = true;
@@ -262,7 +264,7 @@ BuildResult requestAndSynchronize(
 	notifications.redoRequested = hasCommand(field, FieldCommandRequest::Redo);
 	if (submitted) {
 		if (params.value && params.syncPolicy == TextFieldSyncPolicy::OnCommit) {
-			*params.value = field.text.copy();
+			*params.value = FlowUi::ValueOrThrow(field.text.copy());
 		}
 		if (state.editSessionDirty) {
 			notifications.committed = true;

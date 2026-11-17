@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,16 +106,63 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::TextSelection Struct Reference<div class="ingroups"><a class="el" href="group__flowui__input__field__manager.html">Input Field Manager</a></div></div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="InputFieldTypes_8hpp_source.html">InputFieldTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:acb38dccc21bd96aa2df184902475bfa8" id="r_acb38dccc21bd96aa2df184902475bfa8"><td class="memItemLeft"><a id="acb38dccc21bd96aa2df184902475bfa8" name="acb38dccc21bd96aa2df184902475bfa8"></a>
-size_t&#160;</td><td class="memItemRight"><b>anchorByte</b> = 0</td></tr>
-<tr class="memitem:ac8866618a41e6b1ba7a50d34b8a658f6" id="r_ac8866618a41e6b1ba7a50d34b8a658f6"><td class="memItemLeft"><a id="ac8866618a41e6b1ba7a50d34b8a658f6" name="ac8866618a41e6b1ba7a50d34b8a658f6"></a>
-size_t&#160;</td><td class="memItemRight"><b>headByte</b> = 0</td></tr>
-<tr class="memitem:a53d2a4594b5e0fa78ce18912db38b653" id="r_a53d2a4594b5e0fa78ce18912db38b653"><td class="memItemLeft"><a id="a53d2a4594b5e0fa78ce18912db38b653" name="a53d2a4594b5e0fa78ce18912db38b653"></a>
-float&#160;</td><td class="memItemRight"><b>preferredX</b> = 0.0f</td></tr>
+<tr class="memitem:acb38dccc21bd96aa2df184902475bfa8" id="r_acb38dccc21bd96aa2df184902475bfa8"><td class="memItemLeft">size_t&#160;</td><td class="memItemRight"><a class="el" href="#acb38dccc21bd96aa2df184902475bfa8">anchorByte</a> = 0</td></tr>
+<tr class="memitem:ac8866618a41e6b1ba7a50d34b8a658f6" id="r_ac8866618a41e6b1ba7a50d34b8a658f6"><td class="memItemLeft">size_t&#160;</td><td class="memItemRight"><a class="el" href="#ac8866618a41e6b1ba7a50d34b8a658f6">headByte</a> = 0</td></tr>
+<tr class="memitem:a53d2a4594b5e0fa78ce18912db38b653" id="r_a53d2a4594b5e0fa78ce18912db38b653"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#a53d2a4594b5e0fa78ce18912db38b653">preferredX</a> = 0.0f</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Oriented byte selection: anchor is fixed, head is the caret. Equal offsets represent an insertion point. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="acb38dccc21bd96aa2df184902475bfa8" name="acb38dccc21bd96aa2df184902475bfa8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acb38dccc21bd96aa2df184902475bfa8">&#9670;&#160;</a></span>anchorByte</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t FlowUi::TextSelection::anchorByte = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Fixed endpoint as a UTF-8 byte offset. </p>
+
+</div>
+</div>
+<a id="ac8866618a41e6b1ba7a50d34b8a658f6" name="ac8866618a41e6b1ba7a50d34b8a658f6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac8866618a41e6b1ba7a50d34b8a658f6">&#9670;&#160;</a></span>headByte</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t FlowUi::TextSelection::headByte = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Active caret endpoint as a UTF-8 byte offset. </p>
+
+</div>
+</div>
+<a id="a53d2a4594b5e0fa78ce18912db38b653" name="a53d2a4594b5e0fa78ce18912db38b653"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a53d2a4594b5e0fa78ce18912db38b653">&#9670;&#160;</a></span>preferredX</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float FlowUi::TextSelection::preferredX = 0.0f</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Preferred horizontal layout coordinate for vertical caret navigation. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="InputFieldTypes_8hpp_source.html">InputFieldTypes.hpp</a></li>
 </ul>
@@ -132,7 +179,7 @@ float&#160;</td><td class="memItemRight"><b>preferredX</b> = 0.0f</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1TextSelection.html">TextSelection</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1TextSelection.html">TextSelection</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

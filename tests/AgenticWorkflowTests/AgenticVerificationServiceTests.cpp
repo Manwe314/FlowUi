@@ -79,7 +79,7 @@ void frame(App& application) {
 	const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(15);
 	while (std::chrono::steady_clock::now() < deadline) {
 		frame(application);
-		const auto response = command(application.agentic_workflow(), "verification.report",
+		const auto response = command(::FlowUi::test::requireValue(application.agentic_workflow()).get(), "verification.report",
 									  Json::make_object({{"job_id", identity}}));
 		const auto* report = response.find("result");
 		FLOWUI_CHECK(report);
@@ -168,7 +168,7 @@ void register_nested_input_scenario(AgenticWorkflowService& service, NestedScena
 	};
 	scenario.step =
 		[&state](const AgenticScenarioContext& context) -> Result<AgenticScenarioProgress> {
-		auto& workflow = context.application->agentic_workflow();
+		auto& workflow = ::FlowUi::test::requireValue(context.application->agentic_workflow()).get();
 		if (state.child_job.empty()) {
 			AgenticInteractionPlan plan;
 			plan.window_id = context.application->mainWindowId();
@@ -211,7 +211,7 @@ void register_nested_input_scenario(AgenticWorkflowService& service, NestedScena
 	scenario.verify =
 		[&state](const AgenticScenarioContext& context) -> Result<AgenticScenarioProgress> {
 		const auto child =
-			context.application->agentic_workflow().query_interaction(state.child_job);
+			::FlowUi::test::requireValue(context.application->agentic_workflow()).get().query_interaction(state.child_job);
 		if (!child)
 			return unexpectedError(child.error());
 		AgenticScenarioAction assertion;
@@ -225,13 +225,13 @@ void register_nested_input_scenario(AgenticWorkflowService& service, NestedScena
 	scenario.cleanup =
 		[&state](const AgenticScenarioContext& context) -> Result<AgenticScenarioProgress> {
 		const auto child =
-			context.application->agentic_workflow().query_interaction(state.child_job);
+			::FlowUi::test::requireValue(context.application->agentic_workflow()).get().query_interaction(state.child_job);
 		if (!child)
 			return unexpectedError(child.error());
 		if (!child->cleanup_complete)
 			return AgenticScenarioProgress::pending;
 		state.cleanup_observed_released_input =
-			!context.application->ui().getCurrentFrameInput().mouseDown[0];
+			!::FlowUi::test::requireValue(context.application->ui()).get().getCurrentFrameInput().mouseDown[0];
 		return state.cleanup_observed_released_input
 				   ? Result<AgenticScenarioProgress>(AgenticScenarioProgress::complete)
 				   : unexpectedError(agentic_error(AgenticError::incomplete));
@@ -258,8 +258,8 @@ void verify_service(const std::filesystem::path& store) {
 	std::array<ScenarioCounters, 4> counters;
 	std::atomic<bool> setup_gate{false};
 	NestedScenarioState nested_state;
-	auto application = makeApplication(configuration);
-	auto& service = application.agentic_workflow();
+	auto application = ::FlowUi::test::requireValue(makeApplication(configuration));
+	auto& service = ::FlowUi::test::requireValue(application.agentic_workflow()).get();
 	register_scenario(service, "service.pass", ScenarioBehavior::pass, counters[0], &setup_gate);
 	register_scenario(service, "service.step_failure", ScenarioBehavior::failing_step, counters[1]);
 	register_scenario(service, "service.pending", ScenarioBehavior::pending_setup, counters[2]);
@@ -328,7 +328,7 @@ void verify_service(const std::filesystem::path& store) {
 	while (std::chrono::steady_clock::now() < input_deadline) {
 		frame(application);
 		if (!nested_state.child_job.empty() &&
-			application.ui().getCurrentFrameInput().mouseDown[0]) {
+			::FlowUi::test::requireValue(application.ui()).get().getCurrentFrameInput().mouseDown[0]) {
 			held_input_delivered = true;
 			break;
 		}
@@ -348,7 +348,7 @@ void verify_service(const std::filesystem::path& store) {
 	FLOWUI_CHECK(nested_state.cleanup_observed_released_input);
 	const auto child_after_cancel = service.query_interaction(nested_state.child_job);
 	FLOWUI_CHECK(child_after_cancel && child_after_cancel->cleanup_complete &&
-				 !application.ui().getCurrentFrameInput().mouseDown[0]);
+				 !::FlowUi::test::requireValue(application.ui()).get().getCurrentFrameInput().mouseDown[0]);
 	const auto recovered = run(service, request("service.pass", "after-nested-cancellation"));
 	FLOWUI_CHECK(
 		finish(application, recovered.find("job_id")->string_or()).find("verdict")->string_or() ==

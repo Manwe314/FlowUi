@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,62 +106,431 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::TimingReportingStatus Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevTimingReporting_8hpp_source.html">DevTimingReporting.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a59255c4f5943cf791eb48ab19143b185" id="r_a59255c4f5943cf791eb48ab19143b185"><td class="memItemLeft"><a id="a59255c4f5943cf791eb48ab19143b185" name="a59255c4f5943cf791eb48ab19143b185"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>configuredCapacity</b> = 0u</td></tr>
-<tr class="memitem:a24eb63f794abdba2ee00e70336d9bc3a" id="r_a24eb63f794abdba2ee00e70336d9bc3a"><td class="memItemLeft"><a id="a24eb63f794abdba2ee00e70336d9bc3a" name="a24eb63f794abdba2ee00e70336d9bc3a"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>effectiveCapacity</b> = 0u</td></tr>
-<tr class="memitem:ae2652f2e05a274af7ac38ab360193020" id="r_ae2652f2e05a274af7ac38ab360193020"><td class="memItemLeft"><a id="ae2652f2e05a274af7ac38ab360193020" name="ae2652f2e05a274af7ac38ab360193020"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>rollingSampleCapacity</b> = 0u</td></tr>
-<tr class="memitem:af8d8ee39da0eff15865700640ac30d34" id="r_af8d8ee39da0eff15865700640ac30d34"><td class="memItemLeft"><a id="af8d8ee39da0eff15865700640ac30d34" name="af8d8ee39da0eff15865700640ac30d34"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>maximumFramesInFlight</b> = 1u</td></tr>
-<tr class="memitem:af8739a15a6b21752816904426ad282b8" id="r_af8739a15a6b21752816904426ad282b8"><td class="memItemLeft"><a id="af8739a15a6b21752816904426ad282b8" name="af8739a15a6b21752816904426ad282b8"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>retainedTickCount</b> = 0u</td></tr>
-<tr class="memitem:a024a579e1dc2aac8f785ed5d4f9326d3" id="r_a024a579e1dc2aac8f785ed5d4f9326d3"><td class="memItemLeft"><a id="a024a579e1dc2aac8f785ed5d4f9326d3" name="a024a579e1dc2aac8f785ed5d4f9326d3"></a>
-AppTickId&#160;</td><td class="memItemRight"><b>oldestRetainedAppTick</b> = 0u</td></tr>
-<tr class="memitem:ac8a8c1521975472b482a8c9ee3e598f5" id="r_ac8a8c1521975472b482a8c9ee3e598f5"><td class="memItemLeft"><a id="ac8a8c1521975472b482a8c9ee3e598f5" name="ac8a8c1521975472b482a8c9ee3e598f5"></a>
-AppTickId&#160;</td><td class="memItemRight"><b>newestRetainedAppTick</b> = 0u</td></tr>
-<tr class="memitem:a198032ae7f2b0fa48d170a7513402136" id="r_a198032ae7f2b0fa48d170a7513402136"><td class="memItemLeft"><a id="a198032ae7f2b0fa48d170a7513402136" name="a198032ae7f2b0fa48d170a7513402136"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>totalPublishedTicks</b> = 0u</td></tr>
-<tr class="memitem:af4a02f04abe1bda264f820d6de7e5960" id="r_af4a02f04abe1bda264f820d6de7e5960"><td class="memItemLeft"><a id="af4a02f04abe1bda264f820d6de7e5960" name="af4a02f04abe1bda264f820d6de7e5960"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>evictedTicks</b> = 0u</td></tr>
-<tr class="memitem:a0c24c52ddd748070f961cbe323926eec" id="r_a0c24c52ddd748070f961cbe323926eec"><td class="memItemLeft"><a id="a0c24c52ddd748070f961cbe323926eec" name="a0c24c52ddd748070f961cbe323926eec"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>lateRecordsAfterEviction</b> = 0u</td></tr>
-<tr class="memitem:a013f55765b21fdacfb4ac709ca3d91a7" id="r_a013f55765b21fdacfb4ac709ca3d91a7"><td class="memItemLeft"><a id="a013f55765b21fdacfb4ac709ca3d91a7" name="a013f55765b21fdacfb4ac709ca3d91a7"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>ingestionFailures</b> = 0u</td></tr>
-<tr class="memitem:a2908bbb6fcbf72da3b45a55af26a835d" id="r_a2908bbb6fcbf72da3b45a55af26a835d"><td class="memItemLeft"><a id="a2908bbb6fcbf72da3b45a55af26a835d" name="a2908bbb6fcbf72da3b45a55af26a835d"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>mutationSequence</b> = 0u</td></tr>
-<tr class="memitem:ad7574c18078159104609d46ff38af597" id="r_ad7574c18078159104609d46ff38af597"><td class="memItemLeft"><a id="ad7574c18078159104609d46ff38af597" name="ad7574c18078159104609d46ff38af597"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1TimingQualitySnapshot.html">TimingQualitySnapshot</a>&#160;</td><td class="memItemRight"><b>quality</b> {}</td></tr>
-<tr class="memitem:a83d7c86cb98696ae9e4e10cc2559bb2a" id="r_a83d7c86cb98696ae9e4e10cc2559bb2a"><td class="memItemLeft"><a id="a83d7c86cb98696ae9e4e10cc2559bb2a" name="a83d7c86cb98696ae9e4e10cc2559bb2a"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>capture_generation</b> = 0</td></tr>
-<tr class="memitem:a5054f2217ecc02f629a33f3a388e7ec9" id="r_a5054f2217ecc02f629a33f3a388e7ec9"><td class="memItemLeft"><a id="a5054f2217ecc02f629a33f3a388e7ec9" name="a5054f2217ecc02f629a33f3a388e7ec9"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>capture_admitted_ticks</b> = 0</td></tr>
-<tr class="memitem:a7b43522faff65fd21776d24663d978b7" id="r_a7b43522faff65fd21776d24663d978b7"><td class="memItemLeft"><a id="a7b43522faff65fd21776d24663d978b7" name="a7b43522faff65fd21776d24663d978b7"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>capture_overwritten_ticks</b> = 0</td></tr>
-<tr class="memitem:aa60d0e79608d40e984103be4fd17aecf" id="r_aa60d0e79608d40e984103be4fd17aecf"><td class="memItemLeft"><a id="aa60d0e79608d40e984103be4fd17aecf" name="aa60d0e79608d40e984103be4fd17aecf"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>capture_first_app_tick</b> = 0</td></tr>
-<tr class="memitem:a722b99a77a8623cc68b517c2f8ceb6ab" id="r_a722b99a77a8623cc68b517c2f8ceb6ab"><td class="memItemLeft"><a id="a722b99a77a8623cc68b517c2f8ceb6ab" name="a722b99a77a8623cc68b517c2f8ceb6ab"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>capture_end_app_tick_exclusive</b> = 0</td></tr>
-<tr class="memitem:a323de4110dc0ba959f0a8e34d89e0af5" id="r_a323de4110dc0ba959f0a8e34d89e0af5"><td class="memItemLeft"><a id="a323de4110dc0ba959f0a8e34d89e0af5" name="a323de4110dc0ba959f0a8e34d89e0af5"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>not_retained_by_policy</b> = 0</td></tr>
-<tr class="memitem:a0269029b349289a682ea730e26e75147" id="r_a0269029b349289a682ea730e26e75147"><td class="memItemLeft"><a id="a0269029b349289a682ea730e26e75147" name="a0269029b349289a682ea730e26e75147"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>late_after_seal</b> = 0</td></tr>
-<tr class="memitem:aad0c4cd71c5becaee81996154a510958" id="r_aad0c4cd71c5becaee81996154a510958"><td class="memItemLeft"><a id="aad0c4cd71c5becaee81996154a510958" name="aad0c4cd71c5becaee81996154a510958"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>capture_dropped_records</b> = 0</td></tr>
-<tr class="memitem:a17af04a78eb97d139a7985d81af38753" id="r_a17af04a78eb97d139a7985d81af38753"><td class="memItemLeft"><a id="a17af04a78eb97d139a7985d81af38753" name="a17af04a78eb97d139a7985d81af38753"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>capture_ingestion_failures</b> = 0</td></tr>
-<tr class="memitem:a7da066e32b97587e2afa888e8fcd8041" id="r_a7da066e32b97587e2afa888e8fcd8041"><td class="memItemLeft"><a id="a7da066e32b97587e2afa888e8fcd8041" name="a7da066e32b97587e2afa888e8fcd8041"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>capture_gpu_failures</b> = 0</td></tr>
-<tr class="memitem:afba5210600a6a46993c02a5c81e3d510" id="r_afba5210600a6a46993c02a5c81e3d510"><td class="memItemLeft"><a id="afba5210600a6a46993c02a5c81e3d510" name="afba5210600a6a46993c02a5c81e3d510"></a>
-bool&#160;</td><td class="memItemRight"><b>capture_recording</b> = false</td></tr>
-<tr class="memitem:ad814b780eeff7470831a22debe4f5711" id="r_ad814b780eeff7470831a22debe4f5711"><td class="memItemLeft"><a id="ad814b780eeff7470831a22debe4f5711" name="ad814b780eeff7470831a22debe4f5711"></a>
-bool&#160;</td><td class="memItemRight"><b>capture_sealed</b> = false</td></tr>
-<tr class="memitem:a251c7f974ca3b9ce9a9f4ff61a1c9a8e" id="r_a251c7f974ca3b9ce9a9f4ff61a1c9a8e"><td class="memItemLeft"><a id="a251c7f974ca3b9ce9a9f4ff61a1c9a8e" name="a251c7f974ca3b9ce9a9f4ff61a1c9a8e"></a>
-bool&#160;</td><td class="memItemRight"><b>hasRetainedTicks</b> = false</td></tr>
+<tr class="memitem:a59255c4f5943cf791eb48ab19143b185" id="r_a59255c4f5943cf791eb48ab19143b185"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a59255c4f5943cf791eb48ab19143b185">configuredCapacity</a> = 0u</td></tr>
+<tr class="memitem:a24eb63f794abdba2ee00e70336d9bc3a" id="r_a24eb63f794abdba2ee00e70336d9bc3a"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a24eb63f794abdba2ee00e70336d9bc3a">effectiveCapacity</a> = 0u</td></tr>
+<tr class="memitem:ae2652f2e05a274af7ac38ab360193020" id="r_ae2652f2e05a274af7ac38ab360193020"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#ae2652f2e05a274af7ac38ab360193020">rollingSampleCapacity</a> = 0u</td></tr>
+<tr class="memitem:af8d8ee39da0eff15865700640ac30d34" id="r_af8d8ee39da0eff15865700640ac30d34"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#af8d8ee39da0eff15865700640ac30d34">maximumFramesInFlight</a> = 1u</td></tr>
+<tr class="memitem:af8739a15a6b21752816904426ad282b8" id="r_af8739a15a6b21752816904426ad282b8"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#af8739a15a6b21752816904426ad282b8">retainedTickCount</a> = 0u</td></tr>
+<tr class="memitem:a024a579e1dc2aac8f785ed5d4f9326d3" id="r_a024a579e1dc2aac8f785ed5d4f9326d3"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a024a579e1dc2aac8f785ed5d4f9326d3">oldestRetainedAppTick</a> = 0u</td></tr>
+<tr class="memitem:ac8a8c1521975472b482a8c9ee3e598f5" id="r_ac8a8c1521975472b482a8c9ee3e598f5"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a>&#160;</td><td class="memItemRight"><a class="el" href="#ac8a8c1521975472b482a8c9ee3e598f5">newestRetainedAppTick</a> = 0u</td></tr>
+<tr class="memitem:a198032ae7f2b0fa48d170a7513402136" id="r_a198032ae7f2b0fa48d170a7513402136"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a198032ae7f2b0fa48d170a7513402136">totalPublishedTicks</a> = 0u</td></tr>
+<tr class="memitem:af4a02f04abe1bda264f820d6de7e5960" id="r_af4a02f04abe1bda264f820d6de7e5960"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#af4a02f04abe1bda264f820d6de7e5960">evictedTicks</a> = 0u</td></tr>
+<tr class="memitem:a0c24c52ddd748070f961cbe323926eec" id="r_a0c24c52ddd748070f961cbe323926eec"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a0c24c52ddd748070f961cbe323926eec">lateRecordsAfterEviction</a> = 0u</td></tr>
+<tr class="memitem:a013f55765b21fdacfb4ac709ca3d91a7" id="r_a013f55765b21fdacfb4ac709ca3d91a7"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a013f55765b21fdacfb4ac709ca3d91a7">ingestionFailures</a> = 0u</td></tr>
+<tr class="memitem:a2908bbb6fcbf72da3b45a55af26a835d" id="r_a2908bbb6fcbf72da3b45a55af26a835d"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a2908bbb6fcbf72da3b45a55af26a835d">mutationSequence</a> = 0u</td></tr>
+<tr class="memitem:ad7574c18078159104609d46ff38af597" id="r_ad7574c18078159104609d46ff38af597"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1TimingQualitySnapshot.html">TimingQualitySnapshot</a>&#160;</td><td class="memItemRight"><a class="el" href="#ad7574c18078159104609d46ff38af597">quality</a> {}</td></tr>
+<tr class="memitem:a83d7c86cb98696ae9e4e10cc2559bb2a" id="r_a83d7c86cb98696ae9e4e10cc2559bb2a"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a83d7c86cb98696ae9e4e10cc2559bb2a">capture_generation</a> = 0</td></tr>
+<tr class="memitem:a5054f2217ecc02f629a33f3a388e7ec9" id="r_a5054f2217ecc02f629a33f3a388e7ec9"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a5054f2217ecc02f629a33f3a388e7ec9">capture_admitted_ticks</a> = 0</td></tr>
+<tr class="memitem:a7b43522faff65fd21776d24663d978b7" id="r_a7b43522faff65fd21776d24663d978b7"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a7b43522faff65fd21776d24663d978b7">capture_overwritten_ticks</a> = 0</td></tr>
+<tr class="memitem:aa60d0e79608d40e984103be4fd17aecf" id="r_aa60d0e79608d40e984103be4fd17aecf"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#aa60d0e79608d40e984103be4fd17aecf">capture_first_app_tick</a> = 0</td></tr>
+<tr class="memitem:a722b99a77a8623cc68b517c2f8ceb6ab" id="r_a722b99a77a8623cc68b517c2f8ceb6ab"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a722b99a77a8623cc68b517c2f8ceb6ab">capture_end_app_tick_exclusive</a> = 0</td></tr>
+<tr class="memitem:a323de4110dc0ba959f0a8e34d89e0af5" id="r_a323de4110dc0ba959f0a8e34d89e0af5"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a323de4110dc0ba959f0a8e34d89e0af5">not_retained_by_policy</a> = 0</td></tr>
+<tr class="memitem:a0269029b349289a682ea730e26e75147" id="r_a0269029b349289a682ea730e26e75147"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a0269029b349289a682ea730e26e75147">late_after_seal</a> = 0</td></tr>
+<tr class="memitem:aad0c4cd71c5becaee81996154a510958" id="r_aad0c4cd71c5becaee81996154a510958"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#aad0c4cd71c5becaee81996154a510958">capture_dropped_records</a> = 0</td></tr>
+<tr class="memitem:a17af04a78eb97d139a7985d81af38753" id="r_a17af04a78eb97d139a7985d81af38753"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a17af04a78eb97d139a7985d81af38753">capture_ingestion_failures</a> = 0</td></tr>
+<tr class="memitem:a7da066e32b97587e2afa888e8fcd8041" id="r_a7da066e32b97587e2afa888e8fcd8041"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a7da066e32b97587e2afa888e8fcd8041">capture_gpu_failures</a> = 0</td></tr>
+<tr class="memitem:afba5210600a6a46993c02a5c81e3d510" id="r_afba5210600a6a46993c02a5c81e3d510"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#afba5210600a6a46993c02a5c81e3d510">capture_recording</a> = false</td></tr>
+<tr class="memitem:ad814b780eeff7470831a22debe4f5711" id="r_ad814b780eeff7470831a22debe4f5711"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ad814b780eeff7470831a22debe4f5711">capture_sealed</a> = false</td></tr>
+<tr class="memitem:a251c7f974ca3b9ce9a9f4ff61a1c9a8e" id="r_a251c7f974ca3b9ce9a9f4ff61a1c9a8e"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a251c7f974ca3b9ce9a9f4ff61a1c9a8e">hasRetainedTicks</a> = false</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Retained history capacity, capture generation and ingestion-quality counters. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a5054f2217ecc02f629a33f3a388e7ec9" name="a5054f2217ecc02f629a33f3a388e7ec9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5054f2217ecc02f629a33f3a388e7ec9">&#9670;&#160;</a></span>capture_admitted_ticks</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingReportingStatus::capture_admitted_ticks = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of application ticks admitted to the current capture. </p>
+
+</div>
+</div>
+<a id="aad0c4cd71c5becaee81996154a510958" name="aad0c4cd71c5becaee81996154a510958"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aad0c4cd71c5becaee81996154a510958">&#9670;&#160;</a></span>capture_dropped_records</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingReportingStatus::capture_dropped_records = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Producer records lost during the capture interval. </p>
+
+</div>
+</div>
+<a id="a722b99a77a8623cc68b517c2f8ceb6ab" name="a722b99a77a8623cc68b517c2f8ceb6ab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a722b99a77a8623cc68b517c2f8ceb6ab">&#9670;&#160;</a></span>capture_end_app_tick_exclusive</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingReportingStatus::capture_end_app_tick_exclusive = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Exclusive end of the capture tick interval. </p>
+
+</div>
+</div>
+<a id="aa60d0e79608d40e984103be4fd17aecf" name="aa60d0e79608d40e984103be4fd17aecf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa60d0e79608d40e984103be4fd17aecf">&#9670;&#160;</a></span>capture_first_app_tick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingReportingStatus::capture_first_app_tick = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Inclusive beginning of the capture tick interval. </p>
+
+</div>
+</div>
+<a id="a83d7c86cb98696ae9e4e10cc2559bb2a" name="a83d7c86cb98696ae9e4e10cc2559bb2a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a83d7c86cb98696ae9e4e10cc2559bb2a">&#9670;&#160;</a></span>capture_generation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingReportingStatus::capture_generation = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Timing capture generation associated with this evidence. </p>
+
+</div>
+</div>
+<a id="a7da066e32b97587e2afa888e8fcd8041" name="a7da066e32b97587e2afa888e8fcd8041"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7da066e32b97587e2afa888e8fcd8041">&#9670;&#160;</a></span>capture_gpu_failures</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingReportingStatus::capture_gpu_failures = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>GPU capture failures observed during the capture interval. </p>
+
+</div>
+</div>
+<a id="a17af04a78eb97d139a7985d81af38753" name="a17af04a78eb97d139a7985d81af38753"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a17af04a78eb97d139a7985d81af38753">&#9670;&#160;</a></span>capture_ingestion_failures</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingReportingStatus::capture_ingestion_failures = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Consumer ingestion failures during the capture interval. </p>
+
+</div>
+</div>
+<a id="a7b43522faff65fd21776d24663d978b7" name="a7b43522faff65fd21776d24663d978b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b43522faff65fd21776d24663d978b7">&#9670;&#160;</a></span>capture_overwritten_ticks</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingReportingStatus::capture_overwritten_ticks = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of admitted ticks overwritten by the capture ring. </p>
+
+</div>
+</div>
+<a id="afba5210600a6a46993c02a5c81e3d510" name="afba5210600a6a46993c02a5c81e3d510"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afba5210600a6a46993c02a5c81e3d510">&#9670;&#160;</a></span>capture_recording</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::TimingReportingStatus::capture_recording = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether the current generation is accepting new ticks. </p>
+
+</div>
+</div>
+<a id="ad814b780eeff7470831a22debe4f5711" name="ad814b780eeff7470831a22debe4f5711"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad814b780eeff7470831a22debe4f5711">&#9670;&#160;</a></span>capture_sealed</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::TimingReportingStatus::capture_sealed = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether the current generation is immutable. </p>
+
+</div>
+</div>
+<a id="a59255c4f5943cf791eb48ab19143b185" name="a59255c4f5943cf791eb48ab19143b185"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59255c4f5943cf791eb48ab19143b185">&#9670;&#160;</a></span>configuredCapacity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::TimingReportingStatus::configuredCapacity = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Configured retained application tick capacity. </p>
+
+</div>
+</div>
+<a id="a24eb63f794abdba2ee00e70336d9bc3a" name="a24eb63f794abdba2ee00e70336d9bc3a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24eb63f794abdba2ee00e70336d9bc3a">&#9670;&#160;</a></span>effectiveCapacity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::TimingReportingStatus::effectiveCapacity = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Effective retained tick capacity after frames-in-flight requirements. </p>
+
+</div>
+</div>
+<a id="af4a02f04abe1bda264f820d6de7e5960" name="af4a02f04abe1bda264f820d6de7e5960"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af4a02f04abe1bda264f820d6de7e5960">&#9670;&#160;</a></span>evictedTicks</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingReportingStatus::evictedTicks = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of evicted ticks. </p>
+
+</div>
+</div>
+<a id="a251c7f974ca3b9ce9a9f4ff61a1c9a8e" name="a251c7f974ca3b9ce9a9f4ff61a1c9a8e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a251c7f974ca3b9ce9a9f4ff61a1c9a8e">&#9670;&#160;</a></span>hasRetainedTicks</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::TimingReportingStatus::hasRetainedTicks = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether at least one valid timing tick is retained. </p>
+
+</div>
+</div>
+<a id="a013f55765b21fdacfb4ac709ca3d91a7" name="a013f55765b21fdacfb4ac709ca3d91a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a013f55765b21fdacfb4ac709ca3d91a7">&#9670;&#160;</a></span>ingestionFailures</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingReportingStatus::ingestionFailures = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of ingestion failures. </p>
+
+</div>
+</div>
+<a id="a0269029b349289a682ea730e26e75147" name="a0269029b349289a682ea730e26e75147"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0269029b349289a682ea730e26e75147">&#9670;&#160;</a></span>late_after_seal</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingReportingStatus::late_after_seal = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Late measurements rejected after the generation was sealed. </p>
+
+</div>
+</div>
+<a id="a0c24c52ddd748070f961cbe323926eec" name="a0c24c52ddd748070f961cbe323926eec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c24c52ddd748070f961cbe323926eec">&#9670;&#160;</a></span>lateRecordsAfterEviction</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingReportingStatus::lateRecordsAfterEviction = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of late timing records whose target tick was already evicted. </p>
+
+</div>
+</div>
+<a id="af8d8ee39da0eff15865700640ac30d34" name="af8d8ee39da0eff15865700640ac30d34"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af8d8ee39da0eff15865700640ac30d34">&#9670;&#160;</a></span>maximumFramesInFlight</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::TimingReportingStatus::maximumFramesInFlight = 1u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Largest renderer frames-in-flight count observed by reporting. </p>
+
+</div>
+</div>
+<a id="a2908bbb6fcbf72da3b45a55af26a835d" name="a2908bbb6fcbf72da3b45a55af26a835d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2908bbb6fcbf72da3b45a55af26a835d">&#9670;&#160;</a></span>mutationSequence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingReportingStatus::mutationSequence = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Monotonic revision changed when retained timing evidence mutates. </p>
+
+</div>
+</div>
+<a id="ac8a8c1521975472b482a8c9ee3e598f5" name="ac8a8c1521975472b482a8c9ee3e598f5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac8a8c1521975472b482a8c9ee3e598f5">&#9670;&#160;</a></span>newestRetainedAppTick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> FlowUi::devSystems::TimingReportingStatus::newestRetainedAppTick = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Newest application tick currently retained. </p>
+
+</div>
+</div>
+<a id="a323de4110dc0ba959f0a8e34d89e0af5" name="a323de4110dc0ba959f0a8e34d89e0af5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a323de4110dc0ba959f0a8e34d89e0af5">&#9670;&#160;</a></span>not_retained_by_policy</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingReportingStatus::not_retained_by_policy = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Measurements excluded by the active capture retention policy. </p>
+
+</div>
+</div>
+<a id="a024a579e1dc2aac8f785ed5d4f9326d3" name="a024a579e1dc2aac8f785ed5d4f9326d3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a024a579e1dc2aac8f785ed5d4f9326d3">&#9670;&#160;</a></span>oldestRetainedAppTick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> FlowUi::devSystems::TimingReportingStatus::oldestRetainedAppTick = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Oldest application tick still retained. </p>
+
+</div>
+</div>
+<a id="ad7574c18078159104609d46ff38af597" name="ad7574c18078159104609d46ff38af597"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad7574c18078159104609d46ff38af597">&#9670;&#160;</a></span>quality</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1TimingQualitySnapshot.html">TimingQualitySnapshot</a> FlowUi::devSystems::TimingReportingStatus::quality {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Capture quality counters associated with this reporting state. </p>
+
+</div>
+</div>
+<a id="af8739a15a6b21752816904426ad282b8" name="af8739a15a6b21752816904426ad282b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af8739a15a6b21752816904426ad282b8">&#9670;&#160;</a></span>retainedTickCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingReportingStatus::retainedTickCount = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of valid application ticks currently retained. </p>
+
+</div>
+</div>
+<a id="ae2652f2e05a274af7ac38ab360193020" name="ae2652f2e05a274af7ac38ab360193020"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae2652f2e05a274af7ac38ab360193020">&#9670;&#160;</a></span>rollingSampleCapacity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::TimingReportingStatus::rollingSampleCapacity = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Maximum retained duration samples per zone and domain. </p>
+
+</div>
+</div>
+<a id="a198032ae7f2b0fa48d170a7513402136" name="a198032ae7f2b0fa48d170a7513402136"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a198032ae7f2b0fa48d170a7513402136">&#9670;&#160;</a></span>totalPublishedTicks</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingReportingStatus::totalPublishedTicks = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of total published ticks. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevTimingReporting_8hpp_source.html">DevTimingReporting.hpp</a></li>
 </ul>
@@ -178,7 +547,7 @@ bool&#160;</td><td class="memItemRight"><b>hasRetainedTicks</b> = false</td></tr
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1TimingReportingStatus.html">TimingReportingStatus</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1TimingReportingStatus.html">TimingReportingStatus</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

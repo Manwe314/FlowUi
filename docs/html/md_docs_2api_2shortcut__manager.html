@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,99 +106,175 @@ $(function() {
   <div class="headertitle"><div class="title">Shortcut Manager API </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1>Aliases</h1>
-<h2><b>ShortcutCallback</b></h2>
-<h3><span class="tt">using ShortcutCallback = std::function&lt;bool(ShortcutContext&amp;)&gt;</span></h3>
-<p>Callback invoked when a shortcut chord matches. Return true to mark the shortcut handled and stop later callbacks for the same chord.</p>
-<h2><b>ShortcutId</b></h2>
-<h3><span class="tt">using ShortcutId = uint32_t</span></h3>
-<p>Opaque shortcut registration id returned by registerShortcut. Value 0 is reserved as invalid.</p>
-<h1>Enums</h1>
-<h2><b>ShortcutScope</b></h2>
-<h3><span class="tt">enum class ShortcutScope : uint8_t</span></h3>
-<p>Scope controlling when a shortcut is eligible to run. Focused input and focused element scopes run before global shortcuts.</p>
-<h2><b>ShortcutTrigger</b></h2>
-<h3><span class="tt">enum class ShortcutTrigger : uint8_t</span></h3>
-<p>Input transition used to trigger a shortcut. It supports press, release, and every-frame down behavior.</p>
-<h2><b>ShortcutHandling</b></h2>
-<p>Explicit consumption policy for the <span class="tt">AppActionCall</span> registration overload. <span class="tt">Consume</span> stops later matches after successful invocation; <span class="tt">PassThrough</span> continues dispatch. Disabled and unbound actions fall through.</p>
-<h1>Public Structs</h1>
-<h2><b>ShortcutChord</b></h2>
-<h3><span class="tt">struct ShortcutChord</span></h3>
-<p>Keyboard chord registered with ShortcutManager. It stores backend key code, modifier requirements, and trigger mode.</p>
-<h2><b>ShortcutContext</b></h2>
-<h3><span class="tt">struct ShortcutContext</span></h3>
-<p>Runtime data passed to shortcut callbacks. It exposes UiManager, current and previous input, and the focused element id.</p>
+<div class="textblock"><p><a href="include/FlowUi/Public/managers/ShortcutManager.hpp">Public declarations</a> · <a href="include/FlowUi/Public/managerStructs/ShortcutTypes.hpp">Shortcut values</a></p>
+<p>Shortcuts are window-owned. A <span class="tt">ShortcutChord</span> uses a backend key code (use <span class="tt">keyCode(Key::C)</span>), exact Ctrl/Shift/Alt/Super requirements, and a Press/Release/Down trigger. Eligible scopes dispatch in order: FocusedInput, FocusedElement, Global. Within a scope, higher priority precedes lower priority, then registration order breaks ties. A callback's returned bool decides consumption; it is independent of registration's Result success.</p>
+<p><span class="tt">ShortcutContext</span> borrows the active UI manager and current/previous frame input only during dispatch. Do not retain these references. Capture application state by value or with a lifetime that exceeds registration; unregister before destroying borrowed targets.</p>
+<h1>Acquire the manager</h1>
+<p><span class="tt">App</span> getters return <span class="tt">Result&lt;std::reference_wrapper&lt;T&gt;&gt;</span>. Check the wrapper, then name the borrowed object as a normal reference:</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = app.ui();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; manager = result-&gt;get();</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:110</div></div>
+</div><!-- fragment --><p>Call <span class="tt">ui.shortcuts()</span> on that <span class="tt">UiManager&amp;</span> to obtain the direct manager reference. The reference is borrowed; the App must outlive it, and window-owned managers must also stay within their owning window lifetime. The examples use an already acquired manager reference and existing field/window identities where needed. They choose an application policy of throwing <span class="tt">FlowUiException</span> after a failed Result; returning/reporting the error is equally possible. Include the relevant manager/value headers and <span class="tt"><a class="el" href="Exception_8hpp_source.html">FlowUi/Public/errorManagement/Exception.hpp</a></span>.</p>
+<p>For <span class="tt">Result&lt;bool&gt;</span>, <span class="tt">if (!result)</span> tests operational failure; <span class="tt">*result</span> is the separate operation outcome. Never treat a successful <span class="tt">false</span> as an error.</p>
 <h1>Public API</h1>
 <h2><b>registerShortcut</b></h2>
-<h3><span class="tt">Result&lt;ShortcutId&gt; registerShortcut(const ShortcutChord&amp; chord, ShortcutScope scope, int32_t priority, ShortcutCallback callback)</span></h3>
+<h3><span class="tt">[[nodiscard]] Result&lt;ShortcutId&gt; registerShortcut(const ShortcutChord&amp; chord, ShortcutScope scope, int32_t priority, ShortcutCallback callback) noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">Result&lt;ShortcutId&gt;</span>; check success before reading the value, and use <span class="tt">.error()</span> on failure.</li>
-<li><b>Arguments:</b> <span class="tt">chord</span> key/modifier/trigger match, <span class="tt">scope</span> eligibility scope, <span class="tt">priority</span> ordering value, <span class="tt">callback</span> handler.</li>
+<li><b>Returns:</b> <span class="tt">Result&lt;ShortcutId&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">chord</span> key, modifiers and transition, <span class="tt">scope</span> shortcut eligibility scope, <span class="tt">priority</span> higher values dispatch first, <span class="tt">callback</span> retained callable</li>
 </ul>
-<p>Registers a keyboard shortcut and returns an opaque id. Matching callbacks run by scope and priority, and a callback returning <span class="tt">true</span> stops later handlers for the same chord.</p>
+<p>Register a keyboard chord and return its window-local registration ID. Success contains a nonzero ShortcutId; invalid manager/chord/callback/action or allocation failures are errors.</p>
+<p>Matching uses exact modifier requirements and the trigger transition. FocusedInput precedes FocusedElement, then Global; higher priority first, then registration order. Callbacks are owned by the registration, so captured references must outlive it. A callback returning true consumes the chord; false allows subsequent matches. Callback exceptions follow the dispatch/frame boundary policy, not the registration call.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> shortcut = app.ui().shortcuts().registerShortcut({.key = GLFW_KEY_S, .ctrl = <span class="keyword">true</span>}, <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">FlowUi::ShortcutScope::Global</a>, 100, saveCallback);</div>
-<div class="line"><span class="keywordflow">if</span> (!shortcut) {</div>
-<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(shortcut.error());</div>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ShortcutChord.html">FlowUi::ShortcutChord</a> chord{.key = <a class="code hl_function" href="namespaceFlowUi.html#aa2bcc116633a6972a31522e76cbefdd8">FlowUi::keyCode</a>(FlowUi::Key::S), .ctrl = <span class="keyword">true</span>};</div>
+<div class="line"><span class="keywordtype">bool</span> saveRequested = <span class="keyword">false</span>;</div>
+<div class="line"><a class="code hl_typedef" href="group__flowui__shortcut__manager.html#gafe920a194eec62fa501a18d765c03a35">FlowUi::ShortcutCallback</a> callback = [&amp;saveRequested](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ShortcutContext.html">FlowUi::ShortcutContext</a>&amp;) {</div>
+<div class="line">    saveRequested = <span class="keyword">true</span>;</div>
+<div class="line">    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.registerShortcut(chord, <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">FlowUi::ShortcutScope::Global</a>, 100, std::move(callback));</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
 <div class="line">}</div>
-<div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">FlowUi::ShortcutId</a> saveShortcut = *shortcut;</div>
-<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
-<div class="ttc" id="agroup__flowui__shortcut__manager_html_ga1797e2b57628fb0d605888569f1c1dc9"><div class="ttname"><a href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">FlowUi::ShortcutId</a></div><div class="ttdeci">uint32_t ShortcutId</div><div class="ttdoc">Opaque shortcut registration id.</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:119</div></div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> shortcutId = *result;</div>
+<div class="ttc" id="agroup__flowui__shortcut__manager_html_gafe920a194eec62fa501a18d765c03a35"><div class="ttname"><a href="group__flowui__shortcut__manager.html#gafe920a194eec62fa501a18d765c03a35">FlowUi::ShortcutCallback</a></div><div class="ttdeci">std::function&lt; bool(ShortcutContext &amp;)&gt; ShortcutCallback</div><div class="ttdoc">Shortcut callback.</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:123</div></div>
 <div class="ttc" id="agroup__flowui__shortcut__manager_html_gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8"><div class="ttname"><a href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">FlowUi::ShortcutScope::Global</a></div><div class="ttdeci">@ Global</div><div class="ttdoc">Run regardless of focused input or focused element state.</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:35</div></div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>.</p>
-<h3><span class="tt">Result&lt;ShortcutId&gt; registerShortcut(const ShortcutChord&amp; chord, ShortcutScope scope, int32_t priority, AppActionCall action, ShortcutHandling handling = ShortcutHandling::Consume)</span></h3>
-<p>Registers a semantic app action without retaining a local UI recipe or arbitrary callback. Return values never determine consumption.</p>
+<div class="ttc" id="anamespaceFlowUi_html_aa2bcc116633a6972a31522e76cbefdd8"><div class="ttname"><a href="namespaceFlowUi.html#aa2bcc116633a6972a31522e76cbefdd8">FlowUi::keyCode</a></div><div class="ttdeci">constexpr int keyCode(Key key) noexcept</div><div class="ttdef"><b>Definition</b> Key.hpp:134</div></div>
+<div class="ttc" id="astructFlowUi_1_1ShortcutChord_html"><div class="ttname"><a href="structFlowUi_1_1ShortcutChord.html">FlowUi::ShortcutChord</a></div><div class="ttdoc">Keyboard chord registered with ShortcutManager.</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:70</div></div>
+<div class="ttc" id="astructFlowUi_1_1ShortcutContext_html"><div class="ttname"><a href="structFlowUi_1_1ShortcutContext.html">FlowUi::ShortcutContext</a></div><div class="ttdoc">Runtime data passed to shortcut callbacks.</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:100</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>.</p>
+<h2><b>registerShortcut</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;ShortcutId&gt; registerShortcut(const ShortcutChord&amp; chord, ShortcutScope scope, int32_t priority, AppActionCall action, ShortcutHandling handling = ShortcutHandling::Consume) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;ShortcutId&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">chord</span> key, modifiers and transition, <span class="tt">scope</span> shortcut eligibility scope, <span class="tt">priority</span> higher values dispatch first, <span class="tt">action</span> retained application action, <span class="tt">handling</span> consume or pass through</li>
+</ul>
+<p>Register a retained semantic app action for a keyboard chord. Success contains a nonzero ShortcutId; invalid manager/chord/callback/action or allocation failures are errors.</p>
+<p>The action is resolved at dispatch; unbound/disabled actions are skipped. handling defaults to Consume; PassThrough allows later matching shortcuts. Referenced action resources follow AppActions::bind() lifetime rules. Scope, priority, and chord matching match callback registration.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ShortcutChord.html">FlowUi::ShortcutChord</a> chord{.key = <a class="code hl_function" href="namespaceFlowUi.html#aa2bcc116633a6972a31522e76cbefdd8">FlowUi::keyCode</a>(FlowUi::Key::S), .ctrl = <span class="keyword">true</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.registerShortcut(chord, <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">FlowUi::ShortcutScope::Global</a>, 100, action, <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#ggaa96df297b2a302ec17595a07e88af64fad2e0379c3a30439bfc1b6869af4408cc">FlowUi::ShortcutHandling::Consume</a>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> shortcutId = *result;</div>
+<div class="ttc" id="agroup__flowui__shortcut__manager_html_ggaa96df297b2a302ec17595a07e88af64fad2e0379c3a30439bfc1b6869af4408cc"><div class="ttname"><a href="group__flowui__shortcut__manager.html#ggaa96df297b2a302ec17595a07e88af64fad2e0379c3a30439bfc1b6869af4408cc">FlowUi::ShortcutHandling::Consume</a></div><div class="ttdeci">@ Consume</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:59</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>.</p>
 <h2><b>unregisterShortcut</b></h2>
-<h3><span class="tt">bool unregisterShortcut(ShortcutId id)</span></h3>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; unregisterShortcut(ShortcutId id) noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">bool</span></li>
-<li><b>Arguments:</b> <span class="tt">id</span> shortcut id returned by <span class="tt">registerShortcut()</span>.</li>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">id</span> window-scoped identity</li>
 </ul>
-<p>Removes a registered shortcut. It is valid to unregister a shortcut from inside a shortcut callback.</p>
+<p>Remove a shortcut registration. Success contains true if removed or false for zero/unknown IDs.</p>
+<p>It is valid to unregister from inside a shortcut callback. Callback-owned captures are released when their retained registration is no longer needed by dispatch.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = app.ui().shortcuts().unregisterShortcut(saveShortcut);</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.unregisterShortcut(shortcutId);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = *result;</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>.</p>
 <h2><b>clear</b></h2>
-<h3><span class="tt">void clear()</span></h3>
+<h3><span class="tt">[[nodiscard]] Status clear() noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
+<li><b>Returns:</b> <span class="tt">Status</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
 <li><b>Arguments:</b> none.</li>
 </ul>
-<p>Removes every registered shortcut and resets focused-element shortcut state. Use this for app-level shortcut reloads or teardown.</p>
+<p>Remove every shortcut and clear the focused-element marker. Success means the reset completed.</p>
+<p>Stored callbacks/actions are released and the registration epoch advances; the monotonic ID counter is not reset. Discard IDs for cleared registrations.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.ui().shortcuts().clear();</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.clear();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>.</p>
 <h2><b>setFocusedElement</b></h2>
-<h3><span class="tt">void setFocusedElement(Clay_ElementId elementId)</span></h3>
+<h3><span class="tt">[[nodiscard]] Status setFocusedElement(Clay_ElementId elementId) noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
-<li><b>Arguments:</b> <span class="tt">elementId</span> Clay element id to treat as shortcut-focused.</li>
+<li><b>Returns:</b> <span class="tt">Status</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">elementId</span> Clay focus marker</li>
 </ul>
-<p>Sets the focused element marker used by <span class="tt">ShortcutScope::FocusedElement</span>. Application or element code decides when an element should become shortcut-focused.</p>
+<p>Set the lightweight Clay focus marker used by FocusedElement shortcuts. Success means the marker was stored; a zero element ID represents no focused element.</p>
+<p>This does not assign input-field focus or decide when your application considers an element focused.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.ui().shortcuts().setFocusedElement(context.uiManager.toClayEID(context.elementID));</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.setFocusedElement(elementId);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>.</p>
 <h2><b>clearFocusedElement</b></h2>
-<h3><span class="tt">void clearFocusedElement()</span></h3>
+<h3><span class="tt">[[nodiscard]] Status clearFocusedElement() noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
+<li><b>Returns:</b> <span class="tt">Status</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
 <li><b>Arguments:</b> none.</li>
 </ul>
-<p>Clears the focused element marker. After this, focused-element shortcuts are not eligible until another element id is set.</p>
+<p>Clear the Clay focus marker. Success means FocusedElement registrations are ineligible until a nonzero marker is set.</p>
+<p>Input-field focus is independent.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.ui().shortcuts().clearFocusedElement();</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.clearFocusedElement();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>.</p>
 <h2><b>focusedElement</b></h2>
-<h3><span class="tt">Clay_ElementId focusedElement() const</span></h3>
+<h3><span class="tt">[[nodiscard]] Result&lt;Clay_ElementId&gt; focusedElement() const noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">Clay_ElementId</span></li>
+<li><b>Returns:</b> <span class="tt">Result&lt;Clay_ElementId&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
 <li><b>Arguments:</b> none.</li>
 </ul>
-<p>Returns the currently focused Clay element id for shortcut dispatch. A zero id means no shortcut-focused element is active.</p>
+<p>Read the current lightweight Clay focus marker. Success contains the tracked Clay_ElementId; id == 0 means no marker, not an error.</p>
+<p>The returned ID is a value, not a borrowed element pointer.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">Clay_ElementId focused = app.ui().shortcuts().focusedElement();</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>. </p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.focusedElement();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> focusedElement = *result;</div>
+</div><!-- fragment --><h1>Build-gated development hooks</h1>
+<p><span class="tt">FLOW_UI_DEV_MODE</span> and the development memory-level macros expose additional inspection/recording hooks in the header. They are development infrastructure, not the application API described here. Their existing build gates and signatures are unchanged.</p>
+<h1>Checked development inspection examples</h1>
+<p>These hooks require <span class="tt">FLOW_UI_DEV_MODE</span>; viewport hooks also require <span class="tt">FLOWUI_PUBLIC_VULKAN_INTEROP</span>. They are observation/tooling APIs. A visitor returns <span class="tt">true</span> to continue; a successful returned <span class="tt">false</span> is distinct from a failed <span class="tt">Result</span>. Callback arguments and their resource views are borrowed. The examples use the already acquired manager for the owning App/window.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>.</p>
+<h2><b>visitDevShortcuts</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; visitDevShortcuts(void* target, DevShortcutVisitor visitor) const noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+</ul>
+<p>Observe development catalogue entries without invoking application operations. Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a detached manager or null visitor. A failed Result is an operational/callback error, not an incomplete-visit bool.</p>
+<p>Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts live shortcut registrations; completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to FlowUiError. Earlier callback effects, including the counter, are not rolled back on failure.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line">std::size_t count = 0;</div>
+<div class="line"><span class="keyword">auto</span> result = manager.visitDevShortcuts(&amp;count,</div>
+<div class="line">    [](<span class="keywordtype">void</span>* target, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html">FlowUi::ShortcutManager::DevShortcutView</a>&amp; shortcut) {</div>
+<div class="line">        <span class="keyword">auto</span>&amp; observedCount = *<span class="keyword">static_cast&lt;</span>std::size_t*<span class="keyword">&gt;</span>(target);</div>
+<div class="line">        <span class="keywordflow">if</span> (shortcut.<a class="code hl_variable" href="structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html#acfcca05a240716c18920a274d59e3e65">id</a> != 0) {</div>
+<div class="line">            ++observedCount;</div>
+<div class="line">        }</div>
+<div class="line">        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">    });</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe">completed</a> = *result;</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html_aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe">FlowUi::devSystems::agentic::AgenticInteractionPhase::completed</a></div><div class="ttdeci">@ completed</div><div class="ttdef"><b>Definition</b> AgenticInteraction.hpp:486</div></div>
+<div class="ttc" id="astructFlowUi_1_1ShortcutManager_1_1DevShortcutView_html"><div class="ttname"><a href="structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html">FlowUi::ShortcutManager::DevShortcutView</a></div><div class="ttdef"><b>Definition</b> ShortcutManager.hpp:45</div></div>
+<div class="ttc" id="astructFlowUi_1_1ShortcutManager_1_1DevShortcutView_html_acfcca05a240716c18920a274d59e3e65"><div class="ttname"><a href="structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html#acfcca05a240716c18920a274d59e3e65">FlowUi::ShortcutManager::DevShortcutView::id</a></div><div class="ttdeci">ShortcutId id</div><div class="ttdoc">Window-local registration ID; zero is invalid.</div><div class="ttdef"><b>Definition</b> ShortcutManager.hpp:59</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

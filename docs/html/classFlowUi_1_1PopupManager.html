@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,35 +106,269 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::PopupManager Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Window-owned placement, layering, and dismissal service for popup elements.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="PopupManager_8hpp_source.html">PopupManager.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:adb2980043a5342f65d853aae1a2bb7f5" id="r_adb2980043a5342f65d853aae1a2bb7f5"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#adb2980043a5342f65d853aae1a2bb7f5">frameStatus</a> () const noexcept</td></tr>
+<tr class="memdesc:adb2980043a5342f65d853aae1a2bb7f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a caught failure requiring cancellation of the popup frame.  <br /></td></tr>
 <tr class="memitem:ae96fbe5989be085605215cba276eb746" id="r_ae96fbe5989be085605215cba276eb746"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ae96fbe5989be085605215cba276eb746">has_open_popups</a> () const noexcept</td></tr>
-<tr class="memitem:a5d711e45d3dc3a0ad0e38268f433ce21" id="r_a5d711e45d3dc3a0ad0e38268f433ce21"><td class="memItemLeft"><a id="a5d711e45d3dc3a0ad0e38268f433ce21" name="a5d711e45d3dc3a0ad0e38268f433ce21"></a>
-<a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1PopupFrame.html">PopupFrame</a> &gt;&#160;</td><td class="memItemRight"><b>request</b> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> popupId, const <a class="el" href="structFlowUi_1_1PopupRequest.html">PopupRequest</a> &amp;request)</td></tr>
-<tr class="memitem:a5f573125e320ee30844d08c8a4511e85" id="r_a5f573125e320ee30844d08c8a4511e85"><td class="memItemLeft"><a id="a5f573125e320ee30844d08c8a4511e85" name="a5f573125e320ee30844d08c8a4511e85"></a>
-<a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1PopupFrame.html">PopupFrame</a> &gt;&#160;</td><td class="memItemRight"><b>request</b> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> popupId, const <a class="el" href="structFlowUi_1_1PopupRequest.html">PopupRequest</a> &amp;request)</td></tr>
-<tr class="memitem:a4d999645f5fdb821fc0b31e4a52ad470" id="r_a4d999645f5fdb821fc0b31e4a52ad470"><td class="memItemLeft"><a id="a4d999645f5fdb821fc0b31e4a52ad470" name="a4d999645f5fdb821fc0b31e4a52ad470"></a>
-<a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1PopupFrame.html">PopupFrame</a> &gt;&#160;</td><td class="memItemRight"><b>request</b> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> popupId, const <a class="el" href="structFlowUi_1_1PopupRequest.html">PopupRequest</a> &amp;request)</td></tr>
-<tr class="memitem:ac47c1e9d758699a3becd78e2a293981b" id="r_ac47c1e9d758699a3becd78e2a293981b"><td class="memItemLeft"><a id="ac47c1e9d758699a3becd78e2a293981b" name="ac47c1e9d758699a3becd78e2a293981b"></a>
-void&#160;</td><td class="memItemRight"><b>dismiss</b> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> popupId)</td></tr>
-<tr class="memitem:a1c67dc063c4eb35f55960c07b3e59fb3" id="r_a1c67dc063c4eb35f55960c07b3e59fb3"><td class="memItemLeft"><a id="a1c67dc063c4eb35f55960c07b3e59fb3" name="a1c67dc063c4eb35f55960c07b3e59fb3"></a>
-void&#160;</td><td class="memItemRight"><b>dismiss</b> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> popupId)</td></tr>
-<tr class="memitem:a57b782fdd0b7a75aa7b2b36960f26a5a" id="r_a57b782fdd0b7a75aa7b2b36960f26a5a"><td class="memItemLeft"><a id="a57b782fdd0b7a75aa7b2b36960f26a5a" name="a57b782fdd0b7a75aa7b2b36960f26a5a"></a>
-void&#160;</td><td class="memItemRight"><b>dismiss</b> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> popupId)</td></tr>
-<tr class="memitem:ae3e3d949a4001be4ea469063794b9b4a" id="r_ae3e3d949a4001be4ea469063794b9b4a"><td class="memItemLeft"><a id="ae3e3d949a4001be4ea469063794b9b4a" name="ae3e3d949a4001be4ea469063794b9b4a"></a>
-bool&#160;</td><td class="memItemRight"><b>consumeDismissed</b> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> popupId)</td></tr>
-<tr class="memitem:a7673488c1802ac971a6e6465eafae36f" id="r_a7673488c1802ac971a6e6465eafae36f"><td class="memItemLeft"><a id="a7673488c1802ac971a6e6465eafae36f" name="a7673488c1802ac971a6e6465eafae36f"></a>
-bool&#160;</td><td class="memItemRight"><b>consumeDismissed</b> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> popupId)</td></tr>
-<tr class="memitem:a504d36523cd6e9c0ee597548b4c5a244" id="r_a504d36523cd6e9c0ee597548b4c5a244"><td class="memItemLeft"><a id="a504d36523cd6e9c0ee597548b4c5a244" name="a504d36523cd6e9c0ee597548b4c5a244"></a>
-bool&#160;</td><td class="memItemRight"><b>consumeDismissed</b> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> popupId)</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:aedcadf9ffa4a2a8a0069d732c7c3374c" id="r_aedcadf9ffa4a2a8a0069d732c7c3374c"><td class="memItemLeft"><a id="aedcadf9ffa4a2a8a0069d732c7c3374c" name="aedcadf9ffa4a2a8a0069d732c7c3374c"></a>
-class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
+<tr class="memitem:a970148efedbde155c284dfdf9826dada" id="r_a970148efedbde155c284dfdf9826dada"><td class="memItemLeft"><a id="a970148efedbde155c284dfdf9826dada" name="a970148efedbde155c284dfdf9826dada"></a>
+void&#160;</td><td class="memItemRight"><b>appendDevMemorySamples</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1MemorySampleSink.html">devSystems::MemorySampleSink</a> &amp;sink) const noexcept</td></tr>
+<tr class="memdesc:a970148efedbde155c284dfdf9826dada"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append observation-only development memory accounting to the borrowed sink. <br /></td></tr>
+<tr class="memitem:aeb4aa9eafde0a8704703acd96a969a6e" id="r_aeb4aa9eafde0a8704703acd96a969a6e"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1PopupFrame.html">PopupFrame</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aeb4aa9eafde0a8704703acd96a969a6e">request</a> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> popupId, const <a class="el" href="structFlowUi_1_1PopupRequest.html">PopupRequest</a> &amp;request) noexcept</td></tr>
+<tr class="memdesc:aeb4aa9eafde0a8704703acd96a969a6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Submit an open popup for the active window UI build.  <br /></td></tr>
+<tr class="memitem:aab2810b28b9e60f525955e6250b10d20" id="r_aab2810b28b9e60f525955e6250b10d20"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1PopupFrame.html">PopupFrame</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aab2810b28b9e60f525955e6250b10d20">request</a> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> popupId, const <a class="el" href="structFlowUi_1_1PopupRequest.html">PopupRequest</a> &amp;request) noexcept</td></tr>
+<tr class="memdesc:aab2810b28b9e60f525955e6250b10d20"><td class="mdescLeft">&#160;</td><td class="mdescRight">Submit an open popup for the active window UI build.  <br /></td></tr>
+<tr class="memitem:a66e514413405dff82fd862331d8acddb" id="r_a66e514413405dff82fd862331d8acddb"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1PopupFrame.html">PopupFrame</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a66e514413405dff82fd862331d8acddb">request</a> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> popupId, const <a class="el" href="structFlowUi_1_1PopupRequest.html">PopupRequest</a> &amp;request) noexcept</td></tr>
+<tr class="memdesc:a66e514413405dff82fd862331d8acddb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Submit an open popup for the active window UI build.  <br /></td></tr>
+<tr class="memitem:ac47c1e9d758699a3becd78e2a293981b" id="r_ac47c1e9d758699a3becd78e2a293981b"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ac47c1e9d758699a3becd78e2a293981b">dismiss</a> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> popupId)</td></tr>
+<tr class="memdesc:ac47c1e9d758699a3becd78e2a293981b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dismiss a popup and record a consumable notification.  <br /></td></tr>
+<tr class="memitem:a1c67dc063c4eb35f55960c07b3e59fb3" id="r_a1c67dc063c4eb35f55960c07b3e59fb3"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a1c67dc063c4eb35f55960c07b3e59fb3">dismiss</a> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> popupId)</td></tr>
+<tr class="memdesc:a1c67dc063c4eb35f55960c07b3e59fb3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dismiss a popup and record a consumable notification.  <br /></td></tr>
+<tr class="memitem:a57b782fdd0b7a75aa7b2b36960f26a5a" id="r_a57b782fdd0b7a75aa7b2b36960f26a5a"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a57b782fdd0b7a75aa7b2b36960f26a5a">dismiss</a> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> popupId)</td></tr>
+<tr class="memdesc:a57b782fdd0b7a75aa7b2b36960f26a5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dismiss a popup and record a consumable notification.  <br /></td></tr>
+<tr class="memitem:ae3e3d949a4001be4ea469063794b9b4a" id="r_ae3e3d949a4001be4ea469063794b9b4a"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ae3e3d949a4001be4ea469063794b9b4a">consumeDismissed</a> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> popupId)</td></tr>
+<tr class="memdesc:ae3e3d949a4001be4ea469063794b9b4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read and consume one pending popup dismissal.  <br /></td></tr>
+<tr class="memitem:a7673488c1802ac971a6e6465eafae36f" id="r_a7673488c1802ac971a6e6465eafae36f"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a7673488c1802ac971a6e6465eafae36f">consumeDismissed</a> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> popupId)</td></tr>
+<tr class="memdesc:a7673488c1802ac971a6e6465eafae36f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read and consume one pending popup dismissal.  <br /></td></tr>
+<tr class="memitem:a504d36523cd6e9c0ee597548b4c5a244" id="r_a504d36523cd6e9c0ee597548b4c5a244"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a504d36523cd6e9c0ee597548b4c5a244">consumeDismissed</a> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> popupId)</td></tr>
+<tr class="memdesc:a504d36523cd6e9c0ee597548b4c5a244"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read and consume one pending popup dismissal.  <br /></td></tr>
 </table>
-<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Window-owned placement, layering, and dismissal service for popup elements. </p>
+<p>Obtain this manager through <a class="el" href="classFlowUi_1_1UiManager.html#ae4ee7ab158203c5fd05638a36ebe2582" title="Borrow this window popup placement and dismissal manager directly; the const overload exposes read-on...">UiManager::popups()</a>. Request each open popup once during UI construction and use its <a class="el" href="structFlowUi_1_1PopupFrame.html">PopupFrame</a> to emit the floating Clay root. Placement and dismissal state participate in the window's frame commit. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="ae3e3d949a4001be4ea469063794b9b4a" name="ae3e3d949a4001be4ea469063794b9b4a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae3e3d949a4001be4ea469063794b9b4a">&#9670;&#160;</a></span>consumeDismissed() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::PopupManager::consumeDismissed </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a></td>          <td class="paramname"><span class="paramname"><em>popupId</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Read and consume one pending popup dismissal. </p>
+<p>Consumption during a canceled build is rolled back.</p>
+<dl class="section return"><dt>Returns</dt><dd>true once per notification, or false for zero, unknown, or already-consumed IDs. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> dismissed = manager.consumeDismissed(fieldId);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a504d36523cd6e9c0ee597548b4c5a244" name="a504d36523cd6e9c0ee597548b4c5a244"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a504d36523cd6e9c0ee597548b4c5a244">&#9670;&#160;</a></span>consumeDismissed() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::PopupManager::consumeDismissed </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a></td>          <td class="paramname"><span class="paramname"><em>popupId</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Read and consume one pending popup dismissal. </p>
+<p>Consumption during a canceled build is rolled back.</p>
+<dl class="section return"><dt>Returns</dt><dd>true once per notification, or false for zero, unknown, or already-consumed IDs. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> dismissed = manager.consumeDismissed(fieldId);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a7673488c1802ac971a6e6465eafae36f" name="a7673488c1802ac971a6e6465eafae36f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7673488c1802ac971a6e6465eafae36f">&#9670;&#160;</a></span>consumeDismissed() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::PopupManager::consumeDismissed </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a></td>          <td class="paramname"><span class="paramname"><em>popupId</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Read and consume one pending popup dismissal. </p>
+<p>Consumption during a canceled build is rolled back.</p>
+<dl class="section return"><dt>Returns</dt><dd>true once per notification, or false for zero, unknown, or already-consumed IDs. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> dismissed = manager.consumeDismissed(fieldId);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ac47c1e9d758699a3becd78e2a293981b" name="ac47c1e9d758699a3becd78e2a293981b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac47c1e9d758699a3becd78e2a293981b">&#9670;&#160;</a></span>dismiss() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::PopupManager::dismiss </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a></td>          <td class="paramname"><span class="paramname"><em>popupId</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Dismiss a popup and record a consumable notification. </p>
+<p>During a build the change commits with the frame and is rolled back on cancel. Outside a build it commits immediately. An already submitted popup becomes hidden.</p>
+<dl class="section post"><dt>Postcondition</dt><dd>The dismissal request has completed; zero IDs are ignored. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line">manager.dismiss(fieldId);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a57b782fdd0b7a75aa7b2b36960f26a5a" name="a57b782fdd0b7a75aa7b2b36960f26a5a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a57b782fdd0b7a75aa7b2b36960f26a5a">&#9670;&#160;</a></span>dismiss() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::PopupManager::dismiss </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a></td>          <td class="paramname"><span class="paramname"><em>popupId</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Dismiss a popup and record a consumable notification. </p>
+<p>During a build the change commits with the frame and is rolled back on cancel. Outside a build it commits immediately. An already submitted popup becomes hidden.</p>
+<dl class="section post"><dt>Postcondition</dt><dd>The dismissal request has completed; zero IDs are ignored. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line">manager.dismiss(fieldId);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a1c67dc063c4eb35f55960c07b3e59fb3" name="a1c67dc063c4eb35f55960c07b3e59fb3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1c67dc063c4eb35f55960c07b3e59fb3">&#9670;&#160;</a></span>dismiss() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::PopupManager::dismiss </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a></td>          <td class="paramname"><span class="paramname"><em>popupId</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Dismiss a popup and record a consumable notification. </p>
+<p>During a build the change commits with the frame and is rolled back on cancel. Outside a build it commits immediately. An already submitted popup becomes hidden.</p>
+<dl class="section post"><dt>Postcondition</dt><dd>The dismissal request has completed; zero IDs are ignored. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line">manager.dismiss(fieldId);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="adb2980043a5342f65d853aae1a2bb7f5" name="adb2980043a5342f65d853aae1a2bb7f5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adb2980043a5342f65d853aae1a2bb7f5">&#9670;&#160;</a></span>frameStatus()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::PopupManager::frameStatus </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Read a caught failure requiring cancellation of the popup frame. </p>
+<p><a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> checks the latch during frame completion.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success means no popup frame error has been latched; an error requires cancellation of the surrounding frame. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.frameStatus();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+</div><!-- fragment -->
+</div>
+</div>
 <a id="ae96fbe5989be085605215cba276eb746" name="ae96fbe5989be085605215cba276eb746"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae96fbe5989be085605215cba276eb746">&#9670;&#160;</a></span>has_open_popups()</h2>
 
@@ -161,6 +395,132 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
 
 </div>
 </div>
+<a id="aeb4aa9eafde0a8704703acd96a969a6e" name="aeb4aa9eafde0a8704703acd96a969a6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb4aa9eafde0a8704703acd96a969a6e">&#9670;&#160;</a></span>request() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1PopupFrame.html">PopupFrame</a> &gt; FlowUi::PopupManager::request </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a></td>          <td class="paramname"><span class="paramname"><em>popupId</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1PopupRequest.html">PopupRequest</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>request</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Submit an open popup for the active window UI build. </p>
+<p>Request each popup once per active build. Emit the floating root when visible or measureOnly, using its floating configuration. Placement/dismissal participate in commit; canceling the build rolls them back. Default unknown-size policy uses a hidden measurement frame.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains <a class="el" href="structFlowUi_1_1PopupFrame.html">PopupFrame</a>, which may be hidden or measureOnly; a zero ID yields an empty frame. Inactive frame or configured duplicate/placement failures return errors. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1PopupRequest.html">FlowUi::PopupRequest</a> <a class="code hl_function" href="#aeb4aa9eafde0a8704703acd96a969a6e">request</a>{};</div>
+<div class="line"><a class="code hl_function" href="#aeb4aa9eafde0a8704703acd96a969a6e">request</a>.anchor = <a class="code hl_function" href="structFlowUi_1_1PopupAnchor.html#a836e904830612c599fe163ad0eb761ce">FlowUi::PopupAnchor::parent</a>();</div>
+<div class="line"><a class="code hl_function" href="#aeb4aa9eafde0a8704703acd96a969a6e">request</a>.expectedSize = Clay_Dimensions{240.0f, 160.0f};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.request(fieldId, <a class="code hl_function" href="#aeb4aa9eafde0a8704703acd96a969a6e">request</a>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> popup = *result;</div>
+<div class="ttc" id="aclassFlowUi_1_1PopupManager_html_aeb4aa9eafde0a8704703acd96a969a6e"><div class="ttname"><a href="#aeb4aa9eafde0a8704703acd96a969a6e">FlowUi::PopupManager::request</a></div><div class="ttdeci">Result&lt; PopupFrame &gt; request(FlowElementID popupId, const PopupRequest &amp;request) noexcept</div><div class="ttdoc">Submit an open popup for the active window UI build.</div></div>
+<div class="ttc" id="astructFlowUi_1_1PopupAnchor_html_a836e904830612c599fe163ad0eb761ce"><div class="ttname"><a href="structFlowUi_1_1PopupAnchor.html#a836e904830612c599fe163ad0eb761ce">FlowUi::PopupAnchor::parent</a></div><div class="ttdeci">static constexpr PopupAnchor parent() noexcept</div><div class="ttdoc">Create an anchor for the current Clay parent.</div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:110</div></div>
+<div class="ttc" id="astructFlowUi_1_1PopupRequest_html"><div class="ttname"><a href="structFlowUi_1_1PopupRequest.html">FlowUi::PopupRequest</a></div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:274</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a66e514413405dff82fd862331d8acddb" name="a66e514413405dff82fd862331d8acddb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66e514413405dff82fd862331d8acddb">&#9670;&#160;</a></span>request() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1PopupFrame.html">PopupFrame</a> &gt; FlowUi::PopupManager::request </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a></td>          <td class="paramname"><span class="paramname"><em>popupId</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1PopupRequest.html">PopupRequest</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>request</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Submit an open popup for the active window UI build. </p>
+<p>Request each popup once per active build. Emit the floating root when visible or measureOnly, using its floating configuration. Placement/dismissal participate in commit; canceling the build rolls them back. Default unknown-size policy uses a hidden measurement frame.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains <a class="el" href="structFlowUi_1_1PopupFrame.html">PopupFrame</a>, which may be hidden or measureOnly; a zero ID yields an empty frame. Inactive frame or configured duplicate/placement failures return errors. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1PopupRequest.html">FlowUi::PopupRequest</a> <a class="code hl_function" href="#aeb4aa9eafde0a8704703acd96a969a6e">request</a>{};</div>
+<div class="line"><a class="code hl_function" href="#aeb4aa9eafde0a8704703acd96a969a6e">request</a>.anchor = <a class="code hl_function" href="structFlowUi_1_1PopupAnchor.html#a836e904830612c599fe163ad0eb761ce">FlowUi::PopupAnchor::parent</a>();</div>
+<div class="line"><a class="code hl_function" href="#aeb4aa9eafde0a8704703acd96a969a6e">request</a>.expectedSize = Clay_Dimensions{240.0f, 160.0f};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.request(fieldId, <a class="code hl_function" href="#aeb4aa9eafde0a8704703acd96a969a6e">request</a>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> popup = *result;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="aab2810b28b9e60f525955e6250b10d20" name="aab2810b28b9e60f525955e6250b10d20"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aab2810b28b9e60f525955e6250b10d20">&#9670;&#160;</a></span>request() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1PopupFrame.html">PopupFrame</a> &gt; FlowUi::PopupManager::request </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a></td>          <td class="paramname"><span class="paramname"><em>popupId</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1PopupRequest.html">PopupRequest</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>request</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Submit an open popup for the active window UI build. </p>
+<p>Request each popup once per active build. Emit the floating root when visible or measureOnly, using its floating configuration. Placement/dismissal participate in commit; canceling the build rolls them back. Default unknown-size policy uses a hidden measurement frame.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains <a class="el" href="structFlowUi_1_1PopupFrame.html">PopupFrame</a>, which may be hidden or measureOnly; a zero ID yields an empty frame. Inactive frame or configured duplicate/placement failures return errors. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1PopupRequest.html">FlowUi::PopupRequest</a> <a class="code hl_function" href="#aeb4aa9eafde0a8704703acd96a969a6e">request</a>{};</div>
+<div class="line"><a class="code hl_function" href="#aeb4aa9eafde0a8704703acd96a969a6e">request</a>.anchor = <a class="code hl_function" href="structFlowUi_1_1PopupAnchor.html#a836e904830612c599fe163ad0eb761ce">FlowUi::PopupAnchor::parent</a>();</div>
+<div class="line"><a class="code hl_function" href="#aeb4aa9eafde0a8704703acd96a969a6e">request</a>.expectedSize = Clay_Dimensions{240.0f, 160.0f};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.request(fieldId, <a class="code hl_function" href="#aeb4aa9eafde0a8704703acd96a969a6e">request</a>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> popup = *result;</div>
+</div><!-- fragment -->
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/FlowUi/Public/managers/<a class="el" href="PopupManager_8hpp_source.html">PopupManager.hpp</a></li>
 </ul>
@@ -177,7 +537,7 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1PopupManager.html">PopupManager</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1PopupManager.html">PopupManager</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

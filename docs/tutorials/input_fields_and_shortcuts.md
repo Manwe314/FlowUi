@@ -31,7 +31,7 @@ struct EditableNode {
     static constexpr std::string_view debugName = "Editable Node";
 
     static void onPressed(InteractionContext& context) {
-        context.uiManager.shortcuts().setFocusedElement(context.clayID());
+        FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(context.clayID()));
     }
 
     static void buildElement(BuildContext& context) {
@@ -68,7 +68,7 @@ Register a font family through `FontManager` and configure the FSEL theme's font
 
 ```cpp
 for (auto& node : board_nodes) {
-    application.ui().createElement(kEditableNode, FlowUi::Keyed("node", node.key))
+    FlowUi::ValueOrThrow(application.ui()).get().createElement(kEditableNode, FlowUi::Keyed("node", node.key))
         .setParameters({.node = &node})
         .draw();
 }
@@ -104,7 +104,7 @@ Use typed identities with `requestCaret()` to focus or add a caret. `ClearAll` i
 
 ```cpp
 context.uiManager.inputFields().requestCaret(field_id, FlowUi::CaretRequestKind::SetPrimary);
-application.ui().inputFields().requestCaret(
+FlowUi::ValueOrThrow(application.ui()).get().inputFields().requestCaret(
     FlowUi::FlowElementID{}, FlowUi::CaretRequestKind::ClearAll);
 ```
 
@@ -115,26 +115,26 @@ application.ui().inputFields().requestCaret(
 Shortcut registration returns `Result<ShortcutId>`. Check it before retaining the ID. The following uses GLFW key codes; include GLFW's header when using its symbolic constants.
 
 ```cpp
-const auto copy_shortcut = application.ui().shortcuts().registerShortcut(
+const auto copy_shortcut = FlowUi::ValueOrThrow(application.ui()).get().shortcuts().registerShortcut(
     {.key = GLFW_KEY_C, .ctrl = true},
     FlowUi::ShortcutScope::FocusedInput,
     100,
     [](FlowUi::ShortcutContext& context) {
         const std::string selected(context.ui.inputFields().getSelectedText());
         if (selected.empty()) return false;
-        context.ui.setClipboardText(selected);
+        FlowUi::ValueOrThrow(context.ui.setClipboardText(selected));
         return true;
     });
 if (!copy_shortcut) {
     throw FlowUi::FlowUiException(copy_shortcut.error());
 }
 
-const auto paste_shortcut = application.ui().shortcuts().registerShortcut(
+const auto paste_shortcut = FlowUi::ValueOrThrow(application.ui()).get().shortcuts().registerShortcut(
     {.key = GLFW_KEY_V, .ctrl = true},
     FlowUi::ShortcutScope::FocusedInput,
     100,
     [](FlowUi::ShortcutContext& context) {
-        return context.ui.inputFields().insertTextAtPrimaryCaret(context.ui.clipboardText());
+        return context.ui.inputFields().insertTextAtPrimaryCaret(FlowUi::ValueOrThrow(context.ui.clipboardText()));
     });
 if (!paste_shortcut) {
     throw FlowUi::FlowUiException(paste_shortcut.error());
@@ -149,12 +149,12 @@ Semantic application commands can be shared between a Button and a shortcut. Bin
 
 ```cpp
 constexpr auto SaveDocument = FlowUi::AppAction("editor.save");
-const auto save_binding = application.actions().appActions().bind(
+const auto save_binding = FlowUi::ValueOrThrow(application.actions()).get().appActions().bind(
     SaveDocument, [](std::string* document) { document->append(" saved"); }, &document_text);
 if (!save_binding) {
     throw FlowUi::FlowUiException(save_binding.error());
 }
-const auto save_shortcut = application.ui().shortcuts().registerShortcut(
+const auto save_shortcut = FlowUi::ValueOrThrow(application.ui()).get().shortcuts().registerShortcut(
     {.key = GLFW_KEY_S, .ctrl = true},
     FlowUi::ShortcutScope::Global,
     0,
@@ -165,7 +165,7 @@ if (!save_shortcut) {
 }
 ```
 
-The example operation changes a borrowed string to make its effect explicit; substitute the application's actual document-save operation. Borrowed resources must outlive the binding. Shortcuts cannot retain local `UiActionCall` recipes; use those for immediate local UI behavior. See [Actions](../api/action_manager.md).
+The example operation changes a borrowed string to make its effect explicit; substitute the application's actual document-save operation. Borrowed resources must outlive the binding. Shortcuts cannot retain local `UiActionCall` recipes; use those for immediate local UI behavior. See [Actions](docs/api/action_manager.md).
 
 Whole-node copy, paste, and delete remain application model operations. Register them in `FocusedElement` scope, use `ShortcutContext::focusedElementId` to find the model target, and return `false` when no suitable target exists. Stage mutations that would invalidate node references until the current UI invocation has completed.
 
@@ -183,4 +183,4 @@ Within a scope, higher priorities run first, then registration order. Callbacks 
 
 Registrations belong to the window's `ShortcutManager`. Keep captures/resources alive for their full registration lifetime. Remove a checked registration with `unregisterShortcut(*result)`, or call `clear()` to remove all registrations. `clearFocusedElement()` clears only element shortcut focus; input caret focus is managed separately.
 
-See [InputFieldManager API](../api/input_field_manager.md), [ShortcutManager API](../api/shortcut_manager.md), and [custom elements](custom_elements.md).
+See [InputFieldManager API](docs/api/input_field_manager.md), [ShortcutManager API](docs/api/shortcut_manager.md), and [custom elements](docs/tutorials/custom_elements.md).

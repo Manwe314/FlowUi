@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
@@ -13,7 +14,7 @@ namespace {
 constexpr std::string_view viewport_key = "catalogue-test/natural-output";
 
 [[nodiscard]] FlowUi::DevViewportInfo observation(const FlowUi::App& app, FlowUi::WindowId window) {
-	const auto entries = app.devViewportSnapshot(window);
+	const auto entries = ::FlowUi::test::requireValue(app.devViewportSnapshot(window));
 	const auto found = std::ranges::find(entries, viewport_key, &FlowUi::DevViewportInfo::key);
 	assert(found != entries.end());
 	return *found;
@@ -21,14 +22,14 @@ constexpr std::string_view viewport_key = "catalogue-test/natural-output";
 
 void build(FlowUi::App& app, FlowUi::WindowId window, bool source,
 		   const FlowUi::DevViewportInfo* immutable = nullptr) {
-	auto& ui = app.ui(window);
+	auto& ui = ::FlowUi::test::requireValue(app.ui(window)).get();
 	Clay_ElementDeclaration root{};
 	root.layout.sizing = {CLAY_SIZING_GROW(0), CLAY_SIZING_GROW(0)};
 	CLAY(ui.toClaySID("catalogue-capture-test"), root) {
 		if (source) {
 			Clay_ElementDeclaration image{};
 			image.layout.sizing = {CLAY_SIZING_FIXED(64), CLAY_SIZING_FIXED(48)};
-			image.image.imageData = ui.imageData(app.viewPorts(window).getTexture(viewport_key));
+			image.image.imageData = ui.imageData(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.viewPorts(window)).get().getTexture(viewport_key)));
 			CLAY(ui.toClaySID("natural-source"), image) {}
 		}
 		if (immutable) {
@@ -73,7 +74,7 @@ void verify_natural_render_copy_and_retention() {
 	configuration.window.title = "Catalogue immutable viewport verification";
 	configuration.window.width = 320;
 	configuration.window.height = 240;
-	auto app = makeApplication(configuration);
+	auto app = ::FlowUi::test::requireValue(makeApplication(configuration));
 	WindowConfigOverrides overrides;
 	overrides.title = "Catalogue source viewport";
 	overrides.width = 300;
@@ -81,8 +82,8 @@ void verify_natural_render_copy_and_retention() {
 	const auto created_window = app.createWindow(overrides);
 	assert(created_window);
 	const auto source_window = *created_window;
-	assert(app.viewPorts(source_window).create(viewport_key));
-	auto* viewport = app.viewPorts(source_window).getViewPort(viewport_key);
+	assert(::FlowUi::test::requireValue(app.viewPorts(source_window)).get().create(viewport_key));
+	auto* viewport = ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.viewPorts(source_window)).get().getViewPort(viewport_key));
 	assert(viewport);
 	viewport->setClearColor(.9f, .1f, .1f, 1);
 	viewport->setRenderCallback([&](const ViewPortRenderContext&) { ++render_callbacks; });
@@ -116,7 +117,7 @@ void verify_natural_render_copy_and_retention() {
 	assert(retained && *retained != frozen_backend_texture);
 	frozen.capture_texture = *retained;
 	const std::array frozen_textures{frozen.capture_texture};
-	auto lease = app.devTooling().catalogues().acquireInspectionLease(frozen_textures);
+	auto lease = ::FlowUi::test::requireValue(app.devTooling()).get().catalogues().acquireInspectionLease(frozen_textures);
 	assert(lease.resourceCount() == 1);
 	for (unsigned frame = 0; frame < 3; ++frame) {
 		render(app, app.mainWindowId(), false, &frozen);
@@ -152,15 +153,16 @@ void verify_natural_render_copy_and_retention() {
 	}
 	assert(render_callbacks == 3);
 	assert(!observation(app, source_window).capture_texture);
-	const auto removed = app.viewPorts(source_window).remove(viewport_key);
+	const auto removed = ::FlowUi::test::requireValue(app.viewPorts(source_window)).get().remove(viewport_key);
 	assert(removed && *removed);
-	assert(app.devViewportSnapshot(source_window).empty());
+	assert(::FlowUi::test::requireValue(app.devViewportSnapshot(source_window)).empty());
 	render(app, app.mainWindowId(), false, &frozen);
 	assert(app.destroyWindow(source_window));
-	assert(app.devViewportSnapshot(source_window).empty());
+	const auto destroyedSnapshot = app.devViewportSnapshot(source_window);
+	assert(!destroyedSnapshot && destroyedSnapshot.error().code == ErrorCode::InvalidWindowId);
 	assert(!app.request_dev_viewport_capture(source_window, viewport_key));
 	app.release_dev_viewport_capture(source_window, viewport_key);
-	auto surviving_binding = app.devTooling().catalogues().acquireInspectionLease(frozen_textures);
+	auto surviving_binding = ::FlowUi::test::requireValue(app.devTooling()).get().catalogues().acquireInspectionLease(frozen_textures);
 	assert(surviving_binding.resourceCount() == 1);
 	surviving_binding = {};
 	// The AppShared immutable copy remains sampleable after both source identities disappear.

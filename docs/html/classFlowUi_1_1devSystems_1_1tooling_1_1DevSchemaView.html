@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,21 +106,36 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevSchemaView Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Copyable shared ownership of an immutable schema generation. Retain this handle while borrowing any generation-local indices, arrays, strings, or metadata pointers.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevSchemaTypes_8hpp_source.html">DevSchemaTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:adfb52d90620bd6f205fd4903d4fb4f6a" id="r_adfb52d90620bd6f205fd4903d4fb4f6a"><td class="memItemLeft"><a id="adfb52d90620bd6f205fd4903d4fb4f6a" name="adfb52d90620bd6f205fd4903d4fb4f6a"></a>
+&#160;</td><td class="memItemRight"><b>DevSchemaView</b> ()=default</td></tr>
+<tr class="memdesc:adfb52d90620bd6f205fd4903d4fb4f6a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct an empty generation handle. <br /></td></tr>
 <tr class="memitem:a479643f786a9eb5c1e34db24380b7ae9" id="r_a479643f786a9eb5c1e34db24380b7ae9"><td class="memItemLeft"><a id="a479643f786a9eb5c1e34db24380b7ae9" name="a479643f786a9eb5c1e34db24380b7ae9"></a>
 &#160;</td><td class="memItemRight"><b>DevSchemaView</b> (std::shared_ptr&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaGeneration.html">DevSchemaGeneration</a> &gt; generation)</td></tr>
+<tr class="memdesc:a479643f786a9eb5c1e34db24380b7ae9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retain shared ownership of generation, which may be null for an empty handle. <br /></td></tr>
 <tr class="memitem:a7675fd4e5795fb3a24b743ee9bca3352" id="r_a7675fd4e5795fb3a24b743ee9bca3352"><td class="memItemLeft"><a id="a7675fd4e5795fb3a24b743ee9bca3352" name="a7675fd4e5795fb3a24b743ee9bca3352"></a>
 &#160;</td><td class="memItemRight"><b>operator bool</b> () const noexcept</td></tr>
+<tr class="memdesc:a7675fd4e5795fb3a24b743ee9bca3352"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether this handle owns an immutable schema generation. <br /></td></tr>
 <tr class="memitem:ab55b9218205b075b64764ba331fd1dc8" id="r_ab55b9218205b075b64764ba331fd1dc8"><td class="memItemLeft"><a id="ab55b9218205b075b64764ba331fd1dc8" name="ab55b9218205b075b64764ba331fd1dc8"></a>
 const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaGeneration.html">DevSchemaGeneration</a> *&#160;</td><td class="memItemRight"><b>operator-&gt;</b> () const noexcept</td></tr>
+<tr class="memdesc:ab55b9218205b075b64764ba331fd1dc8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the immutable generation pointer; check this handle before dereferencing. <br /></td></tr>
 <tr class="memitem:aada6e2a78ebcea48994daa16a318ef05" id="r_aada6e2a78ebcea48994daa16a318ef05"><td class="memItemLeft"><a id="aada6e2a78ebcea48994daa16a318ef05" name="aada6e2a78ebcea48994daa16a318ef05"></a>
 const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaGeneration.html">DevSchemaGeneration</a> &amp;&#160;</td><td class="memItemRight"><b>operator*</b> () const noexcept</td></tr>
+<tr class="memdesc:aada6e2a78ebcea48994daa16a318ef05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the immutable generation; requires a nonempty handle. <br /></td></tr>
 <tr class="memitem:a423e8e0ad12f3b5d4ce1c238ea012a9b" id="r_a423e8e0ad12f3b5d4ce1c238ea012a9b"><td class="memItemLeft"><a id="a423e8e0ad12f3b5d4ce1c238ea012a9b" name="a423e8e0ad12f3b5d4ce1c238ea012a9b"></a>
 const std::shared_ptr&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaGeneration.html">DevSchemaGeneration</a> &gt; &amp;&#160;</td><td class="memItemRight"><b>shared</b> () const noexcept</td></tr>
+<tr class="memdesc:a423e8e0ad12f3b5d4ce1c238ea012a9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow this handle's shared owner; copy it to retain the generation independently. <br /></td></tr>
 </table>
-<hr/>The documentation for this class was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Copyable shared ownership of an immutable schema generation. Retain this handle while borrowing any generation-local indices, arrays, strings, or metadata pointers. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/devSystems/devTooling/schema/<a class="el" href="DevSchemaTypes_8hpp_source.html">DevSchemaTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -136,7 +151,7 @@ const std::shared_ptr&lt; const <a class="el" href="structFlowUi_1_1devSystems_1
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaView.html">DevSchemaView</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaView.html">DevSchemaView</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

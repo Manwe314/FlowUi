@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,33 +106,66 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevTreeCaptureStats Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Copied node totals and memory accounting for one attempted capture.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevTreeTypes_8hpp_source.html">DevTreeTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:aacbf56246cb34bb58f1a231e8883fb37" id="r_aacbf56246cb34bb58f1a231e8883fb37"><td class="memItemLeft"><a id="aacbf56246cb34bb58f1a231e8883fb37" name="aacbf56246cb34bb58f1a231e8883fb37"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>frameNumber</b> = 0</td></tr>
+<tr class="memdesc:aacbf56246cb34bb58f1a231e8883fb37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Window frame represented by this capture attempt. <br /></td></tr>
 <tr class="memitem:a74f0e388fe503b92218875fbb93a430a" id="r_a74f0e388fe503b92218875fbb93a430a"><td class="memItemLeft"><a id="a74f0e388fe503b92218875fbb93a430a" name="a74f0e388fe503b92218875fbb93a430a"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>flowNodeCount</b> = 0</td></tr>
+<tr class="memdesc:a74f0e388fe503b92218875fbb93a430a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of copied Flow invocation nodes. <br /></td></tr>
+<tr class="memitem:a07624c92bd412763182b7a702ef49d1e" id="r_a07624c92bd412763182b7a702ef49d1e"><td class="memItemLeft"><a id="a07624c92bd412763182b7a702ef49d1e" name="a07624c92bd412763182b7a702ef49d1e"></a>
+uint32_t&#160;</td><td class="memItemRight"><b>clayNodeCount</b> = 0</td></tr>
+<tr class="memdesc:a07624c92bd412763182b7a702ef49d1e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of copied Clay layout nodes. <br /></td></tr>
+<tr class="memitem:a9b40f1b213f51c912528a97889cdfae7" id="r_a9b40f1b213f51c912528a97889cdfae7"><td class="memItemLeft"><a id="a9b40f1b213f51c912528a97889cdfae7" name="a9b40f1b213f51c912528a97889cdfae7"></a>
+uint32_t&#160;</td><td class="memItemRight"><b>clayRootCount</b> = 0</td></tr>
+<tr class="memdesc:a9b40f1b213f51c912528a97889cdfae7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of copied Clay attachment roots. <br /></td></tr>
+<tr class="memitem:a6cc929db3cbeffe6a6da8d838f2003e5" id="r_a6cc929db3cbeffe6a6da8d838f2003e5"><td class="memItemLeft"><a id="a6cc929db3cbeffe6a6da8d838f2003e5" name="a6cc929db3cbeffe6a6da8d838f2003e5"></a>
+uint32_t&#160;</td><td class="memItemRight"><b>directLinkCount</b> = 0</td></tr>
+<tr class="memdesc:a6cc929db3cbeffe6a6da8d838f2003e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of packed direct Flow-to-Clay ownership links. <br /></td></tr>
+<tr class="memitem:a9babd55c7124f5b26734037719c66e75" id="r_a9babd55c7124f5b26734037719c66e75"><td class="memItemLeft"><a id="a9babd55c7124f5b26734037719c66e75" name="a9babd55c7124f5b26734037719c66e75"></a>
+uint32_t&#160;</td><td class="memItemRight"><b>rawClayNodeCount</b> = 0</td></tr>
+<tr class="memdesc:a9babd55c7124f5b26734037719c66e75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of Clay nodes without a Flow owner. <br /></td></tr>
+<tr class="memitem:a789f889257e79d0c0b7ab211c1799614" id="r_a789f889257e79d0c0b7ab211c1799614"><td class="memItemLeft"><a id="a789f889257e79d0c0b7ab211c1799614" name="a789f889257e79d0c0b7ab211c1799614"></a>
+uint32_t&#160;</td><td class="memItemRight"><b>syntheticClayNodeCount</b> = 0</td></tr>
+<tr class="memdesc:a789f889257e79d0c0b7ab211c1799614"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of Clay nodes emitted after authored UI construction. <br /></td></tr>
 <tr class="memitem:aaac343651c15f56305f4db4fe5055c81" id="r_aaac343651c15f56305f4db4fe5055c81"><td class="memItemLeft"><a id="aaac343651c15f56305f4db4fe5055c81" name="aaac343651c15f56305f4db4fe5055c81"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>invalidFlowNodeCount</b> = 0</td></tr>
+<tr class="memdesc:aaac343651c15f56305f4db4fe5055c81"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of Flow nodes with failed ownership/root validation. <br /></td></tr>
 <tr class="memitem:a739fdc94beba20cbb322aedab15692b3" id="r_a739fdc94beba20cbb322aedab15692b3"><td class="memItemLeft"><a id="a739fdc94beba20cbb322aedab15692b3" name="a739fdc94beba20cbb322aedab15692b3"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>copiedStringBytes</b> = 0</td></tr>
+<tr class="memdesc:a739fdc94beba20cbb322aedab15692b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bytes used by copied names, paths, and text. <br /></td></tr>
 <tr class="memitem:a44d26efc9356770175f55c369b4061a4" id="r_a44d26efc9356770175f55c369b4061a4"><td class="memItemLeft"><a id="a44d26efc9356770175f55c369b4061a4" name="a44d26efc9356770175f55c369b4061a4"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>vectorGrowthOperations</b> = 0</td></tr>
+<tr class="memdesc:a44d26efc9356770175f55c369b4061a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Observed backing-vector growth events during capture. <br /></td></tr>
 <tr class="memitem:afcda630381082d66384bcd7310835764" id="r_afcda630381082d66384bcd7310835764"><td class="memItemLeft"><a id="afcda630381082d66384bcd7310835764" name="afcda630381082d66384bcd7310835764"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>logicalLiveBytes</b> = 0</td></tr>
+<tr class="memdesc:afcda630381082d66384bcd7310835764"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bytes logically occupied by retained capture data. <br /></td></tr>
 <tr class="memitem:ac14cbcdead533b17f14688d3de72d38e" id="r_ac14cbcdead533b17f14688d3de72d38e"><td class="memItemLeft"><a id="ac14cbcdead533b17f14688d3de72d38e" name="ac14cbcdead533b17f14688d3de72d38e"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>backingCapacityBytes</b> = 0</td></tr>
+<tr class="memdesc:ac14cbcdead533b17f14688d3de72d38e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bytes reserved by capture backing containers. <br /></td></tr>
 <tr class="memitem:a8f71809ac770a8c54d2b2c5f27bc245a" id="r_a8f71809ac770a8c54d2b2c5f27bc245a"><td class="memItemLeft"><a id="a8f71809ac770a8c54d2b2c5f27bc245a" name="a8f71809ac770a8c54d2b2c5f27bc245a"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>peakLogicalLiveBytes</b> = 0</td></tr>
+<tr class="memdesc:a8f71809ac770a8c54d2b2c5f27bc245a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum logical capture bytes observed by this owner. <br /></td></tr>
 <tr class="memitem:aa3ca08e9fa0bed91615e805fd277b20d" id="r_aa3ca08e9fa0bed91615e805fd277b20d"><td class="memItemLeft"><a id="aa3ca08e9fa0bed91615e805fd277b20d" name="aa3ca08e9fa0bed91615e805fd277b20d"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>peakBackingCapacityBytes</b> = 0</td></tr>
+<tr class="memdesc:aa3ca08e9fa0bed91615e805fd277b20d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum reserved capture bytes observed by this owner. <br /></td></tr>
 <tr class="memitem:a5470fb5ed307bd1e997a8e21d46d627f" id="r_a5470fb5ed307bd1e997a8e21d46d627f"><td class="memItemLeft"><a id="a5470fb5ed307bd1e997a8e21d46d627f" name="a5470fb5ed307bd1e997a8e21d46d627f"></a>
 bool&#160;</td><td class="memItemRight"><b>complete</b> = false</td></tr>
+<tr class="memdesc:a5470fb5ed307bd1e997a8e21d46d627f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether capture completed without missing/truncated data. <br /></td></tr>
 <tr class="memitem:a15abb71c2f41752a5bc0d4b460e167fd" id="r_a15abb71c2f41752a5bc0d4b460e167fd"><td class="memItemLeft"><a id="a15abb71c2f41752a5bc0d4b460e167fd" name="a15abb71c2f41752a5bc0d4b460e167fd"></a>
 bool&#160;</td><td class="memItemRight"><b>truncated</b> = false</td></tr>
+<tr class="memdesc:a15abb71c2f41752a5bc0d4b460e167fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether a configured capacity prevented a full copy. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Copied node totals and memory accounting for one attempted capture. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/tree/<a class="el" href="DevTreeTypes_8hpp_source.html">DevTreeTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -148,7 +181,7 @@ bool&#160;</td><td class="memItemRight"><b>truncated</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCaptureStats.html">DevTreeCaptureStats</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCaptureStats.html">DevTreeCaptureStats</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

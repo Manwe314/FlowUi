@@ -7,7 +7,11 @@
 namespace FlowUi {
 class UiManager;
 
-/** Callback used to construct one managed window's UI each frame. */
+/**
+ * Callback retained to construct one managed window's UI each frame. The UiManager
+ * and window identity are borrowed for the invocation; copied/captured application
+ * references must remain alive for every frame in which this callback is installed.
+ */
 using UiBuildCallback = std::function<void(UiManager&, WindowId)>;
 
 /** Lifecycle policy for a window registered with a managed UI callback. */

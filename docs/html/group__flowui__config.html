@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,48 +107,59 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Public configuration and shared value structs.  
+<p>Public configuration and shared value structs.
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:FlowUi_3A_3AVulkanConfig" id="r_FlowUi_3A_3AVulkanConfig"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1VulkanConfig.html">FlowUi::VulkanConfig</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configures Vulkan device, swapchain, and frame scheduling defaults.  <a href="structFlowUi_1_1VulkanConfig.html#details">More...</a><br /></td></tr>
 <tr class="memitem:FlowUi_3A_3AFrameInput" id="r_FlowUi_3A_3AFrameInput"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1FrameInput.html">FlowUi::FrameInput</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Per-frame input snapshot consumed by FlowUi managers and elements.  <a href="structFlowUi_1_1FrameInput.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Per-frame input snapshot consumed by <a class="el" href="namespaceFlowUi.html">FlowUi</a> managers and elements.  <a href="structFlowUi_1_1FrameInput.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:gad7eda856ae51a88ad99efd967439facb" id="r_gad7eda856ae51a88ad99efd967439facb"><td class="memItemLeft"><a id="gad7eda856ae51a88ad99efd967439facb" name="gad7eda856ae51a88ad99efd967439facb"></a>enum class &#160;</td><td class="memItemRight"><a class="el" href="#gad7eda856ae51a88ad99efd967439facb">FlowUi::PresentMode</a> : std::uint8_t { <b>Fifo</b>
-, <b>Mailbox</b>
-, <b>Immediate</b>
+<tr class="memitem:gad7eda856ae51a88ad99efd967439facb" id="r_gad7eda856ae51a88ad99efd967439facb"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#gad7eda856ae51a88ad99efd967439facb">FlowUi::PresentMode</a> : std::uint8_t { <a class="el" href="#ggad7eda856ae51a88ad99efd967439facbaa0476ca4d7283b340d24c53c16270958">FlowUi::PresentMode::Fifo</a>
+, <a class="el" href="#ggad7eda856ae51a88ad99efd967439facba2dcff8c037093c5d3552ad532e603f9f">FlowUi::PresentMode::Mailbox</a>
+, <a class="el" href="#ggad7eda856ae51a88ad99efd967439facba43f6615bbb2c40a5306ff804094420b1">FlowUi::PresentMode::Immediate</a>
  }</td></tr>
-<tr class="memdesc:gad7eda856ae51a88ad99efd967439facb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Presentation mode requested for the Vulkan swapchain. <br /></td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:gadaae2433c5725ae3d81b120326eb42a6" id="r_gadaae2433c5725ae3d81b120326eb42a6"><td class="memItemLeft"><a id="gadaae2433c5725ae3d81b120326eb42a6" name="gadaae2433c5725ae3d81b120326eb42a6"></a>
-<a class="el" href="#gad7eda856ae51a88ad99efd967439facb">PresentMode</a>&#160;</td><td class="memItemRight"><b>FlowUi::VulkanConfig::presentMode</b> = PresentMode::Fifo</td></tr>
-<tr class="memdesc:gadaae2433c5725ae3d81b120326eb42a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Preferred swapchain presentation mode. <br /></td></tr>
-<tr class="memitem:ga57b35b5f53ac26dc0120bffeb1f74995" id="r_ga57b35b5f53ac26dc0120bffeb1f74995"><td class="memItemLeft"><a id="ga57b35b5f53ac26dc0120bffeb1f74995" name="ga57b35b5f53ac26dc0120bffeb1f74995"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>FlowUi::VulkanConfig::framesInFlight</b> = 2</td></tr>
-<tr class="memdesc:ga57b35b5f53ac26dc0120bffeb1f74995"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of frames the renderer may keep in flight. <br /></td></tr>
-<tr class="memitem:gaf08c2cb657d48a6d7c3aae1e01fcc3df" id="r_gaf08c2cb657d48a6d7c3aae1e01fcc3df"><td class="memItemLeft"><a id="gaf08c2cb657d48a6d7c3aae1e01fcc3df" name="gaf08c2cb657d48a6d7c3aae1e01fcc3df"></a>
-bool&#160;</td><td class="memItemRight"><b>FlowUi::VulkanConfig::enableValidation</b> = true</td></tr>
-<tr class="memdesc:gaf08c2cb657d48a6d7c3aae1e01fcc3df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable Vulkan validation layers when they are available. <br /></td></tr>
-<tr class="memitem:ga2113a59485755cf238d536f5eedb4c76" id="r_ga2113a59485755cf238d536f5eedb4c76"><td class="memItemLeft"><a id="ga2113a59485755cf238d536f5eedb4c76" name="ga2113a59485755cf238d536f5eedb4c76"></a>
-bool&#160;</td><td class="memItemRight"><b>FlowUi::VulkanConfig::enableDebugUtils</b> = true</td></tr>
-<tr class="memdesc:ga2113a59485755cf238d536f5eedb4c76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable Vulkan debug utils messenger support when available. <br /></td></tr>
-<tr class="memitem:gae93a1d85e75f22c0615814c639b2510d" id="r_gae93a1d85e75f22c0615814c639b2510d"><td class="memItemLeft"><a id="gae93a1d85e75f22c0615814c639b2510d" name="gae93a1d85e75f22c0615814c639b2510d"></a>
-bool&#160;</td><td class="memItemRight"><b>FlowUi::VulkanConfig::preferDiscreteGPU</b> = true</td></tr>
-<tr class="memdesc:gae93a1d85e75f22c0615814c639b2510d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefer a discrete GPU when selecting a physical device. <br /></td></tr>
-<tr class="memitem:ga27609afa6b372beb9c1106f5bc018bd8" id="r_ga27609afa6b372beb9c1106f5bc018bd8"><td class="memItemLeft"><a id="ga27609afa6b372beb9c1106f5bc018bd8" name="ga27609afa6b372beb9c1106f5bc018bd8"></a>
-bool&#160;</td><td class="memItemRight"><b>FlowUi::VulkanConfig::srgbBackbuffer</b> = true</td></tr>
-<tr class="memdesc:ga27609afa6b372beb9c1106f5bc018bd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefer an sRGB swapchain format when the surface supports one. <br /></td></tr>
+<tr class="memdesc:gad7eda856ae51a88ad99efd967439facb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Presentation mode requested for the Vulkan swapchain.  <a href="#gad7eda856ae51a88ad99efd967439facb">More...</a><br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Public configuration and shared value structs. </p>
-</div></div><!-- contents -->
+</div><a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
+<a id="gad7eda856ae51a88ad99efd967439facb" name="gad7eda856ae51a88ad99efd967439facb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad7eda856ae51a88ad99efd967439facb">&#9670;&#160;</a></span>PresentMode</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="#gad7eda856ae51a88ad99efd967439facb">FlowUi::PresentMode</a> : std::uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel strong">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Presentation mode requested for the Vulkan swapchain. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ggad7eda856ae51a88ad99efd967439facbaa0476ca4d7283b340d24c53c16270958" name="ggad7eda856ae51a88ad99efd967439facbaa0476ca4d7283b340d24c53c16270958"></a>Fifo&#160;</td><td class="fielddoc"><p>Queue presentation for vertical synchronization. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggad7eda856ae51a88ad99efd967439facba2dcff8c037093c5d3552ad532e603f9f" name="ggad7eda856ae51a88ad99efd967439facba2dcff8c037093c5d3552ad532e603f9f"></a>Mailbox&#160;</td><td class="fielddoc"><p>Present the newest queued image at vertical synchronization when supported. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggad7eda856ae51a88ad99efd967439facba43f6615bbb2c40a5306ff804094420b1" name="ggad7eda856ae51a88ad99efd967439facba43f6615bbb2c40a5306ff804094420b1"></a>Immediate&#160;</td><td class="fielddoc"><p>Present without waiting for vertical synchronization when supported. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <div id="page-nav" class="page-nav-panel">
 <div id="page-nav-resize-handle"></div>

@@ -53,6 +53,8 @@ void FrameVk::create(uint32_t framesInFlight, VulkanContext& vk) {
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 		vkCheck(vkCreateFence(vk.device, &fenceInfo, nullptr, &frame.inFlight));
+		fenceInfo.flags = 0;
+		vkCheck(vkCreateFence(vk.device, &fenceInfo, nullptr, &frame.imageAcquired));
 	}
 
 }
@@ -71,6 +73,10 @@ void FrameVk::destroy(VulkanContext& vk) {
 			frame.gpuTiming = {};
 		}
 #endif
+		if (frame.imageAcquired != VK_NULL_HANDLE) {
+			vkDestroyFence(vk.device, frame.imageAcquired, nullptr);
+			frame.imageAcquired = VK_NULL_HANDLE;
+		}
 		if (frame.inFlight != VK_NULL_HANDLE) {
 			vkDestroyFence(vk.device, frame.inFlight, nullptr);
 			frame.inFlight = VK_NULL_HANDLE;

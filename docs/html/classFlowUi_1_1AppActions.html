@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,41 +106,264 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::AppActions Class Reference<div class="ingroups"><a class="el" href="group__flowui__action__manager.html">Action Manager</a></div></div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Retained application actions addressed by stable <a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> values.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ActionManager_8hpp_source.html">ActionManager.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:gab2d7dad2e88c776b251fdfcf2b2a88c0" id="r_gab2d7dad2e88c776b251fdfcf2b2a88c0"><td class="memTemplParams" colspan="2">
-template&lt;typename Callable, typename... Resources&gt; </td></tr>
-<tr class="memitem:gab2d7dad2e88c776b251fdfcf2b2a88c0 template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> &gt;&#160;</td><td class="memItemRight"><b>bind</b> (<a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> id, Callable &amp;&amp;callable, Resources &amp;&amp;... resources)</td></tr>
-<tr class="memitem:ga2dddfd5fa8c1072d802b0db60e90376c" id="r_ga2dddfd5fa8c1072d802b0db60e90376c"><td class="memTemplParams" colspan="2">
-template&lt;typename Callable, typename... Resources&gt; </td></tr>
-<tr class="memitem:ga2dddfd5fa8c1072d802b0db60e90376c template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> &gt;&#160;</td><td class="memItemRight"><b>bind</b> (<a class="el" href="structFlowUi_1_1AppActionDescriptor.html">AppActionDescriptor</a> descriptor, Callable &amp;&amp;callable, Resources &amp;&amp;... resources)</td></tr>
-<tr class="memitem:a2bf4c786bf3045ea2d38287a149971f7" id="r_a2bf4c786bf3045ea2d38287a149971f7"><td class="memItemLeft"><a id="a2bf4c786bf3045ea2d38287a149971f7" name="a2bf4c786bf3045ea2d38287a149971f7"></a>
-<a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a>&#160;</td><td class="memItemRight"><b>select</b> (<a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> id) const noexcept</td></tr>
-<tr class="memitem:afb4b31e9740f5b81896ede85a755a075" id="r_afb4b31e9740f5b81896ede85a755a075"><td class="memItemLeft"><a id="afb4b31e9740f5b81896ede85a755a075" name="afb4b31e9740f5b81896ede85a755a075"></a>
-bool&#160;</td><td class="memItemRight"><b>isBound</b> (<a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> id) const noexcept</td></tr>
-<tr class="memitem:aef1d0d208f5e088a6adb43f352fdeb27" id="r_aef1d0d208f5e088a6adb43f352fdeb27"><td class="memItemLeft"><a id="aef1d0d208f5e088a6adb43f352fdeb27" name="aef1d0d208f5e088a6adb43f352fdeb27"></a>
-bool&#160;</td><td class="memItemRight"><b>isBound</b> (<a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> call) const noexcept</td></tr>
-<tr class="memitem:ae74261cd51fac89fcfc2ce31704fdec4" id="r_ae74261cd51fac89fcfc2ce31704fdec4"><td class="memItemLeft"><a id="ae74261cd51fac89fcfc2ce31704fdec4" name="ae74261cd51fac89fcfc2ce31704fdec4"></a>
-bool&#160;</td><td class="memItemRight"><b>unbind</b> (<a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> id)</td></tr>
-<tr class="memitem:gaaf0c15fa5763845a8850cc04990dafda" id="r_gaaf0c15fa5763845a8850cc04990dafda"><td class="memTemplParams" colspan="2">
-template&lt;typename Callable, typename... Resources&gt; </td></tr>
-<tr class="memitem:gaaf0c15fa5763845a8850cc04990dafda template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> &gt;&#160;</td><td class="memItemRight"><b>rebind</b> (<a class="el" href="structFlowUi_1_1AppActionDescriptor.html">AppActionDescriptor</a> descriptor, Callable &amp;&amp;callable, Resources &amp;&amp;... resources)</td></tr>
-<tr class="memitem:a9abe6543b5fc7708bd06571cca87e8ef" id="r_a9abe6543b5fc7708bd06571cca87e8ef"><td class="memItemLeft"><a id="a9abe6543b5fc7708bd06571cca87e8ef" name="a9abe6543b5fc7708bd06571cca87e8ef"></a>
-ActionInvocationStatus&#160;</td><td class="memItemRight"><b>invoke</b> (<a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> call)</td></tr>
-<tr class="memitem:ga59dfeefc68a0b8e14536d441dd0dd09f" id="r_ga59dfeefc68a0b8e14536d441dd0dd09f"><td class="memTemplParams" colspan="2">
-template&lt;typename <a class="el" href="classFlowUi_1_1Result.html">Result</a>&gt; </td></tr>
-<tr class="memitem:ga59dfeefc68a0b8e14536d441dd0dd09f template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1ActionResult.html">ActionResult</a>&lt; <a class="el" href="classFlowUi_1_1Result.html">Result</a> &gt;&#160;</td><td class="memItemRight"><b>invokeFor</b> (<a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> call)</td></tr>
-<tr class="memitem:a3009c847e74cd719b8c674bde37bafa5" id="r_a3009c847e74cd719b8c674bde37bafa5"><td class="memItemLeft"><a id="a3009c847e74cd719b8c674bde37bafa5" name="a3009c847e74cd719b8c674bde37bafa5"></a>
-<a class="el" href="structFlowUi_1_1AppActionAvailability.html">AppActionAvailability</a>&#160;</td><td class="memItemRight"><b>availability</b> (<a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> call) const noexcept</td></tr>
-<tr class="memitem:a7d3c0aa0cc6acae58511a61abe2b1532" id="r_a7d3c0aa0cc6acae58511a61abe2b1532"><td class="memItemLeft"><a id="a7d3c0aa0cc6acae58511a61abe2b1532" name="a7d3c0aa0cc6acae58511a61abe2b1532"></a>
-bool&#160;</td><td class="memItemRight"><b>setAvailability</b> (<a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> id, <a class="el" href="structFlowUi_1_1AppActionAvailability.html">AppActionAvailability</a> availability)</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:afbf17e1f0158828c2be22ecde58644fc" id="r_afbf17e1f0158828c2be22ecde58644fc"><td class="memItemLeft"><a id="afbf17e1f0158828c2be22ecde58644fc" name="afbf17e1f0158828c2be22ecde58644fc"></a>
-class&#160;</td><td class="memItemRight"><b>ActionManager</b></td></tr>
+<tr class="memitem:gab2d7dad2e88c776b251fdfcf2b2a88c0" id="r_gab2d7dad2e88c776b251fdfcf2b2a88c0"><td class="memTemplParams" colspan="2">template&lt;typename Callable, typename... Resources&gt; </td></tr>
+<tr class="memitem:gab2d7dad2e88c776b251fdfcf2b2a88c0 template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__action__manager.html#gab2d7dad2e88c776b251fdfcf2b2a88c0">bind</a> (<a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> id, Callable &amp;&amp;callable, Resources &amp;&amp;... resources)</td></tr>
+<tr class="memdesc:gab2d7dad2e88c776b251fdfcf2b2a88c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a retained application binding and return its <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a>. The ID must be nonzero and unbound; the descriptor overload also copies its diagnostic name.  <br /></td></tr>
+<tr class="memitem:ga2dddfd5fa8c1072d802b0db60e90376c" id="r_ga2dddfd5fa8c1072d802b0db60e90376c"><td class="memTemplParams" colspan="2">template&lt;typename Callable, typename... Resources&gt; </td></tr>
+<tr class="memitem:ga2dddfd5fa8c1072d802b0db60e90376c template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__action__manager.html#ga2dddfd5fa8c1072d802b0db60e90376c">bind</a> (<a class="el" href="structFlowUi_1_1AppActionDescriptor.html">AppActionDescriptor</a> descriptor, Callable &amp;&amp;callable, Resources &amp;&amp;... resources)</td></tr>
+<tr class="memdesc:ga2dddfd5fa8c1072d802b0db60e90376c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a retained application binding and return its <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a>. The ID must be nonzero and unbound; the descriptor overload also copies its diagnostic name.  <br /></td></tr>
+<tr class="memitem:a2bf4c786bf3045ea2d38287a149971f7" id="r_a2bf4c786bf3045ea2d38287a149971f7"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a>&#160;</td><td class="memItemRight"><a class="el" href="#a2bf4c786bf3045ea2d38287a149971f7">select</a> (<a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> id) const noexcept</td></tr>
+<tr class="memdesc:a2bf4c786bf3045ea2d38287a149971f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a direct <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> containing this identity without checking or creating its binding.  <br /></td></tr>
+<tr class="memitem:afb4b31e9740f5b81896ede85a755a075" id="r_afb4b31e9740f5b81896ede85a755a075"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#afb4b31e9740f5b81896ede85a755a075">isBound</a> (<a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> id) const noexcept</td></tr>
+<tr class="memdesc:afb4b31e9740f5b81896ede85a755a075"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether the ID or call currently resolves to a live binding; an empty or unavailable binding is false.  <br /></td></tr>
+<tr class="memitem:aef1d0d208f5e088a6adb43f352fdeb27" id="r_aef1d0d208f5e088a6adb43f352fdeb27"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#aef1d0d208f5e088a6adb43f352fdeb27">isBound</a> (<a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> call) const noexcept</td></tr>
+<tr class="memdesc:aef1d0d208f5e088a6adb43f352fdeb27"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether the ID or call currently resolves to a live binding; an empty or unavailable binding is false.  <br /></td></tr>
+<tr class="memitem:a9cba4e64244894aaadaa541a276a1100" id="r_a9cba4e64244894aaadaa541a276a1100"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a9cba4e64244894aaadaa541a276a1100">unbind</a> (<a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> id) noexcept</td></tr>
+<tr class="memdesc:a9cba4e64244894aaadaa541a276a1100"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retire a binding and return whether one was removed. Successful false is ordinary absence; already active invocations may finish.  <br /></td></tr>
+<tr class="memitem:gaaf0c15fa5763845a8850cc04990dafda" id="r_gaaf0c15fa5763845a8850cc04990dafda"><td class="memTemplParams" colspan="2">template&lt;typename Callable, typename... Resources&gt; </td></tr>
+<tr class="memitem:gaaf0c15fa5763845a8850cc04990dafda template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__action__manager.html#gaaf0c15fa5763845a8850cc04990dafda">rebind</a> (<a class="el" href="structFlowUi_1_1AppActionDescriptor.html">AppActionDescriptor</a> descriptor, Callable &amp;&amp;callable, Resources &amp;&amp;... resources)</td></tr>
+<tr class="memdesc:gaaf0c15fa5763845a8850cc04990dafda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace an existing retained binding at the same identity. Active invocations finish on their original binding; future calls resolve the replacement. A missing binding is returned as an error.  <br /></td></tr>
+<tr class="memitem:a9abe6543b5fc7708bd06571cca87e8ef" id="r_a9abe6543b5fc7708bd06571cca87e8ef"><td class="memItemLeft"><a class="el" href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">ActionInvocationStatus</a>&#160;</td><td class="memItemRight"><a class="el" href="#a9abe6543b5fc7708bd06571cca87e8ef">invoke</a> (<a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> call)</td></tr>
+<tr class="memdesc:a9abe6543b5fc7708bd06571cca87e8ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke synchronously and directly return Invoked, Empty, Unbound or Disabled. An unavailable call does not run its callable.  <br /></td></tr>
+<tr class="memitem:ga59dfeefc68a0b8e14536d441dd0dd09f" id="r_ga59dfeefc68a0b8e14536d441dd0dd09f"><td class="memTemplParams" colspan="2">template&lt;typename <a class="el" href="classFlowUi_1_1Result.html">Result</a>&gt; </td></tr>
+<tr class="memitem:ga59dfeefc68a0b8e14536d441dd0dd09f template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1ActionResult.html">ActionResult</a>&lt; <a class="el" href="classFlowUi_1_1Result.html">Result</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__action__manager.html#ga59dfeefc68a0b8e14536d441dd0dd09f">invokeFor</a> (<a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> call)</td></tr>
+<tr class="memdesc:ga59dfeefc68a0b8e14536d441dd0dd09f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke only when the bound result type exactly matches <a class="el" href="classFlowUi_1_1Result.html">Result</a>. Return <a class="el" href="classFlowUi_1_1ActionResult.html">ActionResult&lt;Result&gt;</a>, whose errors are Empty, Unbound, Disabled and ResultTypeMismatch. This is distinct from <a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;T&gt;</a>.  <br /></td></tr>
+<tr class="memitem:a3009c847e74cd719b8c674bde37bafa5" id="r_a3009c847e74cd719b8c674bde37bafa5"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1AppActionAvailability.html">AppActionAvailability</a>&#160;</td><td class="memItemRight"><a class="el" href="#a3009c847e74cd719b8c674bde37bafa5">availability</a> (<a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> call) const noexcept</td></tr>
+<tr class="memdesc:a3009c847e74cd719b8c674bde37bafa5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Observe effective enabled state directly; empty, unavailable and unbound calls are disabled.  <br /></td></tr>
+<tr class="memitem:a1963e454848b55c1176f321f57bbc08b" id="r_a1963e454848b55c1176f321f57bbc08b"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a1963e454848b55c1176f321f57bbc08b">setAvailability</a> (<a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> id, <a class="el" href="structFlowUi_1_1AppActionAvailability.html">AppActionAvailability</a> <a class="el" href="#a3009c847e74cd719b8c674bde37bafa5">availability</a>) noexcept</td></tr>
+<tr class="memdesc:a1963e454848b55c1176f321f57bbc08b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the enabled flag of a live binding. Successful false means that no live binding matched the identity.  <br /></td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Retained application actions addressed by stable <a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> values. </p>
+<p>Obtain this facade from <a class="el" href="classFlowUi_1_1ActionManager.html#ae96f24f680a3556f03d86d0a4abdb642" title="Borrow the mutable or const facade for retained application actions. The manager owns this facade.">ActionManager::appActions()</a>. Calls resolve the current binding at invocation time, so existing <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> values follow rebinds. Referenced objects remain caller-owned and must outlive every invocation. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a3009c847e74cd719b8c674bde37bafa5" name="a3009c847e74cd719b8c674bde37bafa5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3009c847e74cd719b8c674bde37bafa5">&#9670;&#160;</a></span>availability()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1AppActionAvailability.html">AppActionAvailability</a> FlowUi::AppActions::availability </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a></td>          <td class="paramname"><span class="paramname"><em>call</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Observe effective enabled state directly; empty, unavailable and unbound calls are disabled. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a9abe6543b5fc7708bd06571cca87e8ef" name="a9abe6543b5fc7708bd06571cca87e8ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9abe6543b5fc7708bd06571cca87e8ef">&#9670;&#160;</a></span>invoke()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">ActionInvocationStatus</a> FlowUi::AppActions::invoke </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a></td>          <td class="paramname"><span class="paramname"><em>call</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Invoke synchronously and directly return Invoked, Empty, Unbound or Disabled. An unavailable call does not run its callable. </p>
+<p>Callback and owned-result movement exceptions propagate unchanged. Side effects are not rolled back or automatically retried. invokeFor requires nonthrowing destruction of owned payloads; reference and array result types are rejected.</p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md</dd></dl>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_enumeration" href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">FlowUi::ActionInvocationStatus</a> outcome = actions.invoke(call);</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> invoked = outcome == <a class="code hl_enumvalue" href="group__flowui__action__manager.html#gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1">FlowUi::ActionInvocationStatus::Invoked</a>;</div>
+<div class="ttc" id="agroup__flowui__action__manager_html_ga9d1bf355b9b6efbdfd521544535423dc"><div class="ttname"><a href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">FlowUi::ActionInvocationStatus</a></div><div class="ttdeci">ActionInvocationStatus</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:240</div></div>
+<div class="ttc" id="agroup__flowui__action__manager_html_gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1"><div class="ttname"><a href="group__flowui__action__manager.html#gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1">FlowUi::ActionInvocationStatus::Invoked</a></div><div class="ttdeci">@ Invoked</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:242</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="aef1d0d208f5e088a6adb43f352fdeb27" name="aef1d0d208f5e088a6adb43f352fdeb27"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aef1d0d208f5e088a6adb43f352fdeb27">&#9670;&#160;</a></span>isBound() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::AppActions::isBound </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a></td>          <td class="paramname"><span class="paramname"><em>call</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return whether the ID or call currently resolves to a live binding; an empty or unavailable binding is false. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="afb4b31e9740f5b81896ede85a755a075" name="afb4b31e9740f5b81896ede85a755a075"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afb4b31e9740f5b81896ede85a755a075">&#9670;&#160;</a></span>isBound() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::AppActions::isBound </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return whether the ID or call currently resolves to a live binding; an empty or unavailable binding is false. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a2bf4c786bf3045ea2d38287a149971f7" name="a2bf4c786bf3045ea2d38287a149971f7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2bf4c786bf3045ea2d38287a149971f7">&#9670;&#160;</a></span>select()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> FlowUi::AppActions::select </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create a direct <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> containing this identity without checking or creating its binding. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a1963e454848b55c1176f321f57bbc08b" name="a1963e454848b55c1176f321f57bbc08b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1963e454848b55c1176f321f57bbc08b">&#9670;&#160;</a></span>setAvailability()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::AppActions::setAvailability </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1AppActionAvailability.html">AppActionAvailability</a></td>          <td class="paramname"><span class="paramname"><em>availability</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Update the enabled flag of a live binding. Successful false means that no live binding matched the identity. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">auto</span> result = actions.setAvailability(<span class="keywordtype">id</span>, {.enabled = <span class="keyword">false</span>});</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> updated = *result;</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a9cba4e64244894aaadaa541a276a1100" name="a9cba4e64244894aaadaa541a276a1100"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9cba4e64244894aaadaa541a276a1100">&#9670;&#160;</a></span>unbind()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::AppActions::unbind </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Retire a binding and return whether one was removed. Successful false is ordinary absence; already active invocations may finish. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">auto</span> result = actions.unbind(<span class="keywordtype">id</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = *result;</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/FlowUi/Public/managers/<a class="el" href="ActionManager_8hpp_source.html">ActionManager.hpp</a></li>
 </ul>
@@ -157,7 +380,7 @@ class&#160;</td><td class="memItemRight"><b>ActionManager</b></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1AppActions.html">AppActions</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1AppActions.html">AppActions</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

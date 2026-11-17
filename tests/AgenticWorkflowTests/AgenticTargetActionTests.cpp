@@ -188,10 +188,10 @@ void test_native_actions() {
 	config.vk.enableDebugUtils = false;
 	config.errors.observer.mode = ErrorReportingMode::SinkOnly;
 	config.agentic_workflow.enabled = false;
-	auto application = makeApplication(config);
+	auto application = ::FlowUi::test::requireValue(makeApplication(config));
 	AgenticActionRegistry actions;
 	constexpr auto increment_id = AppAction("test.agentic.export.increment");
-	const auto bound = application.actions().appActions().bind(
+	const auto bound = ::FlowUi::test::requireValue(application.actions()).get().appActions().bind(
 		increment_id, [](std::uint32_t* count) { ++*count; }, &side_effects);
 	FLOWUI_CHECK(bound);
 	AgenticActionInvocation invocation;
@@ -210,7 +210,7 @@ void test_native_actions() {
 	auto receipt = actions.invoke(application, invocation);
 	FLOWUI_CHECK(receipt && receipt->dispatched && receipt->completed &&
 				 receipt->completion_succeeded && side_effects == 1);
-	const auto debug = application.actions().debugInfo(ActionCall(*bound));
+	const auto debug = ::FlowUi::test::requireValue(application.actions()).get().debugInfo(ActionCall(*bound));
 	FLOWUI_CHECK(debug && debug->lastSource.kind == ActionInvocationSourceKind::Agentic &&
 				 debug->lastSource.sourceId == invocation.invocation_sequence);
 	FLOWUI_CHECK(AgenticActionRegistry::describe(*receipt).find("plan_id")->string_or() == "plan");
@@ -222,11 +222,11 @@ void test_native_actions() {
 	FLOWUI_CHECK(!actions.invoke(application, invocation));
 	invocation.revision = 1;
 	FLOWUI_CHECK(
-		application.actions().appActions().setAvailability(increment_id, {.enabled = false}));
+		::FlowUi::test::requireValue(::FlowUi::test::requireValue(application.actions()).get().appActions().setAvailability(increment_id, {.enabled = false})));
 	FLOWUI_CHECK(!actions.invoke(application, invocation));
 	FLOWUI_CHECK(side_effects == 1);
 	FLOWUI_CHECK(
-		application.actions().appActions().setAvailability(increment_id, {.enabled = true}));
+		::FlowUi::test::requireValue(::FlowUi::test::requireValue(application.actions()).get().appActions().setAvailability(increment_id, {.enabled = true})));
 	AgenticActionAdapter adapter;
 	adapter.decode_arguments = [](const Json& arguments) -> Result<Json> {
 		const auto* amount = arguments.find("amount");
@@ -272,12 +272,22 @@ void test_native_actions() {
 	FLOWUI_CHECK(timed);
 	timed->invocation.deadline_monotonic_ns = 1;
 	timed = actions.poll(application, *timed);
-	FLOWUI_CHECK(timed && timed->completed && !timed->completion_succeeded &&
+	FLOWUI_CHECK(timed && timed->dispatched && !timed->completed &&
+				 timed->completionObservationFailed && !timed->completion_succeeded &&
+				 timed->completed_monotonic_ns == 0 &&
 				 timed->reason == "application_completion_timeout");
+	const auto pollsBeforeTimeoutRetry = polls;
+	const auto effectsBeforeTimeoutRetry = side_effects;
+	timed = actions.poll(application, *timed);
+	FLOWUI_CHECK(timed && polls == pollsBeforeTimeoutRetry &&
+				 side_effects == effectsBeforeTimeoutRetry);
 	FLOWUI_CHECK(actions.cancel(application, *pending));
 	constexpr auto throw_id = AppAction("test.agentic.export.throw");
-	const auto throwing = application.actions().appActions().bind(
-		throw_id, []() { throw std::runtime_error("app failure"); });
+	const auto throwing = ::FlowUi::test::requireValue(application.actions()).get().appActions().bind(
+		throw_id, [](std::uint32_t* count) {
+			++*count;
+			throw std::runtime_error("app failure");
+		}, &side_effects);
 	FLOWUI_CHECK(throwing);
 	declaration.action_id = "throws";
 	declaration.asynchronous = false;
@@ -285,10 +295,82 @@ void test_native_actions() {
 	invocation.action_id = "throws";
 	invocation.arguments = Json::make_object();
 	auto failed = actions.invoke(application, invocation);
-	FLOWUI_CHECK(failed && failed->dispatched && failed->completed &&
-				 !failed->completion_succeeded && failed->reason == "application_callback_failed");
-	FLOWUI_CHECK(application.actions().appActions().unbind(increment_id));
+	FLOWUI_CHECK(failed && failed->dispatched && !failed->completed &&
+				 failed->completionObservationFailed && !failed->completion_succeeded &&
+				 failed->completed_monotonic_ns == 0 &&
+				 failed->reason == "application_callback_failed");
+	FLOWUI_CHECK(side_effects == effectsBeforeTimeoutRetry + 1);
+	const auto failedDescription = AgenticActionRegistry::describe(*failed);
+	FLOWUI_CHECK(failedDescription.find("completion_observation_failed")->bool_or());
+	FLOWUI_CHECK(!failedDescription.find("completed")->bool_or());
+
+	// A failed completion observer cannot acknowledge or redispatch the pending side effect.
+	declaration.action_id = "typed.save";
+	declaration.revision = 2;
+	declaration.asynchronous = true;
+	adapter.poll_completion = [&polls](App&, const AgenticActionReceipt&)
+		-> Result<AgenticActionReceipt> {
+		++polls;
+		throw std::runtime_error("completion observer failure");
+	};
+	FLOWUI_CHECK(actions.register_action(declaration, adapter));
+	invocation.action_id = "typed.save";
+	invocation.revision = 2;
+	invocation.arguments = Json::make_object({{"amount", Json::number(7)}});
+	auto uncertain = actions.invoke(application, invocation);
+	FLOWUI_CHECK(uncertain && uncertain->dispatched && !uncertain->completed);
+	const auto effectsBeforeFailedPoll = side_effects;
+	uncertain = actions.poll(application, *uncertain);
+	FLOWUI_CHECK(uncertain && uncertain->dispatched && !uncertain->completed &&
+				 uncertain->completionObservationFailed &&
+				 uncertain->reason == "completion_callback_failed");
+	const auto pollsAfterFailure = polls;
+	uncertain = actions.poll(application, *uncertain);
+	FLOWUI_CHECK(uncertain && polls == pollsAfterFailure &&
+				 side_effects == effectsBeforeFailedPoll);
+
+	// Explicitly requested availability errors must not look like a disabled export.
+	adapter.available = [](const App&) -> Result<bool> {
+		return unexpectedError(agentic_error(AgenticError::unavailable));
+	};
+	declaration.revision = 3;
+	FLOWUI_CHECK(actions.register_action(declaration, adapter));
+	const auto failedList = actions.list(application);
+	FLOWUI_CHECK(!failedList && failedList.error().code == ErrorCode::AgenticUnavailable);
+	adapter.available = [](const App&) -> Result<bool> { return true; };
+	declaration.revision = 4;
+	FLOWUI_CHECK(actions.register_action(declaration, adapter));
+	adapter.invoke = [&side_effects](App&, const AgenticActionInvocation&,
+		const Json&) -> Result<AgenticActionReceipt> {
+		++side_effects;
+		return unexpectedError(agentic_error(AgenticError::unavailable));
+	};
+	declaration.revision = 5;
+	FLOWUI_CHECK(actions.register_action(declaration, adapter));
+	invocation.revision = 5;
+	const auto effectsBeforeAdapterError = side_effects;
+	const auto adapterError = actions.invoke(application, invocation);
+	FLOWUI_CHECK(adapterError && adapterError->dispatched && !adapterError->completed &&
+		adapterError->completionObservationFailed &&
+		adapterError->reason == "application_adapter_failed" &&
+		side_effects == effectsBeforeAdapterError + 1);
+	adapter.invoke = [&side_effects](App&, const AgenticActionInvocation&,
+		const Json&) -> Result<AgenticActionReceipt> {
+		++side_effects;
+		return AgenticActionReceipt{};
+	};
+	declaration.revision = 6;
+	declaration.asynchronous = false;
+	FLOWUI_CHECK(actions.register_action(declaration, adapter));
+	invocation.revision = 6;
+	const auto missingAcknowledgement = actions.invoke(application, invocation);
+	FLOWUI_CHECK(missingAcknowledgement && missingAcknowledgement->dispatched &&
+		!missingAcknowledgement->completed && missingAcknowledgement->completionObservationFailed &&
+		missingAcknowledgement->reason == "synchronous_completion_missing");
+	FLOWUI_CHECK(::FlowUi::test::requireValue(::FlowUi::test::requireValue(application.actions()).get().appActions().unbind(increment_id)));
 	invocation.action_id = "increment";
+	invocation.revision = 1;
+	invocation.arguments = Json::make_object();
 	FLOWUI_CHECK(!actions.invoke(application, invocation));
 	auto exported = actions.list(application);
 	FLOWUI_CHECK(exported && exported->find("actions")->array.size() == 3);

@@ -92,16 +92,13 @@ bool captureTheme(void* userData, const ThemeManager::DevThemePayloadView& view)
 				snapshot.schema->fieldOperations[field.operations];
 			if (!valueType || valueType->capture != tooling::DevCaptureCapability::Value ||
 				!fieldOps || !fieldOps->constAddress) continue;
-			const void* source = fieldOps->constAddress(view.payload);
 			DevCapturedField capturedField{};
 			const std::size_t index = static_cast<std::size_t>(
 				std::addressof(field) - snapshot.schema->fields.data());
 			capturedField.field = tooling::DevFieldIndex{
 				static_cast<std::uint32_t>(index + 1u)};
-			if (DevOwnedValue::copyFrom(
-				*snapshot.schema, field.valueType, source, capturedField.value) !=
-				tooling::DevValueOperationStatus::Success) continue;
-			capturedField.captureStatus = DevValueCaptureStatus::Available;
+			capturedField.captureStatus = copyCapturedField(
+				*snapshot.schema, field, view.payload, capturedField.value);
 			capturedField.authoredStatus = copyCapturedField(
 				*snapshot.schema, field, view.authored, capturedField.authoredValue);
 			if (context.isOverridden) {
@@ -224,6 +221,8 @@ void DevOverrideCapture::captureElement(
 			captured.resourceFieldCount;
 	} catch (...) {
 		snapshot.fields.resize(first_field);
+		++snapshot.droppedElementCount;
+		++droppedElementCaptureCount_;
 	}
 }
 
@@ -266,7 +265,13 @@ void DevOverrideCapture::captureThemes(
 		.overrideOwner = overrideOwner,
 		.isOverridden = isOverridden,
 	};
-	(void)themes.visitDevThemePayloads(&context, &captureTheme);
+	if (!themes.visitDevThemePayloads(&context, &captureTheme)) {
+		publishedThemes_.failedCaptureCount = ++failedThemeCaptureCount_;
+		publishedThemes_.collectionFailed = true;
+		clear(buildingThemes_);
+		return;
+	}
+	buildingThemes_.failedCaptureCount = failedThemeCaptureCount_;
 	capturedThemeFieldCount_ += buildingThemes_.fields.size();
 	std::sort(buildingThemes_.themes.begin(), buildingThemes_.themes.end(),
 		[&](const DevCapturedTheme& left, const DevCapturedTheme& right) {
@@ -318,6 +323,7 @@ void DevOverrideCapture::clear(DevElementCaptureSnapshot& snapshot) noexcept {
 	snapshot.schema = {};
 	snapshot.elements.clear();
 	snapshot.fields.clear();
+	snapshot.droppedElementCount = 0;
 }
 
 void DevOverrideCapture::clear(DevThemeCaptureSnapshot& snapshot) noexcept {
@@ -326,6 +332,8 @@ void DevOverrideCapture::clear(DevThemeCaptureSnapshot& snapshot) noexcept {
 	snapshot.strings.clear();
 	snapshot.themes.clear();
 	snapshot.fields.clear();
+	snapshot.failedCaptureCount = 0;
+	snapshot.collectionFailed = false;
 }
 
 } // namespace FlowUi::devSystems::tooling

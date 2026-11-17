@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Memory/Analysis/DevMemoryContextControls.hpp"
 #include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE
@@ -12,7 +13,7 @@ void DevMemoryContextControls::buildElement(BuildContext& context) {
 	using namespace memory_ui;
 	auto& workbench = context.params.interfaceState->memory_workbench;
 	auto& state = workbench.analysis;
-	auto& reporting = context.params.app->devMonitoring().memoryReporting();
+	auto& reporting = FlowUi::ValueOrThrow(context.params.app->devMonitoring()).get().memoryReporting();
 	const auto action =
 		state.ui_action >= 100 && state.ui_action < 110 ? std::exchange(state.ui_action, 0) : 0;
 	if (action >= 100 && action <= 104)
@@ -61,7 +62,7 @@ void DevMemoryContextControls::buildElement(BuildContext& context) {
 										   CLAY_ATTACH_POINT_RIGHT_BOTTOM};
 			panel.floating.offset.y = 4;
 			panel.floating.zIndex = 90;
-			CLAY(context.clayID("record-settings"), panel) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("record-settings")), panel) {
 				text(context, "Memory datasets", interface_theme::kTextCanvas, 13);
 				FSEL::TextInputParameters name{};
 				name.value = &state.capture_name;

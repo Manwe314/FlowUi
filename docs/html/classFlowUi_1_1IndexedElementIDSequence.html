@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,15 +111,55 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:abaf084474dfa73867f32353dcef731ef" id="r_abaf084474dfa73867f32353dcef731ef"><td class="memItemLeft"><a id="abaf084474dfa73867f32353dcef731ef" name="abaf084474dfa73867f32353dcef731ef"></a>
-constexpr&#160;</td><td class="memItemRight"><b>IndexedElementIDSequence</b> (<a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> baseName, uint64_t firstIndex=0) noexcept</td></tr>
+<tr class="memitem:abaf084474dfa73867f32353dcef731ef" id="r_abaf084474dfa73867f32353dcef731ef"><td class="memItemLeft">constexpr&#160;</td><td class="memItemRight"><a class="el" href="#abaf084474dfa73867f32353dcef731ef">IndexedElementIDSequence</a> (<a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> baseName, uint64_t firstIndex=0) noexcept</td></tr>
 <tr class="memitem:a9f694cccd99c1348950420989322c6b7" id="r_a9f694cccd99c1348950420989322c6b7"><td class="memItemLeft">constexpr <a class="el" href="structFlowUi_1_1IndexedElementName.html">IndexedElementName</a>&#160;</td><td class="memItemRight"><a class="el" href="#a9f694cccd99c1348950420989322c6b7">next</a> () noexcept</td></tr>
-<tr class="memitem:a68a424770952b17c018624d1ecffe99a" id="r_a68a424770952b17c018624d1ecffe99a"><td class="memItemLeft"><a id="a68a424770952b17c018624d1ecffe99a" name="a68a424770952b17c018624d1ecffe99a"></a>
-constexpr uint64_t&#160;</td><td class="memItemRight"><b>nextIndex</b> () const noexcept</td></tr>
+<tr class="memdesc:a9f694cccd99c1348950420989322c6b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate the next positional name and advance its counter.  <br /></td></tr>
+<tr class="memitem:a68a424770952b17c018624d1ecffe99a" id="r_a68a424770952b17c018624d1ecffe99a"><td class="memItemLeft">constexpr uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a68a424770952b17c018624d1ecffe99a">nextIndex</a> () const noexcept</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Local positional ID sequence for compact, stable-order repeated UI. </p>
-</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="abaf084474dfa73867f32353dcef731ef" name="abaf084474dfa73867f32353dcef731ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abaf084474dfa73867f32353dcef731ef">&#9670;&#160;</a></span>IndexedElementIDSequence()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::IndexedElementIDSequence::IndexedElementIDSequence </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a></td>          <td class="paramname"><span class="paramname"><em>baseName</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t</td>          <td class="paramname"><span class="paramname"><em>firstIndex</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel explicit">explicit</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Start a positional sequence for baseName at firstIndex. Use data keys instead when identity must survive reordering.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1IndexedElementIDSequence.html">FlowUi::IndexedElementIDSequence</a> sequence{<span class="stringliteral">&quot;records/row&quot;</span>, 0};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> firstRow = sequence.<a class="code hl_function" href="#a9f694cccd99c1348950420989322c6b7">next</a>();</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> secondRow = sequence.<a class="code hl_function" href="#a9f694cccd99c1348950420989322c6b7">next</a>();</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> <a class="code hl_function" href="#a68a424770952b17c018624d1ecffe99a">nextIndex</a> = sequence.<a class="code hl_function" href="#a68a424770952b17c018624d1ecffe99a">nextIndex</a>();</div>
+<div class="line"><span class="keyword">auto</span> continued = <a class="code hl_function" href="namespaceFlowUi.html#a02abac20a14087c7a9cad27c7c718dc4">FlowUi::IndexedIDs</a>(<span class="stringliteral">&quot;records/row&quot;</span>, <a class="code hl_function" href="#a68a424770952b17c018624d1ecffe99a">nextIndex</a>);</div>
+<div class="ttc" id="aclassFlowUi_1_1IndexedElementIDSequence_html"><div class="ttname"><a href="classFlowUi_1_1IndexedElementIDSequence.html">FlowUi::IndexedElementIDSequence</a></div><div class="ttdef"><b>Definition</b> ElementID.hpp:156</div></div>
+<div class="ttc" id="aclassFlowUi_1_1IndexedElementIDSequence_html_a68a424770952b17c018624d1ecffe99a"><div class="ttname"><a href="#a68a424770952b17c018624d1ecffe99a">FlowUi::IndexedElementIDSequence::nextIndex</a></div><div class="ttdeci">constexpr uint64_t nextIndex() const noexcept</div><div class="ttdef"><b>Definition</b> ElementID.hpp:200</div></div>
+<div class="ttc" id="aclassFlowUi_1_1IndexedElementIDSequence_html_a9f694cccd99c1348950420989322c6b7"><div class="ttname"><a href="#a9f694cccd99c1348950420989322c6b7">FlowUi::IndexedElementIDSequence::next</a></div><div class="ttdeci">constexpr IndexedElementName next() noexcept</div><div class="ttdoc">Generate the next positional name and advance its counter.</div><div class="ttdef"><b>Definition</b> ElementID.hpp:324</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a02abac20a14087c7a9cad27c7c718dc4"><div class="ttname"><a href="namespaceFlowUi.html#a02abac20a14087c7a9cad27c7c718dc4">FlowUi::IndexedIDs</a></div><div class="ttdeci">constexpr IndexedElementIDSequence IndexedIDs(LocalElementName baseName, uint64_t firstIndex=0) noexcept</div><div class="ttdef"><b>Definition</b> ElementID.hpp:339</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="a9f694cccd99c1348950420989322c6b7" name="a9f694cccd99c1348950420989322c6b7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9f694cccd99c1348950420989322c6b7">&#9670;&#160;</a></span>next()</h2>
 
@@ -142,7 +182,51 @@ constexpr uint64_t&#160;</td><td class="memItemRight"><b>nextIndex</b> () const 
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Return the next positional name and increment the local counter. </p>
+
+<p>Generate the next positional name and advance its counter. </p>
+<p>Return the next positional name and increment the local counter. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1IndexedElementIDSequence.html">FlowUi::IndexedElementIDSequence</a> sequence{<span class="stringliteral">&quot;records/row&quot;</span>, 0};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> firstRow = sequence.<a class="code hl_function" href="#a9f694cccd99c1348950420989322c6b7">next</a>();</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> secondRow = sequence.<a class="code hl_function" href="#a9f694cccd99c1348950420989322c6b7">next</a>();</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> <a class="code hl_function" href="#a68a424770952b17c018624d1ecffe99a">nextIndex</a> = sequence.<a class="code hl_function" href="#a68a424770952b17c018624d1ecffe99a">nextIndex</a>();</div>
+<div class="line"><span class="keyword">auto</span> continued = <a class="code hl_function" href="namespaceFlowUi.html#a02abac20a14087c7a9cad27c7c718dc4">FlowUi::IndexedIDs</a>(<span class="stringliteral">&quot;records/row&quot;</span>, <a class="code hl_function" href="#a68a424770952b17c018624d1ecffe99a">nextIndex</a>);</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1IndexedElementIDSequence.html">FlowUi::IndexedElementIDSequence</a> sequence{<span class="stringliteral">&quot;records/row&quot;</span>, 0};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> firstRow = sequence.<a class="code hl_function" href="#a9f694cccd99c1348950420989322c6b7">next</a>();</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> secondRow = sequence.<a class="code hl_function" href="#a9f694cccd99c1348950420989322c6b7">next</a>();</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> <a class="code hl_function" href="#a68a424770952b17c018624d1ecffe99a">nextIndex</a> = sequence.<a class="code hl_function" href="#a68a424770952b17c018624d1ecffe99a">nextIndex</a>();</div>
+<div class="line"><span class="keyword">auto</span> continued = <a class="code hl_function" href="namespaceFlowUi.html#a02abac20a14087c7a9cad27c7c718dc4">FlowUi::IndexedIDs</a>(<span class="stringliteral">&quot;records/row&quot;</span>, <a class="code hl_function" href="#a68a424770952b17c018624d1ecffe99a">nextIndex</a>);</div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="a68a424770952b17c018624d1ecffe99a" name="a68a424770952b17c018624d1ecffe99a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a68a424770952b17c018624d1ecffe99a">&#9670;&#160;</a></span>nextIndex()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::IndexedElementIDSequence::nextIndex </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return the numeric index that <a class="el" href="#a9f694cccd99c1348950420989322c6b7" title="Generate the next positional name and advance its counter.">next()</a> will consume. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1IndexedElementIDSequence.html">FlowUi::IndexedElementIDSequence</a> sequence{<span class="stringliteral">&quot;records/row&quot;</span>, 0};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> firstRow = sequence.<a class="code hl_function" href="#a9f694cccd99c1348950420989322c6b7">next</a>();</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> secondRow = sequence.<a class="code hl_function" href="#a9f694cccd99c1348950420989322c6b7">next</a>();</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> <a class="code hl_function" href="#a68a424770952b17c018624d1ecffe99a">nextIndex</a> = sequence.<a class="code hl_function" href="#a68a424770952b17c018624d1ecffe99a">nextIndex</a>();</div>
+<div class="line"><span class="keyword">auto</span> continued = <a class="code hl_function" href="namespaceFlowUi.html#a02abac20a14087c7a9cad27c7c718dc4">FlowUi::IndexedIDs</a>(<span class="stringliteral">&quot;records/row&quot;</span>, <a class="code hl_function" href="#a68a424770952b17c018624d1ecffe99a">nextIndex</a>);</div>
+</div><!-- fragment --> </dd></dl>
 
 </div>
 </div>
@@ -162,7 +246,7 @@ constexpr uint64_t&#160;</td><td class="memItemRight"><b>nextIndex</b> () const 
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1IndexedElementIDSequence.html">IndexedElementIDSequence</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1IndexedElementIDSequence.html">IndexedElementIDSequence</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

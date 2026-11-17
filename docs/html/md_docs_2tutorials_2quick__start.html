@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -108,13 +108,13 @@ $(function() {
 <div class="contents">
 <div class="textblock"><p>Create a C++23 application with a custom, stateful Flow element and a Vulkan-backed window. This example draws a rectangle that cycles through a palette when pressed, so no font asset is required.</p>
 <h1>Requirements and project layout</h1>
-<p>Use CMake 3.25 or newer, Ninja, a C++23 compiler, Vulkan development libraries, a supported window system, and a shader compiler (<span class="tt">glslc</span> or <span class="tt">glslangValidator</span>). FlowUi uses its vendored GLFW submodule when present; otherwise install a system <span class="tt">glfw3</span> package. See <a class="el" href="md_docs_2portability.html" title="Resources and portable builds">portability</a> for supported dependency configurations.</p>
+<p>Use CMake 3.25 or newer, Ninja, a C++23 compiler, Vulkan development libraries, a supported window system, and a shader compiler (<span class="tt">glslc</span> or <span class="tt">glslangValidator</span>). <a class="el" href="namespaceFlowUi.html">FlowUi</a> uses its vendored GLFW submodule when present; otherwise install a system <span class="tt">glfw3</span> package. See <a class="el" href="md_docs_2portability.html" title="Resources and portable builds">portability</a> for supported dependency configurations.</p>
 <div class="fragment"><div class="line">RainbowApp/</div>
 <div class="line">├── CMakeLists.txt</div>
 <div class="line">├── external/FlowUi/</div>
 <div class="line">├── include/application.hpp</div>
 <div class="line">└── src/main.cpp</div>
-</div><!-- fragment --><p>Clone FlowUi with its submodules into <span class="tt">external/FlowUi</span> using your repository URL. Pin the dependency to the revision you intend to build. For an existing clone:</p>
+</div><!-- fragment --><p>Clone <a class="el" href="namespaceFlowUi.html">FlowUi</a> with its submodules into <span class="tt">external/FlowUi</span> using your repository URL. Pin the dependency to the revision you intend to build. For an existing clone:</p>
 <div class="fragment"><div class="line">git -C external/FlowUi submodule update --init --recursive</div>
 </div><!-- fragment --><h1>CMake configuration</h1>
 <p>Create <span class="tt">CMakeLists.txt</span>:</p>
@@ -159,13 +159,13 @@ $(function() {
 <div class="line"> </div>
 <div class="line"><span class="keyword">struct </span>ButtonResources {</div>
 <div class="line">    std::array&lt;Clay_Color, 7&gt; colors{</div>
-<div class="line">        FlowUi::Flow_Color(<span class="stringliteral">&quot;#ff3b30ff&quot;</span>),</div>
-<div class="line">        FlowUi::Flow_Color(<span class="stringliteral">&quot;#ff9500ff&quot;</span>),</div>
-<div class="line">        FlowUi::Flow_Color(<span class="stringliteral">&quot;#ffcc00ff&quot;</span>),</div>
-<div class="line">        FlowUi::Flow_Color(<span class="stringliteral">&quot;#34c759ff&quot;</span>),</div>
-<div class="line">        FlowUi::Flow_Color(<span class="stringliteral">&quot;#007affff&quot;</span>),</div>
-<div class="line">        FlowUi::Flow_Color(<span class="stringliteral">&quot;#5856d6ff&quot;</span>),</div>
-<div class="line">        FlowUi::Flow_Color(<span class="stringliteral">&quot;#af52deff&quot;</span>),</div>
+<div class="line">        <a class="code hl_function" href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">FlowUi::Flow_Color</a>(<span class="stringliteral">&quot;#ff3b30ff&quot;</span>),</div>
+<div class="line">        <a class="code hl_function" href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">FlowUi::Flow_Color</a>(<span class="stringliteral">&quot;#ff9500ff&quot;</span>),</div>
+<div class="line">        <a class="code hl_function" href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">FlowUi::Flow_Color</a>(<span class="stringliteral">&quot;#ffcc00ff&quot;</span>),</div>
+<div class="line">        <a class="code hl_function" href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">FlowUi::Flow_Color</a>(<span class="stringliteral">&quot;#34c759ff&quot;</span>),</div>
+<div class="line">        <a class="code hl_function" href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">FlowUi::Flow_Color</a>(<span class="stringliteral">&quot;#007affff&quot;</span>),</div>
+<div class="line">        <a class="code hl_function" href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">FlowUi::Flow_Color</a>(<span class="stringliteral">&quot;#5856d6ff&quot;</span>),</div>
+<div class="line">        <a class="code hl_function" href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">FlowUi::Flow_Color</a>(<span class="stringliteral">&quot;#af52deff&quot;</span>),</div>
 <div class="line">    };</div>
 <div class="line">};</div>
 <div class="line"> </div>
@@ -176,11 +176,11 @@ $(function() {
 <div class="line">    <span class="keyword">using </span>BuildContext = FlowUi::ElementBuildContext&lt;RainbowButton&gt;;</div>
 <div class="line">    <span class="keyword">using </span>InteractionContext = FlowUi::ElementInteractionContext&lt;RainbowButton&gt;;</div>
 <div class="line"> </div>
-<div class="line">    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">auto</span> definitionId = FlowUi::DefinitionID(<span class="stringliteral">&quot;rainbow.button&quot;</span>);</div>
+<div class="line">    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">auto</span> definitionId = <a class="code hl_function" href="namespaceFlowUi.html#ab2fb588d55085807dcef2fe103c169ce">FlowUi::DefinitionID</a>(<span class="stringliteral">&quot;rainbow.button&quot;</span>);</div>
 <div class="line">    <span class="keyword">static</span> <span class="keyword">constexpr</span> std::string_view debugName = <span class="stringliteral">&quot;Rainbow Button&quot;</span>;</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">static</span> <span class="keywordtype">void</span> onHovered(InteractionContext&amp; context) {</div>
-<div class="line">        context.uiManager.requestCursor(FlowUi::CursorType::PointingHand);</div>
+<div class="line">        context.uiManager.requestCursor(<a class="code hl_enumvalue" href="namespaceFlowUi.html#a8363459dc99cb2c2add5540efe09c80aa0dced855888015c82814dacbd3afdd87">FlowUi::CursorType::PointingHand</a>);</div>
 <div class="line">    }</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">static</span> <span class="keywordtype">void</span> onPressed(InteractionContext&amp; context) {</div>
@@ -189,12 +189,15 @@ $(function() {
 <div class="line">    }</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">static</span> <span class="keywordtype">void</span> buildElement(BuildContext&amp; context) {</div>
-<div class="line">        <span class="keyword">const</span> <span class="keyword">auto</span>&amp; colors = context.resources().colors;</div>
+<div class="line">        <span class="keyword">const</span> <span class="keyword">auto</span>&amp; resources = context.resources();</div>
+<div class="line">        <span class="keyword">const</span> <span class="keyword">auto</span>&amp; state = context.state();</div>
+<div class="line">        <span class="keyword">const</span> <span class="keyword">auto</span> rootId = context.clayID();</div>
+<div class="line">        <span class="keyword">const</span> <span class="keyword">auto</span>&amp; colors = resources.colors;</div>
 <div class="line">        Clay_ElementDeclaration root{};</div>
 <div class="line">        root.layout.sizing = context.params.sizing;</div>
-<div class="line">        root.backgroundColor = colors[context.state().color_index % colors.size()];</div>
+<div class="line">        root.backgroundColor = colors[state.color_index % colors.size()];</div>
 <div class="line">        root.cornerRadius = CLAY_CORNER_RADIUS(context.params.corner_radius);</div>
-<div class="line">        CLAY(context.clayID(), root) {}</div>
+<div class="line">        CLAY(rootId, root) {}</div>
 <div class="line">    }</div>
 <div class="line">};</div>
 <div class="line"> </div>
@@ -210,6 +213,9 @@ $(function() {
 <div class="line">FLOWUI_DEV_SCHEMA(ButtonResources, FLOWUI_DEV_FIELD(ButtonResources, colors))</div>
 <div class="line"> </div>
 <div class="line">} <span class="comment">// namespace rainbow</span></div>
+<div class="ttc" id="anamespaceFlowUi_html_a5efb614726ef3592ac7dda2318b6bbe0"><div class="ttname"><a href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">FlowUi::Flow_Color</a></div><div class="ttdeci">consteval Clay_Color Flow_Color(const char(&amp;hexRgba)[Size]) noexcept</div><div class="ttdoc">Convert a literal #RRGGBB or #RRGGBBAA color into a Clay_Color at compile time.</div><div class="ttdef"><b>Definition</b> Color.hpp:37</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a8363459dc99cb2c2add5540efe09c80aa0dced855888015c82814dacbd3afdd87"><div class="ttname"><a href="namespaceFlowUi.html#a8363459dc99cb2c2add5540efe09c80aa0dced855888015c82814dacbd3afdd87">FlowUi::CursorType::PointingHand</a></div><div class="ttdeci">@ PointingHand</div><div class="ttdef"><b>Definition</b> InputTypes.hpp:28</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_ab2fb588d55085807dcef2fe103c169ce"><div class="ttname"><a href="namespaceFlowUi.html#ab2fb588d55085807dcef2fe103c169ce">FlowUi::DefinitionID</a></div><div class="ttdeci">consteval FlowDefinitionID DefinitionID(const char(&amp;name)[N]) noexcept</div><div class="ttdef"><b>Definition</b> ElementID.hpp:243</div></div>
 </div><!-- fragment --><p>A Flow element is an empty tag struct with a strong <span class="tt">definitionId</span> and static callbacks. Declare only the capabilities it needs. Parameters belong to one invocation, state belongs to the resolved window/instance, and resources are initialized lazily once per definition and application. <span class="tt">context.state()</span> and <span class="tt">context.resources()</span> access the app-owned runtime data. The tag itself stores neither state nor resources.</p>
 <p>The builder invokes event callbacks using the previous completed interaction snapshot, then logic and drawing. <span class="tt">context.clayID()</span> bridges the instance's strong Flow identity to its Clay root. The root must use that identity for normal element interaction.</p>
 <p>The schema macros describe values for the modern developer systems. They expand away when developer support is disabled; normal element behavior has no dependency on mutable registration or a separate developer runtime. See <a class="el" href="md_docs_2tutorials_2developer__mode.html" title="Developer Systems">Developer Systems</a> for constraints, explicit catalogues, overrides, and baking.</p>
@@ -225,37 +231,70 @@ $(function() {
 <div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
 <div class="line">    configuration.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a125d002104cf364c3cb283fd0121e028">dev</a>.<a class="code hl_variable" href="structFlowUi_1_1DevToolsConfig.html#a1f8cc8ccd021852cf71ab170e65dbbe6">enabled</a> = <span class="keyword">true</span>;</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
-<div class="line">    <span class="keyword">auto</span> application = <a class="code hl_function" href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a>(configuration);</div>
+<div class="line">    <span class="keyword">auto</span> application = <a class="code hl_function" href="group__flowui__app.html#gac333afcb2ea79328646bb4410e459233">FlowUi::makeApplication</a>(configuration);</div>
+<div class="line">    <span class="keywordflow">if</span> (!application)</div>
+<div class="line">        <span class="keywordflow">return</span> 1;</div>
 <div class="line"> </div>
-<div class="line">    <span class="keywordflow">while</span> (!application.shouldClose()) {</div>
-<div class="line">        <span class="keywordflow">if</span> (<span class="keyword">const</span> <span class="keyword">auto</span> status = application.beginFrame(); !status) {</div>
-<div class="line">            application.reportError(status.error());</div>
+<div class="line">    <span class="keywordflow">while</span> (<span class="keyword">true</span>) {</div>
+<div class="line">        <span class="keyword">const</span> <span class="keyword">auto</span> closed = application-&gt;shouldClose();</div>
+<div class="line">        <span class="keywordflow">if</span> (!closed) {</div>
+<div class="line">            application-&gt;reportError(closed.error());</div>
 <div class="line">            <span class="keywordflow">return</span> 1;</div>
 <div class="line">        }</div>
-<div class="line"> </div>
-<div class="line">        application.ui().createElement(rainbow::kRainbowButton, <span class="stringliteral">&quot;main/rainbow&quot;</span>)</div>
-<div class="line">            .setParameters({.corner_radius = 18.0f})</div>
-<div class="line">            .draw();</div>
-<div class="line"> </div>
-<div class="line">        <span class="keywordflow">if</span> (<span class="keyword">const</span> <span class="keyword">auto</span> status = application.endFrame(); !status) {</div>
-<div class="line">            application.reportError(status.error());</div>
-<div class="line">            <span class="keywordflow">return</span> 1;</div>
-<div class="line">        }</div>
-<div class="line">        <span class="keywordflow">if</span> (<span class="keyword">const</span> <span class="keyword">auto</span> status = application.drawFrame(); !status) {</div>
-<div class="line">            application.reportError(status.error());</div>
+<div class="line">        <span class="keywordflow">if</span> (*closed)</div>
+<div class="line">            <span class="keywordflow">break</span>;</div>
+<div class="line">        <span class="keyword">const</span> <span class="keyword">auto</span> frame = application-&gt;runFrame([](<a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; ui, <a class="code hl_typedef" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">FlowUi::WindowId</a>) {</div>
+<div class="line">            ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">createElement</a>(rainbow::kRainbowButton, <span class="stringliteral">&quot;main/rainbow&quot;</span>)</div>
+<div class="line">                .setParameters({.corner_radius = 18.0f})</div>
+<div class="line">                .draw();</div>
+<div class="line">        });</div>
+<div class="line">        <span class="keywordflow">if</span> (!frame) {</div>
+<div class="line">            application-&gt;reportError(frame.error());</div>
 <div class="line">            <span class="keywordflow">return</span> 1;</div>
 <div class="line">        }</div>
 <div class="line">    }</div>
+<div class="line">    <span class="keywordflow">return</span> 0;</div>
 <div class="line">}</div>
-<div class="ttc" id="agroup__flowui__app_html_ga8afb464a3691ca644406ac41ff5281d2"><div class="ttname"><a href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a></div><div class="ttdeci">App makeApplication(const AppConfig &amp;cfg)</div><div class="ttdoc">Create a running FlowUi application from configuration.</div></div>
-<div class="ttc" id="astructFlowUi_1_1AppConfig_html"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a></div><div class="ttdoc">Top-level configuration used to initialize a FlowUi app.</div><div class="ttdef"><b>Definition</b> AppConfig.hpp:24</div></div>
-<div class="ttc" id="astructFlowUi_1_1AppConfig_html_a125d002104cf364c3cb283fd0121e028"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html#a125d002104cf364c3cb283fd0121e028">FlowUi::AppConfig::dev</a></div><div class="ttdeci">DevToolsConfig dev</div><div class="ttdoc">Developer tooling and capture defaults.</div><div class="ttdef"><b>Definition</b> AppConfig.hpp:68</div></div>
-<div class="ttc" id="astructFlowUi_1_1AppConfig_html_a172fe9b539d98ff43a4d23a0b737a000"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html#a172fe9b539d98ff43a4d23a0b737a000">FlowUi::AppConfig::window</a></div><div class="ttdeci">WindowConfig window</div><div class="ttdoc">Initial native-window configuration for the semantic main window.</div><div class="ttdef"><b>Definition</b> AppConfig.hpp:32</div></div>
-<div class="ttc" id="astructFlowUi_1_1DevToolsConfig_html_a1f8cc8ccd021852cf71ab170e65dbbe6"><div class="ttname"><a href="structFlowUi_1_1DevToolsConfig.html#a1f8cc8ccd021852cf71ab170e65dbbe6">FlowUi::DevToolsConfig::enabled</a></div><div class="ttdeci">bool enabled</div><div class="ttdoc">Enable developer tooling at runtime.</div><div class="ttdef"><b>Definition</b> DevToolsConfig.hpp:59</div></div>
-<div class="ttc" id="astructFlowUi_1_1WindowConfig_html_a7b66165f48aee47c4680c11454196892"><div class="ttname"><a href="structFlowUi_1_1WindowConfig.html#a7b66165f48aee47c4680c11454196892">FlowUi::WindowConfig::title</a></div><div class="ttdeci">std::string title</div><div class="ttdoc">Initial native window title.</div><div class="ttdef"><b>Definition</b> WindowConfig.hpp:31</div></div>
-<div class="ttc" id="astructFlowUi_1_1WindowConfig_html_ad67749033ec49f5d39776149fb4d37ee"><div class="ttname"><a href="structFlowUi_1_1WindowConfig.html#ad67749033ec49f5d39776149fb4d37ee">FlowUi::WindowConfig::width</a></div><div class="ttdeci">int width</div><div class="ttdoc">Initial window width in screen coordinates.</div><div class="ttdef"><b>Definition</b> WindowConfig.hpp:22</div></div>
-<div class="ttc" id="astructFlowUi_1_1WindowConfig_html_add143cbfcadd4db14d2d76ad409ea37d"><div class="ttname"><a href="structFlowUi_1_1WindowConfig.html#add143cbfcadd4db14d2d76ad409ea37d">FlowUi::WindowConfig::height</a></div><div class="ttdeci">int height</div><div class="ttdoc">Initial window height in screen coordinates.</div><div class="ttdef"><b>Definition</b> WindowConfig.hpp:28</div></div>
-</div><!-- fragment --><p><span class="tt">beginFrame()</span> polls application events and begins the main window. Describe UI between the successful begin and end calls, then submit with <span class="tt">drawFrame()</span>. Check each <span class="tt">Status</span> before proceeding. Window and resource startup failures are reported by the construction boundary.</p>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:110</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a3ef6d75f9ad2e76294c104c4b3e25803"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Element &gt; createElement(const Element &amp;, LocalElementName localName, std::source_location sourceLocation=std::source_location::current())</div><div class="ttdoc">Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve und...</div><div class="ttdef"><b>Definition</b> UiManager.hpp:349</div></div>
+<div class="ttc" id="agroup__flowui__app_html_gac333afcb2ea79328646bb4410e459233"><div class="ttname"><a href="group__flowui__app.html#gac333afcb2ea79328646bb4410e459233">FlowUi::makeApplication</a></div><div class="ttdeci">Result&lt; App &gt; makeApplication(const AppConfig &amp;cfg) noexcept</div><div class="ttdoc">Create a running FlowUi application from configuration.</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a2213190865e0806b881be5624c2f3ef6"><div class="ttname"><a href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">FlowUi::WindowId</a></div><div class="ttdeci">uint64_t WindowId</div><div class="ttdoc">Stable identity of a native FlowUi window.</div><div class="ttdef"><b>Definition</b> WindowId.hpp:8</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppConfig_html"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a></div><div class="ttdef"><b>Definition</b> AppConfig.hpp:23</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppConfig_html_a125d002104cf364c3cb283fd0121e028"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html#a125d002104cf364c3cb283fd0121e028">FlowUi::AppConfig::dev</a></div><div class="ttdeci">DevToolsConfig dev</div><div class="ttdoc">Developer tooling and capture defaults.</div><div class="ttdef"><b>Definition</b> AppConfig.hpp:67</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppConfig_html_a172fe9b539d98ff43a4d23a0b737a000"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html#a172fe9b539d98ff43a4d23a0b737a000">FlowUi::AppConfig::window</a></div><div class="ttdeci">WindowConfig window</div><div class="ttdoc">Initial native-window configuration for the semantic main window.</div><div class="ttdef"><b>Definition</b> AppConfig.hpp:31</div></div>
+<div class="ttc" id="astructFlowUi_1_1DevToolsConfig_html_a1f8cc8ccd021852cf71ab170e65dbbe6"><div class="ttname"><a href="structFlowUi_1_1DevToolsConfig.html#a1f8cc8ccd021852cf71ab170e65dbbe6">FlowUi::DevToolsConfig::enabled</a></div><div class="ttdeci">bool enabled</div><div class="ttdef"><b>Definition</b> DevToolsConfig.hpp:60</div></div>
+<div class="ttc" id="astructFlowUi_1_1WindowConfig_html_a7b66165f48aee47c4680c11454196892"><div class="ttname"><a href="structFlowUi_1_1WindowConfig.html#a7b66165f48aee47c4680c11454196892">FlowUi::WindowConfig::title</a></div><div class="ttdeci">std::string title</div><div class="ttdoc">Initial native window title.</div><div class="ttdef"><b>Definition</b> WindowConfig.hpp:22</div></div>
+<div class="ttc" id="astructFlowUi_1_1WindowConfig_html_ad67749033ec49f5d39776149fb4d37ee"><div class="ttname"><a href="structFlowUi_1_1WindowConfig.html#ad67749033ec49f5d39776149fb4d37ee">FlowUi::WindowConfig::width</a></div><div class="ttdeci">int width</div><div class="ttdef"><b>Definition</b> WindowConfig.hpp:16</div></div>
+<div class="ttc" id="astructFlowUi_1_1WindowConfig_html_add143cbfcadd4db14d2d76ad409ea37d"><div class="ttname"><a href="structFlowUi_1_1WindowConfig.html#add143cbfcadd4db14d2d76ad409ea37d">FlowUi::WindowConfig::height</a></div><div class="ttdeci">int height</div><div class="ttdef"><b>Definition</b> WindowConfig.hpp:19</div></div>
+</div><!-- fragment --><p><span class="tt">makeApplication()</span> returns <span class="tt">Result&lt;App&gt;</span>. Check it before using the owned application. <span class="tt">runFrame()</span> polls events, begins the main-window frame, executes the callback, ends the frame, and presents it. Check its <span class="tt">Status</span> before proceeding. UI helper failures are retained on the frame, so returning early from the callback lets <span class="tt">runFrame()</span> cancel the frame and return the original <span class="tt">FlowUiError</span>. Exceptions from user element or build callbacks are also contained at this library-owned boundary. For manual window sequencing, check the separate <span class="tt">pollEvents()</span>, <span class="tt">beginFrame()</span>, <span class="tt">endFrame()</span>, and <span class="tt">drawFrame()</span> results.</p>
+<h1>Handle public API results</h1>
+<p>Operations with a local recovery decision return <span class="tt">Result&lt;T&gt;</span> or <span class="tt">Status</span>. Check those results before dereferencing them. Builder operations, invocation-local state/resources, and ordinary action invocation propagate exceptions to the enclosing build/frame or caller boundary; they do not manufacture successful-looking empty values. Hybrid operations retain documented returned errors while allowing application or preparation exceptions to propagate. Existing <span class="tt">FlowUiError</span> values retain their code, detecting site, subject, auxiliary value, and native status. Allocation failures become <span class="tt">AllocationFailed</span>; otherwise unclassified callback or third-party exceptions become <span class="tt">ForeignExceptionObserved</span>.</p>
+<p>The application-facing contracts are:</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Operation  </th><th class="markdownTableHeadNone">Checked result  </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">makeApplication(config)</span>  </td><td class="markdownTableBodyNone"><span class="tt">Result&lt;App&gt;</span>; move or access the app after checking success.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">app.ui()</span>, <span class="tt">app.fonts()</span>, and other manager accessors  </td><td class="markdownTableBodyNone"><span class="tt">Result&lt;std::reference_wrapper&lt;T&gt;&gt;</span>; use <span class="tt">result-&gt;get()</span> after checking success.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">Window queries such as <span class="tt">shouldClose()</span> and <span class="tt">windowSize()</span>  </td><td class="markdownTableBodyNone"><span class="tt">Result&lt;T&gt;</span>; test success before inspecting the returned value.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">Window commands such as <span class="tt">setWindowTitle()</span>  </td><td class="markdownTableBodyNone"><span class="tt">Status</span>; handle its error before proceeding.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">ui.createElement(...)</span>  </td><td class="markdownTableBodyNone"><span class="tt">ElementBuilder&lt;...&gt;</span>; construction/identity failures propagate to the enclosing frame.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">Builder setters such as <span class="tt">setParameters(...)</span>  </td><td class="markdownTableBodyNone"><span class="tt">ElementBuilder&amp;</span>; chain directly and abandon the builder/frame if an assignment or merge throws.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">builder.draw()</span>, <span class="tt">builder.construct()</span>, <span class="tt">ui.drawConstructed()</span>  </td><td class="markdownTableBodyNone"><span class="tt">void</span>; failures propagate and mark the frame failed.  </td></tr>
+</table>
+<p>For example, manager access keeps ownership in the app:</p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> manager = application-&gt;fonts();</div>
+<div class="line"><span class="keywordflow">if</span> (!manager)</div>
+<div class="line">    <span class="keywordflow">return</span> 1;</div>
+<div class="line"><a class="code hl_struct" href="structFlowUi_1_1FontManager.html">FlowUi::FontManager</a>&amp; fonts = manager-&gt;get();</div>
+<div class="ttc" id="astructFlowUi_1_1FontManager_html"><div class="ttname"><a href="structFlowUi_1_1FontManager.html">FlowUi::FontManager</a></div><div class="ttdoc">App-shared font-family registration and face resolution.</div><div class="ttdef"><b>Definition</b> FontManager.hpp:53</div></div>
+</div><!-- fragment --><p><span class="tt">runFrame()</span> accepts a callback returning either <span class="tt">void</span> or <span class="tt">Status</span>. A failing callback <span class="tt">Status</span> becomes the frame result with the same error. UI helpers also retain the first failure on their frame, so an ignored helper failure still cancels that frame at its completion boundary. Manual UI builds must inspect helper results and the results of <span class="tt">endFrame()</span> and <span class="tt">drawFrame()</span>; <span class="tt">beginFrame()</span> has already returned before manually submitted build code runs.</p>
 <p>Configure and build:</p>
 <div class="fragment"><div class="line">cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=Debug</div>
 <div class="line">cmake --build build --target rainbow_app -j</div>

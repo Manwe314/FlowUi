@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,32 +106,191 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::MemoryCurrentSource Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevMemoryReporting_8hpp_source.html">DevMemoryReporting.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a0472df5e6e94333a918cc24d5bf6cd86" id="r_a0472df5e6e94333a918cc24d5bf6cd86"><td class="memItemLeft"><a id="a0472df5e6e94333a918cc24d5bf6cd86" name="a0472df5e6e94333a918cc24d5bf6cd86"></a>
-std::array&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryLiveBucket.html">MemoryLiveBucket</a>, 60 &gt;&#160;</td><td class="memItemRight"><b>live_buckets</b> {}</td></tr>
-<tr class="memitem:afb7bffdf4a820bd44296a41ec3bbadbd" id="r_afb7bffdf4a820bd44296a41ec3bbadbd"><td class="memItemLeft"><a id="afb7bffdf4a820bd44296a41ec3bbadbd" name="afb7bffdf4a820bd44296a41ec3bbadbd"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>measured_at_ns</b> = 0</td></tr>
-<tr class="memitem:a2817f659acbf20c3c8c06d930f289216" id="r_a2817f659acbf20c3c8c06d930f289216"><td class="memItemLeft"><a id="a2817f659acbf20c3c8c06d930f289216" name="a2817f659acbf20c3c8c06d930f289216"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1MemorySourceKey.html">MemorySourceKey</a>&#160;</td><td class="memItemRight"><b>key</b> {}</td></tr>
-<tr class="memitem:a847ebba03b551adc0a9ca6605fd554ae" id="r_a847ebba03b551adc0a9ca6605fd554ae"><td class="memItemLeft"><a id="a847ebba03b551adc0a9ca6605fd554ae" name="a847ebba03b551adc0a9ca6605fd554ae"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1MemoryValueSample.html">MemoryValueSample</a>&#160;</td><td class="memItemRight"><b>value</b> {}</td></tr>
-<tr class="memitem:ae8be988e3b58d0b2c589f438596c88ef" id="r_ae8be988e3b58d0b2c589f438596c88ef"><td class="memItemLeft"><a id="ae8be988e3b58d0b2c589f438596c88ef" name="ae8be988e3b58d0b2c589f438596c88ef"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1MemoryValueSample.html">MemoryValueSample</a>&#160;</td><td class="memItemRight"><b>sessionPeak</b> {}</td></tr>
-<tr class="memitem:a62423040531a3c067f3b526d09f1d34a" id="r_a62423040531a3c067f3b526d09f1d34a"><td class="memItemLeft"><a id="a62423040531a3c067f3b526d09f1d34a" name="a62423040531a3c067f3b526d09f1d34a"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>cumulativeLogicalChurnBytes</b> = 0u</td></tr>
-<tr class="memitem:ae51d78f74daef9919d86d36e7e374abb" id="r_ae51d78f74daef9919d86d36e7e374abb"><td class="memItemLeft"><a id="ae51d78f74daef9919d86d36e7e374abb" name="ae51d78f74daef9919d86d36e7e374abb"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>cumulativeBackingChurnBytes</b> = 0u</td></tr>
-<tr class="memitem:ad344dc4d2e1e52a243c43860f406b205" id="r_ad344dc4d2e1e52a243c43860f406b205"><td class="memItemLeft"><a id="ad344dc4d2e1e52a243c43860f406b205" name="ad344dc4d2e1e52a243c43860f406b205"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>cumulativeResourceChurnBytes</b> = 0u</td></tr>
-<tr class="memitem:a0a8cb97874d2c1307c89bebb6d0ac0fc" id="r_a0a8cb97874d2c1307c89bebb6d0ac0fc"><td class="memItemLeft"><a id="a0a8cb97874d2c1307c89bebb6d0ac0fc" name="a0a8cb97874d2c1307c89bebb6d0ac0fc"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>retirementPressureByteTicks</b> = 0u</td></tr>
-<tr class="memitem:ad0ec47a67c75cb6bef4b8e98945f6587" id="r_ad0ec47a67c75cb6bef4b8e98945f6587"><td class="memItemLeft"><a id="ad0ec47a67c75cb6bef4b8e98945f6587" name="ad0ec47a67c75cb6bef4b8e98945f6587"></a>
-MemorySampleSequence&#160;</td><td class="memItemRight"><b>activeSegment</b> = 0u</td></tr>
-<tr class="memitem:ac2b9443f431b67286deb19ce782909f3" id="r_ac2b9443f431b67286deb19ce782909f3"><td class="memItemLeft"><a id="ac2b9443f431b67286deb19ce782909f3" name="ac2b9443f431b67286deb19ce782909f3"></a>
-AppTickId&#160;</td><td class="memItemRight"><b>lastSampledTick</b> = 0u</td></tr>
+<tr class="memitem:a0472df5e6e94333a918cc24d5bf6cd86" id="r_a0472df5e6e94333a918cc24d5bf6cd86"><td class="memItemLeft">std::array&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryLiveBucket.html">MemoryLiveBucket</a>, 60 &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a0472df5e6e94333a918cc24d5bf6cd86">live_buckets</a> {}</td></tr>
+<tr class="memitem:afb7bffdf4a820bd44296a41ec3bbadbd" id="r_afb7bffdf4a820bd44296a41ec3bbadbd"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#afb7bffdf4a820bd44296a41ec3bbadbd">measured_at_ns</a> = 0</td></tr>
+<tr class="memitem:a2817f659acbf20c3c8c06d930f289216" id="r_a2817f659acbf20c3c8c06d930f289216"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1MemorySourceKey.html">MemorySourceKey</a>&#160;</td><td class="memItemRight"><a class="el" href="#a2817f659acbf20c3c8c06d930f289216">key</a> {}</td></tr>
+<tr class="memitem:a847ebba03b551adc0a9ca6605fd554ae" id="r_a847ebba03b551adc0a9ca6605fd554ae"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryValueSample.html">MemoryValueSample</a>&#160;</td><td class="memItemRight"><a class="el" href="#a847ebba03b551adc0a9ca6605fd554ae">value</a> {}</td></tr>
+<tr class="memitem:ae8be988e3b58d0b2c589f438596c88ef" id="r_ae8be988e3b58d0b2c589f438596c88ef"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryValueSample.html">MemoryValueSample</a>&#160;</td><td class="memItemRight"><a class="el" href="#ae8be988e3b58d0b2c589f438596c88ef">sessionPeak</a> {}</td></tr>
+<tr class="memitem:a62423040531a3c067f3b526d09f1d34a" id="r_a62423040531a3c067f3b526d09f1d34a"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a62423040531a3c067f3b526d09f1d34a">cumulativeLogicalChurnBytes</a> = 0u</td></tr>
+<tr class="memitem:ae51d78f74daef9919d86d36e7e374abb" id="r_ae51d78f74daef9919d86d36e7e374abb"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ae51d78f74daef9919d86d36e7e374abb">cumulativeBackingChurnBytes</a> = 0u</td></tr>
+<tr class="memitem:ad344dc4d2e1e52a243c43860f406b205" id="r_ad344dc4d2e1e52a243c43860f406b205"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ad344dc4d2e1e52a243c43860f406b205">cumulativeResourceChurnBytes</a> = 0u</td></tr>
+<tr class="memitem:a0a8cb97874d2c1307c89bebb6d0ac0fc" id="r_a0a8cb97874d2c1307c89bebb6d0ac0fc"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a0a8cb97874d2c1307c89bebb6d0ac0fc">retirementPressureByteTicks</a> = 0u</td></tr>
+<tr class="memitem:ad0ec47a67c75cb6bef4b8e98945f6587" id="r_ad0ec47a67c75cb6bef4b8e98945f6587"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a76a2ca462d7a8f7858ef5ad26798110a">MemorySampleSequence</a>&#160;</td><td class="memItemRight"><a class="el" href="#ad0ec47a67c75cb6bef4b8e98945f6587">activeSegment</a> = 0u</td></tr>
+<tr class="memitem:ac2b9443f431b67286deb19ce782909f3" id="r_ac2b9443f431b67286deb19ce782909f3"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a>&#160;</td><td class="memItemRight"><a class="el" href="#ac2b9443f431b67286deb19ce782909f3">lastSampledTick</a> = 0u</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Current measurements, session peaks, churn, and bounded live-demand buckets for one source. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="ad0ec47a67c75cb6bef4b8e98945f6587" name="ad0ec47a67c75cb6bef4b8e98945f6587"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad0ec47a67c75cb6bef4b8e98945f6587">&#9670;&#160;</a></span>activeSegment</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a76a2ca462d7a8f7858ef5ad26798110a">MemorySampleSequence</a> FlowUi::devSystems::MemoryCurrentSource::activeSegment = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Sequence of the currently open retained segment, or zero when none. </p>
+
+</div>
+</div>
+<a id="ae51d78f74daef9919d86d36e7e374abb" name="ae51d78f74daef9919d86d36e7e374abb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae51d78f74daef9919d86d36e7e374abb">&#9670;&#160;</a></span>cumulativeBackingChurnBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryCurrentSource::cumulativeBackingChurnBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Cumulative backing growth/reallocation byte traffic. </p>
+
+</div>
+</div>
+<a id="a62423040531a3c067f3b526d09f1d34a" name="a62423040531a3c067f3b526d09f1d34a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a62423040531a3c067f3b526d09f1d34a">&#9670;&#160;</a></span>cumulativeLogicalChurnBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryCurrentSource::cumulativeLogicalChurnBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Cumulative logical allocation/release byte traffic. </p>
+
+</div>
+</div>
+<a id="ad344dc4d2e1e52a243c43860f406b205" name="ad344dc4d2e1e52a243c43860f406b205"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad344dc4d2e1e52a243c43860f406b205">&#9670;&#160;</a></span>cumulativeResourceChurnBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryCurrentSource::cumulativeResourceChurnBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Cumulative resource create/destroy byte traffic. </p>
+
+</div>
+</div>
+<a id="a2817f659acbf20c3c8c06d930f289216" name="a2817f659acbf20c3c8c06d930f289216"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2817f659acbf20c3c8c06d930f289216">&#9670;&#160;</a></span>key</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1MemorySourceKey.html">MemorySourceKey</a> FlowUi::devSystems::MemoryCurrentSource::key {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Source and window attribution. </p>
+
+</div>
+</div>
+<a id="ac2b9443f431b67286deb19ce782909f3" name="ac2b9443f431b67286deb19ce782909f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac2b9443f431b67286deb19ce782909f3">&#9670;&#160;</a></span>lastSampledTick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> FlowUi::devSystems::MemoryCurrentSource::lastSampledTick = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Most recent application tick observed for the source. </p>
+
+</div>
+</div>
+<a id="a0472df5e6e94333a918cc24d5bf6cd86" name="a0472df5e6e94333a918cc24d5bf6cd86"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0472df5e6e94333a918cc24d5bf6cd86">&#9670;&#160;</a></span>live_buckets</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::array&lt;<a class="el" href="structFlowUi_1_1devSystems_1_1MemoryLiveBucket.html">MemoryLiveBucket</a>, 60&gt; FlowUi::devSystems::MemoryCurrentSource::live_buckets {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Bounded one-second buckets for the last 60 seconds of live demand. </p>
+
+</div>
+</div>
+<a id="afb7bffdf4a820bd44296a41ec3bbadbd" name="afb7bffdf4a820bd44296a41ec3bbadbd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afb7bffdf4a820bd44296a41ec3bbadbd">&#9670;&#160;</a></span>measured_at_ns</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryCurrentSource::measured_at_ns = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Monotonic nanosecond timestamp of the latest live measurement. </p>
+
+</div>
+</div>
+<a id="a0a8cb97874d2c1307c89bebb6d0ac0fc" name="a0a8cb97874d2c1307c89bebb6d0ac0fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0a8cb97874d2c1307c89bebb6d0ac0fc">&#9670;&#160;</a></span>retirementPressureByteTicks</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryCurrentSource::retirementPressureByteTicks = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Retired bytes integrated over observed application ticks. </p>
+
+</div>
+</div>
+<a id="ae8be988e3b58d0b2c589f438596c88ef" name="ae8be988e3b58d0b2c589f438596c88ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae8be988e3b58d0b2c589f438596c88ef">&#9670;&#160;</a></span>sessionPeak</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryValueSample.html">MemoryValueSample</a> FlowUi::devSystems::MemoryCurrentSource::sessionPeak {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Per-metric high-water values since monitoring began. </p>
+
+</div>
+</div>
+<a id="a847ebba03b551adc0a9ca6605fd554ae" name="a847ebba03b551adc0a9ca6605fd554ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a847ebba03b551adc0a9ca6605fd554ae">&#9670;&#160;</a></span>value</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryValueSample.html">MemoryValueSample</a> FlowUi::devSystems::MemoryCurrentSource::value {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Measured metric value or source sample for this record. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevMemoryReporting_8hpp_source.html">DevMemoryReporting.hpp</a></li>
 </ul>
@@ -148,7 +307,7 @@ AppTickId&#160;</td><td class="memItemRight"><b>lastSampledTick</b> = 0u</td></t
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1MemoryCurrentSource.html">MemoryCurrentSource</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1MemoryCurrentSource.html">MemoryCurrentSource</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

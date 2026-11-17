@@ -28,9 +28,9 @@ struct ElementStatePolicy {
 	uint32_t graceFrames = DefaultElementStateGraceFrames;
 
 	/**
-	 * Create a policy for state that expires after a period of absence.
-	 * @param expiryFrames Number of committed absent frames to retain.
-	 * @return Transient retention policy with the requested grace period.
+	 * @brief Create a transient policy retaining state for expiryFrames successfully committed absent frames, then expiring on the next absent frame. Canceled frames do not advance retention.
+	 *
+	 * @see docs/api/elements.md
 	 */
 	[[nodiscard]] static constexpr ElementStatePolicy transient(
 		uint32_t expiryFrames = DefaultElementStateGraceFrames) noexcept {
@@ -40,7 +40,11 @@ struct ElementStatePolicy {
 		};
 	}
 
-	/** Return a policy that retains state for the owning window's lifetime. */
+	/**
+	 * @brief Create a policy retaining state until explicit erasure or owning-window destruction.
+	 *
+	 * @see docs/api/elements.md
+	 */
 	[[nodiscard]] static constexpr ElementStatePolicy windowLifetime() noexcept {
 		return {
 			.retention = ElementStateRetention::WindowLifetime,
@@ -48,7 +52,11 @@ struct ElementStatePolicy {
 		};
 	}
 
-	/** Compare retention mode and grace period by value. */
+	/**
+	 * @brief Compare retention mode and grace period by value.
+	 *
+	 * @see docs/api/elements.md
+	 */
 	[[nodiscard]] auto operator<=>(const ElementStatePolicy&) const noexcept = default;
 };
 

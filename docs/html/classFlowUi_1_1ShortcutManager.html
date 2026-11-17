@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,7 +107,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Registers and dispatches keyboard shortcuts.  
+<p>Registers and dispatches keyboard shortcuts.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="ShortcutManager_8hpp_source.html">ShortcutManager.hpp</a>&gt;</code></p>
@@ -120,78 +120,106 @@ Classes</h2></td></tr>
 Public Types</h2></td></tr>
 <tr class="memitem:aa8aa7973b532d68addbc0fbeb01410d5" id="r_aa8aa7973b532d68addbc0fbeb01410d5"><td class="memItemLeft"><a id="aa8aa7973b532d68addbc0fbeb01410d5" name="aa8aa7973b532d68addbc0fbeb01410d5"></a>
 using&#160;</td><td class="memItemRight"><b>DevShortcutVisitor</b> = bool (*)(void*, const <a class="el" href="structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html">DevShortcutView</a>&amp;)</td></tr>
+<tr class="memdesc:aa8aa7973b532d68addbc0fbeb01410d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronous observation callback; return false to stop visitation. Arguments are borrowed for the call. <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a36fec101cdc166336fedc06d6ddc12e5" id="r_a36fec101cdc166336fedc06d6ddc12e5"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a36fec101cdc166336fedc06d6ddc12e5">visitDevShortcuts</a> (void *target, DevShortcutVisitor visitor) const</td></tr>
-<tr class="memitem:a2bc44da2fe129e8b7ab3a6f2ff8b0b9b" id="r_a2bc44da2fe129e8b7ab3a6f2ff8b0b9b"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">ShortcutId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a2bc44da2fe129e8b7ab3a6f2ff8b0b9b">registerShortcut</a> (const <a class="el" href="structFlowUi_1_1ShortcutChord.html">ShortcutChord</a> &amp;chord, <a class="el" href="group__flowui__shortcut__manager.html#ga1b3c08a536c355e5163a7a367297bfee">ShortcutScope</a> scope, int32_t priority, <a class="el" href="group__flowui__shortcut__manager.html#gafe920a194eec62fa501a18d765c03a35">ShortcutCallback</a> callback)</td></tr>
-<tr class="memdesc:a2bc44da2fe129e8b7ab3a6f2ff8b0b9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a shortcut and return its id.  <br /></td></tr>
-<tr class="memitem:a85b5c95b323ace22144320b9679a820d" id="r_a85b5c95b323ace22144320b9679a820d"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">ShortcutId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a85b5c95b323ace22144320b9679a820d">registerShortcut</a> (const <a class="el" href="structFlowUi_1_1ShortcutChord.html">ShortcutChord</a> &amp;chord, <a class="el" href="group__flowui__shortcut__manager.html#ga1b3c08a536c355e5163a7a367297bfee">ShortcutScope</a> scope, int32_t priority, <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> action, <a class="el" href="group__flowui__shortcut__manager.html#gaa96df297b2a302ec17595a07e88af64f">ShortcutHandling</a> handling=ShortcutHandling::Consume)</td></tr>
-<tr class="memitem:aa1243fa0e00dffc89ec688db82954a5e" id="r_aa1243fa0e00dffc89ec688db82954a5e"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#aa1243fa0e00dffc89ec688db82954a5e">unregisterShortcut</a> (<a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">ShortcutId</a> id)</td></tr>
-<tr class="memdesc:aa1243fa0e00dffc89ec688db82954a5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unregister a shortcut by id.  <br /></td></tr>
-<tr class="memitem:af08e7e2bb696cec1bf476a3afda5d6b1" id="r_af08e7e2bb696cec1bf476a3afda5d6b1"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#af08e7e2bb696cec1bf476a3afda5d6b1">clear</a> ()</td></tr>
-<tr class="memdesc:af08e7e2bb696cec1bf476a3afda5d6b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove all registered shortcuts.  <br /></td></tr>
-<tr class="memitem:a8a496694eeaf4fdf03166ecf9c273212" id="r_a8a496694eeaf4fdf03166ecf9c273212"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a8a496694eeaf4fdf03166ecf9c273212">setFocusedElement</a> (Clay_ElementId elementId)</td></tr>
-<tr class="memdesc:a8a496694eeaf4fdf03166ecf9c273212"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the currently focused Clay element id.  <br /></td></tr>
-<tr class="memitem:abf2f8245061c1fd51116e79c615ce52d" id="r_abf2f8245061c1fd51116e79c615ce52d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#abf2f8245061c1fd51116e79c615ce52d">clearFocusedElement</a> ()</td></tr>
-<tr class="memdesc:abf2f8245061c1fd51116e79c615ce52d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear focused element state.  <br /></td></tr>
-<tr class="memitem:a2d2a678228d439ea9889a30b1a6c94b2" id="r_a2d2a678228d439ea9889a30b1a6c94b2"><td class="memItemLeft">Clay_ElementId&#160;</td><td class="memItemRight"><a class="el" href="#a2d2a678228d439ea9889a30b1a6c94b2">focusedElement</a> () const</td></tr>
-<tr class="memdesc:a2d2a678228d439ea9889a30b1a6c94b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the currently focused Clay element id.  <br /></td></tr>
+<tr class="memitem:ad5ee805bcf932e983247cb4a8c503c3c" id="r_ad5ee805bcf932e983247cb4a8c503c3c"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ad5ee805bcf932e983247cb4a8c503c3c">visitDevShortcuts</a> (void *target, <a class="el" href="#aa8aa7973b532d68addbc0fbeb01410d5">DevShortcutVisitor</a> visitor) const noexcept</td></tr>
+<tr class="memdesc:ad5ee805bcf932e983247cb4a8c503c3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Observe development catalogue entries without invoking application operations.  <br /></td></tr>
+<tr class="memitem:a51cfe2fbc872abbd7363026d1f4209de" id="r_a51cfe2fbc872abbd7363026d1f4209de"><td class="memItemLeft"><a id="a51cfe2fbc872abbd7363026d1f4209de" name="a51cfe2fbc872abbd7363026d1f4209de"></a>
+void&#160;</td><td class="memItemRight"><b>appendDevMemorySamples</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1MemorySampleSink.html">devSystems::MemorySampleSink</a> &amp;sink) const noexcept</td></tr>
+<tr class="memdesc:a51cfe2fbc872abbd7363026d1f4209de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append observation-only memory accounting to sink without transferring storage ownership. <br /></td></tr>
+<tr class="memitem:a1bbaaa509819dbd397fd1b5696f95bd2" id="r_a1bbaaa509819dbd397fd1b5696f95bd2"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">ShortcutId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a1bbaaa509819dbd397fd1b5696f95bd2">registerShortcut</a> (const <a class="el" href="structFlowUi_1_1ShortcutChord.html">ShortcutChord</a> &amp;chord, <a class="el" href="group__flowui__shortcut__manager.html#ga1b3c08a536c355e5163a7a367297bfee">ShortcutScope</a> scope, int32_t priority, <a class="el" href="group__flowui__shortcut__manager.html#gafe920a194eec62fa501a18d765c03a35">ShortcutCallback</a> callback) noexcept</td></tr>
+<tr class="memdesc:a1bbaaa509819dbd397fd1b5696f95bd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a keyboard chord and return its window-local registration ID.  <br /></td></tr>
+<tr class="memitem:aea902f47ad087df9bfb6ce4d1457328b" id="r_aea902f47ad087df9bfb6ce4d1457328b"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">ShortcutId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aea902f47ad087df9bfb6ce4d1457328b">registerShortcut</a> (const <a class="el" href="structFlowUi_1_1ShortcutChord.html">ShortcutChord</a> &amp;chord, <a class="el" href="group__flowui__shortcut__manager.html#ga1b3c08a536c355e5163a7a367297bfee">ShortcutScope</a> scope, int32_t priority, <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> action, <a class="el" href="group__flowui__shortcut__manager.html#gaa96df297b2a302ec17595a07e88af64f">ShortcutHandling</a> handling=<a class="el" href="group__flowui__shortcut__manager.html#ggaa96df297b2a302ec17595a07e88af64fad2e0379c3a30439bfc1b6869af4408cc">ShortcutHandling::Consume</a>) noexcept</td></tr>
+<tr class="memdesc:aea902f47ad087df9bfb6ce4d1457328b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a retained semantic app action for a keyboard chord.  <br /></td></tr>
+<tr class="memitem:a10a828d4b72e8aca8efe653764561354" id="r_a10a828d4b72e8aca8efe653764561354"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a10a828d4b72e8aca8efe653764561354">unregisterShortcut</a> (<a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">ShortcutId</a> id) noexcept</td></tr>
+<tr class="memdesc:a10a828d4b72e8aca8efe653764561354"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a shortcut registration.  <br /></td></tr>
+<tr class="memitem:aa43c7748d7ae0f95c290f4d96f9ec797" id="r_aa43c7748d7ae0f95c290f4d96f9ec797"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa43c7748d7ae0f95c290f4d96f9ec797">clear</a> () noexcept</td></tr>
+<tr class="memdesc:aa43c7748d7ae0f95c290f4d96f9ec797"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove every shortcut and clear the focused-element marker.  <br /></td></tr>
+<tr class="memitem:a00314911c83eefc062bb22a8db0ae78a" id="r_a00314911c83eefc062bb22a8db0ae78a"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#a00314911c83eefc062bb22a8db0ae78a">setFocusedElement</a> (Clay_ElementId elementId) noexcept</td></tr>
+<tr class="memdesc:a00314911c83eefc062bb22a8db0ae78a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the lightweight Clay focus marker used by FocusedElement shortcuts.  <br /></td></tr>
+<tr class="memitem:ab6df95bf61d8cb4e8e19bcf1feace71c" id="r_ab6df95bf61d8cb4e8e19bcf1feace71c"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#ab6df95bf61d8cb4e8e19bcf1feace71c">clearFocusedElement</a> () noexcept</td></tr>
+<tr class="memdesc:ab6df95bf61d8cb4e8e19bcf1feace71c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear the Clay focus marker.  <br /></td></tr>
+<tr class="memitem:aa7269bc6ec50eeb4e64ef2e85839b95d" id="r_aa7269bc6ec50eeb4e64ef2e85839b95d"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; Clay_ElementId &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aa7269bc6ec50eeb4e64ef2e85839b95d">focusedElement</a> () const noexcept</td></tr>
+<tr class="memdesc:aa7269bc6ec50eeb4e64ef2e85839b95d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the current lightweight Clay focus marker.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-methods" class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a8703180bf03e471e25a5261d2b5af8ae" id="r_a8703180bf03e471e25a5261d2b5af8ae"><td class="memItemLeft">static bool&#160;</td><td class="memItemRight"><a class="el" href="#a8703180bf03e471e25a5261d2b5af8ae">devMatches</a> (const <a class="el" href="structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html">DevShortcutView</a> &amp;candidate, const <a class="el" href="structFlowUi_1_1ShortcutChord.html">ShortcutChord</a> &amp;chord, bool focused_input, bool focused_element) noexcept</td></tr>
 <tr class="memitem:a545180f0b4edae36142905a5084e7541" id="r_a545180f0b4edae36142905a5084e7541"><td class="memItemLeft">static bool&#160;</td><td class="memItemRight"><a class="el" href="#a545180f0b4edae36142905a5084e7541">devPrecedes</a> (const <a class="el" href="structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html">DevShortcutView</a> &amp;left, const <a class="el" href="structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html">DevShortcutView</a> &amp;right) noexcept</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:aedcadf9ffa4a2a8a0069d732c7c3374c" id="r_aedcadf9ffa4a2a8a0069d732c7c3374c"><td class="memItemLeft"><a id="aedcadf9ffa4a2a8a0069d732c7c3374c" name="aedcadf9ffa4a2a8a0069d732c7c3374c"></a>
-class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Registers and dispatches keyboard shortcuts. </p>
-<p><a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a> stores keyboard chords and evaluates them once per FlowUi frame from the current and previous <a class="el" href="structFlowUi_1_1FrameInput.html" title="Per-frame input snapshot consumed by FlowUi managers and elements.">FrameInput</a>. Matching shortcuts are filtered by <a class="el" href="group__flowui__shortcut__manager.html#ga1b3c08a536c355e5163a7a367297bfee" title="Scope that controls when a shortcut is eligible to run.">ShortcutScope</a>, then invoked in priority order. A callback that returns true handles the chord and stops later callbacks for that same match.</p>
-<p><a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9" title="Opaque shortcut registration id.">ShortcutId</a> value 0 is reserved as an invalid id. <a class="el" href="#a2bc44da2fe129e8b7ab3a6f2ff8b0b9b" title="Register a shortcut and return its id.">registerShortcut()</a> returns an error when registration fails, so application code can treat 0 as "not registered".</p>
+<p><a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a> stores keyboard chords and evaluates them once per <a class="el" href="namespaceFlowUi.html">FlowUi</a> frame from the current and previous <a class="el" href="structFlowUi_1_1FrameInput.html" title="Per-frame input snapshot consumed by FlowUi managers and elements.">FrameInput</a>. Matching shortcuts are filtered by <a class="el" href="group__flowui__shortcut__manager.html#ga1b3c08a536c355e5163a7a367297bfee" title="Scope that controls when a shortcut is eligible to run.">ShortcutScope</a>, then invoked in priority order. A callback that returns true handles the chord and stops later callbacks for that same match.</p>
+<p><a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9" title="Opaque shortcut registration id.">ShortcutId</a> value 0 is reserved as an invalid id. <a class="el" href="#a1bbaaa509819dbd397fd1b5696f95bd2" title="Register a keyboard chord and return its window-local registration ID.">registerShortcut()</a> returns an error when registration fails, so application code can treat 0 as "not registered".</p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2input__fields__and__shortcuts.html" title="Input Fields and Shortcuts">Input Fields and Shortcuts</a> </dd></dl>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
-<a id="af08e7e2bb696cec1bf476a3afda5d6b1" name="af08e7e2bb696cec1bf476a3afda5d6b1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af08e7e2bb696cec1bf476a3afda5d6b1">&#9670;&#160;</a></span>clear()</h2>
+<a id="aa43c7748d7ae0f95c290f4d96f9ec797" name="aa43c7748d7ae0f95c290f4d96f9ec797"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa43c7748d7ae0f95c290f4d96f9ec797">&#9670;&#160;</a></span>clear()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FlowUi::ShortcutManager::clear </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ShortcutManager::clear </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Remove all registered shortcuts. </p>
-<p>Clears every chord registration, resets registration ids, and clears the focused element marker.</p>
-<div class="fragment"></div><!-- fragment --> 
+<p>Remove every shortcut and clear the focused-element marker. </p>
+<p>Stored callbacks/actions are released and the registration epoch advances; the monotonic ID counter is not reset. Discard IDs for cleared registrations.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success means the reset completed. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.clear();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="abf2f8245061c1fd51116e79c615ce52d" name="abf2f8245061c1fd51116e79c615ce52d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abf2f8245061c1fd51116e79c615ce52d">&#9670;&#160;</a></span>clearFocusedElement()</h2>
+<a id="ab6df95bf61d8cb4e8e19bcf1feace71c" name="ab6df95bf61d8cb4e8e19bcf1feace71c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6df95bf61d8cb4e8e19bcf1feace71c">&#9670;&#160;</a></span>clearFocusedElement()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FlowUi::ShortcutManager::clearFocusedElement </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ShortcutManager::clearFocusedElement </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Clear focused element state. </p>
-<p>After this call, FocusedElement shortcuts are not eligible until another non-zero focused element id is set.</p>
-<div class="fragment"></div><!-- fragment --> 
+<p>Clear the Clay focus marker. </p>
+<p>Input-field focus is independent.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success means FocusedElement registrations are ineligible until a nonzero marker is set. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.clearFocusedElement();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a8703180bf03e471e25a5261d2b5af8ae" name="a8703180bf03e471e25a5261d2b5af8ae"></a>
@@ -264,8 +292,8 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
 
 </div>
 </div>
-<a id="a2d2a678228d439ea9889a30b1a6c94b2" name="a2d2a678228d439ea9889a30b1a6c94b2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2d2a678228d439ea9889a30b1a6c94b2">&#9670;&#160;</a></span>focusedElement()</h2>
+<a id="aa7269bc6ec50eeb4e64ef2e85839b95d" name="aa7269bc6ec50eeb4e64ef2e85839b95d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7269bc6ec50eeb4e64ef2e85839b95d">&#9670;&#160;</a></span>focusedElement()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -274,7 +302,7 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Clay_ElementId FlowUi::ShortcutManager::focusedElement </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; Clay_ElementId &gt; FlowUi::ShortcutManager::focusedElement </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
@@ -282,18 +310,25 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return the currently focused Clay element id. </p>
-<dl class="section return"><dt>Returns</dt><dd>Clay element id currently tracked by <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a>. A zero id means no shortcut-focused element is set.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Read the current lightweight Clay focus marker. </p>
+<p>The returned ID is a value, not a borrowed element pointer.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains the tracked Clay_ElementId; id == 0 means no marker, not an error. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.focusedElement();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> <a class="code hl_function" href="#aa7269bc6ec50eeb4e64ef2e85839b95d">focusedElement</a> = *result;</div>
+<div class="ttc" id="aclassFlowUi_1_1ShortcutManager_html_aa7269bc6ec50eeb4e64ef2e85839b95d"><div class="ttname"><a href="#aa7269bc6ec50eeb4e64ef2e85839b95d">FlowUi::ShortcutManager::focusedElement</a></div><div class="ttdeci">Result&lt; Clay_ElementId &gt; focusedElement() const noexcept</div><div class="ttdoc">Read the current lightweight Clay focus marker.</div></div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a85b5c95b323ace22144320b9679a820d" name="a85b5c95b323ace22144320b9679a820d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a85b5c95b323ace22144320b9679a820d">&#9670;&#160;</a></span>registerShortcut() <span class="overload">[1/2]</span></h2>
+<a id="aea902f47ad087df9bfb6ce4d1457328b" name="aea902f47ad087df9bfb6ce4d1457328b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea902f47ad087df9bfb6ce4d1457328b">&#9670;&#160;</a></span>registerShortcut() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -324,21 +359,34 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="group__flowui__shortcut__manager.html#gaa96df297b2a302ec17595a07e88af64f">ShortcutHandling</a></td>          <td class="paramname"><span class="paramname"><em>handling</em></span><span class="paramdefsep"> = </span><span class="paramdefval">ShortcutHandling::Consume</span>&#160;)</td>
+          <td class="paramtype"><a class="el" href="group__flowui__shortcut__manager.html#gaa96df297b2a302ec17595a07e88af64f">ShortcutHandling</a></td>          <td class="paramname"><span class="paramname"><em>handling</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="group__flowui__shortcut__manager.html#ggaa96df297b2a302ec17595a07e88af64fad2e0379c3a30439bfc1b6869af4408cc">ShortcutHandling::Consume</a></span>&#160;)</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Register a retained semantic app action for this window's shortcut scope. </p>
 
+<p>Register a retained semantic app action for a keyboard chord. </p>
+<p>The action is resolved at dispatch; unbound/disabled actions are skipped. handling defaults to Consume; PassThrough allows later matching shortcuts. Referenced action resources follow <a class="el" href="group__flowui__action__manager.html#gab2d7dad2e88c776b251fdfcf2b2a88c0" title="Create a retained application binding and return its AppActionCall. The ID must be nonzero and unboun...">AppActions::bind()</a> lifetime rules. Scope, priority, and chord matching match callback registration.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains a nonzero <a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9" title="Opaque shortcut registration id.">ShortcutId</a>; invalid manager/chord/callback/action or allocation failures are errors. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ShortcutChord.html">FlowUi::ShortcutChord</a> chord{.key = <a class="code hl_function" href="namespaceFlowUi.html#aa2bcc116633a6972a31522e76cbefdd8">FlowUi::keyCode</a>(FlowUi::Key::S), .ctrl = <span class="keyword">true</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.registerShortcut(chord, <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">FlowUi::ShortcutScope::Global</a>, 100, action, <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#ggaa96df297b2a302ec17595a07e88af64fad2e0379c3a30439bfc1b6869af4408cc">FlowUi::ShortcutHandling::Consume</a>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> shortcutId = *result;</div>
+<div class="ttc" id="agroup__flowui__shortcut__manager_html_gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8"><div class="ttname"><a href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">FlowUi::ShortcutScope::Global</a></div><div class="ttdeci">@ Global</div><div class="ttdoc">Run regardless of focused input or focused element state.</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:35</div></div>
+<div class="ttc" id="agroup__flowui__shortcut__manager_html_ggaa96df297b2a302ec17595a07e88af64fad2e0379c3a30439bfc1b6869af4408cc"><div class="ttname"><a href="group__flowui__shortcut__manager.html#ggaa96df297b2a302ec17595a07e88af64fad2e0379c3a30439bfc1b6869af4408cc">FlowUi::ShortcutHandling::Consume</a></div><div class="ttdeci">@ Consume</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:59</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_aa2bcc116633a6972a31522e76cbefdd8"><div class="ttname"><a href="namespaceFlowUi.html#aa2bcc116633a6972a31522e76cbefdd8">FlowUi::keyCode</a></div><div class="ttdeci">constexpr int keyCode(Key key) noexcept</div><div class="ttdef"><b>Definition</b> Key.hpp:134</div></div>
+<div class="ttc" id="astructFlowUi_1_1ShortcutChord_html"><div class="ttname"><a href="structFlowUi_1_1ShortcutChord.html">FlowUi::ShortcutChord</a></div><div class="ttdoc">Keyboard chord registered with ShortcutManager.</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:70</div></div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a2bc44da2fe129e8b7ab3a6f2ff8b0b9b" name="a2bc44da2fe129e8b7ab3a6f2ff8b0b9b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2bc44da2fe129e8b7ab3a6f2ff8b0b9b">&#9670;&#160;</a></span>registerShortcut() <span class="overload">[2/2]</span></h2>
+<a id="a1bbaaa509819dbd397fd1b5696f95bd2" name="a1bbaaa509819dbd397fd1b5696f95bd2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1bbaaa509819dbd397fd1b5696f95bd2">&#9670;&#160;</a></span>registerShortcut() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -369,89 +417,32 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Register a shortcut and return its id. </p>
-<p>The chord is matched against frame input using its key, modifier flags, and trigger mode. The scope controls when the callback is eligible to run. When multiple callbacks match the same chord, focused scopes are considered before global shortcuts, higher priority values run first, and callbacks with the same scope and priority run in registration order.</p>
-<p>A callback should return true after it handles the shortcut. Returning false allows the next matching callback for the same chord to run.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">chord</td><td>Key, modifier requirements, and trigger transition to match. </td></tr>
-    <tr><td class="paramname">scope</td><td>Focus condition required before the shortcut may run. </td></tr>
-    <tr><td class="paramname">priority</td><td>Ordering value within the same scope. Higher values run first. </td></tr>
-    <tr><td class="paramname">callback</td><td>Function invoked when the chord and scope match. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A result containing the registration id, or a structured error when the manager, callback, action, or chord is invalid.</dd></dl>
-<div class="fragment"></div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2input__fields__and__shortcuts.html" title="Input Fields and Shortcuts">Input Fields and Shortcuts</a> </dd></dl>
-
+<p>Register a keyboard chord and return its window-local registration ID. </p>
+<p>Matching uses exact modifier requirements and the trigger transition. FocusedInput precedes FocusedElement, then Global; higher priority first, then registration order. Callbacks are owned by the registration, so captured references must outlive it. A callback returning true consumes the chord; false allows subsequent matches. Callback exceptions follow the dispatch/frame boundary policy, not the registration call.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains a nonzero <a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9" title="Opaque shortcut registration id.">ShortcutId</a>; invalid manager/chord/callback/action or allocation failures are errors. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ShortcutChord.html">FlowUi::ShortcutChord</a> chord{.key = <a class="code hl_function" href="namespaceFlowUi.html#aa2bcc116633a6972a31522e76cbefdd8">FlowUi::keyCode</a>(FlowUi::Key::S), .ctrl = <span class="keyword">true</span>};</div>
+<div class="line"><span class="keywordtype">bool</span> saveRequested = <span class="keyword">false</span>;</div>
+<div class="line"><a class="code hl_typedef" href="group__flowui__shortcut__manager.html#gafe920a194eec62fa501a18d765c03a35">FlowUi::ShortcutCallback</a> callback = [&amp;saveRequested](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ShortcutContext.html">FlowUi::ShortcutContext</a>&amp;) {</div>
+<div class="line">    saveRequested = <span class="keyword">true</span>;</div>
+<div class="line">    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.registerShortcut(chord, <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">FlowUi::ShortcutScope::Global</a>, 100, std::move(callback));</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> shortcutId = *result;</div>
+<div class="ttc" id="agroup__flowui__shortcut__manager_html_gafe920a194eec62fa501a18d765c03a35"><div class="ttname"><a href="group__flowui__shortcut__manager.html#gafe920a194eec62fa501a18d765c03a35">FlowUi::ShortcutCallback</a></div><div class="ttdeci">std::function&lt; bool(ShortcutContext &amp;)&gt; ShortcutCallback</div><div class="ttdoc">Shortcut callback.</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:123</div></div>
+<div class="ttc" id="astructFlowUi_1_1ShortcutContext_html"><div class="ttname"><a href="structFlowUi_1_1ShortcutContext.html">FlowUi::ShortcutContext</a></div><div class="ttdoc">Runtime data passed to shortcut callbacks.</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:100</div></div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a8a496694eeaf4fdf03166ecf9c273212" name="a8a496694eeaf4fdf03166ecf9c273212"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8a496694eeaf4fdf03166ecf9c273212">&#9670;&#160;</a></span>setFocusedElement()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void FlowUi::ShortcutManager::setFocusedElement </td>
-          <td>(</td>
-          <td class="paramtype">Clay_ElementId</td>          <td class="paramname"><span class="paramname"><em>elementId</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set the currently focused Clay element id. </p>
-<p>The focused element marker is used by <a class="el" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeada12bd1e401dad9ceac02d871dbb34e3" title="Run only while ShortcutManager has a focused Clay element id.">ShortcutScope::FocusedElement</a>. It is a lightweight shortcut classification value; callbacks can inspect <a class="el" href="structFlowUi_1_1ShortcutContext.html#a83af3b604bb2d9ecfa2a884f8d049d57" title="Focused Clay element id tracked by ShortcutManager.">ShortcutContext::focusedElementId</a> when they need element-specific behavior. Conditions with which an element becomes focused is up to the user to decide by calling this function.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">elementId</td><td>Clay element id to treat as focused.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --> 
-</div>
-</div>
-<a id="aa1243fa0e00dffc89ec688db82954a5e" name="aa1243fa0e00dffc89ec688db82954a5e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa1243fa0e00dffc89ec688db82954a5e">&#9670;&#160;</a></span>unregisterShortcut()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool FlowUi::ShortcutManager::unregisterShortcut </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">ShortcutId</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Unregister a shortcut by id. </p>
-<p>Removes the registered callback and releases the manager's internal reference to the chord key. It is valid to unregister from inside a shortcut callback.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">id</td><td>Registration id returned by <a class="el" href="#a2bc44da2fe129e8b7ab3a6f2ff8b0b9b" title="Register a shortcut and return its id.">registerShortcut()</a>. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">true</td><td>A shortcut with id existed and was removed. </td></tr>
-    <tr><td class="paramname">false</td><td>id was 0 or did not match an active registration.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --> 
-</div>
-</div>
-<a id="a36fec101cdc166336fedc06d6ddc12e5" name="a36fec101cdc166336fedc06d6ddc12e5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a36fec101cdc166336fedc06d6ddc12e5">&#9670;&#160;</a></span>visitDevShortcuts()</h2>
+<a id="a00314911c83eefc062bb22a8db0ae78a" name="a00314911c83eefc062bb22a8db0ae78a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a00314911c83eefc062bb22a8db0ae78a">&#9670;&#160;</a></span>setFocusedElement()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -460,24 +451,112 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool FlowUi::ShortcutManager::visitDevShortcuts </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ShortcutManager::setFocusedElement </td>
+          <td>(</td>
+          <td class="paramtype">Clay_ElementId</td>          <td class="paramname"><span class="paramname"><em>elementId</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Set the lightweight Clay focus marker used by FocusedElement shortcuts. </p>
+<p>This does not assign input-field focus or decide when your application considers an element focused.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success means the marker was stored; a zero element ID represents no focused element. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.setFocusedElement(elementId);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a10a828d4b72e8aca8efe653764561354" name="a10a828d4b72e8aca8efe653764561354"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a10a828d4b72e8aca8efe653764561354">&#9670;&#160;</a></span>unregisterShortcut()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::ShortcutManager::unregisterShortcut </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">ShortcutId</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Remove a shortcut registration. </p>
+<p>It is valid to unregister from inside a shortcut callback. Callback-owned captures are released when their retained registration is no longer needed by dispatch.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true if removed or false for zero/unknown IDs. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.unregisterShortcut(shortcutId);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = *result;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ad5ee805bcf932e983247cb4a8c503c3c" name="ad5ee805bcf932e983247cb4a8c503c3c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad5ee805bcf932e983247cb4a8c503c3c">&#9670;&#160;</a></span>visitDevShortcuts()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::ShortcutManager::visitDevShortcuts </td>
           <td>(</td>
           <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>target</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">DevShortcutVisitor</td>          <td class="paramname"><span class="paramname"><em>visitor</em></span>&#160;) const</td>
+          <td class="paramtype"><a class="el" href="#aa8aa7973b532d68addbc0fbeb01410d5">DevShortcutVisitor</a></td>          <td class="paramname"><span class="paramname"><em>visitor</em></span>&#160;) const</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Visit published registrations without retaining or invoking callbacks. </p>
 
+<p>Observe development catalogue entries without invoking application operations. </p>
+<p>Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts live shortcut registrations; completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>. Earlier callback effects, including the counter, are not rolled back on failure.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a detached manager or null visitor. A failed <a class="el" href="classFlowUi_1_1Result.html">Result</a> is an operational/callback error, not an incomplete-visit bool.</dd></dl>
+<div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line">std::size_t count = 0;</div>
+<div class="line"><span class="keyword">auto</span> result = manager.visitDevShortcuts(&amp;count,</div>
+<div class="line">    [](<span class="keywordtype">void</span>* target, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html">FlowUi::ShortcutManager::DevShortcutView</a>&amp; shortcut) {</div>
+<div class="line">        <span class="keyword">auto</span>&amp; observedCount = *<span class="keyword">static_cast&lt;</span>std::size_t*<span class="keyword">&gt;</span>(target);</div>
+<div class="line">        <span class="keywordflow">if</span> (shortcut.<a class="code hl_variable" href="structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html#acfcca05a240716c18920a274d59e3e65">id</a> != 0) {</div>
+<div class="line">            ++observedCount;</div>
+<div class="line">        }</div>
+<div class="line">        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">    });</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe">completed</a> = *result;</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html_aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe">FlowUi::devSystems::agentic::AgenticInteractionPhase::completed</a></div><div class="ttdeci">@ completed</div><div class="ttdef"><b>Definition</b> AgenticInteraction.hpp:486</div></div>
+<div class="ttc" id="astructFlowUi_1_1ShortcutManager_1_1DevShortcutView_html"><div class="ttname"><a href="structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html">FlowUi::ShortcutManager::DevShortcutView</a></div><div class="ttdef"><b>Definition</b> ShortcutManager.hpp:45</div></div>
+<div class="ttc" id="astructFlowUi_1_1ShortcutManager_1_1DevShortcutView_html_acfcca05a240716c18920a274d59e3e65"><div class="ttname"><a href="structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html#acfcca05a240716c18920a274d59e3e65">FlowUi::ShortcutManager::DevShortcutView::id</a></div><div class="ttdeci">ShortcutId id</div><div class="ttdoc">Window-local registration ID; zero is invalid.</div><div class="ttdef"><b>Definition</b> ShortcutManager.hpp:59</div></div>
+</div><!-- fragment -->
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
@@ -496,7 +575,7 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1ShortcutManager.html">ShortcutManager</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1ShortcutManager.html">ShortcutManager</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

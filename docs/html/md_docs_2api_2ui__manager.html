@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,321 +106,419 @@ $(function() {
   <div class="headertitle"><div class="title">UI Manager API </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1>Aliases</h1>
-<h2><b>FontId</b></h2>
-<h3><span class="tt">using FontId = uint16_t</span></h3>
-<p>Concrete font id consumed by Clay text configuration. UiManager can resolve this through the connected <span class="tt"><a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a></span>.</p>
-<h2><b>FontFamilyId</b></h2>
-<h3><span class="tt">using FontFamilyId = uint32_t</span></h3>
-<p>Logical font family id returned by <span class="tt"><a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a></span>. UiManager accepts this for font resolution.</p>
-<h1>Enums</h1>
-<h2><b>CursorType</b></h2>
-<h3><span class="tt">enum class CursorType : uint8_t</span></h3>
-<p>Cursor shape requested by UI code. UiManager collects per-frame cursor requests and forwards the winning shape to the window backend.</p>
-<h1>Public Structs</h1>
-<h2><b>FrameInput</b></h2>
-<h3><span class="tt">struct FrameInput</span></h3>
-<p>Current or previous normalized input snapshot exposed by UiManager. Custom elements use it for low-level pointer, keyboard, scroll, and timing behavior.</p>
-<h2><b>InteractionSnapshot</b></h2>
-<h3><span class="tt">struct InteractionSnapshot</span></h3>
-<p>Previous-frame interaction data returned by UiManager. Custom elements use it to query hover, press, hold, and release state.</p>
-<h2><b>TextureRef</b></h2>
-<h3><span class="tt">struct TextureRef</span></h3>
-<p>Texture payload copied into frame storage by <span class="tt">imageData()</span>. Storage retains the logical GPU texture separately through submission.</p>
-<h1>Public API</h1>
-<h2><b>toClayString</b></h2>
-<h3><span class="tt">Clay_String toClayString(std::string_view s)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">Clay_String</span></li>
-<li><b>Arguments:</b> <span class="tt">s</span> string data to copy into the current frame arena.</li>
-</ul>
-<p>Copies dynamic text into frame-owned storage and returns a Clay string pointing at that copy. Use this for any string emitted to Clay when the original data may not live until frame end.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line">CLAY_TEXT(context.uiManager.toClayString(context.params.label), CLAY_TEXT_CONFIG(textConfig));</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>imageData</b></h2>
-<h3><span class="tt">TextureRef* imageData(TextureRef textureRef)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">TextureRef*</span></li>
-<li><b>Arguments:</b> <span class="tt">textureRef</span> texture reference to copy into frame storage.</li>
-</ul>
-<p>Stores a texture reference in the current frame arena and returns a pointer suitable for <span class="tt">Clay_ImageElementConfig::imageData</span>. Use this instead of taking the address of a temporary or local <span class="tt">TextureRef</span>.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line">imageConfig.imageData = context.uiManager.imageData(app.images().getTexture(<span class="stringliteral">&quot;logo&quot;</span>));</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>inputContentElement</b></h2>
-<h3><span class="tt">Clay_ElementDeclaration inputContentElement(const Clay_TextElementConfig&amp; textConfig) const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">Clay_ElementDeclaration</span></li>
-<li><b>Arguments:</b> <span class="tt">textConfig</span> text configuration used by the input field text.</li>
-</ul>
-<p>Creates a stable inner content element declaration for input fields. The returned declaration grows horizontally and uses a fixed height based on the resolved font line height.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line">CLAY(contentId, context.uiManager.inputContentElement(textConfig)) {</div>
-<div class="line">    CLAY_TEXT(context.uiManager.toClayString(field.text.copy()), CLAY_TEXT_CONFIG(textConfig));</div>
+<div class="textblock"><p><a href="include/FlowUi/Public/managers/UiManager.hpp">UiManager.hpp</a> is the frame-scoped application authoring surface. <span class="tt">App</span> owns its lifecycle. Obtain it from the checked <span class="tt">App::ui()</span> accessor; once acquired, <span class="tt">ui.actions()</span> and <span class="tt">ui.elements()</span> return direct borrowed references. The <span class="tt">App::actions()</span> and <span class="tt">App::elements()</span> accessors themselves return checked wrappers.</p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> uiResult = app.ui();</div>
+<div class="line"><span class="keywordflow">if</span> (!uiResult) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(uiResult.error());</div>
 <div class="line">}</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>toClaySID</b></h2>
-<h3><span class="tt">Clay_ElementId toClaySID(std::string_view s)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">Clay_ElementId</span></li>
-<li><b>Arguments:</b> <span class="tt">s</span> id string.</li>
-</ul>
-<p>Converts a string into a Clay string id using FlowUi frame storage. This is useful when you want Clay's string-id path directly.</p>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; ui = uiResult-&gt;get();</div>
+<div class="line"><span class="keyword">auto</span> status = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#afe6978f52c9a7f3d1ecf8c6e7922c5d7">setClipboardText</a>(<span class="stringliteral">&quot;Copied text&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!status) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(status.error());</div>
+<div class="line">}</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:110</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_afe6978f52c9a7f3d1ecf8c6e7922c5d7"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#afe6978f52c9a7f3d1ecf8c6e7922c5d7">FlowUi::UiManager::setClipboardText</a></div><div class="ttdeci">Status setClipboardText(std::string_view text) const noexcept</div><div class="ttdoc">Copy text to the attached platform clipboard. Detached, unsupported, and failed platform operations a...</div></div>
+</div><!-- fragment --><p>Frame storage and bridge helpers return direct values and throw on operational failure. <span class="tt">resolveFont()</span> returns a direct <span class="tt">FontId</span> without throwing for an attached manager. Theme lookups, clipboard operations and frame status retain their declared checked results. Builder creation, drawing, manager borrowing and action invocation remain direct throwing APIs. In custom composition, retain the first failure with <span class="tt">recordFrameError()</span> and cancel a failed frame. Exceptions from application callbacks are allowed to reach the enclosing application frame boundary; output from that failed frame must not be submitted. See <a class="el" href="md_docs_2api_2result__handling.html" title="Results and borrowed references">result handling</a>.</p>
+<p><span class="tt">Clay_String</span>, image payload pointers and frame bridge data borrow current-frame storage. Input/interaction references borrow this manager; do not keep them as frozen snapshots across later frames. Font aliases are <span class="tt">FontId = uint16_t</span> and <span class="tt">FontFamilyId = uint32_t</span>; <span class="tt">CursorType</span> names platform cursor shapes. <a href="include/FlowUi/Public/managerStructs/UiTypes.hpp">UI types</a> define <span class="tt">FrameInput</span>, <span class="tt">InteractionSnapshot</span> and <span class="tt">TextureRef</span>.</p>
+<p>The <span class="tt">createElement()</span> examples use the complete <span class="tt">Counter</span> definition in <a class="el" href="md_docs_2api_2elements.html" title="Element API">the element API</a>. Development builds append an optional <span class="tt">std::source_location</span> argument to every <span class="tt">createElement()</span> overload. <span class="tt">FLOW_UI_DEV_MODE</span> and <span class="tt">FLOW_UI_AGENTIC_WORKFLOW</span> also expose observation/configuration helpers for tooling; those conditional implementation-facing services are outside the application reference below.</p>
+<h2><b>UiManager::frameStatus</b></h2>
+<h3><span class="tt">[[nodiscard]] Status frameStatus() const noexcept;</span></h3>
+<p>Return this frame's latched failure with UI, then input-field, then popup priority. Each manager retains its first error; this observer does not select the earliest failure across managers. Check before committing custom frame composition.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">Clay_ElementId overlayId = ui.toClaySID(<span class="stringliteral">&quot;overlay/root&quot;</span>);</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>toClayEID</b></h2>
-<h3><span class="tt">Clay_ElementId toClayEID(FlowElementID id)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">Clay_ElementId</span></li>
-<li><b>Arguments:</b> <span class="tt">id</span> strong element identity.</li>
-</ul>
-<p>Bridges a strong FlowUi element identity into a Clay element id. Overloads also accept <span class="tt">GlobalFlowID</span> and <span class="tt">FlowElementPartID</span>. This is the normal helper for root and child Clay nodes inside FlowUi element callbacks.</p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a105713a2a18e110bc4473c7d15003cb2">frameStatus</a>();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a105713a2a18e110bc4473c7d15003cb2"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a105713a2a18e110bc4473c7d15003cb2">FlowUi::UiManager::frameStatus</a></div><div class="ttdeci">Status frameStatus() const noexcept</div><div class="ttdoc">Return the first latched UI error for this frame, including input-field and popup failure state....</div><div class="ttdef"><b>Definition</b> UiManager.hpp:125</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::recordFrameError</b></h2>
+<h3><span class="tt">void recordFrameError(FlowUiError error) const noexcept;</span></h3>
+<p>Latch the first error for this frame so partially built output cannot be submitted. Later calls preserve the earlier error.</p>
+<p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::toClayString</b></h2>
+<h3><span class="tt">[[nodiscard]] Clay_String toClayString(std::string_view s);</span></h3>
+<p>Copy text into current-frame storage and return a Clay_String borrowing that storage. ResourceKey supplies the name text and explicit resource attribution.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">Clay_ElementId rootId = context.clayID();</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>createElement</b></h2>
-<h3><span class="tt">template &lt;FlowElement Element&gt; ElementBuilder&lt;Element&gt; createElement(const Element&amp;, LocalElementName localName)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">ElementBuilder&lt;Element&gt;</span>.</li>
-<li><b>Arguments:</b> an empty element tag and a literal local name resolved under the active parent scope.</li>
-</ul>
-<p>Overloads accept runtime, indexed/keyed, automatic, resolved local, global, and semantic-part identity tokens. Omitting a name uses <span class="tt">AutoID()</span>; loops need distinct names or keys. See <a href="elements.md#identity">element identity</a>.</p>
-<p>Creates a builder for one typed FlowUi element invocation. Chain parameter setup and finish with <span class="tt">draw()</span> or <span class="tt">construct()</span>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> std::string_view text = <span class="stringliteral">&quot;Save&quot;</span>;</div>
+<div class="line"><span class="keyword">const</span> Clay_String clayText = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437">toClayString</a>(text);</div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_ac1694a665b71269470ff22a2adc00437"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437">FlowUi::UiManager::toClayString</a></div><div class="ttdeci">Clay_String toClayString(std::string_view s)</div><div class="ttdoc">Copy text into current-frame storage and return a Clay_String borrowing that storage....</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::toClayString</b></h2>
+<h3><span class="tt">[[nodiscard]] Clay_String toClayString(ResourceKey key);</span></h3>
+<p>Copy text into current-frame storage and return a Clay_String borrowing that storage. ResourceKey supplies the name text and explicit resource attribution.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.ui().createElement(kButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>).draw();</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>theme</b> <span class="tt">1/2</span></h2>
-<h3><span class="tt">template &lt;typename T&gt; const T&amp; theme() const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">const T&amp;</span></li>
-<li><b>Arguments:</b> none.</li>
-</ul>
-<p>Queries the active variant for theme struct type <span class="tt">T</span>. Use this inside custom element <span class="tt">buildElement</span> or <span class="tt">constructElement</span> callbacks to retrieve design tokens.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> text{.name = <span class="stringliteral">&quot;Save&quot;</span>};</div>
+<div class="line"><span class="keyword">const</span> Clay_String clayText = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437">toClayString</a>(text);</div>
+<div class="ttc" id="astructFlowUi_1_1ResourceKey_html"><div class="ttname"><a href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a></div><div class="ttdoc">Human-readable logical identity accepted by FlowUi managers.</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:39</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::imageData</b></h2>
+<h3><span class="tt">[[nodiscard]] TextureRef* imageData(TextureRef textureRef);</span></h3>
+<p>Copy a texture reference into current-frame storage and return the pointer used by Clay image configuration. The pointee is valid for this frame only.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span>&amp; appTheme = context.uiManager.theme&lt;AppTheme&gt;();</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>theme</b> <span class="tt">2/2</span></h2>
-<h3><span class="tt">template &lt;typename T&gt; const T&amp; theme(std::string_view variantName) const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">const T&amp;</span></li>
-<li><b>Arguments:</b> <span class="tt">variantName</span> registered variant name.</li>
-</ul>
-<p>Queries a specific named variant for theme struct type <span class="tt">T</span>.</p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a84ca159240dc3f702a72698da0cdda83">imageData</a>(texture);</div>
+<div class="line">Clay_ImageElementConfig image{};</div>
+<div class="line">image.imageData = result;</div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a84ca159240dc3f702a72698da0cdda83"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a84ca159240dc3f702a72698da0cdda83">FlowUi::UiManager::imageData</a></div><div class="ttdeci">TextureRef * imageData(TextureRef textureRef)</div><div class="ttdoc">Copy a texture reference into current-frame storage and return the pointer used by Clay image configu...</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::inputContentElement</b></h2>
+<h3><span class="tt">[[nodiscard]] Clay_ElementDeclaration inputContentElement(const Clay_TextElementConfig&amp; textConfig) const;</span></h3>
+<p>Return an input-content declaration with growing width and a height derived from the resolved font metrics. The declaration can be passed directly to Clay.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span>&amp; lightTheme = context.uiManager.theme&lt;AppTheme&gt;(<span class="stringliteral">&quot;light&quot;</span>);</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>flowTheme</b></h2>
-<h3><span class="tt">const FlowUiTheme&amp; flowTheme() const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">const FlowUiTheme&amp;</span></li>
-<li><b>Arguments:</b> none.</li>
-</ul>
-<p>Convenience shortcut returning the active built-in <span class="tt">FlowUiTheme</span> design system tokens (colors, font sizes, spacing, corner radii).</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> Clay_ElementDeclaration content = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#aacd40f0f6f42bc6e2678ffc7eefa207e">inputContentElement</a>(textConfig);</div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_aacd40f0f6f42bc6e2678ffc7eefa207e"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#aacd40f0f6f42bc6e2678ffc7eefa207e">FlowUi::UiManager::inputContentElement</a></div><div class="ttdeci">Clay_ElementDeclaration inputContentElement(const Clay_TextElementConfig &amp;textConfig) const</div><div class="ttdoc">Return an input-content declaration with growing width and a height derived from the resolved font me...</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::toClaySID</b></h2>
+<h3><span class="tt">[[nodiscard]] Clay_ElementId toClaySID(std::string_view s);</span></h3>
+<p>Copy the supplied string identity into current-frame storage and return its Clay string ID. ResourceKey carries explicit attribution.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span>&amp; flowTheme = context.uiManager.flowTheme();</div>
-<div class="line">root.backgroundColor = flowTheme.surface;</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>drawConstructed</b></h2>
-<h3><span class="tt">void drawConstructed()</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
-<li><b>Arguments:</b> none.</li>
-</ul>
-<p>Closes the current element opened by <span class="tt">ElementBuilder::construct()</span>. Call this after emitting the manually supplied child Clay nodes for a constructed element flow.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> std::string_view name = <span class="stringliteral">&quot;toolbar/save&quot;</span>;</div>
+<div class="line"><span class="keyword">const</span> Clay_ElementId clayId = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#ab5a7131ff83f731ff6f99006f4563d29">toClaySID</a>(name);</div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_ab5a7131ff83f731ff6f99006f4563d29"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#ab5a7131ff83f731ff6f99006f4563d29">FlowUi::UiManager::toClaySID</a></div><div class="ttdeci">Clay_ElementId toClaySID(std::string_view s)</div><div class="ttdoc">Copy the supplied string identity into current-frame storage and return its Clay string ID....</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::toClaySID</b></h2>
+<h3><span class="tt">[[nodiscard]] Clay_ElementId toClaySID(ResourceKey key);</span></h3>
+<p>Copy the supplied string identity into current-frame storage and return its Clay string ID. ResourceKey carries explicit attribution.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">ui.drawConstructed();</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>getPreviousFramesInteraction</b></h2>
-<h3><span class="tt">const InteractionSnapshot&amp; getPreviousFramesInteraction() const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">const InteractionSnapshot&amp;</span></li>
-<li><b>Arguments:</b> none.</li>
-</ul>
-<p>Returns the previous completed frame's interaction snapshot. Use it for stable hover, press, hold, and release queries while building the current frame.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> name{.name = <span class="stringliteral">&quot;toolbar/save&quot;</span>};</div>
+<div class="line"><span class="keyword">const</span> Clay_ElementId clayId = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#ab5a7131ff83f731ff6f99006f4563d29">toClaySID</a>(name);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::toClayEID</b></h2>
+<h3><span class="tt">[[nodiscard]] Clay_ElementId toClayEID(FlowElementID id);</span></h3>
+<p>Validate and bridge a strong local, global, or semantic-part identity into a Clay ID for this window.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> wasPressed = ui.getPreviousFramesInteraction().isPressed(buttonId);</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>getCurrentFrameInput</b></h2>
-<h3><span class="tt">const FrameInput&amp; getCurrentFrameInput() const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">const FrameInput&amp;</span></li>
-<li><b>Arguments:</b> none.</li>
-</ul>
-<p>Returns the current frame input in FlowUi layout space. Custom elements can use this for low-level pointer, scroll, keyboard, or timing behavior.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> Clay_ElementId clayId = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a8444d3c1aa6671658b33cdc3da3afe49">toClayEID</a>(<span class="keywordtype">id</span>);</div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a8444d3c1aa6671658b33cdc3da3afe49"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a8444d3c1aa6671658b33cdc3da3afe49">FlowUi::UiManager::toClayEID</a></div><div class="ttdeci">Clay_ElementId toClayEID(FlowElementID id)</div><div class="ttdoc">Bridge a strong local, global, or semantic-part identity directly into a Clay ID for this window.</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::toClayEID</b></h2>
+<h3><span class="tt">[[nodiscard]] Clay_ElementId toClayEID(GlobalFlowID id);</span></h3>
+<p>Validate and bridge a strong local, global, or semantic-part identity into a Clay ID for this window.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FrameInput.html">FlowUi::FrameInput</a>&amp; input = ui.getCurrentFrameInput();</div>
-<div class="ttc" id="astructFlowUi_1_1FrameInput_html"><div class="ttname"><a href="structFlowUi_1_1FrameInput.html">FlowUi::FrameInput</a></div><div class="ttdoc">Per-frame input snapshot consumed by FlowUi managers and elements.</div><div class="ttdef"><b>Definition</b> InputTypes.hpp:49</div></div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>getPreviousFrameInput</b></h2>
-<h3><span class="tt">const FrameInput&amp; getPreviousFrameInput() const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">const FrameInput&amp;</span></li>
-<li><b>Arguments:</b> none.</li>
-</ul>
-<p>Returns the previous frame input in FlowUi layout space. Compare it with <span class="tt">getCurrentFrameInput()</span> for custom edge detection or drag calculations.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> Clay_ElementId clayId = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a8444d3c1aa6671658b33cdc3da3afe49">toClayEID</a>(<span class="keywordtype">id</span>);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::toClayEID</b></h2>
+<h3><span class="tt">[[nodiscard]] Clay_ElementId toClayEID(FlowElementPartID id);</span></h3>
+<p>Validate and bridge a strong local, global, or semantic-part identity into a Clay ID for this window.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> pressedThisFrame = ui.getCurrentFrameInput().mouseDown[0] &amp;&amp; !ui.getPreviousFrameInput().mouseDown[0];</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>inputFields</b> <span class="tt">1/2</span></h2>
-<h3><span class="tt">InputFieldManager&amp; inputFields()</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">InputFieldManager&amp;</span></li>
-<li><b>Arguments:</b> none.</li>
-</ul>
-<p>Returns the mutable input field manager owned by the UI manager. Custom editable text elements use it to request fields, focus, carets, and text edits.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> Clay_ElementId clayId = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a8444d3c1aa6671658b33cdc3da3afe49">toClayEID</a>(<span class="keywordtype">id</span>);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::createElement</b></h2>
+<h3><span class="tt">template &lt;FlowElement Element&gt; [[nodiscard]] ElementBuilder&lt;Element&gt; createElement(const Element&amp;, LocalElementName localName );</span></h3>
+<p>Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.</p>
+<p>Direct throwing operation: library validation raises FlowUiException and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">context.uiManager.inputFields().requestCaret(context.id, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
-<div class="ttc" id="agroup__flowui__input__field__manager_html_ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd"><div class="ttname"><a href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a></div><div class="ttdeci">@ SetPrimary</div><div class="ttdoc">Make the requested field the primary focused input field.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:202</div></div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>inputFields</b> <span class="tt">2/2</span></h2>
-<h3><span class="tt">const InputFieldManager&amp; inputFields() const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">const InputFieldManager&amp;</span></li>
-<li><b>Arguments:</b> none.</li>
-</ul>
-<p>Returns the immutable input field manager. Use it for read-only input focus and selection checks.</p>
+<div class="fragment"><div class="line">ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">createElement</a>(counter, <span class="stringliteral">&quot;counter&quot;</span>)</div>
+<div class="line">    .setParameters({.width = 160.0f})</div>
+<div class="line">    .draw();</div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a3ef6d75f9ad2e76294c104c4b3e25803"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Element &gt; createElement(const Element &amp;, LocalElementName localName, std::source_location sourceLocation=std::source_location::current())</div><div class="ttdoc">Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve und...</div><div class="ttdef"><b>Definition</b> UiManager.hpp:349</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::createElement</b></h2>
+<h3><span class="tt">template &lt;FlowElement Element&gt; [[nodiscard]] ElementBuilder&lt;Element&gt; createElement(const Element&amp;, RuntimeElementName localName );</span></h3>
+<p>Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.</p>
+<p>Direct throwing operation: library validation raises FlowUiException and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">context.uiManager.inputFields().requestCaret(context.id, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>shortcuts</b> <span class="tt">1/2</span></h2>
-<h3><span class="tt">ShortcutManager&amp; shortcuts()</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">ShortcutManager&amp;</span></li>
-<li><b>Arguments:</b> none.</li>
-</ul>
-<p>Returns the mutable shortcut manager owned by the UI manager. Use it to register app or element keyboard shortcuts.</p>
+<div class="fragment"><div class="line">ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">createElement</a>(counter, <a class="code hl_function" href="namespaceFlowUi.html#a6d9da0c2fbac1b0f170957b7d70b4b4f">FlowUi::RuntimeName</a>(<span class="stringliteral">&quot;counter&quot;</span>))</div>
+<div class="line">    .setParameters({.width = 160.0f})</div>
+<div class="line">    .draw();</div>
+<div class="ttc" id="anamespaceFlowUi_html_a6d9da0c2fbac1b0f170957b7d70b4b4f"><div class="ttname"><a href="namespaceFlowUi.html#a6d9da0c2fbac1b0f170957b7d70b4b4f">FlowUi::RuntimeName</a></div><div class="ttdeci">constexpr RuntimeElementName RuntimeName(std::string_view name) noexcept</div><div class="ttdef"><b>Definition</b> ElementID.hpp:258</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::createElement</b></h2>
+<h3><span class="tt">template &lt;FlowElement Element&gt; [[nodiscard]] ElementBuilder&lt;Element&gt; createElement(const Element&amp;, IndexedElementName indexedName );</span></h3>
+<p>Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.</p>
+<p>Direct throwing operation: library validation raises FlowUiException and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1ShortcutManager.html">FlowUi::ShortcutManager</a>&amp; shortcuts = app.ui().shortcuts();</div>
-<div class="ttc" id="aclassFlowUi_1_1ShortcutManager_html"><div class="ttname"><a href="classFlowUi_1_1ShortcutManager.html">FlowUi::ShortcutManager</a></div><div class="ttdoc">Registers and dispatches keyboard shortcuts.</div><div class="ttdef"><b>Definition</b> ShortcutManager.hpp:38</div></div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>shortcuts</b> <span class="tt">2/2</span></h2>
-<h3><span class="tt">const ShortcutManager&amp; shortcuts() const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">const ShortcutManager&amp;</span></li>
-<li><b>Arguments:</b> none.</li>
-</ul>
-<p>Returns the immutable shortcut manager. Use it for read-only focused element inspection.</p>
+<div class="fragment"><div class="line">ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">createElement</a>(counter, <a class="code hl_function" href="namespaceFlowUi.html#ac6240c50bc1cd842b3503644a10ae529">FlowUi::Indexed</a>(<span class="stringliteral">&quot;counter&quot;</span>, 0))</div>
+<div class="line">    .setParameters({.width = 160.0f})</div>
+<div class="line">    .draw();</div>
+<div class="ttc" id="anamespaceFlowUi_html_ac6240c50bc1cd842b3503644a10ae529"><div class="ttname"><a href="namespaceFlowUi.html#ac6240c50bc1cd842b3503644a10ae529">FlowUi::Indexed</a></div><div class="ttdeci">constexpr IndexedElementName Indexed(LocalElementName name, uint64_t index) noexcept</div><div class="ttdef"><b>Definition</b> ElementID.hpp:280</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::createElement</b></h2>
+<h3><span class="tt">template &lt;FlowElement Element&gt; [[nodiscard]] ElementBuilder&lt;Element&gt; createElement(const Element&amp;, AutoElementName automaticName = AutoID() );</span></h3>
+<p>Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.</p>
+<p>Direct throwing operation: library validation raises FlowUiException and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1ShortcutManager.html">FlowUi::ShortcutManager</a>&amp; shortcuts = app.ui().shortcuts();</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>popups</b> <span class="tt">1/2</span></h2>
-<h3><span class="tt">PopupManager&amp; popups()</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">PopupManager&amp;</span></li>
-<li><b>Arguments:</b> none.</li>
-</ul>
-<p>Returns the mutable window-scoped popup manager. Custom popup elements use it for placement, measurement, overflow correction, z-order, and dismissal behavior.</p>
+<div class="fragment"><div class="line">ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">createElement</a>(counter, <a class="code hl_function" href="namespaceFlowUi.html#a4866f6a494e247b6e01d4e018d80be8c">FlowUi::AutoID</a>())</div>
+<div class="line">    .setParameters({.width = 160.0f})</div>
+<div class="line">    .draw();</div>
+<div class="ttc" id="anamespaceFlowUi_html_a4866f6a494e247b6e01d4e018d80be8c"><div class="ttname"><a href="namespaceFlowUi.html#a4866f6a494e247b6e01d4e018d80be8c">FlowUi::AutoID</a></div><div class="ttdeci">constexpr AutoElementName AutoID(const char *fileName=__builtin_FILE(), uint32_t line=__builtin_LINE(), uint32_t column=0) noexcept</div><div class="ttdoc">Capture the caller location as an automatic identity token.</div><div class="ttdef"><b>Definition</b> ElementID.hpp:402</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::createElement</b></h2>
+<h3><span class="tt">template &lt;FlowElement Element&gt; [[nodiscard]] ElementBuilder&lt;Element&gt; createElement(const Element&amp;, GlobalFlowID globalId );</span></h3>
+<p>Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.</p>
+<p>Direct throwing operation: library validation raises FlowUiException and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1PopupFrame.html">FlowUi::PopupFrame</a> frame = context.uiManager.popups().request(</div>
-<div class="line">    context.id,</div>
-<div class="line">    context.params.popupRequest);</div>
-<div class="ttc" id="astructFlowUi_1_1PopupFrame_html"><div class="ttname"><a href="structFlowUi_1_1PopupFrame.html">FlowUi::PopupFrame</a></div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:145</div></div>
-</div><!-- fragment --><p>See: <a class="el" href="md_docs_2api_2popup__manager.html" title="Popup Manager API">Popup Manager API</a>.</p>
-<h2><b>popups</b> <span class="tt">2/2</span></h2>
-<h3><span class="tt">const PopupManager&amp; popups() const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">const PopupManager&amp;</span></li>
-<li><b>Arguments:</b> none.</li>
-</ul>
-<p>Returns the immutable window-scoped popup manager.</p>
-<p>See: <a class="el" href="md_docs_2api_2popup__manager.html" title="Popup Manager API">Popup Manager API</a>.</p>
-<h2>Modern developer services</h2>
-<p>Available only when <span class="tt">FLOW_UI_DEV_MODE</span> is compiled in:</p>
-<table class="markdownTable">
-<tr class="markdownTableHead">
-<th class="markdownTableHeadNone">Query  </th><th class="markdownTableHeadNone">Result and lifetime  </th></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><span class="tt">devSchemaRegistry()</span>  </td><td class="markdownTableBodyNone">Pointer to the app-owned <span class="tt">devSystems::tooling::DevSchemaRegistry</span>, or null when unattached; const and mutable overloads are <span class="tt">noexcept</span>.  </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><span class="tt">devOverrideEngine()</span>  </td><td class="markdownTableBodyNone">Pointer to the app-owned <span class="tt">devSystems::tooling::DevOverrideEngine</span>, or null when unattached; const and mutable overloads are <span class="tt">noexcept</span>.  </td></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><span class="tt">devTreeSnapshot() const noexcept</span>  </td><td class="markdownTableBodyNone">Const reference to this window's completed <span class="tt">DevTreeSnapshot</span>.  </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><span class="tt">devTreeCapture() noexcept</span>  </td><td class="markdownTableBodyNone">Window-local modern <span class="tt">DevTreeCapture</span>; const and mutable overloads.  </td></tr>
-</table>
-<p>The application normally owns publication and capture sequencing. Use <span class="tt">app.devTooling()</span> for schemas, catalogues, overrides, and baking. See <a class="el" href="md_docs_2tutorials_2developer__mode.html" title="Developer Systems">Developer Systems</a> and <a href="../../include/FlowUi/Public/managers/UiManager.hpp">UiManager.hpp</a>.</p>
-<h2><b>devToolsConfig</b> <span class="tt">1/2</span></h2>
-<h3><span class="tt">DevToolsConfig&amp; devToolsConfig()</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">DevToolsConfig&amp;</span></li>
-<li><b>Arguments:</b> none.</li>
-</ul>
-<p>Returns mutable developer tooling configuration when <span class="tt">FLOW_UI_DEV_MODE</span> is enabled. This allows runtime updates to capture behavior.</p>
+<div class="fragment"><div class="line">ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">createElement</a>(counter, <span class="keywordtype">id</span>)</div>
+<div class="line">    .setParameters({.width = 160.0f})</div>
+<div class="line">    .draw();</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::createElement</b></h2>
+<h3><span class="tt">template &lt;FlowElement Element&gt; [[nodiscard]] ElementBuilder&lt;Element&gt; createElement(const Element&amp;, FlowElementID resolvedId );</span></h3>
+<p>Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.</p>
+<p>Direct throwing operation: library validation raises FlowUiException and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.ui().devToolsConfig().excludeInternalDevElementsFromCapture = <span class="keyword">true</span>;</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>devToolsConfig</b> <span class="tt">2/2</span></h2>
-<h3><span class="tt">const DevToolsConfig&amp; devToolsConfig() const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">const DevToolsConfig&amp;</span></li>
-<li><b>Arguments:</b> none.</li>
-</ul>
-<p>Returns immutable developer tooling configuration when <span class="tt">FLOW_UI_DEV_MODE</span> is enabled. Use it for read-only access to current dev settings.</p>
+<div class="fragment"><div class="line">ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">createElement</a>(counter, <span class="keywordtype">id</span>)</div>
+<div class="line">    .setParameters({.width = 160.0f})</div>
+<div class="line">    .draw();</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::createElement</b></h2>
+<h3><span class="tt">template &lt;FlowElement Element&gt; [[nodiscard]] ElementBuilder&lt;Element&gt; createElement(const Element&amp;, FlowElementPartID partId );</span></h3>
+<p>Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.</p>
+<p>Direct throwing operation: library validation raises FlowUiException and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> excludesInternal = app.ui().devToolsConfig().excludeInternalDevElementsFromCapture;</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>setClipboardText</b></h2>
-<h3><span class="tt">void setClipboardText(std::string_view text) const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
-<li><b>Arguments:</b> <span class="tt">text</span> text to copy.</li>
-</ul>
-<p>Writes clipboard text through the clipboard accessor installed by <span class="tt">App</span>. If no accessor is installed, this function does nothing.</p>
+<div class="fragment"><div class="line">ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">createElement</a>(counter, <span class="keywordtype">id</span>)</div>
+<div class="line">    .setParameters({.width = 160.0f})</div>
+<div class="line">    .draw();</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::drawConstructed</b></h2>
+<h3><span class="tt">void drawConstructed();</span></h3>
+<p>Close the most recent root opened by ElementBuilder::construct(), including its <a class="el" href="namespaceFlowUi.html">FlowUi</a> scope and development capture. Each successful construct needs one close.</p>
+<p>Direct throwing operation: library validation raises FlowUiException and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">context.uiManager.setClipboardText(selectedText);</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>clipboardText</b></h2>
-<h3><span class="tt">std::string clipboardText() const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">std::string</span></li>
-<li><b>Arguments:</b> none.</li>
-</ul>
-<p>Reads clipboard text through the installed clipboard accessor. Returns an empty string when no getter is installed.</p>
+<div class="fragment"><div class="line">ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">createElement</a>(counter, <span class="stringliteral">&quot;panel&quot;</span>).construct();</div>
+<div class="line">ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">createElement</a>(counter, <span class="stringliteral">&quot;child&quot;</span>).draw();</div>
+<div class="line">ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a857a971efa5a8e904806b9398e0e4883">drawConstructed</a>();</div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a857a971efa5a8e904806b9398e0e4883"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a857a971efa5a8e904806b9398e0e4883">FlowUi::UiManager::drawConstructed</a></div><div class="ttdeci">void drawConstructed()</div><div class="ttdoc">Close the most recent root opened by ElementBuilder::construct(), including its FlowUi scope and deve...</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::getPreviousFramesInteraction</b></h2>
+<h3><span class="tt">[[nodiscard]] const InteractionSnapshot&amp; getPreviousFramesInteraction() const noexcept;</span></h3>
+<p>Borrow the previous completed frame interaction snapshot. It remains the stable source for current element pointer callbacks.</p>
+<p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::getCurrentFrameInput</b></h2>
+<h3><span class="tt">[[nodiscard]] const FrameInput&amp; getCurrentFrameInput() const noexcept;</span></h3>
+<p>Borrow this frame input in scaled <a class="el" href="namespaceFlowUi.html">FlowUi</a> layout coordinates; do not retain this reference as an immutable historical snapshot.</p>
+<p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::getPreviousFrameInput</b></h2>
+<h3><span class="tt">[[nodiscard]] const FrameInput&amp; getPreviousFrameInput() const noexcept;</span></h3>
+<p>Borrow the previous layout-frame input, useful with current input for edge and drag calculations.</p>
+<p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::inputFields</b></h2>
+<h3><span class="tt">[[nodiscard]] InputFieldManager&amp; inputFields() noexcept;</span></h3>
+<p>Borrow this window InputFieldManager directly; the const overload exposes read-only access.</p>
+<p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::inputFields</b></h2>
+<h3><span class="tt">[[nodiscard]] const InputFieldManager&amp; inputFields() const noexcept;</span></h3>
+<p>Borrow this window InputFieldManager directly; the const overload exposes read-only access.</p>
+<p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::shortcuts</b></h2>
+<h3><span class="tt">[[nodiscard]] ShortcutManager&amp; shortcuts() noexcept;</span></h3>
+<p>Borrow this window ShortcutManager directly; the const overload exposes read-only access.</p>
+<p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::shortcuts</b></h2>
+<h3><span class="tt">[[nodiscard]] const ShortcutManager&amp; shortcuts() const noexcept;</span></h3>
+<p>Borrow this window ShortcutManager directly; the const overload exposes read-only access.</p>
+<p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::popups</b></h2>
+<h3><span class="tt">[[nodiscard]] PopupManager&amp; popups() noexcept;</span></h3>
+<p>Borrow this window popup placement and dismissal manager directly; the const overload exposes read-only access.</p>
+<p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::popups</b></h2>
+<h3><span class="tt">[[nodiscard]] const PopupManager&amp; popups() const noexcept;</span></h3>
+<p>Borrow this window popup placement and dismissal manager directly; the const overload exposes read-only access.</p>
+<p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::actions</b></h2>
+<h3><span class="tt">[[nodiscard]] ActionManager&amp; actions();</span></h3>
+<p>Borrow the attached app-wide action manager directly. A detached UiManager throws FlowUiException.</p>
+<p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::actions</b></h2>
+<h3><span class="tt">[[nodiscard]] const ActionManager&amp; actions() const;</span></h3>
+<p>Borrow the attached app-wide action manager directly. A detached UiManager throws FlowUiException.</p>
+<p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::invoke</b></h2>
+<h3><span class="tt">[[nodiscard]] ActionInvocationStatus invoke(ActionCall call);</span></h3>
+<p>Invoke an action synchronously and return Invoked, Empty, Unbound or Disabled. Arbitrary callback exceptions propagate unchanged; application effects are not rolled back.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">std::string pasted = context.uiManager.clipboardText();</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>hasClipboardAccess</b></h2>
-<h3><span class="tt">bool hasClipboardAccess() const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">bool</span></li>
-<li><b>Arguments:</b> none.</li>
-</ul>
-<p>Reports whether both clipboard read and write accessors are installed. Use this before exposing clipboard-dependent UI behavior.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_enumeration" href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">FlowUi::ActionInvocationStatus</a> outcome = actions.invoke(call);</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> invoked = outcome == <a class="code hl_enumvalue" href="group__flowui__action__manager.html#gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1">FlowUi::ActionInvocationStatus::Invoked</a>;</div>
+<div class="ttc" id="agroup__flowui__action__manager_html_ga9d1bf355b9b6efbdfd521544535423dc"><div class="ttname"><a href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">FlowUi::ActionInvocationStatus</a></div><div class="ttdeci">ActionInvocationStatus</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:240</div></div>
+<div class="ttc" id="agroup__flowui__action__manager_html_gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1"><div class="ttname"><a href="group__flowui__action__manager.html#gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1">FlowUi::ActionInvocationStatus::Invoked</a></div><div class="ttdeci">@ Invoked</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:242</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::setClipboardText</b></h2>
+<h3><span class="tt">[[nodiscard]] Status setClipboardText(std::string_view text) const noexcept;</span></h3>
+<p>Copy text to the attached platform clipboard. Detached, unsupported, and failed platform operations are returned as errors; check the Status.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (context.uiManager.hasClipboardAccess()) { context.uiManager.setClipboardText(selectedText); }</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>requestCursor</b></h2>
-<h3><span class="tt">void requestCursor(CursorType cursorType, uint8_t priority = 0)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
-<li><b>Arguments:</b> <span class="tt">cursorType</span> requested cursor shape, <span class="tt">priority</span> ordering priority for competing requests.</li>
-</ul>
-<p>Requests a cursor shape for the current frame. Cursor requests reset each frame, and higher-priority requests win when multiple UI elements request different cursors.</p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#afe6978f52c9a7f3d1ecf8c6e7922c5d7">setClipboardText</a>(<span class="stringliteral">&quot;Copied text&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::clipboardText</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;std::string&gt; clipboardText() const noexcept;</span></h3>
+<p>Return an owned copy of clipboard text. An empty successful string is valid text; detached/platform failures are errors.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">context.uiManager.requestCursor(FlowUi::CursorType::PointingHand, 10);</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>resolveFont</b> <span class="tt">1/2</span></h2>
-<h3><span class="tt">FontId resolveFont(FontFamilyId familyId, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">FontId</span></li>
-<li><b>Arguments:</b> <span class="tt">familyId</span> logical family id, <span class="tt">weight</span> requested font weight, <span class="tt">style</span> requested font style.</li>
-</ul>
-<p>Resolves a logical family/style request to a concrete Clay font id through the connected font manager. Returns <span class="tt">0</span> when no font manager is attached or the family cannot be resolved.</p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a4cd9dc8463ac528d50962c9986d98b37">clipboardText</a>();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> std::string pasted = std::move(*result);</div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a4cd9dc8463ac528d50962c9986d98b37"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a4cd9dc8463ac528d50962c9986d98b37">FlowUi::UiManager::clipboardText</a></div><div class="ttdeci">Result&lt; std::string &gt; clipboardText() const noexcept</div><div class="ttdoc">Return an owned copy of clipboard text. An empty successful string is valid text; detached/platform f...</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::hasClipboardAccess</b></h2>
+<h3><span class="tt">[[nodiscard]] bool hasClipboardAccess() const noexcept;</span></h3>
+<p>Return whether the attached window currently supports immediate clipboard reads and writes; detached managers return false.</p>
+<p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::requestCursor</b></h2>
+<h3><span class="tt">void requestCursor(CursorType cursorType, uint8_t priority = 0) noexcept;</span></h3>
+<p>Request this frame cursor shape. Highest priority wins; a later equal-priority request may replace the earlier one. Requests reset at frame start.</p>
+<p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::resolveFont</b></h2>
+<h3><span class="tt">[[nodiscard]] FontId resolveFont(FontFamilyId familyId, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const noexcept;</span></h3>
+<p>Return the resolved concrete font ID from the attached frame font view. An unavailable family/style resolves to the documented zero/fallback ID without throwing; this does not load a new font.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">textConfig.fontId = context.uiManager.resolveFont(<span class="stringliteral">&quot;Body&quot;</span>, 700, FlowUi::FontStyle::Normal);</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
-<h2><b>resolveFont</b> <span class="tt">2/2</span></h2>
-<h3><span class="tt">FontId resolveFont(std::string_view familyName, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">FontId</span></li>
-<li><b>Arguments:</b> <span class="tt">familyName</span> logical family name, <span class="tt">weight</span> requested font weight, <span class="tt">style</span> requested font style.</li>
-</ul>
-<p>Named-family overload for font resolution. Use it when you want a concise lookup by family name rather than caching a <span class="tt">FontFamilyId</span>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="namespaceFlowUi.html#a45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a> font = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a9ef869053c1450285cb193ca75fb1a0f">resolveFont</a>(family, 400, <a class="code hl_enumvalue" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FlowUi::FontStyle::Normal</a>);</div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a9ef869053c1450285cb193ca75fb1a0f"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a9ef869053c1450285cb193ca75fb1a0f">FlowUi::UiManager::resolveFont</a></div><div class="ttdeci">FontId resolveFont(FontFamilyId familyId, uint32_t weight=400, FontStyle style=FontStyle::Normal) const noexcept</div><div class="ttdoc">Return the resolved concrete font ID from this attached manager&#39;s frame view. Zero represents an unre...</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a45ed3353542a8e69aead84b91e7d88ed"><div class="ttname"><a href="namespaceFlowUi.html#a45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a></div><div class="ttdeci">uint16_t FontId</div><div class="ttdef"><b>Definition</b> FontTypes.hpp:14</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0"><div class="ttname"><a href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FlowUi::FontStyle::Normal</a></div><div class="ttdeci">@ Normal</div><div class="ttdef"><b>Definition</b> FontTypes.hpp:21</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::resolveFont</b></h2>
+<h3><span class="tt">[[nodiscard]] FontId resolveFont(std::string_view familyName, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const noexcept;</span></h3>
+<p>Return the resolved concrete font ID from the attached frame font view. An unavailable family/style resolves to the documented zero/fallback ID without throwing; this does not load a new font.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">textConfig.fontId = context.uiManager.resolveFont(<span class="stringliteral">&quot;Body&quot;</span>, 700, FlowUi::FontStyle::Normal);</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>. </p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="namespaceFlowUi.html#a45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a> font = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a9ef869053c1450285cb193ca75fb1a0f">resolveFont</a>(family, 400, <a class="code hl_enumvalue" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FlowUi::FontStyle::Normal</a>);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::theme</b></h2>
+<h3><span class="tt">template &lt;typename T&gt; [[nodiscard]] Result&lt;std::reference_wrapper&lt;const T&gt;&gt; theme() const noexcept;</span></h3>
+<p>Borrow the active or explicitly named registered theme through Result&lt;reference_wrapper&lt;const T&gt;&gt;. Active lookup respects a development local theme scope; named lookup bypasses it.</p>
+<p>Check the Result before result-&gt;get(). The wrapper and extracted reference do not own the payload. Reacquire after theme registry changes; a development override also limits the borrow to its enclosing scope.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a72d5077348ca5ea8b3541c110c422ca5">theme</a>&lt;<a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&gt;();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&amp; theme = result-&gt;get();</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">float</span> fontSize = theme.<a class="code hl_variable" href="structFlowUi_1_1FlowUiTheme.html#af94fb0700589cc8aaa6283cfe115d8de">fontSizeMedium</a>;</div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a72d5077348ca5ea8b3541c110c422ca5"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a72d5077348ca5ea8b3541c110c422ca5">FlowUi::UiManager::theme</a></div><div class="ttdeci">Result&lt; std::reference_wrapper&lt; const T &gt; &gt; theme() const noexcept</div><div class="ttdoc">Borrow the active or explicitly named registered theme through Result&lt;reference_wrapper&lt;const T&gt;&gt;....</div><div class="ttdef"><b>Definition</b> UiManager.hpp:815</div></div>
+<div class="ttc" id="astructFlowUi_1_1FlowUiTheme_html"><div class="ttname"><a href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a></div><div class="ttdoc">Standard design system tokens for FlowUi built-in elements.</div><div class="ttdef"><b>Definition</b> FlowUiTheme.hpp:16</div></div>
+<div class="ttc" id="astructFlowUi_1_1FlowUiTheme_html_af94fb0700589cc8aaa6283cfe115d8de"><div class="ttname"><a href="structFlowUi_1_1FlowUiTheme.html#af94fb0700589cc8aaa6283cfe115d8de">FlowUi::FlowUiTheme::fontSizeMedium</a></div><div class="ttdeci">float fontSizeMedium</div><div class="ttdoc">Medium font size in pixels.</div><div class="ttdef"><b>Definition</b> FlowUiTheme.hpp:74</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::theme</b></h2>
+<h3><span class="tt">template &lt;typename T&gt; [[nodiscard]] Result&lt;std::reference_wrapper&lt;const T&gt;&gt; theme(std::string_view variantName) const noexcept;</span></h3>
+<p>Borrow the active or explicitly named registered theme through Result&lt;reference_wrapper&lt;const T&gt;&gt;. Active lookup respects a development local theme scope; named lookup bypasses it.</p>
+<p>Check the Result before result-&gt;get(). The wrapper and extracted reference do not own the payload. Reacquire after theme registry changes; a development override also limits the borrow to its enclosing scope.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a72d5077348ca5ea8b3541c110c422ca5">theme</a>&lt;<a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&gt;(<span class="stringliteral">&quot;light&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&amp; theme = result-&gt;get();</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">float</span> fontSize = theme.<a class="code hl_variable" href="structFlowUi_1_1FlowUiTheme.html#af94fb0700589cc8aaa6283cfe115d8de">fontSizeMedium</a>;</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::flowTheme</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;std::reference_wrapper&lt;const FlowUiTheme&gt;&gt; flowTheme() const noexcept;</span></h3>
+<p>Borrow the active built-in FlowUiTheme through Result&lt;reference_wrapper&lt;const FlowUiTheme&gt;&gt;, including a development local theme scope.</p>
+<p>Check the Result before result-&gt;get(). The wrapper and extracted reference do not own the payload. Reacquire after theme registry changes; a development override also limits the borrow to its enclosing scope.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#af91fe2d1c5e4cc97a869b5f7156ba806">flowTheme</a>();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&amp; theme = result-&gt;get();</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">float</span> fontSize = theme.<a class="code hl_variable" href="structFlowUi_1_1FlowUiTheme.html#af94fb0700589cc8aaa6283cfe115d8de">fontSizeMedium</a>;</div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_af91fe2d1c5e4cc97a869b5f7156ba806"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#af91fe2d1c5e4cc97a869b5f7156ba806">FlowUi::UiManager::flowTheme</a></div><div class="ttdeci">Result&lt; std::reference_wrapper&lt; const FlowUiTheme &gt; &gt; flowTheme() const noexcept</div><div class="ttdoc">Borrow the active built-in FlowUiTheme through Result&lt;reference_wrapper&lt;const FlowUiTheme&gt;&gt;,...</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::elements</b></h2>
+<h3><span class="tt">[[nodiscard]] ElementManager&amp; elements();</span></h3>
+<p>Borrow the attached app-wide element manager directly. A detached UiManager throws FlowUiException.</p>
+<p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::elements</b></h2>
+<h3><span class="tt">[[nodiscard]] const ElementManager&amp; elements() const;</span></h3>
+<p>Borrow the attached app-wide element manager directly. A detached UiManager throws FlowUiException.</p>
+<p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h2><b>UiManager::windowId</b></h2>
+<h3><span class="tt">[[nodiscard]] WindowId windowId() const noexcept;</span></h3>
+<p>Return the window whose frame is built by this manager.</p>
+<p>See: <a href="include/FlowUi/Public/managers/UiManager.hpp">Owning header</a>.</p>
+<h1>Interaction snapshots and texture values</h1>
+<p><span class="tt">InteractionSnapshot</span> contains contiguous <span class="tt">hoveredElementIds</span>, <span class="tt">pressedElementIds</span>, <span class="tt">heldElementIds</span> and <span class="tt">releasedElementIds</span> vectors. These store Clay numeric identities for one completed frame. The primary pointer can appear in several lists when the recorded transitions permit it. All four observers below accept Clay, local Flow, global Flow and semantic-part Flow IDs directly; strong Flow identities are folded using the bridge identity convention. A false observation is ordinary absence, with no Result wrapper.</p>
+<h2><b>InteractionSnapshot::isHovered</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isHovered(Clay_ElementId id) const noexcept;</span></h3>
+<p>Return whether this snapshot records the given element as hovered. The snapshot is read without modifying the current frame.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/UiTypes.hpp">Owning header</a>.</p>
+<h2><b>InteractionSnapshot::isHovered</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isHovered(FlowElementID id) const noexcept;</span></h3>
+<p>Return whether this snapshot records the given element as hovered. The snapshot is read without modifying the current frame.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/UiTypes.hpp">Owning header</a>.</p>
+<h2><b>InteractionSnapshot::isHovered</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isHovered(GlobalFlowID id) const noexcept;</span></h3>
+<p>Return whether this snapshot records the given element as hovered. The snapshot is read without modifying the current frame.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/UiTypes.hpp">Owning header</a>.</p>
+<h2><b>InteractionSnapshot::isHovered</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isHovered(FlowElementPartID id) const noexcept;</span></h3>
+<p>Return whether this snapshot records the given element as hovered. The snapshot is read without modifying the current frame.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/UiTypes.hpp">Owning header</a>.</p>
+<h2><b>InteractionSnapshot::isPressed</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isPressed(Clay_ElementId id) const noexcept;</span></h3>
+<p>Return whether this snapshot records the given element as pressed. The snapshot is read without modifying the current frame.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/UiTypes.hpp">Owning header</a>.</p>
+<h2><b>InteractionSnapshot::isPressed</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isPressed(FlowElementID id) const noexcept;</span></h3>
+<p>Return whether this snapshot records the given element as pressed. The snapshot is read without modifying the current frame.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/UiTypes.hpp">Owning header</a>.</p>
+<h2><b>InteractionSnapshot::isPressed</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isPressed(GlobalFlowID id) const noexcept;</span></h3>
+<p>Return whether this snapshot records the given element as pressed. The snapshot is read without modifying the current frame.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/UiTypes.hpp">Owning header</a>.</p>
+<h2><b>InteractionSnapshot::isPressed</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isPressed(FlowElementPartID id) const noexcept;</span></h3>
+<p>Return whether this snapshot records the given element as pressed. The snapshot is read without modifying the current frame.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/UiTypes.hpp">Owning header</a>.</p>
+<h2><b>InteractionSnapshot::isHeld</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isHeld(Clay_ElementId id) const noexcept;</span></h3>
+<p>Return whether this snapshot records the given element as held. The snapshot is read without modifying the current frame.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/UiTypes.hpp">Owning header</a>.</p>
+<h2><b>InteractionSnapshot::isHeld</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isHeld(FlowElementID id) const noexcept;</span></h3>
+<p>Return whether this snapshot records the given element as held. The snapshot is read without modifying the current frame.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/UiTypes.hpp">Owning header</a>.</p>
+<h2><b>InteractionSnapshot::isHeld</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isHeld(GlobalFlowID id) const noexcept;</span></h3>
+<p>Return whether this snapshot records the given element as held. The snapshot is read without modifying the current frame.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/UiTypes.hpp">Owning header</a>.</p>
+<h2><b>InteractionSnapshot::isHeld</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isHeld(FlowElementPartID id) const noexcept;</span></h3>
+<p>Return whether this snapshot records the given element as held. The snapshot is read without modifying the current frame.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/UiTypes.hpp">Owning header</a>.</p>
+<h2><b>InteractionSnapshot::isReleased</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isReleased(Clay_ElementId id) const noexcept;</span></h3>
+<p>Return whether this snapshot records the given element as released. The snapshot is read without modifying the current frame.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/UiTypes.hpp">Owning header</a>.</p>
+<h2><b>InteractionSnapshot::isReleased</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isReleased(FlowElementID id) const noexcept;</span></h3>
+<p>Return whether this snapshot records the given element as released. The snapshot is read without modifying the current frame.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/UiTypes.hpp">Owning header</a>.</p>
+<h2><b>InteractionSnapshot::isReleased</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isReleased(GlobalFlowID id) const noexcept;</span></h3>
+<p>Return whether this snapshot records the given element as released. The snapshot is read without modifying the current frame.</p>
+<p>See: <a href="include/FlowUi/Public/managerStructs/UiTypes.hpp">Owning header</a>.</p>
+<h2><b>InteractionSnapshot::isReleased</b></h2>
+<h3><span class="tt">[[nodiscard]] bool isReleased(FlowElementPartID id) const noexcept;</span></h3>
+<p>Return whether this snapshot records the given element as released. The snapshot is read without modifying the current frame.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1InteractionSnapshot.html">FlowUi::InteractionSnapshot</a>&amp; snapshot = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#abdbe4dfbb903e693d323b665b0aafca5">getPreviousFramesInteraction</a>();</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> invoked = snapshot.<a class="code hl_function" href="structFlowUi_1_1InteractionSnapshot.html#a0424ab3087d68748588b4a7b2edff647">isPressed</a>(counterId);</div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_abdbe4dfbb903e693d323b665b0aafca5"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#abdbe4dfbb903e693d323b665b0aafca5">FlowUi::UiManager::getPreviousFramesInteraction</a></div><div class="ttdeci">const InteractionSnapshot &amp; getPreviousFramesInteraction() const noexcept</div><div class="ttdoc">Borrow the previous completed frame interaction snapshot. It remains the stable source for current el...</div></div>
+<div class="ttc" id="astructFlowUi_1_1InteractionSnapshot_html"><div class="ttname"><a href="structFlowUi_1_1InteractionSnapshot.html">FlowUi::InteractionSnapshot</a></div><div class="ttdoc">Snapshot of per-element interaction state for one completed frame.</div><div class="ttdef"><b>Definition</b> UiTypes.hpp:35</div></div>
+<div class="ttc" id="astructFlowUi_1_1InteractionSnapshot_html_a0424ab3087d68748588b4a7b2edff647"><div class="ttname"><a href="structFlowUi_1_1InteractionSnapshot.html#a0424ab3087d68748588b4a7b2edff647">FlowUi::InteractionSnapshot::isPressed</a></div><div class="ttdeci">bool isPressed(Clay_ElementId id) const noexcept</div><div class="ttdoc">Return whether the element was pressed in this snapshot.</div><div class="ttdef"><b>Definition</b> UiTypes.hpp:107</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/UiTypes.hpp">Owning header</a>.</p>
+<h2><b>TextureRef::fromStable</b></h2>
+<h3><span class="tt">[[nodiscard]] static constexpr TextureRef fromStable( ResourceDomain domain, std::string_view key, TextureFitMode fit = TextureFitMode::Contain, bool tint = false) noexcept;</span></h3>
+<p>Create an unresolved reference from a borrowed logical manager key. This neither loads nor validates an asset, and owns no GPU resource. Keep key text alive while retaining the reference. <span class="tt">fitMode</span> and <span class="tt">tintEnabled</span> are application-adjustable; resolved handles, UV coordinates and source dimensions are populated by the owning manager. <span class="tt">TextureFitMode</span> supports <span class="tt">Stretch</span>, <span class="tt">Contain</span>, <span class="tt">Cover</span> and <span class="tt">None</span>.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> texture = <a class="code hl_function" href="structFlowUi_1_1TextureRef.html#a5f5bc7a9973228c17b24ee920ac8cb41">FlowUi::TextureRef::fromStable</a>(</div>
+<div class="line">    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fabe53a0541a6d36f6ecb879fa2c584b08">FlowUi::ResourceDomain::Image</a>, <span class="stringliteral">&quot;branding/logo&quot;</span>, <a class="code hl_enumvalue" href="namespaceFlowUi.html#af2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">FlowUi::TextureFitMode::Contain</a>, <span class="keyword">false</span>);</div>
+<div class="ttc" id="anamespaceFlowUi_html_a8a53729d0d10acbed01b5aed921e040fabe53a0541a6d36f6ecb879fa2c584b08"><div class="ttname"><a href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fabe53a0541a6d36f6ecb879fa2c584b08">FlowUi::ResourceDomain::Image</a></div><div class="ttdeci">@ Image</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:14</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_af2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484"><div class="ttname"><a href="namespaceFlowUi.html#af2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">FlowUi::TextureFitMode::Contain</a></div><div class="ttdeci">@ Contain</div><div class="ttdoc">Fit the whole texture inside the target rectangle without cropping.</div><div class="ttdef"><b>Definition</b> TextureRef.hpp:15</div></div>
+<div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> TextureRef.hpp:31</div></div>
+<div class="ttc" id="astructFlowUi_1_1TextureRef_html_a5f5bc7a9973228c17b24ee920ac8cb41"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html#a5f5bc7a9973228c17b24ee920ac8cb41">FlowUi::TextureRef::fromStable</a></div><div class="ttdeci">static constexpr TextureRef fromStable(ResourceDomain domain, std::string_view key, TextureFitMode fit=TextureFitMode::Contain, bool tint=false) noexcept</div><div class="ttdef"><b>Definition</b> TextureRef.hpp:53</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/TextureRef.hpp">Owning header</a>. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

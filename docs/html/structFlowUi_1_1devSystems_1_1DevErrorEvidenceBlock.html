@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,21 +106,103 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevErrorEvidenceBlock Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevErrorTypes_8hpp_source.html">DevErrorTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ad25eb73f095fea04025abe9965cfae9b" id="r_ad25eb73f095fea04025abe9965cfae9b"><td class="memItemLeft"><a id="ad25eb73f095fea04025abe9965cfae9b" name="ad25eb73f095fea04025abe9965cfae9b"></a>
-bool&#160;</td><td class="memItemRight"><b>append</b> (DevErrorEvidenceKey key, uint64_t value, uint16_t index=0u) noexcept</td></tr>
+<tr class="memitem:ad25eb73f095fea04025abe9965cfae9b" id="r_ad25eb73f095fea04025abe9965cfae9b"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ad25eb73f095fea04025abe9965cfae9b">append</a> (<a class="el" href="namespaceFlowUi_1_1devSystems.html#af773aff402145b2bf0d8a4af711c4fdd">DevErrorEvidenceKey</a> key, uint64_t value, uint16_t index=0u) noexcept</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:aaf62b9a7ee2fe3e6bf1f25924fa682b8" id="r_aaf62b9a7ee2fe3e6bf1f25924fa682b8"><td class="memItemLeft"><a id="aaf62b9a7ee2fe3e6bf1f25924fa682b8" name="aaf62b9a7ee2fe3e6bf1f25924fa682b8"></a>
-std::array&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorEvidenceValue.html">DevErrorEvidenceValue</a>, kDevErrorImmediateEvidenceCapacity &gt;&#160;</td><td class="memItemRight"><b>values</b> {}</td></tr>
-<tr class="memitem:a942c3d6bd656de29b71842565ef53148" id="r_a942c3d6bd656de29b71842565ef53148"><td class="memItemLeft"><a id="a942c3d6bd656de29b71842565ef53148" name="a942c3d6bd656de29b71842565ef53148"></a>
-uint8_t&#160;</td><td class="memItemRight"><b>count</b> = 0u</td></tr>
-<tr class="memitem:ac3b17e83c3a44125c16c6013987eaba7" id="r_ac3b17e83c3a44125c16c6013987eaba7"><td class="memItemLeft"><a id="ac3b17e83c3a44125c16c6013987eaba7" name="ac3b17e83c3a44125c16c6013987eaba7"></a>
-bool&#160;</td><td class="memItemRight"><b>truncated</b> = false</td></tr>
+<tr class="memitem:aaf62b9a7ee2fe3e6bf1f25924fa682b8" id="r_aaf62b9a7ee2fe3e6bf1f25924fa682b8"><td class="memItemLeft">std::array&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorEvidenceValue.html">DevErrorEvidenceValue</a>, <a class="el" href="namespaceFlowUi_1_1devSystems.html#a84e4349e08a60ef4920a985a029f8267">kDevErrorImmediateEvidenceCapacity</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aaf62b9a7ee2fe3e6bf1f25924fa682b8">values</a> {}</td></tr>
+<tr class="memitem:a942c3d6bd656de29b71842565ef53148" id="r_a942c3d6bd656de29b71842565ef53148"><td class="memItemLeft">uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#a942c3d6bd656de29b71842565ef53148">count</a> = 0u</td></tr>
+<tr class="memitem:ac3b17e83c3a44125c16c6013987eaba7" id="r_ac3b17e83c3a44125c16c6013987eaba7"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ac3b17e83c3a44125c16c6013987eaba7">truncated</a> = false</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Fixed-capacity immediate evidence collection. Overflow preserves existing values and records truncation. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="ad25eb73f095fea04025abe9965cfae9b" name="ad25eb73f095fea04025abe9965cfae9b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad25eb73f095fea04025abe9965cfae9b">&#9670;&#160;</a></span>append()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevErrorEvidenceBlock::append </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#af773aff402145b2bf0d8a4af711c4fdd">DevErrorEvidenceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t</td>          <td class="paramname"><span class="paramname"><em>value</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t</td>          <td class="paramname"><span class="paramname"><em>index</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0u</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Append one tagged numeric value. Return false and mark truncation when the fixed evidence capacity is exhausted. </p>
+
+</div>
+</div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a942c3d6bd656de29b71842565ef53148" name="a942c3d6bd656de29b71842565ef53148"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a942c3d6bd656de29b71842565ef53148">&#9670;&#160;</a></span>count</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t FlowUi::devSystems::DevErrorEvidenceBlock::count = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of populated immediate evidence values. </p>
+
+</div>
+</div>
+<a id="ac3b17e83c3a44125c16c6013987eaba7" name="ac3b17e83c3a44125c16c6013987eaba7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac3b17e83c3a44125c16c6013987eaba7">&#9670;&#160;</a></span>truncated</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevErrorEvidenceBlock::truncated = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether more evidence was offered than the fixed capacity could retain. </p>
+
+</div>
+</div>
+<a id="aaf62b9a7ee2fe3e6bf1f25924fa682b8" name="aaf62b9a7ee2fe3e6bf1f25924fa682b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaf62b9a7ee2fe3e6bf1f25924fa682b8">&#9670;&#160;</a></span>values</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::array&lt;<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorEvidenceValue.html">DevErrorEvidenceValue</a>, <a class="el" href="namespaceFlowUi_1_1devSystems.html#a84e4349e08a60ef4920a985a029f8267">kDevErrorImmediateEvidenceCapacity</a>&gt; FlowUi::devSystems::DevErrorEvidenceBlock::values {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Fixed-capacity storage; only count or valueCount entries are populated. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/errors/<a class="el" href="DevErrorTypes_8hpp_source.html">DevErrorTypes.hpp</a></li>
 </ul>
@@ -137,7 +219,7 @@ bool&#160;</td><td class="memItemRight"><b>truncated</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorEvidenceBlock.html">DevErrorEvidenceBlock</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorEvidenceBlock.html">DevErrorEvidenceBlock</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

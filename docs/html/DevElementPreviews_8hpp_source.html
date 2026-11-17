@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,22 +111,32 @@ $(function() {
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &quot;FlowUi/Public/elementAuthoring/ElementBuilder.hpp&quot;</span></div>
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &quot;FlowUi/Public/elementAuthoring/ElementSet.hpp&quot;</span></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="keyword">namespace </span>FlowUi::devSystems::tooling {</div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">template</span> &lt;FlowElement... Elements&gt;</div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="keywordtype">void</span> register_element_catalogue(<a class="code hl_class" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">DevSchemaRegistry</a>&amp; registry, std::string_view name,</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>                                ElementSet&lt;Elements...&gt;, <span class="keywordtype">bool</span> admit_defaults = <span class="keyword">false</span>) {</div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi_1_1devSystems_1_1tooling.html">FlowUi::devSystems::tooling</a> {</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">template</span> &lt;FlowElement... <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#aa6b06a934f86cdfaf2400763b352e917aaa56a2e65d8106aef3c61e4f6bf94fdb">Elements</a>&gt;</div>
+<div class="foldopen" id="foldopen00011" data-start="{" data-end="}">
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno"><a class="line" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#aa3004dd404f4e6ef55db496900a5423a">   11</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#aa3004dd404f4e6ef55db496900a5423a">register_element_catalogue</a>(<a class="code hl_class" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">DevSchemaRegistry</a>&amp; registry, std::string_view name,</div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>                                <a class="code hl_class" href="classFlowUi_1_1ElementSet.html">ElementSet&lt;Elements...&gt;</a>, <span class="keywordtype">bool</span> admit_defaults = <span class="keyword">false</span>) {</div>
 <div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    (registry.template ensureElement&lt;Elements&gt;(), ...);</div>
 <div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    (registry.template registerElementPreview&lt;Elements&gt;(name, admit_defaults), ...);</div>
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>}</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">template</span> &lt;FlowElement... Elements&gt;</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="keywordtype">void</span> register_element_catalogue(<a class="code hl_class" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">DevSchemaRegistry</a>&amp; registry, std::string_view name,</div>
+</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span></div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">template</span> &lt;<a class="code hl_concept" href="conceptFlowUi_1_1FlowElement.html">FlowElement</a>... <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#aa6b06a934f86cdfaf2400763b352e917aaa56a2e65d8106aef3c61e4f6bf94fdb">Elements</a>&gt;</div>
+<div class="foldopen" id="foldopen00018" data-start="{" data-end="}">
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#ae187e59274fea089cf90b46f04663a33">   18</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#aa3004dd404f4e6ef55db496900a5423a">register_element_catalogue</a>(<a class="code hl_class" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">DevSchemaRegistry</a>&amp; registry, std::string_view name,</div>
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>                                <a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevElementCatalogue.html">DevElementCatalogue&lt;Elements...&gt;</a>, <span class="keywordtype">bool</span> admit_defaults = <span class="keyword">false</span>) {</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    register_element_catalogue(registry, name, ElementSet&lt;Elements...&gt;{}, admit_defaults);</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    <a class="code hl_function" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#aa3004dd404f4e6ef55db496900a5423a">register_element_catalogue</a>(registry, name, <a class="code hl_class" href="classFlowUi_1_1ElementSet.html">ElementSet&lt;Elements...&gt;</a>{}, admit_defaults);</div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>}</div>
+</div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>} <span class="comment">// namespace FlowUi::devSystems::tooling</span></div>
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry_html"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">FlowUi::devSystems::tooling::DevSchemaRegistry</a></div><div class="ttdef"><b>Definition</b> DevSchemaRegistry.hpp:35</div></div>
-<div class="ttc" id="astructFlowUi_1_1devSystems_1_1tooling_1_1DevElementCatalogue_html"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevElementCatalogue.html">FlowUi::devSystems::tooling::DevElementCatalogue</a></div><div class="ttdef"><b>Definition</b> DevSchemaDescriptor.hpp:364</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ElementSet_html"><div class="ttname"><a href="classFlowUi_1_1ElementSet.html">FlowUi::ElementSet</a></div><div class="ttdoc">Zero-data compile-time catalog of element definition types.</div><div class="ttdef"><b>Definition</b> ElementSet.hpp:12</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry_html"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">FlowUi::devSystems::tooling::DevSchemaRegistry</a></div><div class="ttdoc">Queues typed reflection roots and publishes immutable schema generations. Retained DevSchemaView valu...</div><div class="ttdef"><b>Definition</b> DevSchemaRegistry.hpp:36</div></div>
+<div class="ttc" id="aconceptFlowUi_1_1FlowElement_html"><div class="ttname"><a href="conceptFlowUi_1_1FlowElement.html">FlowUi::FlowElement</a></div><div class="ttdef"><b>Definition</b> ElementConcepts.hpp:60</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1tooling_html"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">FlowUi::devSystems::tooling</a></div><div class="ttdoc">Reflection, live editing, catalogues and immutable UI tree extension APIs.</div><div class="ttdef"><b>Definition</b> ElementBuilder.hpp:933</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1tooling_html_aa3004dd404f4e6ef55db496900a5423a"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html#aa3004dd404f4e6ef55db496900a5423a">FlowUi::devSystems::tooling::register_element_catalogue</a></div><div class="ttdeci">void register_element_catalogue(DevSchemaRegistry &amp;registry, std::string_view name, ElementSet&lt; Elements... &gt;, bool admit_defaults=false)</div><div class="ttdef"><b>Definition</b> DevElementPreviews.hpp:11</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1tooling_html_aa6b06a934f86cdfaf2400763b352e917aaa56a2e65d8106aef3c61e4f6bf94fdb"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html#aa6b06a934f86cdfaf2400763b352e917aaa56a2e65d8106aef3c61e4f6bf94fdb">FlowUi::devSystems::tooling::DevChangesDomain::Elements</a></div><div class="ttdeci">@ Elements</div><div class="ttdoc">Element parameter assignments.</div><div class="ttdef"><b>Definition</b> DevChangesReview.hpp:21</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1tooling_1_1DevElementCatalogue_html"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevElementCatalogue.html">FlowUi::devSystems::tooling::DevElementCatalogue</a></div><div class="ttdoc">Compile-time pack of Flow element definition types; no runtime instances are stored.</div><div class="ttdef"><b>Definition</b> DevSchemaDescriptor.hpp:418</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

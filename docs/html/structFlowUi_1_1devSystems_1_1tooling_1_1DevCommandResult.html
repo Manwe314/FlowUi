@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,19 +106,39 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevCommandResult Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Acknowledgement of one command or transaction-level rejection.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevOverrideTypes_8hpp_source.html">DevOverrideTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:aa240732c86ba59b5fc4ac3fd9cea1939" id="r_aa240732c86ba59b5fc4ac3fd9cea1939"><td class="memItemLeft"><a id="aa240732c86ba59b5fc4ac3fd9cea1939" name="aa240732c86ba59b5fc4ac3fd9cea1939"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>transaction</b> = 0</td></tr>
+<tr class="memdesc:aa240732c86ba59b5fc4ac3fd9cea1939"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transaction identity supplied with the submitted change set. <br /></td></tr>
 <tr class="memitem:a2e43750b38b2928f1048906ac19a7dbc" id="r_a2e43750b38b2928f1048906ac19a7dbc"><td class="memItemLeft"><a id="a2e43750b38b2928f1048906ac19a7dbc" name="a2e43750b38b2928f1048906ac19a7dbc"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>command</b> = 0</td></tr>
+<tr class="memdesc:a2e43750b38b2928f1048906ac19a7dbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Zero-based command position within the submitted change set. <br /></td></tr>
+<tr class="memitem:a62339ddced26ebe5c90e2d86f302f74d" id="r_a62339ddced26ebe5c90e2d86f302f74d"><td class="memItemLeft"><a id="a62339ddced26ebe5c90e2d86f302f74d" name="a62339ddced26ebe5c90e2d86f302f74d"></a>
+std::uint32_t&#160;</td><td class="memItemRight"><b>completedCommandCount</b> = 0</td></tr>
+<tr class="memdesc:a62339ddced26ebe5c90e2d86f302f74d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of leading commands known to have completed, identifying the committed prefix. <br /></td></tr>
+<tr class="memitem:a7795b1e19afafc05b247697c1c3d110d" id="r_a7795b1e19afafc05b247697c1c3d110d"><td class="memItemLeft"><a id="a7795b1e19afafc05b247697c1c3d110d" name="a7795b1e19afafc05b247697c1c3d110d"></a>
+std::uint32_t&#160;</td><td class="memItemRight"><b>attemptedCommandCount</b> = 0</td></tr>
+<tr class="memdesc:a7795b1e19afafc05b247697c1c3d110d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of commands whose execution began; validation alone does not count. <br /></td></tr>
 <tr class="memitem:a257433d5c2384ea2a43e4dba5d6e9ff1" id="r_a257433d5c2384ea2a43e4dba5d6e9ff1"><td class="memItemLeft"><a id="a257433d5c2384ea2a43e4dba5d6e9ff1" name="a257433d5c2384ea2a43e4dba5d6e9ff1"></a>
-DevCommandStatus&#160;</td><td class="memItemRight"><b>status</b> = DevCommandStatus::Applied</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a07dff8d4f37dac0a1f893f4038757df8">DevCommandStatus</a>&#160;</td><td class="memItemRight"><b>status</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a07dff8d4f37dac0a1f893f4038757df8a733d43480c8589b1368e5def6b480415">DevCommandStatus::Applied</a></td></tr>
+<tr class="memdesc:a257433d5c2384ea2a43e4dba5d6e9ff1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Applied state or machine-readable rejection reason. <br /></td></tr>
 <tr class="memitem:a2342042b52758fec2ee3915bba521068" id="r_a2342042b52758fec2ee3915bba521068"><td class="memItemLeft"><a id="a2342042b52758fec2ee3915bba521068" name="a2342042b52758fec2ee3915bba521068"></a>
 bool&#160;</td><td class="memItemRight"><b>applied</b> = false</td></tr>
+<tr class="memdesc:a2342042b52758fec2ee3915bba521068"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether every command completed; false does not imply rollback of earlier commands. <br /></td></tr>
+<tr class="memitem:a14bc82f48b24056142ff5328509be4ab" id="r_a14bc82f48b24056142ff5328509be4ab"><td class="memItemLeft"><a id="a14bc82f48b24056142ff5328509be4ab" name="a14bc82f48b24056142ff5328509be4ab"></a>
+bool&#160;</td><td class="memItemRight"><b>mayHavePartialEffects</b> = false</td></tr>
+<tr class="memdesc:a14bc82f48b24056142ff5328509be4ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">A failed attempted command may have changed application/library state; do not retry blindly. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Acknowledgement of one command or transaction-level rejection. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/override/<a class="el" href="DevOverrideTypes_8hpp_source.html">DevOverrideTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -134,7 +154,7 @@ bool&#160;</td><td class="memItemRight"><b>applied</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCommandResult.html">DevCommandResult</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCommandResult.html">DevCommandResult</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

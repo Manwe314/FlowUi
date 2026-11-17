@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,19 +106,22 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::UiActions Class Reference<div class="ingroups"><a class="el" href="group__flowui__action__manager.html">Action Manager</a></div></div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Construct compact UI calls from typed recipes and borrowed resources.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ActionManager_8hpp_source.html">ActionManager.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ga2fa222aa97a38170f434304fcdc7184d" id="r_ga2fa222aa97a38170f434304fcdc7184d"><td class="memTemplParams" colspan="2">
-template&lt;typename Operation, typename... Resources&gt; </td></tr>
-<tr class="memitem:ga2fa222aa97a38170f434304fcdc7184d template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1UiActionCall.html">UiActionCall</a>&#160;</td><td class="memItemRight"><b>make</b> (<a class="el" href="structFlowUi_1_1UiActionRecipe.html">UiActionRecipe</a>&lt; Operation &gt; recipe, Resources &amp;&amp;... resources) const</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:afbf17e1f0158828c2be22ecde58644fc" id="r_afbf17e1f0158828c2be22ecde58644fc"><td class="memItemLeft"><a id="afbf17e1f0158828c2be22ecde58644fc" name="afbf17e1f0158828c2be22ecde58644fc"></a>
-class&#160;</td><td class="memItemRight"><b>ActionManager</b></td></tr>
+<tr class="memitem:gaed2e7828505874abd12a93b22aa7ad79" id="r_gaed2e7828505874abd12a93b22aa7ad79"><td class="memTemplParams" colspan="2">template&lt;typename Operation, typename... Resources&gt; </td></tr>
+<tr class="memitem:gaed2e7828505874abd12a93b22aa7ad79 template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1UiActionCall.html">UiActionCall</a>&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__action__manager.html#gaed2e7828505874abd12a93b22aa7ad79">make</a> (<a class="el" href="structFlowUi_1_1UiActionRecipe.html">UiActionRecipe</a>&lt; Operation &gt; recipe, Resources &amp;&amp;... resources) const noexcept</td></tr>
+<tr class="memdesc:gaed2e7828505874abd12a93b22aa7ad79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pack a stateless, trivial, concrete void-returning UiAction recipe and its arguments into a direct <a class="el" href="classFlowUi_1_1UiActionCall.html">UiActionCall</a> with no retained app binding.  <br /></td></tr>
 </table>
-<hr/>The documentation for this class was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Construct compact UI calls from typed recipes and borrowed resources. </p>
+<p>Obtain this facade from <a class="el" href="classFlowUi_1_1ActionManager.html#a7e5ba4114424169ad5433e216b19065d" title="Borrow the mutable or const facade for inline UI action creation. The manager owns this facade.">ActionManager::uiActions()</a>. It does not create a retained app-action binding; copied calls continue to borrow their arguments. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/FlowUi/Public/managers/<a class="el" href="ActionManager_8hpp_source.html">ActionManager.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -134,7 +137,7 @@ class&#160;</td><td class="memItemRight"><b>ActionManager</b></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1UiActions.html">UiActions</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1UiActions.html">UiActions</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -340,24 +340,20 @@ void SwapchainGeneration::create(
 	*this = std::move(candidate);
 }
 
-void SwapchainGeneration::waitForPresentCompletion(VulkanContext& vk) const {
-	if (swapchain.swapchain == VK_NULL_HANDLE) return;
+VkResult SwapchainGeneration::waitForPresentCompletion(VulkanContext& vk) const noexcept {
+	if (swapchain.swapchain == VK_NULL_HANDLE) return VK_SUCCESS;
 	if (vk.wsiRetirementMode == WsiRetirementMode::PresentFence) {
-		for (size_t i = 0; i < presentComplete.size(); ++i) {
-			if (i >= presentPending.size() || presentPending[i] == 0u) continue;
-			vkCheck(vkWaitForFences(vk.device, 1, &presentComplete[i], VK_TRUE, UINT64_MAX),
-				FlowUi::ErrorSite::VulkanSwapchainPresent);
+		for (size_t index = 0; index < presentComplete.size(); ++index) {
+			if (index >= presentPending.size() || presentPending[index] == 0u) continue;
+			const VkResult result = vkWaitForFences(vk.device, 1, &presentComplete[index], VK_TRUE, UINT64_MAX);
+			if (result != VK_SUCCESS) return result;
 		}
-		return;
+		return VK_SUCCESS;
 	}
-	if (lastPresentId == 0) return;
-	if (vk.wsiRetirementMode == WsiRetirementMode::PresentWait) {
-		vkCheck(vk.waitForPresent(swapchain.swapchain, lastPresentId, UINT64_MAX),
-			FlowUi::ErrorSite::VulkanSwapchainPresent);
-		return;
-	}
-	throw FlowUi::FlowUiException(FlowUi::makeError(
-		FlowUi::ErrorCode::WindowPresentationUnsupported, FlowUi::ErrorSite::VulkanSwapchainPresent));
+	if (lastPresentId == 0) return VK_SUCCESS;
+	if (vk.wsiRetirementMode == WsiRetirementMode::PresentWait)
+		return vk.waitForPresent(swapchain.swapchain, lastPresentId, UINT64_MAX);
+	return VK_ERROR_FEATURE_NOT_PRESENT;
 }
 
 void SwapchainGeneration::destroy(VulkanContext& vk) {

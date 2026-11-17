@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -264,11 +264,11 @@ $(function() {
 <div class="line">            .height = CLAY_SIZING_GROW(0),</div>
 <div class="line">        };</div>
 <div class="line">        treeList.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;</div>
-<div class="line">        <span class="keyword">const</span> Clay_ScrollContainerData scroll = Clay_GetScrollContainerData(context.clayID(<span class="stringliteral">&quot;tree-list&quot;</span>));</div>
+<div class="line">        <span class="keyword">const</span> Clay_ScrollContainerData <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a0c2aaff2eb12a545246ea88bce719272a089b0cdd8835d09cb1cabf38b3ce9c09">scroll</a> = Clay_GetScrollContainerData(context.clayID(<span class="stringliteral">&quot;tree-list&quot;</span>));</div>
 <div class="line">        treeList.clip = {</div>
 <div class="line">            .vertical = <span class="keyword">true</span>,</div>
-<div class="line">            .childOffset = scroll.found &amp;&amp; scroll.scrollPosition</div>
-<div class="line">                ? *scroll.scrollPosition : Clay_Vector2{},</div>
+<div class="line">            .childOffset = <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a0c2aaff2eb12a545246ea88bce719272a089b0cdd8835d09cb1cabf38b3ce9c09">scroll</a>.found &amp;&amp; <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a0c2aaff2eb12a545246ea88bce719272a089b0cdd8835d09cb1cabf38b3ce9c09">scroll</a>.scrollPosition</div>
+<div class="line">                ? *<a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a0c2aaff2eb12a545246ea88bce719272a089b0cdd8835d09cb1cabf38b3ce9c09">scroll</a>.scrollPosition : Clay_Vector2{},</div>
 <div class="line">        };</div>
 <div class="line"> </div>
 <div class="line">        CLAY(context.clayID(<span class="stringliteral">&quot;tree-list&quot;</span>), treeList) {</div>
@@ -281,6 +281,7 @@ $(function() {
 <div class="line">        }</div>
 <div class="line">    }</div>
 <div class="line">}</div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html_a0c2aaff2eb12a545246ea88bce719272a089b0cdd8835d09cb1cabf38b3ce9c09"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a0c2aaff2eb12a545246ea88bce719272a089b0cdd8835d09cb1cabf38b3ce9c09">FlowUi::devSystems::agentic::AgenticInteractionOperation::scroll</a></div><div class="ttdeci">@ scroll</div><div class="ttdef"><b>Definition</b> AgenticInteraction.hpp:210</div></div>
 </div><!-- fragment --><ol type="1">
 <li><span class="tt">container</span> has <span class="tt">CLAY_SIZING_PERCENT(1.0f)</span>, matching the card height.</li>
 <li><span class="tt">summaryBar</span> takes a fixed 32px at the top.</li>

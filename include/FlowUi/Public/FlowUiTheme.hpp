@@ -86,9 +86,23 @@ struct FlowUiTheme {
 	/** @brief Large layout spacing in pixels. */
 	uint16_t spacingLg = 24;
 
-	/** @brief Factory returning default dark theme instance. */
+	/** @brief Factory returning default dark theme instance.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * auto theme = FlowUi::FlowUiTheme::dark();
+	 * theme.fontSizeMedium = 16.0f;
+	 * @endcode
+	 */
 	[[nodiscard]] static FlowUiTheme dark() noexcept;
-	/** @brief Factory returning default light theme instance. */
+	/** @brief Factory returning default light theme instance.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * auto theme = FlowUi::FlowUiTheme::light();
+	 * theme.spacingMd = 20;
+	 * @endcode
+	 */
 	[[nodiscard]] static FlowUiTheme light() noexcept;
 };
 

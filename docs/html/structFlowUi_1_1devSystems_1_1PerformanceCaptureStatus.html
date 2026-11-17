@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,36 +111,219 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a33d183eef730a20d40e57236ac046dba" id="r_a33d183eef730a20d40e57236ac046dba"><td class="memItemLeft"><a id="a33d183eef730a20d40e57236ac046dba" name="a33d183eef730a20d40e57236ac046dba"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1PerformanceCaptureSettings.html">PerformanceCaptureSettings</a>&#160;</td><td class="memItemRight"><b>settings</b> {}</td></tr>
-<tr class="memitem:afc30795bf7a5f34b669920c6e0ced4a2" id="r_afc30795bf7a5f34b669920c6e0ced4a2"><td class="memItemLeft"><a id="afc30795bf7a5f34b669920c6e0ced4a2" name="afc30795bf7a5f34b669920c6e0ced4a2"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>generation</b> = 0</td></tr>
-<tr class="memitem:a2faeb216a56632e02c5fce4db69a501c" id="r_a2faeb216a56632e02c5fce4db69a501c"><td class="memItemLeft"><a id="a2faeb216a56632e02c5fce4db69a501c" name="a2faeb216a56632e02c5fce4db69a501c"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>start_ns</b> = 0</td></tr>
-<tr class="memitem:acf87846a05bb5c8dbe0c08525728329b" id="r_acf87846a05bb5c8dbe0c08525728329b"><td class="memItemLeft"><a id="acf87846a05bb5c8dbe0c08525728329b" name="acf87846a05bb5c8dbe0c08525728329b"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>end_ns</b> = 0</td></tr>
-<tr class="memitem:acf0b8e4fa8ee8540fb07f6986e5fd8e7" id="r_acf0b8e4fa8ee8540fb07f6986e5fd8e7"><td class="memItemLeft"><a id="acf0b8e4fa8ee8540fb07f6986e5fd8e7" name="acf0b8e4fa8ee8540fb07f6986e5fd8e7"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>event_end_ns</b> = 0</td></tr>
-<tr class="memitem:afd31503957ef4ae887fe0b7c0c358b6e" id="r_afd31503957ef4ae887fe0b7c0c358b6e"><td class="memItemLeft"><a id="afd31503957ef4ae887fe0b7c0c358b6e" name="afd31503957ef4ae887fe0b7c0c358b6e"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>event_duration_ns</b> = 0</td></tr>
-<tr class="memitem:a54b2e7887e43f45bb312386427e47797" id="r_a54b2e7887e43f45bb312386427e47797"><td class="memItemLeft"><a id="a54b2e7887e43f45bb312386427e47797" name="a54b2e7887e43f45bb312386427e47797"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>event_app_tick</b> = 0</td></tr>
-<tr class="memitem:a0701bd89c5fb4b09c5ee4f73cb172991" id="r_a0701bd89c5fb4b09c5ee4f73cb172991"><td class="memItemLeft"><a id="a0701bd89c5fb4b09c5ee4f73cb172991" name="a0701bd89c5fb4b09c5ee4f73cb172991"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>first_app_tick</b> = 0</td></tr>
-<tr class="memitem:a5acb66bfdc15acaad4465e609de7b7b9" id="r_a5acb66bfdc15acaad4465e609de7b7b9"><td class="memItemLeft"><a id="a5acb66bfdc15acaad4465e609de7b7b9" name="a5acb66bfdc15acaad4465e609de7b7b9"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>end_app_tick_exclusive</b> = 0</td></tr>
-<tr class="memitem:a802d6ae3732ee6a4649cf902c5479bae" id="r_a802d6ae3732ee6a4649cf902c5479bae"><td class="memItemLeft"><a id="a802d6ae3732ee6a4649cf902c5479bae" name="a802d6ae3732ee6a4649cf902c5479bae"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>pending_measurements</b> = 0</td></tr>
-<tr class="memitem:afca422542627cd158b213ee0b308ba47" id="r_afca422542627cd158b213ee0b308ba47"><td class="memItemLeft"><a id="afca422542627cd158b213ee0b308ba47" name="afca422542627cd158b213ee0b308ba47"></a>
-PerformanceCapturePhase&#160;</td><td class="memItemRight"><b>phase</b> = PerformanceCapturePhase::Idle</td></tr>
-<tr class="memitem:aaacb6836a1d27ad47ba40ecc4f887ce2" id="r_aaacb6836a1d27ad47ba40ecc4f887ce2"><td class="memItemLeft"><a id="aaacb6836a1d27ad47ba40ecc4f887ce2" name="aaacb6836a1d27ad47ba40ecc4f887ce2"></a>
-PerformanceCaptureStopReason&#160;</td><td class="memItemRight"><b>stop_reason</b> = PerformanceCaptureStopReason::ManualOpen</td></tr>
-<tr class="memitem:a3a2526fc5dbb451b351882e67fd7cd08" id="r_a3a2526fc5dbb451b351882e67fd7cd08"><td class="memItemLeft"><a id="a3a2526fc5dbb451b351882e67fd7cd08" name="a3a2526fc5dbb451b351882e67fd7cd08"></a>
-bool&#160;</td><td class="memItemRight"><b>incomplete</b> = false</td></tr>
+<tr class="memitem:a33d183eef730a20d40e57236ac046dba" id="r_a33d183eef730a20d40e57236ac046dba"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1PerformanceCaptureSettings.html">PerformanceCaptureSettings</a>&#160;</td><td class="memItemRight"><a class="el" href="#a33d183eef730a20d40e57236ac046dba">settings</a> {}</td></tr>
+<tr class="memitem:afc30795bf7a5f34b669920c6e0ced4a2" id="r_afc30795bf7a5f34b669920c6e0ced4a2"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#afc30795bf7a5f34b669920c6e0ced4a2">generation</a> = 0</td></tr>
+<tr class="memitem:a2faeb216a56632e02c5fce4db69a501c" id="r_a2faeb216a56632e02c5fce4db69a501c"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a2faeb216a56632e02c5fce4db69a501c">start_ns</a> = 0</td></tr>
+<tr class="memitem:acf87846a05bb5c8dbe0c08525728329b" id="r_acf87846a05bb5c8dbe0c08525728329b"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#acf87846a05bb5c8dbe0c08525728329b">end_ns</a> = 0</td></tr>
+<tr class="memitem:acf0b8e4fa8ee8540fb07f6986e5fd8e7" id="r_acf0b8e4fa8ee8540fb07f6986e5fd8e7"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#acf0b8e4fa8ee8540fb07f6986e5fd8e7">event_end_ns</a> = 0</td></tr>
+<tr class="memitem:afd31503957ef4ae887fe0b7c0c358b6e" id="r_afd31503957ef4ae887fe0b7c0c358b6e"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#afd31503957ef4ae887fe0b7c0c358b6e">event_duration_ns</a> = 0</td></tr>
+<tr class="memitem:a54b2e7887e43f45bb312386427e47797" id="r_a54b2e7887e43f45bb312386427e47797"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a54b2e7887e43f45bb312386427e47797">event_app_tick</a> = 0</td></tr>
+<tr class="memitem:a0701bd89c5fb4b09c5ee4f73cb172991" id="r_a0701bd89c5fb4b09c5ee4f73cb172991"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a0701bd89c5fb4b09c5ee4f73cb172991">first_app_tick</a> = 0</td></tr>
+<tr class="memitem:a5acb66bfdc15acaad4465e609de7b7b9" id="r_a5acb66bfdc15acaad4465e609de7b7b9"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a5acb66bfdc15acaad4465e609de7b7b9">end_app_tick_exclusive</a> = 0</td></tr>
+<tr class="memitem:a802d6ae3732ee6a4649cf902c5479bae" id="r_a802d6ae3732ee6a4649cf902c5479bae"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a802d6ae3732ee6a4649cf902c5479bae">pending_measurements</a> = 0</td></tr>
+<tr class="memitem:afca422542627cd158b213ee0b308ba47" id="r_afca422542627cd158b213ee0b308ba47"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#af42155ee166b9bfa036af5d9391586dc">PerformanceCapturePhase</a>&#160;</td><td class="memItemRight"><a class="el" href="#afca422542627cd158b213ee0b308ba47">phase</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#af42155ee166b9bfa036af5d9391586dcae599161956d626eda4cb0a5ffb85271c">PerformanceCapturePhase::Idle</a></td></tr>
+<tr class="memitem:aaacb6836a1d27ad47ba40ecc4f887ce2" id="r_aaacb6836a1d27ad47ba40ecc4f887ce2"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#aeb701519fb54fdd2eaba881db7344b14">PerformanceCaptureStopReason</a>&#160;</td><td class="memItemRight"><a class="el" href="#aaacb6836a1d27ad47ba40ecc4f887ce2">stop_reason</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#aeb701519fb54fdd2eaba881db7344b14acf76a941dc982d3bd3a99872f5b3197d">PerformanceCaptureStopReason::ManualOpen</a></td></tr>
+<tr class="memitem:a3a2526fc5dbb451b351882e67fd7cd08" id="r_a3a2526fc5dbb451b351882e67fd7cd08"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a3a2526fc5dbb451b351882e67fd7cd08">incomplete</a> = false</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Application-owned capture progress and immutable result identity. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a5acb66bfdc15acaad4465e609de7b7b9" name="a5acb66bfdc15acaad4465e609de7b7b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5acb66bfdc15acaad4465e609de7b7b9">&#9670;&#160;</a></span>end_app_tick_exclusive</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::PerformanceCaptureStatus::end_app_tick_exclusive = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>First application tick excluded from the capture interval. </p>
+
+</div>
+</div>
+<a id="acf87846a05bb5c8dbe0c08525728329b" name="acf87846a05bb5c8dbe0c08525728329b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acf87846a05bb5c8dbe0c08525728329b">&#9670;&#160;</a></span>end_ns</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::PerformanceCaptureStatus::end_ns = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Monotonic end timestamp in nanoseconds. </p>
+
+</div>
+</div>
+<a id="a54b2e7887e43f45bb312386427e47797" name="a54b2e7887e43f45bb312386427e47797"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a54b2e7887e43f45bb312386427e47797">&#9670;&#160;</a></span>event_app_tick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::PerformanceCaptureStatus::event_app_tick = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Application tick containing the triggering budget event. </p>
+
+</div>
+</div>
+<a id="afd31503957ef4ae887fe0b7c0c358b6e" name="afd31503957ef4ae887fe0b7c0c358b6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afd31503957ef4ae887fe0b7c0c358b6e">&#9670;&#160;</a></span>event_duration_ns</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::PerformanceCaptureStatus::event_duration_ns = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Duration of the triggering budget event, in nanoseconds. </p>
+
+</div>
+</div>
+<a id="acf0b8e4fa8ee8540fb07f6986e5fd8e7" name="acf0b8e4fa8ee8540fb07f6986e5fd8e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acf0b8e4fa8ee8540fb07f6986e5fd8e7">&#9670;&#160;</a></span>event_end_ns</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::PerformanceCaptureStatus::event_end_ns = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>End timestamp of the triggering budget event, in nanoseconds. </p>
+
+</div>
+</div>
+<a id="a0701bd89c5fb4b09c5ee4f73cb172991" name="a0701bd89c5fb4b09c5ee4f73cb172991"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0701bd89c5fb4b09c5ee4f73cb172991">&#9670;&#160;</a></span>first_app_tick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::PerformanceCaptureStatus::first_app_tick = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>First tick admitted to the capture or occurrence. </p>
+
+</div>
+</div>
+<a id="afc30795bf7a5f34b669920c6e0ced4a2" name="afc30795bf7a5f34b669920c6e0ced4a2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afc30795bf7a5f34b669920c6e0ced4a2">&#9670;&#160;</a></span>generation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::PerformanceCaptureStatus::generation = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Identity of this capture generation. </p>
+
+</div>
+</div>
+<a id="a3a2526fc5dbb451b351882e67fd7cd08" name="a3a2526fc5dbb451b351882e67fd7cd08"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3a2526fc5dbb451b351882e67fd7cd08">&#9670;&#160;</a></span>incomplete</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::PerformanceCaptureStatus::incomplete = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether some expected measurement or evidence failed to arrive. </p>
+
+</div>
+</div>
+<a id="a802d6ae3732ee6a4649cf902c5479bae" name="a802d6ae3732ee6a4649cf902c5479bae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a802d6ae3732ee6a4649cf902c5479bae">&#9670;&#160;</a></span>pending_measurements</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::PerformanceCaptureStatus::pending_measurements = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of admitted timing measurements still awaiting completion. </p>
+
+</div>
+</div>
+<a id="afca422542627cd158b213ee0b308ba47" name="afca422542627cd158b213ee0b308ba47"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afca422542627cd158b213ee0b308ba47">&#9670;&#160;</a></span>phase</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#af42155ee166b9bfa036af5d9391586dc">PerformanceCapturePhase</a> FlowUi::devSystems::PerformanceCaptureStatus::phase = <a class="el" href="namespaceFlowUi_1_1devSystems.html#af42155ee166b9bfa036af5d9391586dcae599161956d626eda4cb0a5ffb85271c">PerformanceCapturePhase::Idle</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Current application or capture lifecycle phase. </p>
+
+</div>
+</div>
+<a id="a33d183eef730a20d40e57236ac046dba" name="a33d183eef730a20d40e57236ac046dba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a33d183eef730a20d40e57236ac046dba">&#9670;&#160;</a></span>settings</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1PerformanceCaptureSettings.html">PerformanceCaptureSettings</a> FlowUi::devSystems::PerformanceCaptureStatus::settings {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Immutable settings copied for the current recording. </p>
+
+</div>
+</div>
+<a id="a2faeb216a56632e02c5fce4db69a501c" name="a2faeb216a56632e02c5fce4db69a501c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2faeb216a56632e02c5fce4db69a501c">&#9670;&#160;</a></span>start_ns</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::PerformanceCaptureStatus::start_ns = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Monotonic start timestamp in nanoseconds. </p>
+
+</div>
+</div>
+<a id="aaacb6836a1d27ad47ba40ecc4f887ce2" name="aaacb6836a1d27ad47ba40ecc4f887ce2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaacb6836a1d27ad47ba40ecc4f887ce2">&#9670;&#160;</a></span>stop_reason</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#aeb701519fb54fdd2eaba881db7344b14">PerformanceCaptureStopReason</a> FlowUi::devSystems::PerformanceCaptureStatus::stop_reason = <a class="el" href="namespaceFlowUi_1_1devSystems.html#aeb701519fb54fdd2eaba881db7344b14acf76a941dc982d3bd3a99872f5b3197d">PerformanceCaptureStopReason::ManualOpen</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Reason the current capture stopped admitting intervals. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevPerformanceCapture_8hpp_source.html">DevPerformanceCapture.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -156,7 +339,7 @@ bool&#160;</td><td class="memItemRight"><b>incomplete</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1PerformanceCaptureStatus.html">PerformanceCaptureStatus</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1PerformanceCaptureStatus.html">PerformanceCaptureStatus</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

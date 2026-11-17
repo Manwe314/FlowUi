@@ -1,10 +1,5 @@
 var searchData=
 [
-  ['katlaslayergrowthstep_0',['kAtlasLayerGrowthStep',['../structFlowUi_1_1FontManager.html#ad90022b983223e1fcdfe28c94ff0c711',1,'FlowUi::FontManager']]],
-  ['kerningpairs_1',['kerningPairs',['../structFlowUi_1_1Font_1_1FontVariantData.html#a5046981925feba2c524c69a715c5e2f9',1,'FlowUi::Font::FontVariantData']]],
-  ['key_2',['key',['../structFlowUi_1_1DevShortcutChord.html#a5140eb9264fe69028381b5bdc2e2b2c3',1,'FlowUi::DevShortcutChord::key'],['../structFlowUi_1_1ViewPortRenderContext.html#ac8d4e1502a46b7204c7e6dc27dadeb44',1,'FlowUi::ViewPortRenderContext::key'],['../structFlowUi_1_1ShortcutChord.html#a060e000d2fe2c8802bcba8c372fd984d',1,'FlowUi::ShortcutChord::key']]],
-  ['keydown_3',['keyDown',['../structFlowUi_1_1FrameInput.html#a63a5af5eacf8ced50d59f4973acf9c59',1,'FlowUi::FrameInput']]],
-  ['kinitialatlaslayercapacity_4',['kInitialAtlasLayerCapacity',['../structFlowUi_1_1FontManager.html#a084d2dcef0e054934ec89cc9e1ef3cbf',1,'FlowUi::FontManager']]],
-  ['kkeyboardkeycount_5',['kKeyboardKeyCount',['../structFlowUi_1_1FrameInput.html#a729984290f7d7b3d597cd8352f842e9f',1,'FlowUi::FrameInput']]],
-  ['kmousebuttoncount_6',['kMouseButtonCount',['../structFlowUi_1_1FrameInput.html#ac10ce8d3397c4042dec7d0e4a1a6d02a',1,'FlowUi::FrameInput']]]
+  ['job_5fid_0',['job_id',['../structFlowUi_1_1devSystems_1_1agentic_1_1AgenticInteractionReceipt.html#a9285028300a15f36f4d313f368f91acb',1,'FlowUi::devSystems::agentic::AgenticInteractionReceipt::job_id'],['../structFlowUi_1_1devSystems_1_1agentic_1_1AgenticInteractionObservation.html#a7e2bdd8d45eab403bdf0f44214581097',1,'FlowUi::devSystems::agentic::AgenticInteractionObservation::job_id'],['../structFlowUi_1_1devSystems_1_1agentic_1_1AgenticInteractionResult.html#ad0ea2c1da7584355d2b0b0f433d3544a',1,'FlowUi::devSystems::agentic::AgenticInteractionResult::job_id'],['../structFlowUi_1_1devSystems_1_1agentic_1_1AgenticScenarioContext.html#a1b351bfbe8e1b62ba27cffbcc3f657ad',1,'FlowUi::devSystems::agentic::AgenticScenarioContext::job_id'],['../structFlowUi_1_1devSystems_1_1agentic_1_1AgenticCaptureSnapshot.html#a97210d9fc77628bfd1565cef4cc1f0af',1,'FlowUi::devSystems::agentic::AgenticCaptureSnapshot::job_id'],['../structFlowUi_1_1devSystems_1_1agentic_1_1AgenticJobStatus.html#a01793e5f45fcd00e5c59326b673cd523',1,'FlowUi::devSystems::agentic::AgenticJobStatus::job_id']]],
+  ['json_1',['json',['../structFlowUi_1_1devSystems_1_1tooling_1_1DevSerializedValue.html#ab594805bee4f0d198bd08834e979fa65',1,'FlowUi::devSystems::tooling::DevSerializedValue']]]
 ];

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FlowUi/Private/utility/EnumFlags.hpp"
+#include "FlowUi/Private/ApiBoundary.hpp"
 
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryHistoryViewport.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
@@ -199,7 +200,8 @@ struct AppWindow {
 #if FLOW_UI_DEV_MODE
 #endif
 
-	enum class Phase : uint8_t { Initializing, Idle, Building, Prepared, Closing };
+	enum class Phase : uint8_t { Initializing, Idle, Building, Prepared, Stopped, Closing };
+	enum class CloseStage : uint8_t { Begin, GraphicsDrained, WindowResourcesReleased };
 
 	VulkanUiRenderer renderer;
 	detail::input::InputState inputState;
@@ -261,6 +263,7 @@ struct AppWindow {
 	float uiToFramebufferScaleX = 1.0f;
 	float uiToFramebufferScaleY = 1.0f;
 	Phase phase = Phase::Initializing;
+	CloseStage closeStage = CloseStage::Begin;
 	enum class Flag : std::uint8_t {
 		storage_registered = 1u << 0u,
 		has_previous_begin_frame_timestamp = 1u << 1u,
@@ -286,17 +289,12 @@ template <typename Value>
 }
 
 template <typename Operation>
-Status runLocalOperation(Operation&& operation) {
+Status runLocalOperation(Operation&& operation, ErrorSite site = ErrorSite::AppConstruct) noexcept {
 	try {
 		std::forward<Operation>(operation)();
 		return {};
-	} catch (const FlowUiException& exception) {
-		if (exception.error().descriptor().category == ErrorCategory::Fatal) {
-			detail::terminateForFatalError(exception.error());
-		}
-		if (exception.error().descriptor().category != ErrorCategory::Local)
-			throw;
-		return unexpectedError(exception.error());
+	} catch (...) {
+		return unexpectedError(detail::currentExceptionError(site));
 	}
 }
 
@@ -360,6 +358,7 @@ struct App::Impl {
 	WindowId mainWindowId = MainWindowId;
 	WindowId nextWindowId = MainWindowId + 1;
 	WindowId activeWindowFrame = InvalidWindowId;
+	FlowUiError sharedGraphicsFailure{};
 	enum class LifecycleFlag : std::uint8_t {
 		window_ids_exhausted = 1u << 0u,
 		fonts_initialized = 1u << 1u,
@@ -421,6 +420,10 @@ struct App::Impl {
 	void init(App& owner);
 
 	void requireQuiescent() const;
+	void requireGraphicsRunning() const;
+	void stopWindowRendering(AppWindow& window) noexcept;
+	void checkGraphicsResult(VkResult result, ErrorSite site, WindowId window,
+		ErrorCode code = ErrorCode::VulkanNativeCallFailed, bool sharedFailure = false);
 
 	void requirePlatformThread() const;
 

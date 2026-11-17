@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,22 +106,33 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevOverlayCommandBuffer Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Owned primitive and renderer-instance storage reused across overlay frames.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevOverlayCommandBuffer_8hpp_source.html">DevOverlayCommandBuffer.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a9dfc064e907b4856ee032bc5a3be318f" id="r_a9dfc064e907b4856ee032bc5a3be318f"><td class="memItemLeft"><a id="a9dfc064e907b4856ee032bc5a3be318f" name="a9dfc064e907b4856ee032bc5a3be318f"></a>
 void&#160;</td><td class="memItemRight"><b>clear</b> () noexcept</td></tr>
+<tr class="memdesc:a9dfc064e907b4856ee032bc5a3be318f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear primitives, renderer instances, and draw runs while retaining vector capacity. <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:ab5f89e3fd24dfcd0121cb6b540b4cf05" id="r_ab5f89e3fd24dfcd0121cb6b540b4cf05"><td class="memItemLeft"><a id="ab5f89e3fd24dfcd0121cb6b540b4cf05" name="ab5f89e3fd24dfcd0121cb6b540b4cf05"></a>
 std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverlayPrimitive.html">DevOverlayPrimitive</a> &gt;&#160;</td><td class="memItemRight"><b>primitives</b> {}</td></tr>
+<tr class="memdesc:ab5f89e3fd24dfcd0121cb6b540b4cf05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Authoring primitives generated from the inspection selection. <br /></td></tr>
 <tr class="memitem:ae06210ea9df1f2b07291b750fbea14c1" id="r_ae06210ea9df1f2b07291b750fbea14c1"><td class="memItemLeft"><a id="ae06210ea9df1f2b07291b750fbea14c1" name="ae06210ea9df1f2b07291b750fbea14c1"></a>
 std::vector&lt; UiInstance &gt;&#160;</td><td class="memItemRight"><b>instances</b> {}</td></tr>
+<tr class="memdesc:ae06210ea9df1f2b07291b750fbea14c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contiguous renderer instances produced from primitives. <br /></td></tr>
 <tr class="memitem:ad637b4330a6382a0c386b4a953310761" id="r_ad637b4330a6382a0c386b4a953310761"><td class="memItemLeft"><a id="ad637b4330a6382a0c386b4a953310761" name="ad637b4330a6382a0c386b4a953310761"></a>
 std::vector&lt; UiRun &gt;&#160;</td><td class="memItemRight"><b>runs</b> {}</td></tr>
+<tr class="memdesc:ad637b4330a6382a0c386b4a953310761"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contiguous renderer draw runs referencing instances. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Owned primitive and renderer-instance storage reused across overlay frames. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/overlay/<a class="el" href="DevOverlayCommandBuffer_8hpp_source.html">DevOverlayCommandBuffer.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -137,7 +148,7 @@ std::vector&lt; UiRun &gt;&#160;</td><td class="memItemRight"><b>runs</b> {}</td
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverlayCommandBuffer.html">DevOverlayCommandBuffer</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverlayCommandBuffer.html">DevOverlayCommandBuffer</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.hpp"
 
 #if FLOW_UI_DEV_MODE
@@ -216,7 +217,7 @@ void section(Context& context, uint64_t identity, std::string_view title) {
 	heading.layout.childGap = 8;
 	heading.backgroundColor = interface_theme::kDepth2Ink;
 	heading.border = {.color = interface_theme::kBorderPrimary, .width = {0, 0, 0, 1, 0}};
-	CLAY(context.clayID(Keyed("section", identity)), heading) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("section", identity))), heading) {
 		ui::icon(context, Keyed("section-icon", identity), section_icon(identity),
 				 interface_theme::kAccentSeaGlass, 14);
 		ui::text(context, title, interface_theme::kTextCanvas, 14);
@@ -230,11 +231,11 @@ void section_surface(Context& context, uint64_t identity, std::string_view title
 	surface.backgroundColor = interface_theme::kDepth1Panel;
 	surface.border = {.color = interface_theme::kBorderVisible, .width = {1, 1, 1, 1, 0}};
 	surface.cornerRadius = CLAY_CORNER_RADIUS(4);
-	CLAY(context.clayID(Keyed("section-surface", identity)), surface) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("section-surface", identity))), surface) {
 		section(context, identity, title);
 		auto body = ui::column(10);
 		body.layout.padding = {12, 12, 12, 12};
-		CLAY(context.clayID(Keyed("section-body", identity)), body) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("section-body", identity))), body) {
 			contents();
 		}
 	}
@@ -249,7 +250,7 @@ void notice(Context& context, uint64_t identity, std::string_view label, bool wa
 	surface.border = {.color =
 						  warning ? interface_theme::kStatusAmber : interface_theme::kBorderVisible,
 					  .width = {2, 0, 0, 0, 0}};
-	CLAY(context.clayID(Keyed("notice", identity)), surface) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("notice", identity))), surface) {
 		ui::icon(context, Keyed("notice-icon", identity),
 				 warning ? diagnostics_icons::Icon::Warning : diagnostics_icons::Icon::Info,
 				 warning ? interface_theme::kStatusAmber : interface_theme::kAccentSeaGlass, 14);
@@ -443,7 +444,7 @@ void metric(Context& context, uint64_t identity, std::string_view label, std::st
 	surface.layout.padding = {9, 9, 7, 7};
 	surface.backgroundColor = interface_theme::kDepth0Keel;
 	surface.border.color = interface_theme::kBorderPrimary;
-	CLAY(context.clayID(Keyed("metric", identity)), surface) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("metric", identity))), surface) {
 		ui::text(context, label, interface_theme::kTextSecondary, 11);
 		ui::text(context, value, interface_theme::kTextCanvas, 14);
 	}
@@ -453,7 +454,7 @@ void overview(Context& context, DevDiagnosticsState& state, const DevErrorOccurr
 			  const std::vector<std::string>& capture_limitations, bool compact) {
 	const auto descriptor = occurrence.error.descriptor();
 	auto identity = ui::column(5);
-	CLAY(context.clayID("issue-identity"), identity) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("issue-identity")), identity) {
 		ui::text(context, descriptor.name, interface_theme::kTextCanvas, 20);
 		ui::text(context, occurrence.error.siteDescriptor().name, interface_theme::kTextSecondary,
 				 13);
@@ -508,13 +509,13 @@ void overview(Context& context, DevDiagnosticsState& state, const DevErrorOccurr
 				: std::to_string(group->last_tick - group->first_tick) + " application ticks";
 		auto metrics = compact ? ui::column(6) : ui::row(0);
 		metrics.layout.sizing.height = CLAY_SIZING_FIT(0);
-		CLAY(context.clayID("metrics-first"), metrics) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("metrics-first")), metrics) {
 			metric(context, 0, "Retained occurrences", std::to_string(group->count));
 			metric(context, 1, "Recent recurrence (partial coverage)",
 				   std::to_string(group->recent_count) + " / " +
 					   std::to_string(state.filters.ongoing_ticks) + " ticks");
 		}
-		CLAY(context.clayID("metrics-second"), metrics) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("metrics-second")), metrics) {
 			metric(context, 2, "First / last retained observation", first_last);
 			metric(context, 3, "Observed interval", interval);
 		}
@@ -522,7 +523,7 @@ void overview(Context& context, DevDiagnosticsState& state, const DevErrorOccurr
 		scope.layout.padding = {9, 9, 8, 8};
 		scope.backgroundColor = interface_theme::kDepth0Keel;
 		scope.border.color = interface_theme::kBorderPrimary;
-		CLAY(context.clayID("retained-scope"), scope) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("retained-scope")), scope) {
 			ui::text(context, "Scope & retained outcomes", interface_theme::kTextCanvas, 12);
 			ui::text(context,
 					 grouping_name(state.selected_mode) + " · " +
@@ -568,7 +569,7 @@ void advice(Context& context, DevDiagnosticsState& state, const DevErrorOccurren
 			surface.border.color = interface_theme::kAccentCurrent;
 			surface.border.width.left = 3;
 		}
-		CLAY(context.clayID(Keyed("advice", recommendation.descriptorId)), surface) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("advice", recommendation.descriptorId))), surface) {
 			ui::text(context, recommendation.title, interface_theme::kTextCanvas, 14);
 			ui::text(context,
 					 std::string("Evidence confidence: ") +
@@ -647,7 +648,7 @@ void history(Context& context, DevDiagnosticsState& state, const DevErrorOccurre
 	strip.layout.childGap = 1;
 	strip.layout.padding = {5, 5, 5, 5};
 	strip.backgroundColor = interface_theme::kDepth0Keel;
-	CLAY(context.clayID("history-strip"), strip) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("history-strip")), strip) {
 		for (uint64_t bin_index = 0; bin_index < state.bins.size(); ++bin_index) {
 			const auto& bin = state.bins[bin_index];
 			context.uiManager.createElement(ui::kControl, Keyed("history-bin", bin_index))
@@ -678,7 +679,7 @@ void history(Context& context, DevDiagnosticsState& state, const DevErrorOccurre
 			bar.border = {.color = bin.incomplete ? interface_theme::kStatusAmber
 												  : interface_theme::kBorderSubtle,
 						  .width = {0, 0, 0, 2, 0}};
-			CLAY(context.clayID(Keyed("bar", bin_index)), bar) {}
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("bar", bin_index))), bar) {}
 			context.uiManager.drawConstructed();
 		}
 	}
@@ -688,7 +689,7 @@ void history(Context& context, DevDiagnosticsState& state, const DevErrorOccurre
 			 interface_theme::kTextMuted, 11);
 	auto transport = compact ? ui::column(6) : ui::row();
 	transport.layout.sizing.height = CLAY_SIZING_FIT(0);
-	CLAY(context.clayID("history-transport"), transport) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("history-transport")), transport) {
 		button(context, "latest", "Latest retained", Latest, 0,
 			   !state.history.empty() && !state.selected_only_freeze);
 		button(context, "first", "First retained", First, 0,
@@ -696,7 +697,7 @@ void history(Context& context, DevDiagnosticsState& state, const DevErrorOccurre
 		button(context, "specific", "Specific occurrence...", Specific, 0,
 			   !state.selected_only_freeze);
 	}
-	CLAY(context.clayID("history-transport-next"), transport) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("history-transport-next")), transport) {
 		const auto found =
 			std::ranges::find(state.history, occurrence.id, &DevDiagnosticsHistoryRow::id);
 		const auto index = found == state.history.end()
@@ -715,7 +716,7 @@ void history(Context& context, DevDiagnosticsState& state, const DevErrorOccurre
 				 interface_theme::kAccentSeaGlass, 12);
 	if (context.state().history_open) {
 		auto browser = ui::card();
-		CLAY(context.clayID("occurrence-browser"), browser) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("occurrence-browser")), browser) {
 			ui::text(context,
 					 state.selected_bin < state.bins.size()
 						 ? "Retained starts in selected tick bin"
@@ -926,10 +927,10 @@ void correlations(Context& context, DevDiagnosticsState& state,
 			 "establish cause.",
 			 interface_theme::kTextSecondary, 12);
 	const auto surface = ui::card();
-	CLAY(context.clayID("performance-evidence"), surface) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("performance-evidence")), surface) {
 		const auto& timing = occurrence.timing;
 		auto performance_heading = ui::row(22);
-		CLAY(context.clayID("performance-heading"), performance_heading) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("performance-heading")), performance_heading) {
 			ui::icon(context, "performance-heading-icon", diagnostics_icons::Icon::Performance,
 					 interface_theme::kAccentSeaGlass, 15);
 			ui::text(context, "Performance", interface_theme::kTextCanvas, 14);
@@ -968,10 +969,10 @@ void correlations(Context& context, DevDiagnosticsState& state,
 						 : "Matching timing evidence is unavailable or ambiguous.",
 					 interface_theme::kTextMuted, 12);
 	}
-	CLAY(context.clayID("memory-evidence"), surface) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("memory-evidence")), surface) {
 		const auto& memory = occurrence.memory;
 		auto memory_heading = ui::row(22);
-		CLAY(context.clayID("memory-heading"), memory_heading) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("memory-heading")), memory_heading) {
 			ui::icon(context, "memory-heading-icon", diagnostics_icons::Icon::Memory,
 					 interface_theme::kAccentSeaGlass, 15);
 			ui::text(context, "Memory", interface_theme::kTextCanvas, 14);
@@ -1006,9 +1007,9 @@ void correlations(Context& context, DevDiagnosticsState& state,
 						 : "Matching memory evidence is unavailable or ambiguous.",
 					 interface_theme::kTextMuted, 12);
 	}
-	CLAY(context.clayID("capture-evidence"), surface) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("capture-evidence")), surface) {
 		auto capture_heading = ui::row(22);
-		CLAY(context.clayID("capture-heading"), capture_heading) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("capture-heading")), capture_heading) {
 			ui::icon(context, "capture-heading-icon", diagnostics_icons::Icon::Capture,
 					 interface_theme::kAccentSeaGlass, 15);
 			ui::text(context, "Triggered capture", interface_theme::kTextCanvas, 14);
@@ -1074,13 +1075,13 @@ void DevDiagnosticsWorkbench::buildElement(BuildContext& context) {
 			const bool compact = previous_width <= 0 || previous_width < 540;
 			auto scroll = ui::column(0);
 			scroll.layout.sizing.height = CLAY_SIZING_GROW(0);
-			const auto scroll_id = context.clayID("scroll");
+			const auto scroll_id = FlowUi::ValueOrThrow(context.clayID("scroll"));
 			const auto scroll_data = Clay_GetScrollContainerData(scroll_id);
 			if (scroll_data.found && scroll_data.scrollPosition) {
 				if (local.scroll_to_section) {
 					const auto target =
 						Clay_GetElementData(
-							context.clayID(Keyed("section", local.scroll_to_section)))
+							FlowUi::ValueOrThrow(context.clayID(Keyed("section", local.scroll_to_section))))
 							.boundingBox;
 					const auto viewport = Clay_GetElementData(scroll_id).boundingBox;
 					scroll_data.scrollPosition->y -= target.y - viewport.y;
@@ -1095,7 +1096,7 @@ void DevDiagnosticsWorkbench::buildElement(BuildContext& context) {
 			CLAY(scroll_id, scroll) {
 				auto report = ui::column(16);
 				report.layout.padding = {15, 15, 14, 20};
-				CLAY(context.clayID("report"), report) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("report")), report) {
 					if (!state.message.empty()) {
 						const bool informational = !state.message_is_error;
 						notice(context, 0, state.message, !informational);

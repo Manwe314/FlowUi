@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,26 +106,143 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevErrorBreadcrumb Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevErrorTypes_8hpp_source.html">DevErrorTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a57fa9dd14bdadbdaa2ff0adcc9676c4f" id="r_a57fa9dd14bdadbdaa2ff0adcc9676c4f"><td class="memItemLeft"><a id="a57fa9dd14bdadbdaa2ff0adcc9676c4f" name="a57fa9dd14bdadbdaa2ff0adcc9676c4f"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>sequence</b> = 0u</td></tr>
-<tr class="memitem:a46212b30851190798a3b9ed1a1e0102a" id="r_a46212b30851190798a3b9ed1a1e0102a"><td class="memItemLeft"><a id="a46212b30851190798a3b9ed1a1e0102a" name="a46212b30851190798a3b9ed1a1e0102a"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>timestampNs</b> = 0u</td></tr>
-<tr class="memitem:a48c5f972f37515e29e80c7fd5d03d248" id="r_a48c5f972f37515e29e80c7fd5d03d248"><td class="memItemLeft"><a id="a48c5f972f37515e29e80c7fd5d03d248" name="a48c5f972f37515e29e80c7fd5d03d248"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>descriptorId</b> = 0u</td></tr>
-<tr class="memitem:a2f22f2b0dc151c68f07432d4d6bc314f" id="r_a2f22f2b0dc151c68f07432d4d6bc314f"><td class="memItemLeft"><a id="a2f22f2b0dc151c68f07432d4d6bc314f" name="a2f22f2b0dc151c68f07432d4d6bc314f"></a>
-DevErrorOccurrenceId&#160;</td><td class="memItemRight"><b>occurrence</b> = 0u</td></tr>
-<tr class="memitem:acc91ea0fb8c32c35c27f472c47239508" id="r_acc91ea0fb8c32c35c27f472c47239508"><td class="memItemLeft"><a id="acc91ea0fb8c32c35c27f472c47239508" name="acc91ea0fb8c32c35c27f472c47239508"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorContext.html">DevErrorContext</a>&#160;</td><td class="memItemRight"><b>context</b> {}</td></tr>
-<tr class="memitem:a8303ca669b213bcf2cee7abf82aca7b0" id="r_a8303ca669b213bcf2cee7abf82aca7b0"><td class="memItemLeft"><a id="a8303ca669b213bcf2cee7abf82aca7b0" name="a8303ca669b213bcf2cee7abf82aca7b0"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>primaryValue</b> = 0u</td></tr>
-<tr class="memitem:abcd5794a0d9899b7cfac635ef73fc2ac" id="r_abcd5794a0d9899b7cfac635ef73fc2ac"><td class="memItemLeft"><a id="abcd5794a0d9899b7cfac635ef73fc2ac" name="abcd5794a0d9899b7cfac635ef73fc2ac"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>secondaryValue</b> = 0u</td></tr>
-<tr class="memitem:ae18f4b9b2a7433abec2f86d72268fd9a" id="r_ae18f4b9b2a7433abec2f86d72268fd9a"><td class="memItemLeft"><a id="ae18f4b9b2a7433abec2f86d72268fd9a" name="ae18f4b9b2a7433abec2f86d72268fd9a"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>threadTrack</b> = 0u</td></tr>
+<tr class="memitem:a57fa9dd14bdadbdaa2ff0adcc9676c4f" id="r_a57fa9dd14bdadbdaa2ff0adcc9676c4f"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a57fa9dd14bdadbdaa2ff0adcc9676c4f">sequence</a> = 0u</td></tr>
+<tr class="memitem:a46212b30851190798a3b9ed1a1e0102a" id="r_a46212b30851190798a3b9ed1a1e0102a"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a46212b30851190798a3b9ed1a1e0102a">timestampNs</a> = 0u</td></tr>
+<tr class="memitem:a48c5f972f37515e29e80c7fd5d03d248" id="r_a48c5f972f37515e29e80c7fd5d03d248"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a48c5f972f37515e29e80c7fd5d03d248">descriptorId</a> = 0u</td></tr>
+<tr class="memitem:a2f22f2b0dc151c68f07432d4d6bc314f" id="r_a2f22f2b0dc151c68f07432d4d6bc314f"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a2f22f2b0dc151c68f07432d4d6bc314f">occurrence</a> = 0u</td></tr>
+<tr class="memitem:acc91ea0fb8c32c35c27f472c47239508" id="r_acc91ea0fb8c32c35c27f472c47239508"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorContext.html">DevErrorContext</a>&#160;</td><td class="memItemRight"><a class="el" href="#acc91ea0fb8c32c35c27f472c47239508">context</a> {}</td></tr>
+<tr class="memitem:a8303ca669b213bcf2cee7abf82aca7b0" id="r_a8303ca669b213bcf2cee7abf82aca7b0"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a8303ca669b213bcf2cee7abf82aca7b0">primaryValue</a> = 0u</td></tr>
+<tr class="memitem:abcd5794a0d9899b7cfac635ef73fc2ac" id="r_abcd5794a0d9899b7cfac635ef73fc2ac"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#abcd5794a0d9899b7cfac635ef73fc2ac">secondaryValue</a> = 0u</td></tr>
+<tr class="memitem:ae18f4b9b2a7433abec2f86d72268fd9a" id="r_ae18f4b9b2a7433abec2f86d72268fd9a"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#ae18f4b9b2a7433abec2f86d72268fd9a">threadTrack</a> = 0u</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>One bounded chronological breadcrumb linking numeric values to an optional diagnostic occurrence. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="acc91ea0fb8c32c35c27f472c47239508" name="acc91ea0fb8c32c35c27f472c47239508"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc91ea0fb8c32c35c27f472c47239508">&#9670;&#160;</a></span>context</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorContext.html">DevErrorContext</a> FlowUi::devSystems::DevErrorBreadcrumb::context {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Producer context copied when this evidence was captured. </p>
+
+</div>
+</div>
+<a id="a48c5f972f37515e29e80c7fd5d03d248" name="a48c5f972f37515e29e80c7fd5d03d248"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a48c5f972f37515e29e80c7fd5d03d248">&#9670;&#160;</a></span>descriptorId</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorBreadcrumb::descriptorId = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Registered breadcrumb or advice descriptor identity. </p>
+
+</div>
+</div>
+<a id="a2f22f2b0dc151c68f07432d4d6bc314f" name="a2f22f2b0dc151c68f07432d4d6bc314f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2f22f2b0dc151c68f07432d4d6bc314f">&#9670;&#160;</a></span>occurrence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a> FlowUi::devSystems::DevErrorBreadcrumb::occurrence = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Diagnostic occurrence identity; zero means no explicit occurrence. </p>
+
+</div>
+</div>
+<a id="a8303ca669b213bcf2cee7abf82aca7b0" name="a8303ca669b213bcf2cee7abf82aca7b0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8303ca669b213bcf2cee7abf82aca7b0">&#9670;&#160;</a></span>primaryValue</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorBreadcrumb::primaryValue = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>First exact numeric value attached to the breadcrumb. </p>
+
+</div>
+</div>
+<a id="abcd5794a0d9899b7cfac635ef73fc2ac" name="abcd5794a0d9899b7cfac635ef73fc2ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abcd5794a0d9899b7cfac635ef73fc2ac">&#9670;&#160;</a></span>secondaryValue</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorBreadcrumb::secondaryValue = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Second exact numeric value attached to the breadcrumb. </p>
+
+</div>
+</div>
+<a id="a57fa9dd14bdadbdaa2ff0adcc9676c4f" name="a57fa9dd14bdadbdaa2ff0adcc9676c4f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a57fa9dd14bdadbdaa2ff0adcc9676c4f">&#9670;&#160;</a></span>sequence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorBreadcrumb::sequence = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Monotonic capture sequence used to order retained records. </p>
+
+</div>
+</div>
+<a id="ae18f4b9b2a7433abec2f86d72268fd9a" name="ae18f4b9b2a7433abec2f86d72268fd9a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae18f4b9b2a7433abec2f86d72268fd9a">&#9670;&#160;</a></span>threadTrack</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::DevErrorBreadcrumb::threadTrack = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Producer thread track identity associated with the evidence. </p>
+
+</div>
+</div>
+<a id="a46212b30851190798a3b9ed1a1e0102a" name="a46212b30851190798a3b9ed1a1e0102a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a46212b30851190798a3b9ed1a1e0102a">&#9670;&#160;</a></span>timestampNs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorBreadcrumb::timestampNs = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Timestamp in the monotonic capture clock, in nanoseconds. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/errors/<a class="el" href="DevErrorTypes_8hpp_source.html">DevErrorTypes.hpp</a></li>
 </ul>
@@ -142,7 +259,7 @@ uint32_t&#160;</td><td class="memItemRight"><b>threadTrack</b> = 0u</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorBreadcrumb.html">DevErrorBreadcrumb</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorBreadcrumb.html">DevErrorBreadcrumb</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -1,8 +1,28 @@
 var searchData=
 [
-  ['uiactioncall_0',['UiActionCall',['../classFlowUi_1_1UiActionCall.html',1,'FlowUi']]],
-  ['uiactionrecipe_1',['UiActionRecipe',['../structFlowUi_1_1UiActionRecipe.html',1,'FlowUi']]],
-  ['uiactions_2',['UiActions',['../classFlowUi_1_1UiActions.html',1,'FlowUi']]],
-  ['uiconfig_3',['UiConfig',['../structFlowUi_1_1UiConfig.html',1,'FlowUi']]],
-  ['uimanager_4',['UiManager',['../classFlowUi_1_1UiManager.html',1,'FlowUi']]]
+  ['scrollinputevent_0',['ScrollInputEvent',['../structFlowUi_1_1ScrollInputEvent.html',1,'FlowUi']]],
+  ['sectioncoverage_1',['SectionCoverage',['../structFlowUi_1_1devSystems_1_1agentic_1_1SectionCoverage.html',1,'FlowUi::devSystems::agentic']]],
+  ['selectablesurface_2',['SelectableSurface',['../structFlowUi_1_1FSEL_1_1SelectableSurface.html',1,'FlowUi::FSEL']]],
+  ['selectablesurfaceparameters_3',['SelectableSurfaceParameters',['../structFlowUi_1_1FSEL_1_1SelectableSurfaceParameters.html',1,'FlowUi::FSEL']]],
+  ['selectablesurfacestateoverrides_4',['SelectableSurfaceStateOverrides',['../structFlowUi_1_1FSEL_1_1SelectableSurfaceStateOverrides.html',1,'FlowUi::FSEL']]],
+  ['selectablesurfacestyle_5',['SelectableSurfaceStyle',['../structFlowUi_1_1FSEL_1_1SelectableSurfaceStyle.html',1,'FlowUi::FSEL']]],
+  ['shortcutchord_6',['ShortcutChord',['../structFlowUi_1_1ShortcutChord.html',1,'FlowUi']]],
+  ['shortcutcontext_7',['ShortcutContext',['../structFlowUi_1_1ShortcutContext.html',1,'FlowUi']]],
+  ['shortcutmanager_8',['ShortcutManager',['../classFlowUi_1_1ShortcutManager.html',1,'FlowUi']]],
+  ['shortcutmanagerconfig_9',['ShortcutManagerConfig',['../structFlowUi_1_1ShortcutManagerConfig.html',1,'FlowUi']]],
+  ['slider_10',['Slider',['../structFlowUi_1_1FSEL_1_1Slider.html',1,'FlowUi::FSEL']]],
+  ['sliderparameters_11',['SliderParameters',['../structFlowUi_1_1FSEL_1_1SliderParameters.html',1,'FlowUi::FSEL']]],
+  ['sliderstate_12',['SliderState',['../structFlowUi_1_1FSEL_1_1SliderState.html',1,'FlowUi::FSEL']]],
+  ['sliderstateoverrides_13',['SliderStateOverrides',['../structFlowUi_1_1FSEL_1_1SliderStateOverrides.html',1,'FlowUi::FSEL']]],
+  ['spacer_14',['Spacer',['../structFlowUi_1_1FSEL_1_1Spacer.html',1,'FlowUi::FSEL']]],
+  ['spacerparameters_15',['SpacerParameters',['../structFlowUi_1_1FSEL_1_1SpacerParameters.html',1,'FlowUi::FSEL']]],
+  ['splitterhandle_16',['SplitterHandle',['../structFlowUi_1_1FSEL_1_1SplitterHandle.html',1,'FlowUi::FSEL']]],
+  ['splitterhandleparameters_17',['SplitterHandleParameters',['../structFlowUi_1_1FSEL_1_1SplitterHandleParameters.html',1,'FlowUi::FSEL']]],
+  ['splitterhandlestate_18',['SplitterHandleState',['../structFlowUi_1_1FSEL_1_1SplitterHandleState.html',1,'FlowUi::FSEL']]],
+  ['staticmemorysourcedescriptor_19',['StaticMemorySourceDescriptor',['../structFlowUi_1_1devSystems_1_1StaticMemorySourceDescriptor.html',1,'FlowUi::devSystems']]],
+  ['storagememorycapacities_20',['StorageMemoryCapacities',['../structFlowUi_1_1StorageMemoryCapacities.html',1,'FlowUi']]],
+  ['switch_21',['Switch',['../structFlowUi_1_1FSEL_1_1Switch.html',1,'FlowUi::FSEL']]],
+  ['switchparameters_22',['SwitchParameters',['../structFlowUi_1_1FSEL_1_1SwitchParameters.html',1,'FlowUi::FSEL']]],
+  ['switchstateoverrides_23',['SwitchStateOverrides',['../structFlowUi_1_1FSEL_1_1SwitchStateOverrides.html',1,'FlowUi::FSEL']]],
+  ['switchvalueoverrides_24',['SwitchValueOverrides',['../structFlowUi_1_1FSEL_1_1SwitchValueOverrides.html',1,'FlowUi::FSEL']]]
 ];

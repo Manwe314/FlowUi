@@ -2,12 +2,14 @@
 #include "devSystems/devAgenticWorkflow/AgenticTypes.hpp"
 
 #include <array>
+#include <atomic>
 #include <chrono>
 #include <condition_variable>
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
 #include <mutex>
+#include <stdexcept>
 #include <thread>
 
 using namespace FlowUi;
@@ -37,9 +39,19 @@ int main() {
 	std::condition_variable gate;
 	std::size_t waiting_clients = 0;
 	bool released = false;
+	std::atomic<std::uint64_t> sideEffects{0};
 	AgenticLocalServer server;
 	const auto started = server.start(endpoint, [&](const Json& request) {
 		const auto* operation = request.find("operation");
+		if (operation && operation->string_or() == "self-stop") {
+			const auto stopped = server.stop();
+			return Json::make_object({{"self_stop_rejected",
+				!stopped && stopped.error().code == ErrorCode::AgenticBusy}});
+		}
+		if (operation && operation->string_or() == "throw-after-dispatch") {
+			++sideEffects;
+			throw std::runtime_error("application handler failed after its side effect");
+		}
 		if (operation && operation->string_or() == "wait") {
 			std::unique_lock lock(gate_mutex);
 			++waiting_clients;
@@ -90,6 +102,17 @@ int main() {
 		require(outcome, "concurrent wait did not observe cancellation");
 	const auto echo = send_local_command(endpoint, Json::make_object({{"value", "authenticated"}}));
 	require(echo && echo->find("echo"), "concurrent server lost ordinary request handling");
+	const auto selfStop = send_local_command(endpoint,
+		Json::make_object({{"operation", "self-stop"}}));
+	require(selfStop && selfStop->find("self_stop_rejected") &&
+		selfStop->find("self_stop_rejected")->bool_or() && server.running(),
+		"worker stop did not preserve owner cleanup after rejecting self-join");
+	const auto failedHandler = send_local_command(endpoint,
+		Json::make_object({{"operation", "throw-after-dispatch"}}));
+	require(failedHandler && failedHandler->find("error") &&
+		failedHandler->find("error")->find("code")->string_or() == "handler_failed" &&
+		sideEffects.load() == 1,
+		"failed handler lost its explicit failure or was automatically redispatched");
 	auto unauthorized = endpoint;
 	unauthorized.nonce = "wrong-owner-private-nonce";
 	const auto rejected = send_local_command(unauthorized, Json::make_object());
@@ -97,12 +120,12 @@ int main() {
 				rejected->find("error")->find("message")->string_or() ==
 					"stale_or_unauthorized_run",
 			"concurrency bypassed endpoint authentication");
-	server.stop();
+	require(bool(server.stop()), "owner could not stop and join transport workers");
 	require(!server.running(), "transport workers remained active after stop");
 	require(!send_local_command(endpoint, Json::make_object()),
 			"stopped endpoint accepted commands");
 	require(bool(server.start(endpoint, [](const Json& request) { return request; })),
 			"stopped transport could not restart");
-	server.stop();
+	require(bool(server.stop()), "owner could not stop restarted transport");
 	return 0;
 }

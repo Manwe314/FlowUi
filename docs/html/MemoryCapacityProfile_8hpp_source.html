@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -114,54 +114,60 @@ $(function() {
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;string&gt;</span></div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;vector&gt;</span></div>
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="keyword">namespace </span>FlowUi {</div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
-<div class="foldopen" id="foldopen00011" data-start="{" data-end="};">
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacitySetting.html">   11</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1MemoryCapacitySetting.html">MemoryCapacitySetting</a> {</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    MemoryCapacityTargetId target = 0u;</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    uint64_t value = 0u;</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>};</div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi.html">FlowUi</a> {</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span></div>
+<div class="foldopen" id="foldopen00015" data-start="{" data-end="};">
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacitySetting.html">   15</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1MemoryCapacitySetting.html">MemoryCapacitySetting</a> {</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacitySetting.html#a74fbb273d2976c1a2c1dd2e5306d806e">   17</a></span>    <a class="code hl_typedef" href="namespaceFlowUi.html#a33b226da4cc27c9bca76038b57183669">MemoryCapacityTargetId</a> <a class="code hl_variable" href="structFlowUi_1_1MemoryCapacitySetting.html#a74fbb273d2976c1a2c1dd2e5306d806e">target</a> = 0u;</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacitySetting.html#a4f7d3c43d3d6984cfaec5a23cb434cf7">   19</a></span>    uint64_t <a class="code hl_variable" href="structFlowUi_1_1MemoryCapacitySetting.html#a4f7d3c43d3d6984cfaec5a23cb434cf7">value</a> = 0u;</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>};</div>
 </div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
-<div class="foldopen" id="foldopen00016" data-start="{" data-end="};">
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html">   16</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html">MemoryCapacityProfileMetadata</a> {</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    std::string platform{};</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    std::string build{};</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    std::string gpu{};</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    uint64_t captureBeginTick = 0u;</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    uint64_t captureEndTickExclusive = 0u;</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    uint64_t warmUpTicks = 0u;</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    uint32_t framesInFlight = 0u;</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    <span class="keywordtype">bool</span> complete = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>};</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span></div>
+<div class="foldopen" id="foldopen00026" data-start="{" data-end="};">
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html">   26</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html">MemoryCapacityProfileMetadata</a> {</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a84fa69bbb0fb0e5684302d5d0a11b157">   28</a></span>    std::string <a class="code hl_variable" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a84fa69bbb0fb0e5684302d5d0a11b157">platform</a>{};</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a90a0128923b4ab7f659f43271515ec4f">   30</a></span>    std::string <a class="code hl_variable" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a90a0128923b4ab7f659f43271515ec4f">build</a>{};</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a79e1b4302f26d10d621dedee20cfce7d">   32</a></span>    std::string <a class="code hl_variable" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a79e1b4302f26d10d621dedee20cfce7d">gpu</a>{};</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a7d2688b2347829d620471f32fe78ac75">   34</a></span>    uint64_t <a class="code hl_variable" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a7d2688b2347829d620471f32fe78ac75">captureBeginTick</a> = 0u;</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a7fbfecefb2b20295d20a93904a3caa7e">   36</a></span>    uint64_t <a class="code hl_variable" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a7fbfecefb2b20295d20a93904a3caa7e">captureEndTickExclusive</a> = 0u;</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a27760e8f8436ed8a959b55ad2d447204">   38</a></span>    uint64_t <a class="code hl_variable" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a27760e8f8436ed8a959b55ad2d447204">warmUpTicks</a> = 0u;</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a5fe228d4fa4626dc574ee23c8792e75a">   40</a></span>    uint32_t <a class="code hl_variable" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a5fe228d4fa4626dc574ee23c8792e75a">framesInFlight</a> = 0u;</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#aebcb146d6b244ec34ae0a0f03a191f79">   42</a></span>    <span class="keywordtype">bool</span> <a class="code hl_variable" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#aebcb146d6b244ec34ae0a0f03a191f79">complete</a> = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>};</div>
 </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
-<div class="foldopen" id="foldopen00027" data-start="{" data-end="};">
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno"><a class="line" href="structFlowUi_1_1ManagerMemoryCapacities.html">   27</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1ManagerMemoryCapacities.html">ManagerMemoryCapacities</a> {</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    uint64_t elements = 0u, inputFields = 0u, inputTextBytes = 0u, fonts = 0u,</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>             fontAtlasCpuPixelBytes = 0u, icons = 0u, iconDocuments = 0u, iconAtlasMetadata = 0u,</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>             viewports = 0u, popups = 0u, shortcuts = 0u, actions = 0u, themes = 0u, uiLayout = 0u,</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>             renderer = 0u;</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>};</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span></div>
+<div class="foldopen" id="foldopen00054" data-start="{" data-end="};">
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacityProfile.html">   54</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1MemoryCapacityProfile.html">MemoryCapacityProfile</a> {</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacityProfile.html#ae292915460be89c975b898cee68a1696">   56</a></span>    <a class="code hl_struct" href="structFlowUi_1_1StorageMemoryCapacities.html">StorageMemoryCapacities</a> <a class="code hl_variable" href="structFlowUi_1_1MemoryCapacityProfile.html#ae292915460be89c975b898cee68a1696">storage</a>{};</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacityProfile.html#aa21fba8535ff12f2f799c61631f6e9ba">   62</a></span>    std::vector&lt;MemoryCapacitySetting&gt; <a class="code hl_variable" href="structFlowUi_1_1MemoryCapacityProfile.html#aa21fba8535ff12f2f799c61631f6e9ba">settings</a>{};</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacityProfile.html#afc6efa8745ec0614286cb68b9ea63811">   64</a></span>    <span class="keywordtype">float</span> <a class="code hl_variable" href="structFlowUi_1_1MemoryCapacityProfile.html#afc6efa8745ec0614286cb68b9ea63811">growthFactor</a> = 1.5f;</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacityProfile.html#aba9f9a5c17d70d321bfffac82fadf0aa">   66</a></span>    <span class="keywordtype">bool</span> <a class="code hl_variable" href="structFlowUi_1_1MemoryCapacityProfile.html#aba9f9a5c17d70d321bfffac82fadf0aa">allowRuntimeGrowth</a> = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacityProfile.html#a188ce17702b97e4075569cd3921e1337">   68</a></span>    <a class="code hl_struct" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html">MemoryCapacityProfileMetadata</a> <a class="code hl_variable" href="structFlowUi_1_1MemoryCapacityProfile.html#a188ce17702b97e4075569cd3921e1337">metadata</a>{};</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>};</div>
 </div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
-<div class="foldopen" id="foldopen00034" data-start="{" data-end="};">
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno"><a class="line" href="structFlowUi_1_1MemoryCapacityProfile.html">   34</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1MemoryCapacityProfile.html">MemoryCapacityProfile</a> {</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    <a class="code hl_struct" href="structFlowUi_1_1StorageMemoryCapacities.html">StorageMemoryCapacities</a> storage{};</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    <a class="code hl_struct" href="structFlowUi_1_1ManagerMemoryCapacities.html">ManagerMemoryCapacities</a> managers{};</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    std::vector&lt;MemoryCapacitySetting&gt; settings{};</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    <span class="keywordtype">float</span> growthFactor = 1.5f;</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <span class="keywordtype">bool</span> allowRuntimeGrowth = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    <a class="code hl_struct" href="structFlowUi_1_1MemoryCapacityProfileMetadata.html">MemoryCapacityProfileMetadata</a> metadata{};</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>};</div>
-</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>} <span class="comment">// namespace FlowUi</span></div>
-<div class="ttc" id="astructFlowUi_1_1ManagerMemoryCapacities_html"><div class="ttname"><a href="structFlowUi_1_1ManagerMemoryCapacities.html">FlowUi::ManagerMemoryCapacities</a></div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:27</div></div>
-<div class="ttc" id="astructFlowUi_1_1MemoryCapacityProfileMetadata_html"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacityProfileMetadata.html">FlowUi::MemoryCapacityProfileMetadata</a></div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:16</div></div>
-<div class="ttc" id="astructFlowUi_1_1MemoryCapacityProfile_html"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacityProfile.html">FlowUi::MemoryCapacityProfile</a></div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:34</div></div>
-<div class="ttc" id="astructFlowUi_1_1MemoryCapacitySetting_html"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacitySetting.html">FlowUi::MemoryCapacitySetting</a></div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:11</div></div>
-<div class="ttc" id="astructFlowUi_1_1StorageMemoryCapacities_html"><div class="ttname"><a href="structFlowUi_1_1StorageMemoryCapacities.html">FlowUi::StorageMemoryCapacities</a></div><div class="ttdef"><b>Definition</b> StorageConfig.hpp:7</div></div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="ttc" id="anamespaceFlowUi_html"><div class="ttname"><a href="namespaceFlowUi.html">FlowUi</a></div><div class="ttdef"><b>Definition</b> App.hpp:29</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a33b226da4cc27c9bca76038b57183669"><div class="ttname"><a href="namespaceFlowUi.html#a33b226da4cc27c9bca76038b57183669">FlowUi::MemoryCapacityTargetId</a></div><div class="ttdeci">uint64_t MemoryCapacityTargetId</div><div class="ttdef"><b>Definition</b> MemoryCapacityTargets.hpp:6</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacityProfileMetadata_html"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacityProfileMetadata.html">FlowUi::MemoryCapacityProfileMetadata</a></div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:26</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacityProfileMetadata_html_a27760e8f8436ed8a959b55ad2d447204"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a27760e8f8436ed8a959b55ad2d447204">FlowUi::MemoryCapacityProfileMetadata::warmUpTicks</a></div><div class="ttdeci">uint64_t warmUpTicks</div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:38</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacityProfileMetadata_html_a5fe228d4fa4626dc574ee23c8792e75a"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a5fe228d4fa4626dc574ee23c8792e75a">FlowUi::MemoryCapacityProfileMetadata::framesInFlight</a></div><div class="ttdeci">uint32_t framesInFlight</div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:40</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacityProfileMetadata_html_a79e1b4302f26d10d621dedee20cfce7d"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a79e1b4302f26d10d621dedee20cfce7d">FlowUi::MemoryCapacityProfileMetadata::gpu</a></div><div class="ttdeci">std::string gpu</div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:32</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacityProfileMetadata_html_a7d2688b2347829d620471f32fe78ac75"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a7d2688b2347829d620471f32fe78ac75">FlowUi::MemoryCapacityProfileMetadata::captureBeginTick</a></div><div class="ttdeci">uint64_t captureBeginTick</div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:34</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacityProfileMetadata_html_a7fbfecefb2b20295d20a93904a3caa7e"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a7fbfecefb2b20295d20a93904a3caa7e">FlowUi::MemoryCapacityProfileMetadata::captureEndTickExclusive</a></div><div class="ttdeci">uint64_t captureEndTickExclusive</div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:36</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacityProfileMetadata_html_a84fa69bbb0fb0e5684302d5d0a11b157"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a84fa69bbb0fb0e5684302d5d0a11b157">FlowUi::MemoryCapacityProfileMetadata::platform</a></div><div class="ttdeci">std::string platform</div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:28</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacityProfileMetadata_html_a90a0128923b4ab7f659f43271515ec4f"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#a90a0128923b4ab7f659f43271515ec4f">FlowUi::MemoryCapacityProfileMetadata::build</a></div><div class="ttdeci">std::string build</div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:30</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacityProfileMetadata_html_aebcb146d6b244ec34ae0a0f03a191f79"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacityProfileMetadata.html#aebcb146d6b244ec34ae0a0f03a191f79">FlowUi::MemoryCapacityProfileMetadata::complete</a></div><div class="ttdeci">bool complete</div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:42</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacityProfile_html"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacityProfile.html">FlowUi::MemoryCapacityProfile</a></div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:54</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacityProfile_html_a188ce17702b97e4075569cd3921e1337"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacityProfile.html#a188ce17702b97e4075569cd3921e1337">FlowUi::MemoryCapacityProfile::metadata</a></div><div class="ttdeci">MemoryCapacityProfileMetadata metadata</div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:68</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacityProfile_html_aa21fba8535ff12f2f799c61631f6e9ba"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacityProfile.html#aa21fba8535ff12f2f799c61631f6e9ba">FlowUi::MemoryCapacityProfile::settings</a></div><div class="ttdeci">std::vector&lt; MemoryCapacitySetting &gt; settings</div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:62</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacityProfile_html_aba9f9a5c17d70d321bfffac82fadf0aa"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacityProfile.html#aba9f9a5c17d70d321bfffac82fadf0aa">FlowUi::MemoryCapacityProfile::allowRuntimeGrowth</a></div><div class="ttdeci">bool allowRuntimeGrowth</div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:66</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacityProfile_html_ae292915460be89c975b898cee68a1696"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacityProfile.html#ae292915460be89c975b898cee68a1696">FlowUi::MemoryCapacityProfile::storage</a></div><div class="ttdeci">StorageMemoryCapacities storage</div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:56</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacityProfile_html_afc6efa8745ec0614286cb68b9ea63811"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacityProfile.html#afc6efa8745ec0614286cb68b9ea63811">FlowUi::MemoryCapacityProfile::growthFactor</a></div><div class="ttdeci">float growthFactor</div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:64</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacitySetting_html"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacitySetting.html">FlowUi::MemoryCapacitySetting</a></div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:15</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacitySetting_html_a4f7d3c43d3d6984cfaec5a23cb434cf7"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacitySetting.html#a4f7d3c43d3d6984cfaec5a23cb434cf7">FlowUi::MemoryCapacitySetting::value</a></div><div class="ttdeci">uint64_t value</div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:19</div></div>
+<div class="ttc" id="astructFlowUi_1_1MemoryCapacitySetting_html_a74fbb273d2976c1a2c1dd2e5306d806e"><div class="ttname"><a href="structFlowUi_1_1MemoryCapacitySetting.html#a74fbb273d2976c1a2c1dd2e5306d806e">FlowUi::MemoryCapacitySetting::target</a></div><div class="ttdeci">MemoryCapacityTargetId target</div><div class="ttdef"><b>Definition</b> MemoryCapacityProfile.hpp:17</div></div>
+<div class="ttc" id="astructFlowUi_1_1StorageMemoryCapacities_html"><div class="ttname"><a href="structFlowUi_1_1StorageMemoryCapacities.html">FlowUi::StorageMemoryCapacities</a></div><div class="ttdef"><b>Definition</b> StorageConfig.hpp:12</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

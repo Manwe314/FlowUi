@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -42,7 +44,13 @@ enum class SliderVisualParts : uint8_t {
 	All = Track | Fill | Thumb,
 };
 
-/** Combine visible slider parts into a single mask. */
+/** Combine visible slider parts into a single mask.
+ * @par Example
+ * @code{.cpp}
+ * constexpr auto parts = FlowUi::FSEL::SliderVisualParts::Track |
+ *                        FlowUi::FSEL::SliderVisualParts::Thumb;
+ * @endcode
+ */
 [[nodiscard]] constexpr SliderVisualParts operator|(
 	SliderVisualParts left,
 	SliderVisualParts right) noexcept {
@@ -50,7 +58,13 @@ enum class SliderVisualParts : uint8_t {
 		static_cast<uint8_t>(left) | static_cast<uint8_t>(right));
 }
 
-/** Return the visible slider parts shared by both masks. */
+/** Return the visible slider parts shared by both masks.
+ * @par Example
+ * @code{.cpp}
+ * constexpr auto visible = FlowUi::FSEL::SliderVisualParts::All;
+ * constexpr auto track = visible & FlowUi::FSEL::SliderVisualParts::Track;
+ * @endcode
+ */
 [[nodiscard]] constexpr SliderVisualParts operator&(
 	SliderVisualParts left,
 	SliderVisualParts right) noexcept {
@@ -58,7 +72,14 @@ enum class SliderVisualParts : uint8_t {
 		static_cast<uint8_t>(left) & static_cast<uint8_t>(right));
 }
 
-/** Return whether parts contains any bit selected by part; None always returns false. */
+/** Return whether parts contains any bit selected by part; None always returns false.
+ * @par Example
+ * @code{.cpp}
+ * constexpr auto parts = FlowUi::FSEL::SliderVisualParts::All;
+ * const bool thumbVisible = FlowUi::FSEL::hasSliderVisualPart(
+ *     parts, FlowUi::FSEL::SliderVisualParts::Thumb);
+ * @endcode
+ */
 [[nodiscard]] constexpr bool hasSliderVisualPart(
 	SliderVisualParts parts,
 	SliderVisualParts part) noexcept {
@@ -245,7 +266,7 @@ struct Slider {
 	 * context Borrowed context valid for this callback only.
 	 */
 	static void buildElement(BuildContext& context) {
-		const auto& theme = context.uiManager.theme<FSELTheme>().sliderTheme;
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().sliderTheme;
 		const Geometry geometry = resolveGeometry(context.params, theme);
 		const FSELSliderStateTheme appearance = resolveAppearance(context, theme);
 		const detail::slider::Bounds bounds = resolveBounds(context.params);
@@ -389,7 +410,7 @@ private:
 	static void updateFromPointer(
 		InteractionContext& context,
 		detail::slider::Bounds bounds) {
-		const auto& theme = context.uiManager.theme<FSELTheme>().sliderTheme;
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().sliderTheme;
 		const Geometry geometry = resolveGeometry(context.params, theme);
 		double ratio = 0.0;
 		if (context.params.pressBehavior == SliderPressBehavior::JumpToPointer) {
@@ -437,7 +458,7 @@ private:
 	}
 
 	static void requestCursor(InteractionContext& context, bool dragging) {
-		const auto& theme = context.uiManager.theme<FSELTheme>().sliderTheme;
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().sliderTheme;
 		const CursorType cursor = dragging
 			? context.params.draggingCursor.value_or(theme.draggingCursor)
 			: context.params.cursor.value_or(theme.cursor);
@@ -517,7 +538,7 @@ private:
 				theme.trackBorderWidth),
 		};
 		track.floating = centeredFloating();
-		CLAY(context.clayID("track"), track);
+		CLAY(FlowUi::ValueOrThrow(context.clayID("track")), track);
 	}
 
 	static void emitFill(
@@ -576,7 +597,7 @@ private:
 					.parent = CLAY_ATTACH_POINT_CENTER_BOTTOM,
 				};
 		}
-		CLAY(context.clayID("fill"), fill);
+		CLAY(FlowUi::ValueOrThrow(context.clayID("fill")), fill);
 	}
 
 	static void emitThumb(
@@ -619,7 +640,7 @@ private:
 				.parent = CLAY_ATTACH_POINT_CENTER_TOP,
 			};
 		}
-		CLAY(context.clayID("thumb"), thumb);
+		CLAY(FlowUi::ValueOrThrow(context.clayID("thumb")), thumb);
 	}
 };
 

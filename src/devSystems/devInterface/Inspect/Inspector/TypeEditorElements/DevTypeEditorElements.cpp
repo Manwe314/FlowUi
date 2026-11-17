@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.hpp"
 
 #if FLOW_UI_DEV_MODE
@@ -384,7 +385,7 @@ bool updateEditorPreview(DevTypeEditorState& editor) {
 	if (editor.local_value) return editor.editable && editor.editValue;
 	if (!editor.app || !editor.interfaceState || !editor.editable ||
 		!editor.currentValue) return false;
-	const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
+	const tooling::DevSchemaView schema = FlowUi::ValueOrThrow(editor.app->devTooling()).get().schemas().view();
 	if (!schema) return false;
 	tooling::DevChangeSet changes{};
 	changes.transaction = editor.interfaceState->nextEditTransaction++;
@@ -395,14 +396,14 @@ bool updateEditorPreview(DevTypeEditorState& editor) {
 			? tooling::DevOverrideCommandKind::UpdateBatchDrag
 			: tooling::DevOverrideCommandKind::BeginBatchDrag,
 		editor.currentValue));
-	if (!editor.app->devTooling().overrides().submit(std::move(changes))) return false;
+	if (!FlowUi::ValueOrThrow(editor.app->devTooling()).get().overrides().submit(std::move(changes))) return false;
 	editor.previewActive = true;
 	return true;
 }
 
 void cancelEditorPreview(DevTypeEditorState& editor) {
 	if (!editor.previewActive || !editor.app || !editor.interfaceState) return;
-	const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
+	const tooling::DevSchemaView schema = FlowUi::ValueOrThrow(editor.app->devTooling()).get().schemas().view();
 	if (!schema) return;
 	tooling::DevOverrideCommand clear = editorFieldCommand(
 		*schema, editor, tooling::DevOverrideCommandKind::ClearElementField);
@@ -410,7 +411,7 @@ void cancelEditorPreview(DevTypeEditorState& editor) {
 	tooling::DevChangeSet changes{};
 	changes.transaction = editor.interfaceState->nextEditTransaction++;
 	changes.commands.push_back(std::move(clear));
-	if (editor.app->devTooling().overrides().submit(std::move(changes))) {
+	if (FlowUi::ValueOrThrow(editor.app->devTooling()).get().overrides().submit(std::move(changes))) {
 		editor.previewActive = false;
 	}
 }
@@ -421,12 +422,12 @@ const tooling::DevOwnedValue* currentEditorOverride(const App& app,
 	const tooling::DevOverrideCommand key = editorFieldCommand(
 		schema, editor, tooling::DevOverrideCommandKind::ClearElementField);
 	if (key.theme.themeType != 0) {
-		for (const auto& record : app.devTooling().overrides().themeBakeRecords())
+		for (const auto& record : FlowUi::ValueOrThrow(app.devTooling()).get().overrides().themeBakeRecords())
 			if (record.target == key.theme && record.field == key.field && !record.preview_only)
 				return &record.value;
 		return nullptr;
 	}
-	const auto& records = app.devTooling().overrides().appliedOverrides().records();
+	const auto& records = FlowUi::ValueOrThrow(app.devTooling()).get().overrides().appliedOverrides().records();
 	const auto found = std::ranges::find_if(records,
 		[&key](const tooling::DevOverrideApply::Record& record) {
 			return record.target == key.element && record.field == key.field &&
@@ -441,12 +442,12 @@ const tooling::DevOwnedValue* currentOverride(const App& app,
 	const tooling::DevOverrideCommand key = fieldCommand(
 		schema, card, tooling::DevOverrideCommandKind::ClearElementField);
 	if (key.theme.themeType != 0) {
-		for (const auto& record : app.devTooling().overrides().themeBakeRecords())
+		for (const auto& record : FlowUi::ValueOrThrow(app.devTooling()).get().overrides().themeBakeRecords())
 			if (record.target == key.theme && record.field == key.field && !record.preview_only)
 				return &record.value;
 		return nullptr;
 	}
-	const auto& records = app.devTooling().overrides().appliedOverrides().records();
+	const auto& records = FlowUi::ValueOrThrow(app.devTooling()).get().overrides().appliedOverrides().records();
 	const auto found = std::ranges::find_if(
 		records,
 		[&key](const tooling::DevOverrideApply::Record& record) {
@@ -483,10 +484,10 @@ DevOverridePresence overridePresence(
 	const DevEditorCardState& card) {
 	const tooling::DevOverrideCommand key = fieldCommand(
 		schema, card, tooling::DevOverrideCommandKind::ClearElementField);
-	const auto& records = app.devTooling().overrides().appliedOverrides().records();
+	const auto& records = FlowUi::ValueOrThrow(app.devTooling()).get().overrides().appliedOverrides().records();
 	DevOverridePresence result{};
 	if (key.theme.themeType != 0) {
-		for (const auto& record : app.devTooling().overrides().themeBakeRecords()) {
+		for (const auto& record : FlowUi::ValueOrThrow(app.devTooling()).get().overrides().themeBakeRecords()) {
 			if (record.target.themeType != key.theme.themeType ||
 				(record.target.variant != key.theme.variant && record.target.variant != "*"))
 				continue;
@@ -541,7 +542,7 @@ bool submitEditTransaction(
 		.commands = transaction.forward,
 	};
 	if (!changes.commands.empty() &&
-		!app.devTooling().overrides().submit(std::move(changes))) return false;
+		!FlowUi::ValueOrThrow(app.devTooling()).get().overrides().submit(std::move(changes))) return false;
 	state.editUndoStack.push_back(std::move(transaction));
 	state.editRedoStack.clear();
 	return true;
@@ -553,7 +554,7 @@ bool commitEditorValue(DevTypeEditorState& editor, std::string description) {
 		!editor.currentValue) return false;
 	App& app = *editor.app;
 	DevInterfaceState& state = *editor.interfaceState;
-	const tooling::DevSchemaView schema = app.devTooling().schemas().view();
+	const tooling::DevSchemaView schema = FlowUi::ValueOrThrow(app.devTooling()).get().schemas().view();
 	if (!schema) return false;
 	DevInterfaceEditTransaction transaction{};
 	transaction.description = std::move(description);
@@ -612,7 +613,7 @@ bool parseNumericDraft(std::string_view draft, long double& value) {
 
 bool applyEditorDraft(DevTypeEditorState& editor) {
 	if (!editor.app || !editor.currentValue || !editor.editValue) return false;
-	const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
+	const tooling::DevSchemaView schema = FlowUi::ValueOrThrow(editor.app->devTooling()).get().schemas().view();
 	const tooling::DevTypeSchema* type = schema ? schema->type(editor.operationType) : nullptr;
 	const tooling::DevTypeOps* operations = schema
 		? typeOperations(*schema, editor.operationType) : nullptr;
@@ -648,7 +649,7 @@ constexpr auto kCommitEditorDraft = UiAction(
 
 bool applyEditorDragValue(DevTypeEditorState& editor) {
 	if (!editor.app || !editor.currentValue || !editor.editValue) return false;
-	const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
+	const tooling::DevSchemaView schema = FlowUi::ValueOrThrow(editor.app->devTooling()).get().schemas().view();
 	const tooling::DevTypeSchema* type = schema ? schema->type(editor.operationType) : nullptr;
 	const tooling::DevTypeOps* operations = schema
 		? typeOperations(*schema, editor.operationType) : nullptr;
@@ -697,7 +698,7 @@ constexpr auto kToggleEditorValue = UiAction(
 	"flowui.dev_interface.type-editor.toggle",
 	[](DevTypeEditorState& editor) {
 		if (!editor.app || !editor.currentValue) return;
-		const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
+		const tooling::DevSchemaView schema = FlowUi::ValueOrThrow(editor.app->devTooling()).get().schemas().view();
 		const tooling::DevTypeOps* operations = schema
 			? typeOperations(*schema, editor.operationType) : nullptr;
 		long double current = 0.0L;
@@ -713,7 +714,7 @@ constexpr auto kChooseEditorEnum = UiAction(
 	"flowui.dev_interface.type-editor.choose-enum",
 	[](DevTypeEditorState& editor) {
 		if (!editor.app || !editor.currentValue) return;
-		const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
+		const tooling::DevSchemaView schema = FlowUi::ValueOrThrow(editor.app->devTooling()).get().schemas().view();
 		const tooling::DevTypeOps* operations = schema
 			? typeOperations(*schema, editor.operationType) : nullptr;
 		if (operations && operations->assignNumericValue &&
@@ -728,7 +729,7 @@ constexpr auto kChooseCatalogueNumeric = UiAction(
 	"flowui.dev_interface.type-editor.choose-catalogue-numeric",
 	[](DevTypeEditorState& editor) {
 		if (!editor.app || !editor.currentValue || !editor.editValue) return;
-		const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
+		const tooling::DevSchemaView schema = FlowUi::ValueOrThrow(editor.app->devTooling()).get().schemas().view();
 		const tooling::DevTypeOps* operations = schema
 			? typeOperations(*schema, editor.operationType) : nullptr;
 		if (operations && operations->assignNumericValue &&
@@ -743,7 +744,7 @@ constexpr auto kToggleEditorFlag = UiAction(
 	"flowui.dev_interface.type-editor.toggle-flag",
 	[](DevTypeEditorState& editor, uint64_t mask) {
 		if (!editor.app || !editor.currentValue) return;
-		const auto schema = editor.app->devTooling().schemas().view();
+		const auto schema = FlowUi::ValueOrThrow(editor.app->devTooling()).get().schemas().view();
 		const auto* operations = schema ? typeOperations(*schema, editor.operationType) : nullptr;
 		long double current = 0.0L;
 		if (!operations || !operations->numericValue || !operations->assignNumericValue ||
@@ -759,7 +760,7 @@ constexpr auto kToggleOptional = UiAction(
 	"flowui.dev_interface.type-editor.toggle-optional",
 	[](DevTypeEditorState& editor) {
 		if (!editor.app || !editor.currentValue) return;
-		const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
+		const tooling::DevSchemaView schema = FlowUi::ValueOrThrow(editor.app->devTooling()).get().schemas().view();
 		const tooling::DevTypeOps* operations = schema
 			? typeOperations(*schema, editor.typeIndex) : nullptr;
 		if (!operations || !operations->optionalHasValue || !operations->setOptionalPresence) return;
@@ -940,7 +941,7 @@ constexpr auto kCommitColorHex = UiAction(
 
 bool applySpatialValues(DevTypeEditorState& editor, std::uint64_t changedIndex) {
 	if (!editor.app || !editor.currentValue || !editor.editValue) return false;
-	const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
+	const tooling::DevSchemaView schema = FlowUi::ValueOrThrow(editor.app->devTooling()).get().schemas().view();
 	const tooling::DevTypeSchema* type = schema ? schema->type(editor.operationType) : nullptr;
 	const std::string_view name = schema && type ? schemaTypeName(*schema, type) : std::string_view{};
 	if (editor.semanticLinked && changedIndex < 4u) {
@@ -1059,11 +1060,11 @@ constexpr auto kChooseTextureResource = UiAction(
 		const ResourceKey key{.name = editor.choiceKeys[index]};
 		if (editor.choiceResourceDomains[index] == 1u) {
 #if FLOWUI_INCLUDE_IMAGE_MANAGER
-			replacement = editor.app->images().getTexture(key);
+			replacement = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(editor.app->images()).get().getTexture(key));
 #endif
 		} else if (editor.choiceResourceDomains[index] == 2u) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
-			replacement = editor.app->icons().textureRef(key);
+			replacement = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(editor.app->icons()).get().textureRef(key));
 #endif
 		}
 		if (!replacement.handle) {
@@ -1097,7 +1098,7 @@ constexpr auto kChooseActionCall = UiAction(
 			const auto parsed = std::from_chars(
 				encoded.data(), encoded.data() + encoded.size(), stableId);
 			if (parsed.ec != std::errc{} || parsed.ptr != encoded.data() + encoded.size()) return;
-			const std::optional<ActionCall> built = editor.app->actions().makeDevActionCall(
+			const std::optional<ActionCall> built = FlowUi::ValueOrThrow(editor.app->actions()).get().makeDevActionCall(
 				kind, stableId, 0u, 0u);
 			if (!built) {
 				editor.localDiagnostic = "Action compatibility or construction check failed";
@@ -1133,7 +1134,7 @@ constexpr auto kAddSequenceItem = UiAction(
 	"flowui.dev_interface.type-editor.sequence-add",
 	[](DevTypeEditorState& editor) {
 		if (!editor.app || !editor.currentValue) return;
-		const auto schema = editor.app->devTooling().schemas().view();
+		const auto schema = FlowUi::ValueOrThrow(editor.app->devTooling()).get().schemas().view();
 		const auto* operations = schema ? typeOperations(*schema, editor.typeIndex) : nullptr;
 		if (operations && operations->sequenceAppendDefault &&
 			operations->sequenceAppendDefault(editor.currentValue.data()) ==
@@ -1146,7 +1147,7 @@ constexpr auto kRemoveSequenceItem = UiAction(
 	"flowui.dev_interface.type-editor.sequence-remove",
 	[](DevTypeEditorState& editor, std::size_t index) {
 		if (!editor.app || !editor.currentValue) return;
-		const auto schema = editor.app->devTooling().schemas().view();
+		const auto schema = FlowUi::ValueOrThrow(editor.app->devTooling()).get().schemas().view();
 		const auto* operations = schema ? typeOperations(*schema, editor.typeIndex) : nullptr;
 		if (operations && operations->sequenceErase &&
 			operations->sequenceErase(editor.currentValue.data(), index) ==
@@ -1161,7 +1162,7 @@ constexpr auto kMoveSequenceItem = UiAction(
 		if (!editor.app || !editor.currentValue) return;
 		const std::size_t from = static_cast<std::size_t>(packedMove >> 32u);
 		const std::size_t to = static_cast<std::size_t>(packedMove & 0xffffffffu);
-		const auto schema = editor.app->devTooling().schemas().view();
+		const auto schema = FlowUi::ValueOrThrow(editor.app->devTooling()).get().schemas().view();
 		const auto* operations = schema ? typeOperations(*schema, editor.typeIndex) : nullptr;
 		if (operations && operations->sequenceMove &&
 			operations->sequenceMove(editor.currentValue.data(), from, to) ==
@@ -1203,7 +1204,7 @@ constexpr auto kPasteField = UiAction(
 		if (!card.app || !card.interfaceState) return;
 		App& app = *card.app;
 		DevInterfaceState& state = *card.interfaceState;
-		const tooling::DevSchemaView schema = app.devTooling().schemas().view();
+		const tooling::DevSchemaView schema = FlowUi::ValueOrThrow(app.devTooling()).get().schemas().view();
 		if (!schema || !card.editable || !state.editorClipboard ||
 			state.editorClipboard.type != card.fieldType) return;
 		DevInterfaceEditTransaction transaction{};
@@ -1231,7 +1232,7 @@ constexpr auto kResetField = UiAction(
 		if (!card.app || !card.interfaceState) return;
 		App& app = *card.app;
 		DevInterfaceState& state = *card.interfaceState;
-		const tooling::DevSchemaView schema = app.devTooling().schemas().view();
+		const tooling::DevSchemaView schema = FlowUi::ValueOrThrow(app.devTooling()).get().schemas().view();
 		if (!schema || !card.editable) return;
 		const tooling::DevOverrideCommand scope = fieldCommand(
 			*schema, card, tooling::DevOverrideCommandKind::ClearElementField);
@@ -1241,7 +1242,7 @@ constexpr auto kResetField = UiAction(
 			? "Reset nested changes in " + card.typeName
 			: "Reset " + card.typeName;
 		if (scope.theme.themeType != 0) {
-			for (const auto& record : app.devTooling().overrides().themeBakeRecords()) {
+			for (const auto& record : FlowUi::ValueOrThrow(app.devTooling()).get().overrides().themeBakeRecords()) {
 				if (record.target != scope.theme || record.preview_only)
 					continue;
 				tooling::DevOverrideApply::Record proxy{};
@@ -1264,7 +1265,7 @@ constexpr auto kResetField = UiAction(
 			card.overridePresence.instanceLive ? tooling::DevOverrideLayer::LiveInstance
 											   : tooling::DevOverrideLayer::LiveDefinition;
 		for (const tooling::DevOverrideApply::Record& record :
-			app.devTooling().overrides().appliedOverrides().records()) {
+			FlowUi::ValueOrThrow(app.devTooling()).get().overrides().appliedOverrides().records()) {
 			if (record.layer != winningLayer ||
 				overrideRelation(record, scope) == OverrideRelation::None) continue;
 			tooling::DevOverrideCommand clear = scope;
@@ -1313,7 +1314,7 @@ bool recordTargetsSelection(
 const tooling::DevOverrideApply::Record* winningLiveRecord(
 	const App& app,
 	const DevChangeCardState& card) {
-	const auto& records = app.devTooling().overrides().appliedOverrides().records();
+	const auto& records = FlowUi::ValueOrThrow(app.devTooling()).get().overrides().appliedOverrides().records();
 	for (const tooling::DevOverrideLayer layer : {
 		tooling::DevOverrideLayer::LiveInstance,
 		tooling::DevOverrideLayer::LiveDefinition}) {
@@ -1354,7 +1355,7 @@ constexpr auto kElevateChange = UiAction(
 		DevInterfaceState& state = *card.interfaceState;
 		const tooling::DevOverrideApply::Record* winner = winningLiveRecord(app, card);
 		if (!winner || winner->layer != tooling::DevOverrideLayer::LiveInstance) return;
-		const auto& records = app.devTooling().overrides().appliedOverrides().records();
+		const auto& records = FlowUi::ValueOrThrow(app.devTooling()).get().overrides().appliedOverrides().records();
 		const auto prior = std::ranges::find_if(records,
 			[&](const tooling::DevOverrideApply::Record& record) {
 				return record.layer == tooling::DevOverrideLayer::LiveDefinition &&
@@ -1396,7 +1397,7 @@ constexpr auto kRevertAllChanges = UiAction(
 		DevInterfaceEditTransaction transaction{};
 		transaction.description = "Revert all live changes";
 		for (const tooling::DevOverrideApply::Record& record :
-			app.devTooling().overrides().appliedOverrides().records()) {
+			FlowUi::ValueOrThrow(app.devTooling()).get().overrides().appliedOverrides().records()) {
 			if ((record.layer != tooling::DevOverrideLayer::LiveInstance &&
 				record.layer != tooling::DevOverrideLayer::LiveDefinition) ||
 				!recordTargetsSelection(record, header.definition, header.window, header.instance)) {
@@ -1419,7 +1420,7 @@ constexpr auto kElevateAllChanges = UiAction(
 		if (!header.app || !header.interfaceState) return;
 		App& app = *header.app;
 		DevInterfaceState& state = *header.interfaceState;
-		const auto& records = app.devTooling().overrides().appliedOverrides().records();
+		const auto& records = FlowUi::ValueOrThrow(app.devTooling()).get().overrides().appliedOverrides().records();
 		DevInterfaceEditTransaction transaction{};
 		transaction.description = "Elevate all instance changes";
 		for (const tooling::DevOverrideApply::Record& record : records) {
@@ -1464,11 +1465,11 @@ constexpr auto kElevateAllChanges = UiAction(
 											[[maybe_unused]] std::string_view key) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	if (app) {
-		auto& icons = app->icons();
-		if (!icons.contains(key))
+		auto& icons = FlowUi::ValueOrThrow(app->icons()).get();
+		if (!FlowUi::ValueOrThrow(icons.contains(key)))
 			interface_icons::registerDevInterfaceIcons(icons);
-		if (icons.contains(key))
-			return icons.textureRef(key);
+		if (FlowUi::ValueOrThrow(icons.contains(key)))
+			return FlowUi::ValueOrThrow(icons.textureRef(key));
 	}
 #endif
 	return {};
@@ -1520,7 +1521,7 @@ void drawHeaderButton(DevEditorCardHeader::BuildContext& context, FlowElementPar
 		.setDevInternalCapture(true)
 		.draw();
 	if (context.uiManager.getPreviousFramesInteraction().isHovered(
-						   context.uiManager.toClayEID(context.part(part)))) {
+						   context.uiManager.toClayEID(FlowUi::ValueOrThrow(context.part(part))))) {
 		diagnostics_ui::pointer_tooltip(context, Keyed("action-tooltip", part.token), label);
 	}
 }
@@ -1573,7 +1574,7 @@ void drawSequenceRows(
 		}
 		ActionCall up{}, down{}, remove{};
 		if (state.app && state.interfaceState && state.editable) {
-			auto& actions = state.app->actions().uiActions();
+			auto& actions = FlowUi::ValueOrThrow(state.app->actions()).get().uiActions();
 			const uint64_t from = static_cast<uint64_t>(index) << 32u;
 			if (index > 0) {
 				const uint64_t move = from | static_cast<uint64_t>(index - 1);
@@ -1593,11 +1594,11 @@ void drawSequenceRows(
 		itemRow.layout.padding = Clay_Padding{6, 4, 0, 0};
 		itemRow.backgroundColor = interface_theme::kDepth3Elevated;
 		itemRow.clip = {.horizontal = true, .vertical = true};
-		CLAY(context.clayID(Keyed("sequence-row", index)), itemRow) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("sequence-row", index))), itemRow) {
 			Clay_ElementDeclaration textRoot{};
 			textRoot.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
 			textRoot.clip = {.horizontal = true, .vertical = true};
-			CLAY(context.clayID(Keyed("sequence-text", index)), textRoot) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("sequence-text", index))), textRoot) {
 				const auto style = textConfig(interface_theme::kTextSecondary, 9);
 				CLAY_TEXT(context.uiManager.toClayString(summary), CLAY_TEXT_CONFIG(style));
 			}
@@ -1621,7 +1622,7 @@ void drawSequenceRows(
 		return;
 	ActionCall add{};
 	if (state.app && state.interfaceState && state.editable && operations.sequenceAppendDefault) {
-		add = ActionCall{state.app->actions().uiActions().make(kAddSequenceItem, state)};
+		add = ActionCall{FlowUi::ValueOrThrow(state.app->actions()).get().uiActions().make(kAddSequenceItem, state)};
 	}
 	FSEL::ButtonParameters parameters{};
 	parameters.onActivate = add;
@@ -1656,7 +1657,7 @@ void drawMessage(
 	Clay_TextElementConfig style = textConfig(
 		interface_theme::kTextMuted, 11, CLAY_TEXT_ALIGN_CENTER);
 	style.wrapMode = CLAY_TEXT_WRAP_WORDS;
-	CLAY(context.clayID("message"), empty) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("message")), empty) {
 		CLAY_TEXT(context.uiManager.toClayString(message), CLAY_TEXT_CONFIG(style));
 	}
 }
@@ -1698,10 +1699,10 @@ void drawCard(
 
 DevEditorCardHeaderResources::DevEditorCardHeaderResources(App& app) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
-	IconManager& icons = app.icons();
+	IconManager& icons = FlowUi::ValueOrThrow(app.icons()).get();
 	interface_icons::registerDevInterfaceIcons(icons);
 	auto resolve = [&icons](std::string_view key) -> TextureRef {
-		return icons.contains(key) ? icons.textureRef(key) : TextureRef{};
+		return FlowUi::ValueOrThrow(icons.contains(key)) ? FlowUi::ValueOrThrow(icons.textureRef(key)) : TextureRef{};
 	};
 	copyIcon = resolve(interface_icons::kCopyKey);
 	pasteIcon = resolve(interface_icons::kPasteKey);
@@ -1808,7 +1809,7 @@ void DevInterfaceInspectorTabs::buildElement(BuildContext& context) {
 			CLAY_TEXT(context.uiManager.toClayString(label), CLAY_TEXT_CONFIG(labelStyle));
 			context.uiManager.drawConstructed();
 			if (context.uiManager.getPreviousFramesInteraction().isHovered(
-					context.clayID(Keyed(kTabCard, value))))
+					FlowUi::ValueOrThrow(context.clayID(Keyed(kTabCard, value)))))
 				diagnostics_ui::pointer_tooltip(context, Keyed("tab-label-detail", value),
 												tab.label);
 		}
@@ -1860,7 +1861,7 @@ void DevEditorCard::buildElement(BuildContext& context) {
 			: DevQuickView{};
 	ActionCall collapseAction{};
 	if (context.params.app && context.params.interfaceState) {
-		collapseAction = ActionCall{context.params.app->actions().uiActions().make(
+		collapseAction = ActionCall{FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(
 			kCollapseCard, state.collapsed)};
 	}
 
@@ -1913,7 +1914,7 @@ namespace {
 template <typename Context, typename Predicate>
 bool headerControlMatches(Context& context, Predicate&& predicate) {
 	auto partClayID = [&](FlowElementPart part) {
-		return context.uiManager.toClayEID(context.part(part));
+		return context.uiManager.toClayEID(FlowUi::ValueOrThrow(context.part(part)));
 	};
 	return predicate(partClayID(DevEditorCardHeader::Parts::collapse)) ||
 		predicate(partClayID(DevEditorCardHeader::Parts::copy)) ||
@@ -1929,7 +1930,7 @@ void clearHeaderInteraction(DevEditorCardHeaderState& state) {
 } // namespace
 
 void DevEditorCardHeader::onHovered(InteractionContext& context) {
-	if (context.actionAvailability(context.params.onToggle).enabled) {
+	if (FlowUi::ValueOrThrow(context.actionAvailability(context.params.onToggle)).enabled) {
 		context.uiManager.requestCursor(CursorType::PointingHand, 9u);
 	}
 }
@@ -1939,7 +1940,7 @@ void DevEditorCardHeader::onPressed(InteractionContext& context) {
 	const bool childConsumed = headerControlMatches(context, [&](Clay_ElementId id) {
 		return context.previousInteraction.isPressed(id);
 	});
-	if (childConsumed || !context.actionAvailability(context.params.onToggle).enabled) {
+	if (childConsumed || !FlowUi::ValueOrThrow(context.actionAvailability(context.params.onToggle)).enabled) {
 		clearHeaderInteraction(state);
 		return;
 	}
@@ -1954,7 +1955,7 @@ void DevEditorCardHeader::onReleased(InteractionContext& context) {
 		return context.previousInteraction.isReleased(id);
 	});
 	const bool shouldToggle = !childConsumed &&
-		context.actionAvailability(context.params.onToggle).enabled;
+		FlowUi::ValueOrThrow(context.actionAvailability(context.params.onToggle)).enabled;
 	clearHeaderInteraction(state);
 	if (shouldToggle) (void)context.invoke(context.params.onToggle);
 }
@@ -1962,7 +1963,7 @@ void DevEditorCardHeader::onReleased(InteractionContext& context) {
 void DevEditorCardHeader::runLogic(InteractionContext& context) {
 	auto& state = context.state();
 	if (!state.isArmed) return;
-	if (!context.actionAvailability(context.params.onToggle).enabled) {
+	if (!FlowUi::ValueOrThrow(context.actionAvailability(context.params.onToggle)).enabled) {
 		clearHeaderInteraction(state);
 		return;
 	}
@@ -1986,13 +1987,13 @@ void DevEditorCardHeader::buildElement(BuildContext& context) {
 	bool canPaste = false;
 	bool canReset = false;
 	if (app && interfaceState) {
-		auto& actions = app->actions().uiActions();
+		auto& actions = FlowUi::ValueOrThrow(app->actions()).get().uiActions();
 		copyAction = ActionCall{actions.make(kCopyField, *card)};
 		pasteAction = ActionCall{actions.make(kPasteField, *card)};
 		resetAction = ActionCall{actions.make(kResetField, *card)};
 		canPaste = card->editable && interfaceState->editorClipboard &&
 			interfaceState->editorClipboard.type == card->fieldType;
-		const tooling::DevSchemaView schema = app->devTooling().schemas().view();
+		const tooling::DevSchemaView schema = FlowUi::ValueOrThrow(app->devTooling()).get().schemas().view();
 		canReset = card->editable && card->overridePresence.hasCommittedChange();
 	}
 
@@ -2023,7 +2024,7 @@ void DevEditorCardHeader::buildElement(BuildContext& context) {
 			.y = CLAY_ALIGN_Y_CENTER,
 		};
 		labelArea.clip = {.horizontal = true, .vertical = true};
-		CLAY(context.clayID(kFieldName), labelArea) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kFieldName)), labelArea) {
 			Clay_TextElementConfig nameStyle = textConfig(interface_theme::kTextCanvas, 11);
 			CLAY_TEXT(
 				context.uiManager.toClayString(card->fieldName),
@@ -2038,7 +2039,7 @@ void DevEditorCardHeader::buildElement(BuildContext& context) {
 				quickRow.layout.childAlignment = {
 					.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 				quickRow.clip = {.horizontal = true, .vertical = true};
-				CLAY(context.clayID(kQuickValue), quickRow) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID(kQuickValue)), quickRow) {
 					if (quick.thumbnail) {
 						FSEL::ButtonParameters thumbnail{};
 						thumbnail.enabled = false;
@@ -2063,7 +2064,7 @@ void DevEditorCardHeader::buildElement(BuildContext& context) {
 						swatch.cornerRadius = CLAY_CORNER_RADIUS(2);
 						swatch.border = {.color = interface_theme::kBorderVisible,
 							.width = Clay_BorderWidth{1, 1, 1, 1, 0}};
-						CLAY(context.clayID("swatch"), swatch) {}
+						CLAY(FlowUi::ValueOrThrow(context.clayID("swatch")), swatch) {}
 					}
 					const Clay_Color quickColor = quick.status == DevQuickStatus::Normal
 						? interface_theme::kTextMuted
@@ -2086,7 +2087,7 @@ void DevEditorCardHeader::buildElement(BuildContext& context) {
 		actions.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		actions.layout.childGap = 5;
 		actions.layout.childAlignment = {CLAY_ALIGN_X_RIGHT, CLAY_ALIGN_Y_CENTER};
-		CLAY(context.clayID("field-actions"), actions) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("field-actions")), actions) {
 			drawHeaderButton(context, DevEditorCardHeader::Parts::collapse,
 							 card->collapsed ? "Expand" : "Collapse", collapseAction, true,
 							 card->collapsed ? context.resources().expandIcon
@@ -2099,7 +2100,7 @@ void DevEditorCardHeader::buildElement(BuildContext& context) {
 							 canReset, context.resources().revertIcon);
 		}
 	}
-	if (context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID(kFieldName)))
+	if (context.uiManager.getPreviousFramesInteraction().isHovered(FlowUi::ValueOrThrow(context.clayID(kFieldName))))
 		diagnostics_ui::pointer_tooltip(context, LocalElementName{"field-value-detail"},
 										card->fieldName +
 											(context.params.quickView.detail.empty()
@@ -2228,7 +2229,7 @@ void DevEditor::buildElement(BuildContext& context) {
 		labels.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		labels.layout.childGap = 6;
 		labels.clip = {.horizontal = true, .vertical = true};
-		CLAY(context.clayID("labels"), labels) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("labels")), labels) {
 			if (context.params.showFieldName && !fieldName.empty()) {
 				Clay_TextElementConfig nameStyle = textConfig(interface_theme::kTextSecondary, 10);
 				nameStyle.wrapMode = CLAY_TEXT_WRAP_WORDS;
@@ -2292,7 +2293,7 @@ void DevCatalogueChoice::buildElement(BuildContext& context) {
 		slot.layout.sizing = {
 			.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIXED(kTypeControlHeight)};
 		slot.clip = {.horizontal = true, .vertical = false};
-		CLAY(context.clayID("choice-slot"), slot) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("choice-slot")), slot) {
 		FSEL::ComboBoxParameters combo{};
 		combo.options = state.filteredOptions;
 		combo.selectedValue = context.params.selectedValue;
@@ -2317,8 +2318,8 @@ void DevCatalogueChoice::buildElement(BuildContext& context) {
 DevNineSplitEditorResources::DevNineSplitEditorResources(App& app) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	constexpr std::string_view key = "flowui/dev-interface/nine-split/link";
-	(void)app.icons().registerSvg(key, kLinkIconSvg);
-	linkIcon = app.icons().textureRef(key);
+	(void)FlowUi::ValueOrThrow(app.icons()).get().registerSvg(key, kLinkIconSvg);
+	linkIcon = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.icons()).get().textureRef(key));
 #else
 	(void)app;
 #endif
@@ -2343,7 +2344,7 @@ void DevNineSplitEditor::buildElement(BuildContext& context) {
 				.width = CLAY_SIZING_FIXED(cellWidth * 3.0f),
 				.height = CLAY_SIZING_FIXED(cellHeight)};
 			rowLayout.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
-			CLAY(context.clayID(Keyed("row", row)), rowLayout) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("row", row))), rowLayout) {
 				for (std::uint64_t column = 0u; column < 3u; ++column) {
 					const std::uint64_t index = row * 3u + column;
 					const DevNineSplitCell& cell = context.params.cells[index];
@@ -2360,7 +2361,7 @@ void DevNineSplitEditor::buildElement(BuildContext& context) {
 							0, column < 2u ? uint16_t{1} : uint16_t{0},
 							0, row < 2u ? uint16_t{1} : uint16_t{0}, 0}};
 					slot.clip = {.horizontal = true, .vertical = true};
-					CLAY(context.clayID(Keyed("cell", index)), slot) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("cell", index))), slot) {
 						if (context.params.mode == DevNineSplitMode::Numeric && index == 4u) {
 							FSEL::ButtonParameters link{};
 							link.onActivate = context.params.centerAction;
@@ -2520,7 +2521,7 @@ void DevColorTypeEditor::buildElement(BuildContext& context) {
 	ActionCall hexCommit{};
 	ActionCall hexPreview{};
 	if (editor->app) {
-		auto& actions = editor->app->actions().uiActions();
+		auto& actions = FlowUi::ValueOrThrow(editor->app->actions()).get().uiActions();
 		openPopup = ActionCall{actions.make(kOpenColorPopup, state)};
 		closePopup = ActionCall{actions.make(kCloseColorPopup, state)};
 		if (editor->interfaceState && editor->editable) {
@@ -2585,7 +2586,7 @@ void DevColorTypeEditor::buildElement(BuildContext& context) {
 	context.uiManager.createElement(FSEL::kPopupSurface, "channels")
 		.setParameters(FSEL::PopupSurfaceParameters{
 			.popupRequest = PopupRequest{
-				.anchor = PopupAnchor::element(context.part(Parts::swatch)),
+				.anchor = PopupAnchor::element(FlowUi::ValueOrThrow(context.part(Parts::swatch))),
 				.placement = PopupPlacement{
 					.anchorPoint = PopupAttachmentPoint::BottomLeft,
 					.popupPoint = PopupAttachmentPoint::TopLeft,
@@ -2613,11 +2614,11 @@ void DevColorTypeEditor::buildElement(BuildContext& context) {
 		row.layout.childGap = 6;
 		row.layout.childAlignment = {
 			.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
-		CLAY(context.clayID(Keyed("channel", channel)), row) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("channel", channel))), row) {
 			Clay_ElementDeclaration labelSlot{};
 			labelSlot.layout.sizing = {
 				.width = CLAY_SIZING_FIXED(12), .height = CLAY_SIZING_FIT(0)};
-			CLAY(context.clayID(Keyed("channel-label", channel)), labelSlot) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("channel-label", channel))), labelSlot) {
 				const auto style = textConfig(interface_theme::kTextSecondary, 9);
 				CLAY_TEXT(context.uiManager.toClayString(labels[channel]),
 					CLAY_TEXT_CONFIG(style));
@@ -2670,7 +2671,7 @@ void drawSpatialTypeEditor(BuildContext& context, bool border) {
 	grid.centerSelected = editor->semanticLinked;
 	grid.centerLabel = editor->semanticLinked ? "Linked" : "Unlinked";
 	if (editor->app && editor->interfaceState && editor->editable) {
-		grid.centerAction = ActionCall{editor->app->actions().uiActions().make(
+		grid.centerAction = ActionCall{FlowUi::ValueOrThrow(editor->app->actions()).get().uiActions().make(
 			kToggleSpatialLink, *editor)};
 	}
 	const auto setCell = [&](std::size_t position, std::size_t valueIndex) {
@@ -2678,7 +2679,7 @@ void drawSpatialTypeEditor(BuildContext& context, bool border) {
 		cell.occupied = true;
 		cell.numericValue = &editor->semanticUnsigned[valueIndex];
 		if (editor->app && editor->interfaceState && editor->editable) {
-			auto& actions = editor->app->actions().uiActions();
+			auto& actions = FlowUi::ValueOrThrow(editor->app->actions()).get().uiActions();
 			cell.onPreview = ActionCall{actions.make(
 				kPreviewSpatialValue, *editor, static_cast<uint64_t>(valueIndex))};
 			cell.onCommit = ActionCall{actions.make(
@@ -2702,7 +2703,7 @@ void drawSpatialTypeEditor(BuildContext& context, bool border) {
 	row.layout.childGap = 6;
 	row.layout.childAlignment = {
 		.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
-	CLAY(context.clayID("between-row"), row) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("between-row")), row) {
 		const auto style = textConfig(interface_theme::kTextSecondary, 8);
 		CLAY_TEXT(context.uiManager.toClayString("Between"), CLAY_TEXT_CONFIG(style));
 		FSEL::DragValueParameters<unsigned int> drag{};
@@ -2711,7 +2712,7 @@ void drawSpatialTypeEditor(BuildContext& context, bool border) {
 		drag.enabled = editor->editable;
 		drag.readOnly = !editor->editable;
 		if (editor->app && editor->interfaceState && editor->editable) {
-			auto& actions = editor->app->actions().uiActions();
+			auto& actions = FlowUi::ValueOrThrow(editor->app->actions()).get().uiActions();
 			drag.edit.onChanged = ActionCall{actions.make(kPreviewSpatialValue, *editor, 4u)};
 			drag.edit.onCommit = ActionCall{actions.make(kCommitSpatialValue, *editor, 4u)};
 			drag.edit.onCancel = ActionCall{actions.make(kCancelSpatialValue, *editor, 4u)};
@@ -2747,7 +2748,7 @@ void DevCornerRadiusTypeEditor::buildElement(BuildContext& context) {
 	grid.centerSelected = editor->semanticLinked;
 	grid.centerLabel = editor->semanticLinked ? "Linked" : "Unlinked";
 	if (editor->app && editor->interfaceState && editor->editable) {
-		grid.centerAction = ActionCall{editor->app->actions().uiActions().make(
+		grid.centerAction = ActionCall{FlowUi::ValueOrThrow(editor->app->actions()).get().uiActions().make(
 			kToggleSpatialLink, *editor)};
 	}
 	const auto setCell = [&](std::size_t position, std::size_t valueIndex) {
@@ -2755,7 +2756,7 @@ void DevCornerRadiusTypeEditor::buildElement(BuildContext& context) {
 		cell.occupied = true;
 		cell.floatingValue = &editor->semanticCorners[valueIndex];
 		if (editor->app && editor->interfaceState && editor->editable) {
-			auto& actions = editor->app->actions().uiActions();
+			auto& actions = FlowUi::ValueOrThrow(editor->app->actions()).get().uiActions();
 			cell.onPreview = ActionCall{actions.make(
 				kPreviewCornerValue, *editor, static_cast<uint64_t>(valueIndex))};
 			cell.onCommit = ActionCall{actions.make(
@@ -2800,7 +2801,7 @@ void DevAttachmentPointsTypeEditor::buildElement(BuildContext& context) {
 		grid.enabled = editor->editable;
 		grid.selectedValue = &editor->semanticSelections[anchor];
 		if (editor->app && editor->interfaceState && editor->editable) {
-			grid.onSelected = ActionCall{editor->app->actions().uiActions().make(
+			grid.onSelected = ActionCall{FlowUi::ValueOrThrow(editor->app->actions()).get().uiActions().make(
 				kChooseAttachmentPoint, *editor, anchor)};
 		}
 		for (std::size_t index = 0; index < grid.cells.size(); ++index) {
@@ -2817,7 +2818,7 @@ void DevAttachmentPointsTypeEditor::buildElement(BuildContext& context) {
 void DevBooleanTypeEditor::buildElement(BuildContext& context) {
 	DevTypeEditorState* editor = context.params.editor;
 	if (!editor || !editor->app || !editor->editValue) return;
-	const auto schema = editor->app->devTooling().schemas().view();
+	const auto schema = FlowUi::ValueOrThrow(editor->app->devTooling()).get().schemas().view();
 	const auto* operations = schema
 		? typeOperations(*schema, editor->operationType) : nullptr;
 	long double current = 0.0L;
@@ -2825,7 +2826,7 @@ void DevBooleanTypeEditor::buildElement(BuildContext& context) {
 		operations->numericValue(editor->editValue, current) && current != 0.0L;
 	ActionCall toggle{};
 	if (editor->interfaceState && editor->editable) {
-		toggle = ActionCall{editor->app->actions().uiActions().make(
+		toggle = ActionCall{FlowUi::ValueOrThrow(editor->app->actions()).get().uiActions().make(
 			kToggleEditorValue, *editor)};
 	}
 	Clay_ElementDeclaration row{};
@@ -2852,7 +2853,7 @@ void DevBooleanTypeEditor::buildElement(BuildContext& context) {
 void DevNumericTypeEditor::buildElement(BuildContext& context) {
 	DevTypeEditorState* editor = context.params.editor;
 	if (!editor || !editor->app || !editor->editValue) return;
-	const auto schema = editor->app->devTooling().schemas().view();
+	const auto schema = FlowUi::ValueOrThrow(editor->app->devTooling()).get().schemas().view();
 	const auto* type = schema ? schema->type(editor->operationType) : nullptr;
 	const auto* operations = schema
 		? typeOperations(*schema, editor->operationType) : nullptr;
@@ -2878,7 +2879,7 @@ void DevNumericTypeEditor::buildElement(BuildContext& context) {
 	}
 	ActionCall commit{}, preview{}, cancel{};
 	if (editor->interfaceState && editor->editable) {
-		auto& actions = editor->app->actions().uiActions();
+		auto& actions = FlowUi::ValueOrThrow(editor->app->actions()).get().uiActions();
 		commit = ActionCall{actions.make(kCommitEditorDragValue, *editor)};
 		preview = ActionCall{actions.make(kPreviewEditorDragValue, *editor)};
 		cancel = ActionCall{actions.make(kCancelEditorDragValue, *editor)};
@@ -2959,7 +2960,7 @@ void DevNumericTypeEditor::buildElement(BuildContext& context) {
 void DevTextTypeEditor::buildElement(BuildContext& context) {
 	DevTypeEditorState* editor = context.params.editor;
 	if (!editor || !editor->app) return;
-	const auto schema = editor->app->devTooling().schemas().view();
+	const auto schema = FlowUi::ValueOrThrow(editor->app->devTooling()).get().schemas().view();
 	const auto* field = schema ? fieldAt(*schema, editor->binding.field) : nullptr;
 	const auto* operations = schema
 		? typeOperations(*schema, editor->operationType) : nullptr;
@@ -2972,7 +2973,7 @@ void DevTextTypeEditor::buildElement(BuildContext& context) {
 	}
 	ActionCall commit{}, preview{};
 	if (editor->interfaceState && editor->editable) {
-		auto& actions = editor->app->actions().uiActions();
+		auto& actions = FlowUi::ValueOrThrow(editor->app->actions()).get().uiActions();
 		commit = ActionCall{actions.make(kCommitEditorDraft, *editor)};
 		preview = ActionCall{actions.make(kPreviewEditorDraft, *editor)};
 	}
@@ -3004,7 +3005,7 @@ void DevTextTypeEditor::buildElement(BuildContext& context) {
 void DevEnumTypeEditor::buildElement(BuildContext& context) {
 	DevTypeEditorState* editor = context.params.editor;
 	if (!editor || !editor->app || !editor->editValue) return;
-	const auto schema = editor->app->devTooling().schemas().view();
+	const auto schema = FlowUi::ValueOrThrow(editor->app->devTooling()).get().schemas().view();
 	const auto* type = schema ? schema->type(editor->operationType) : nullptr;
 	const auto* operations = schema
 		? typeOperations(*schema, editor->operationType) : nullptr;
@@ -3020,7 +3021,7 @@ void DevEnumTypeEditor::buildElement(BuildContext& context) {
 			const auto& option = schema->enumValues[type->enumeration.values.first + index];
 			ActionCall toggle{};
 			if (editor->interfaceState && editor->editable) {
-				toggle = ActionCall{editor->app->actions().uiActions().make(
+				toggle = ActionCall{FlowUi::ValueOrThrow(editor->app->actions()).get().uiActions().make(
 					kToggleEditorFlag, *editor, option.bits)};
 			}
 			FSEL::ButtonParameters button{};
@@ -3058,7 +3059,7 @@ void DevEnumTypeEditor::buildElement(BuildContext& context) {
 	}
 	ActionCall changed{};
 	if (editor->interfaceState && editor->editable) {
-		changed = ActionCall{editor->app->actions().uiActions().make(
+		changed = ActionCall{FlowUi::ValueOrThrow(editor->app->actions()).get().uiActions().make(
 			kChooseEditorEnum, *editor)};
 	}
 	FSEL::ComboBoxParameters combo{};
@@ -3169,7 +3170,7 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 		surface.clip = {.horizontal = true, .vertical = true};
 		Clay_TextElementConfig style = textConfig(color, 9);
 		style.wrapMode = CLAY_TEXT_WRAP_NONE;
-		CLAY(context.clayID(kEditorMessage), surface) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(kEditorMessage)), surface) {
 			CLAY_TEXT(context.uiManager.toClayString(value), CLAY_TEXT_CONFIG(style));
 		}
 	};
@@ -3177,14 +3178,15 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 	CLAY(context.clayID(), root) {
 		[&]() {
 		if (!state.currentValue) {
-			drawValueSurface("Unavailable: value was not captured", interface_theme::kTextMuted);
+			drawValueSurface(context.params.value ? "Unavailable: value copy failed"
+				: "Unavailable: value was not captured", interface_theme::kTextMuted);
 			return;
 		}
 
 		if (declaredType->kind == tooling::DevTypeKind::Optional) {
 			ActionCall toggle{};
 			if (state.app && state.interfaceState) {
-				toggle = ActionCall{state.app->actions().uiActions().make(kToggleOptional, state)};
+				toggle = ActionCall{FlowUi::ValueOrThrow(state.app->actions()).get().uiActions().make(kToggleOptional, state)};
 			}
 			context.uiManager.createElement(kDevOptionalTypeEditor, "optional")
 				.setParameters(DevOptionalTypeEditorParameters{
@@ -3273,10 +3275,10 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 			}
 			state.enumSelection = static_cast<std::uint64_t>(current);
 			const std::span<const tooling::DevFontCatalogEntry> fonts =
-				state.app ? state.app->devTooling().catalogues().queryFonts()
+				state.app ? FlowUi::ValueOrThrow(state.app->devTooling()).get().catalogues().queryFonts()
 				: std::span<const tooling::DevFontCatalogEntry>{};
 			const std::uint64_t revision = state.app
-				? state.app->devTooling().catalogues().revisions().fontRevision : 0u;
+				? FlowUi::ValueOrThrow(state.app->devTooling()).get().catalogues().revisions().fontRevision : 0u;
 			if (state.choiceType != type->id || state.choiceDomain != field->choiceDomain ||
 				state.choiceRevision != revision ||
 				state.choiceCurrentIdentity != state.enumSelection) {
@@ -3322,7 +3324,7 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 			}
 			ActionCall changed{};
 			if (state.app && state.interfaceState && state.editable) {
-				changed = ActionCall{state.app->actions().uiActions().make(
+				changed = ActionCall{FlowUi::ValueOrThrow(state.app->actions()).get().uiActions().make(
 					kChooseCatalogueNumeric, state)};
 			}
 			context.uiManager.createElement(kDevCatalogueChoice, "font-choice")
@@ -3338,14 +3340,14 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 		if (kind == tooling::DevEditorKind::ActionChoice) {
 			const ActionCall& action = *static_cast<const ActionCall*>(state.editValue);
 			const std::span<const tooling::DevActionCatalogEntry> actions = state.app
-				? state.app->devTooling().catalogues().queryActions()
+				? FlowUi::ValueOrThrow(state.app->devTooling()).get().catalogues().queryActions()
 				: std::span<const tooling::DevActionCatalogEntry>{};
 			const std::uint64_t revision = state.app
-				? state.app->devTooling().catalogues().actionRevision() : 0u;
+				? FlowUi::ValueOrThrow(state.app->devTooling()).get().catalogues().actionRevision() : 0u;
 			std::uint8_t currentDomain = 0u;
 			std::uint64_t currentStableId = 0u;
 			if (action && state.app) {
-				if (const auto info = state.app->actions().debugInfo(action)) {
+				if (const auto info = FlowUi::ValueOrThrow(state.app->actions()).get().debugInfo(action)) {
 					currentDomain = info->kind == ActionCallKind::App ? 1u : 2u;
 					currentStableId = info->kind == ActionCallKind::App
 						? info->appId.value : info->uiRecipeId;
@@ -3424,7 +3426,7 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 			state.resourceSelection = currentIdentity;
 			ActionCall changed{};
 			if (state.app && state.interfaceState && state.editable) {
-				changed = ActionCall{state.app->actions().uiActions().make(kChooseActionCall, state)};
+				changed = ActionCall{FlowUi::ValueOrThrow(state.app->actions()).get().uiActions().make(kChooseActionCall, state)};
 			}
 			context.uiManager.createElement(kDevCatalogueChoice, "action-choice")
 				.setParameters(DevCatalogueChoiceParameters{
@@ -3440,14 +3442,14 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 		if (kind == tooling::DevEditorKind::ResourceChoice) {
 			const TextureRef& texture = *static_cast<const TextureRef*>(state.editValue);
 			const std::span<const tooling::DevImageCatalogEntry> images = state.app
-				? state.app->devTooling().catalogues().queryImages()
+				? FlowUi::ValueOrThrow(state.app->devTooling()).get().catalogues().queryImages()
 				: std::span<const tooling::DevImageCatalogEntry>{};
 			const std::span<const tooling::DevIconCatalogEntry> icons = state.app
-				? state.app->devTooling().catalogues().queryIcons()
+				? FlowUi::ValueOrThrow(state.app->devTooling()).get().catalogues().queryIcons()
 				: std::span<const tooling::DevIconCatalogEntry>{};
 			const std::uint64_t revision = state.app
-				? state.app->devTooling().catalogues().imageRevision() ^
-					(state.app->devTooling().catalogues().iconRevision() << 1u) : 0u;
+				? FlowUi::ValueOrThrow(state.app->devTooling()).get().catalogues().imageRevision() ^
+					(FlowUi::ValueOrThrow(state.app->devTooling()).get().catalogues().iconRevision() << 1u) : 0u;
 			if (state.choiceDomain != tooling::DevChoiceDomain::TextureResource ||
 				state.choiceRevision != revision) {
 				state.choiceDomain = tooling::DevChoiceDomain::TextureResource;
@@ -3530,11 +3532,11 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 				}
 			}
 			if (!state.catalogLease.isValid() && state.app) {
-				state.catalogLease = state.app->devTooling().catalogues().acquireInspectionLease();
+				state.catalogLease = FlowUi::ValueOrThrow(state.app->devTooling()).get().catalogues().acquireInspectionLease();
 			}
 			ActionCall sourceChanged{};
 			if (state.app && state.interfaceState && state.editable) sourceChanged = ActionCall{
-				state.app->actions().uiActions().make(kChooseTextureResource, state)};
+				FlowUi::ValueOrThrow(state.app->actions()).get().uiActions().make(kChooseTextureResource, state)};
 			context.uiManager.createElement(kDevCatalogueChoice, "resource-source")
 					.setParameters(DevCatalogueChoiceParameters{
 						.options = state.choiceOptions, .selectedValue = &state.resourceSelection,
@@ -3545,7 +3547,7 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 			state.resourceTintEnabled = texture.tintEnabled;
 			ActionCall fitChanged{}, tintChanged{};
 			if (state.app && state.interfaceState && state.editable) {
-				auto& actions = state.app->actions().uiActions();
+				auto& actions = FlowUi::ValueOrThrow(state.app->actions()).get().uiActions();
 				fitChanged = ActionCall{actions.make(kChooseTextureFit, state)};
 				tintChanged = ActionCall{actions.make(kToggleTextureTint, state)};
 			}
@@ -3561,7 +3563,7 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 				tintRow.layout.childGap = 7;
 				tintRow.layout.childAlignment = {
 					.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
-				CLAY(context.clayID("texture-tint-row"), tintRow) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("texture-tint-row")), tintRow) {
 					FSEL::SwitchParameters tint{};
 					tint.isOn = state.resourceTintEnabled;
 					tint.enabled = state.editable;
@@ -3596,13 +3598,13 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 			ActionCall valuesChanged{};
 			ActionCall valuesCancelled{};
 			if (state.app && state.interfaceState && state.editable) {
-				changed = ActionCall{state.app->actions().uiActions().make(kChooseSizingAxisMode, state)};
+				changed = ActionCall{FlowUi::ValueOrThrow(state.app->actions()).get().uiActions().make(kChooseSizingAxisMode, state)};
 				valuesPreview = ActionCall{
-					state.app->actions().uiActions().make(kPreviewSizingAxisValues, state)};
+					FlowUi::ValueOrThrow(state.app->actions()).get().uiActions().make(kPreviewSizingAxisValues, state)};
 				valuesChanged = ActionCall{
-					state.app->actions().uiActions().make(kCommitSizingAxisValues, state)};
+					FlowUi::ValueOrThrow(state.app->actions()).get().uiActions().make(kCommitSizingAxisValues, state)};
 				valuesCancelled = ActionCall{
-					state.app->actions().uiActions().make(kCancelSizingAxisValues, state)};
+					FlowUi::ValueOrThrow(state.app->actions()).get().uiActions().make(kCancelSizingAxisValues, state)};
 			}
 			FSEL::ComboBoxParameters parameters{};
 			parameters.options = kSizingAxisOptions;
@@ -3617,7 +3619,7 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 			modeSlot.layout.sizing = {
 				.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(kTypeControlHeight)};
 			modeSlot.clip = {.horizontal = true, .vertical = false};
-			CLAY(context.clayID("sizing-mode-slot"), modeSlot) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("sizing-mode-slot")), modeSlot) {
 				context.uiManager.createElement(FSEL::kComboBox, "sizing-mode")
 					.setParameters(std::move(parameters)).setDevInternalCapture(true).draw();
 			}
@@ -3631,10 +3633,10 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 				line.layout.childGap = 6;
 				line.layout.childAlignment = {
 					.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
-				CLAY(context.clayID(Keyed(kEditorControl, key * 4u)), line) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed(kEditorControl, key * 4u))), line) {
 					Clay_TextElementConfig labelStyle = textConfig(
 						interface_theme::kTextSecondary, 9);
-					CLAY(context.clayID(Keyed(kEditorControl, key * 4u + 1u)), Clay_ElementDeclaration{
+					CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed(kEditorControl, key * 4u + 1u))), Clay_ElementDeclaration{
 						.layout = {.sizing = {.width = CLAY_SIZING_FIXED(34),
 							.height = CLAY_SIZING_FIT(0)}}}) {
 						CLAY_TEXT(context.uiManager.toClayString(label),
@@ -3644,7 +3646,7 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 					controlSlot.layout.sizing = {
 						.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(kTypeControlHeight)};
 					controlSlot.clip = {.horizontal = true, .vertical = false};
-					CLAY(context.clayID(Keyed(kEditorControl, key * 4u + 2u)), controlSlot) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed(kEditorControl, key * 4u + 2u))), controlSlot) {
 						FSEL::DragValueParameters<float> drag{};
 						drag.value = value;
 						drag.minimum = 0.0f;
@@ -3679,7 +3681,7 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 				line.layout.childAlignment = {
 					.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 				line.clip = {.horizontal = true, .vertical = false};
-				CLAY(context.clayID("percent-slider-line"), line) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("percent-slider-line")), line) {
 					Clay_ElementDeclaration sliderSlot{};
 					sliderSlot.layout.sizing = {
 						.width = CLAY_SIZING_GROW(0),
@@ -3687,7 +3689,7 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 					sliderSlot.layout.childAlignment = {
 						.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 					sliderSlot.clip = {.horizontal = true, .vertical = false};
-					CLAY(context.clayID("percent-slider-slot"), sliderSlot) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("percent-slider-slot")), sliderSlot) {
 						FSEL::SliderParameters slider{};
 						slider.value = &state.semanticSliderValue;
 						slider.minimum = 0.0;
@@ -3724,8 +3726,8 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 			ActionCall commit{};
 			ActionCall preview{};
 			if (state.app && state.interfaceState) {
-				commit = ActionCall{state.app->actions().uiActions().make(kCommitEditorDraft, state)};
-				preview = ActionCall{state.app->actions().uiActions().make(kPreviewEditorDraft, state)};
+				commit = ActionCall{FlowUi::ValueOrThrow(state.app->actions()).get().uiActions().make(kCommitEditorDraft, state)};
+				preview = ActionCall{FlowUi::ValueOrThrow(state.app->actions()).get().uiActions().make(kPreviewEditorDraft, state)};
 			}
 			FSEL::TextInputParameters parameters{};
 			parameters.value = &state.draft;
@@ -3748,7 +3750,7 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 			controlSlot.layout.sizing = {
 				.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(kTypeControlHeight)};
 			controlSlot.clip = {.horizontal = true, .vertical = false};
-			CLAY(context.clayID("text-control-slot"), controlSlot) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("text-control-slot")), controlSlot) {
 				context.uiManager.createElement(FSEL::kTextInput, kEditorControl)
 					.setParameters(std::move(parameters)).setDevInternalCapture(true).draw();
 			}
@@ -3845,7 +3847,7 @@ void DevChangesHeader::buildElement(BuildContext& context) {
 	bool canRevert = false;
 	if (state.app) {
 		for (const tooling::DevOverrideApply::Record& record :
-			state.app->devTooling().overrides().appliedOverrides().records()) {
+			FlowUi::ValueOrThrow(state.app->devTooling()).get().overrides().appliedOverrides().records()) {
 			if (!recordTargetsSelection(
 				record, state.definition, state.window, state.instance)) continue;
 			canRevert |= record.layer == tooling::DevOverrideLayer::LiveDefinition ||
@@ -3855,7 +3857,7 @@ void DevChangesHeader::buildElement(BuildContext& context) {
 	}
 	ActionCall elevate{}, revert{};
 	if (state.app && state.interfaceState) {
-		auto& actions = state.app->actions().uiActions();
+		auto& actions = FlowUi::ValueOrThrow(state.app->actions()).get().uiActions();
 		elevate = ActionCall{actions.make(kElevateAllChanges, state)};
 		revert = ActionCall{actions.make(kRevertAllChanges, state)};
 	}
@@ -3882,10 +3884,10 @@ void DevChangesHeader::buildElement(BuildContext& context) {
 		titleRow.layout.childGap = 5;
 		titleRow.layout.childAlignment = {
 			.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
-		CLAY(context.clayID("legend-title-row"), titleRow) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("legend-title-row")), titleRow) {
 			CLAY_TEXT(context.uiManager.toClayString("Legend:"),
 				CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextCanvas, 10)));
-			CLAY(context.clayID("legend-title-spacer"), {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("legend-title-spacer")), {
 				.layout = {.sizing = {.width = CLAY_SIZING_GROW(0),
 					.height = CLAY_SIZING_FIT(0)}}}) {}
 			Clay_ElementDeclaration actions{};
@@ -3895,7 +3897,7 @@ void DevChangesHeader::buildElement(BuildContext& context) {
 			actions.layout.childGap = 5;
 			actions.layout.childAlignment = {
 				.x = CLAY_ALIGN_X_RIGHT, .y = CLAY_ALIGN_Y_CENTER};
-			CLAY(context.clayID("actions"), actions) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("actions")), actions) {
 				drawChangeActionButton(context, 1u, "Elevate All", elevate, canElevate, 58);
 				drawChangeActionButton(context, 2u, "Revert All", revert, canRevert, 54);
 			}
@@ -3907,7 +3909,7 @@ void DevChangesHeader::buildElement(BuildContext& context) {
 		chain.layout.childGap = compact_labels ? 2 : 4;
 		chain.layout.childAlignment = {.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 		chain.clip = {.horizontal = true, .vertical = true};
-		CLAY(context.clayID("precedence"), chain) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("precedence")), chain) {
 			struct Legend {
 				std::string_view text;
 				std::string_view compact_text;
@@ -3932,7 +3934,7 @@ void DevChangesHeader::buildElement(BuildContext& context) {
 		}
 	}
 	if (compact_labels &&
-		context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID("precedence")))
+		context.uiManager.getPreviousFramesInteraction().isHovered(FlowUi::ValueOrThrow(context.clayID("precedence"))))
 		diagnostics_ui::pointer_tooltip(
 			context, LocalElementName{"precedence-detail"},
 			"Authored Value > Baked Layer > Live Definition > Live Instance");
@@ -3957,7 +3959,7 @@ void DevChangeCard::buildElement(BuildContext& context) {
 	const tooling::DevOverrideApply::Record* liveInstance = nullptr;
 	if (state.app) {
 		for (const tooling::DevOverrideApply::Record& record :
-			state.app->devTooling().overrides().appliedOverrides().records()) {
+			FlowUi::ValueOrThrow(state.app->devTooling()).get().overrides().appliedOverrides().records()) {
 			if (record.field != state.field || !recordTargetsSelection(
 				record, state.definition, state.window, state.instance)) continue;
 			if (record.layer == tooling::DevOverrideLayer::LiveDefinition) liveDefinition = &record;
@@ -3969,14 +3971,14 @@ void DevChangeCard::buildElement(BuildContext& context) {
 	const bool canRevert = winner != nullptr;
 	ActionCall elevate{}, revert{};
 	if (state.app && state.interfaceState) {
-		auto& actions = state.app->actions().uiActions();
+		auto& actions = FlowUi::ValueOrThrow(state.app->actions()).get().uiActions();
 		elevate = ActionCall{actions.make(kElevateChange, state)};
 		revert = ActionCall{actions.make(kRevertChange, state)};
 	}
 
 	auto liveSummary = [&](const tooling::DevOverrideApply::Record* record) {
 		if (!record || !state.app || !record->value) return std::string{};
-		const tooling::DevSchemaView schema = state.app->devTooling().schemas().view();
+		const tooling::DevSchemaView schema = FlowUi::ValueOrThrow(state.app->devTooling()).get().schemas().view();
 		if (!schema) return std::string{"Value unavailable"};
 		const tooling::DevFieldSchema* field = fieldAt(*schema, record->fieldIndex);
 		const tooling::DevTypeSchema* type = field && schema
@@ -4017,7 +4019,7 @@ void DevChangeCard::buildElement(BuildContext& context) {
 		title.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		title.layout.childGap = 1;
 		title.clip = {.horizontal = true, .vertical = true};
-		CLAY(context.clayID("title"), title) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("title")), title) {
 			CLAY_TEXT(context.uiManager.toClayString(state.fieldName),
 				CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextCanvas, 11)));
 			CLAY_TEXT(context.uiManager.toClayString(state.typeName),
@@ -4030,13 +4032,13 @@ void DevChangeCard::buildElement(BuildContext& context) {
 		chain.layout.childGap = 5;
 		chain.layout.childAlignment = {.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 		chain.clip = {.vertical = true};
-		CLAY(context.clayID("chain"), chain) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("chain")), chain) {
 			for (std::size_t index = 0; index < steps.size(); ++index) {
 				if (index != 0u)
 					CLAY_TEXT(context.uiManager.toClayString(">"),
 							  CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextMuted, 9)));
 				Clay_TextElementConfig valueStyle = textConfig(steps[index].color, 9);
-				CLAY(context.clayID(Keyed(kChangeStep, index)),
+				CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed(kChangeStep, index))),
 					 {.layout = {.sizing = {.width = CLAY_SIZING_FIT(0),
 											.height = CLAY_SIZING_FIT(0)}},
 					  .clip = {.horizontal = true, .vertical = true}}) {
@@ -4051,7 +4053,7 @@ void DevChangeCard::buildElement(BuildContext& context) {
 		actions.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		actions.layout.childGap = 5;
 		actions.layout.childAlignment = {.x = CLAY_ALIGN_X_RIGHT, .y = CLAY_ALIGN_Y_CENTER};
-		CLAY(context.clayID("actions"), actions) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("actions")), actions) {
 			drawChangeActionButton(context, 1u, "Elevate", elevate, canElevate, 58);
 			drawChangeActionButton(context, 2u, "Revert", revert, canRevert, 56);
 		}
@@ -4069,7 +4071,7 @@ void DevInterfaceInspectorFields::buildElement(BuildContext& context) {
 		? static_cast<DevInspectorTab>(state->inspectInspectorTab)
 		: DevInspectorTab::Parameters;
 	const tooling::DevSchemaView schema = app
-		? app->devTooling().schemas().view() : tooling::DevSchemaView{};
+		? FlowUi::ValueOrThrow(app->devTooling()).get().schemas().view() : tooling::DevSchemaView{};
 	const tooling::DevElementSchema* element = schema
 		? schema->findElement(context.params.definition) : nullptr;
 
@@ -4100,7 +4102,7 @@ void DevInterfaceInspectorFields::buildElement(BuildContext& context) {
 		? schema->type(rootType) : nullptr;
 	const tooling::DevTypeId rootOwnerType = rootSchema ? rootSchema->id : 0u;
 	const tooling::DevElementCaptureSnapshot* capture = app && state
-		? &app->devTooling().overrides().elementSnapshot(state->selectedWindowId)
+		? &FlowUi::ValueOrThrow(app->devTooling()).get().overrides().elementSnapshot(state->selectedWindowId)
 		: nullptr;
 	const tooling::DevCapturedElement* capturedElement = nullptr;
 	const bool matching_schema =
@@ -4134,7 +4136,7 @@ void DevInterfaceInspectorFields::buildElement(BuildContext& context) {
 		return nullptr;
 	};
 	const auto availability = [&](const tooling::DevCapturedField* field, bool authored = false) {
-		if (app && !app->devTooling().overrides().value_collection())
+		if (app && !FlowUi::ValueOrThrow(app->devTooling()).get().overrides().value_collection())
 			return DevSummaryAvailability::CollectionDisabled;
 		if (capture && capture->schema && !matching_schema)
 			return DevSummaryAvailability::SchemaChanged;
@@ -4148,7 +4150,7 @@ void DevInterfaceInspectorFields::buildElement(BuildContext& context) {
 	};
 	const std::vector<tooling::DevBakeDiffEntry> changes =
 		app && tab == DevInspectorTab::Changes
-			? app->devTooling().queryBakeDiff()
+			? FlowUi::ValueOrThrow(app->devTooling()).get().queryBakeDiff()
 			: std::vector<tooling::DevBakeDiffEntry>{};
 	struct ChangeModel {
 		tooling::DevOverrideFieldKey field{};
@@ -4161,7 +4163,7 @@ void DevInterfaceInspectorFields::buildElement(BuildContext& context) {
 	std::vector<ChangeModel> changeModels{};
 	if (app && state && schema && tab == DevInspectorTab::Changes) {
 		for (const tooling::DevOverrideApply::Record& record :
-			app->devTooling().overrides().appliedOverrides().records()) {
+			FlowUi::ValueOrThrow(app->devTooling()).get().overrides().appliedOverrides().records()) {
 			if ((record.layer != tooling::DevOverrideLayer::LiveDefinition &&
 				record.layer != tooling::DevOverrideLayer::LiveInstance) ||
 				!recordTargetsSelection(record, context.params.definition,
@@ -4299,7 +4301,7 @@ void DevInterfaceInspectorFields::buildElement(BuildContext& context) {
 			cards.layout.padding = Clay_Padding{9, 9, 9, 9};
 			cards.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 			cards.layout.childGap = 7;
-			CLAY(context.clayID(kCards), cards) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(kCards)), cards) {
 				if (tab == DevInspectorTab::Changes) {
 					context.uiManager.createElement(kDevChangesHeader, kChangeHeader)
 						.setParameters(DevChangesHeaderParameters{

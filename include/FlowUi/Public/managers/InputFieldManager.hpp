@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Private/ApiBoundary.hpp"
+
 #include "FlowUi/Public/BuildConfig.hpp"
 
 #include <cstddef>
@@ -43,392 +45,451 @@ struct FontFrameView;
  */
 
 /**
- * @brief Manages text input fields, focus, caret state, and edit operations.
+ * @brief Window-owned editable text, caret state, and atomic edit operations.
  *
- * InputFieldManager is the public entry point for custom FlowUi elements that
- * need editable text. The manager owns persistent field state, keyed by an
- * explicit strong Flow ID or ResourceKey, while the element remains responsible for drawing the
- * Clay containers and text node for that field.
- *
- * A field becomes part of the current frame when custom UI code calls
- * requestField(). The request updates the field configuration and Clay element
- * ids, then returns the current manager-owned text. The initial text is copied
- * only when a field id is first seen; later requests with the same id keep the
- * edited text until removeField() or clear() resets it.
- *
- * Focus and caret changes are requested separately through requestCaret(),
- * normally from an element interaction callback. FlowUi's frame lifecycle then
- * handles pointer hit testing, keyboard input, caret movement, selection
- * rendering, and text mutation before the frame is rendered.
- *
- * @code{.cpp}
- * struct MyTextInput {
- *     using Parameters = MyTextInputParameters;
- *     using InteractionContext = FlowUi::ElementInteractionContext<MyTextInput>;
- *     using BuildContext = FlowUi::ElementBuildContext<MyTextInput>;
- *
- *     struct Parts {
- *         static constexpr auto text = FlowUi::Part("text");
- *         static constexpr auto content = FlowUi::Part("content");
- *     };
- *
- *     static constexpr auto definitionId = FlowUi::DefinitionID("my-text-input");
- *
- *     static void onPressed(InteractionContext& context) {
- *         context.uiManager.inputFields().requestCaret(
- *             context.id,
- *             FlowUi::CaretRequestKind::SetPrimary);
- *     }
- *
- *     static void buildElement(BuildContext& context) {
- *         const Clay_ElementId rootId = context.clayID();
- *         const Clay_ElementId textId =
- *             context.uiManager.toClayEID(context.part(Parts::text));
- *         const Clay_ElementId contentId =
- *             context.uiManager.toClayEID(context.part(Parts::content));
- *
- *         const FlowUi::FieldQueryResult field =
- *             context.uiManager.inputFields().requestField(context.id, {
- *                 .initialText = context.params.initialText,
- *                 .config = FlowUi::FieldConfig{
- *                     .mode = FlowUi::TextFieldMode::SingleLine,
- *                     .readOnly = false,
- *                 },
- *                 .textElementId = textId,
- *                 .contentElementId = contentId,
- *             });
- *
- *         Clay_TextElementConfig textConfig{};
- *         textConfig.fontId = context.params.fontId;
- *         textConfig.fontSize = 14;
- *
- *         CLAY(rootId, {}) {
- *             CLAY(contentId, {}) {
- *                 CLAY_TEXT(
- *                     context.uiManager.toClayString(
- *                         field.text.contiguous().value_or(std::string_view{})),
- *                     CLAY_TEXT_CONFIG(textConfig));
- *             };
- *         };
- *     }
- * };
- * @endcode
- *
- * @see @ref md_docs_2tutorials_2input__fields__and__shortcuts "Input Fields and Shortcuts"
- * @see @ref md_docs_2tutorials_2custom__elements "Custom Elements"
+ * Authoring operations return direct values and propagate exceptions to the frame
+ * boundary. Operational exceptions latch frame failure. False, empty snapshots
+ * and EditResult rejection values are ordinary outcomes; frameStatus() remains
+ * the checked query for a latched failure.
+ * Obtain App-owned managers through the checked App getter and unwrap its
+ * reference_wrapper with result->get().
+ * Returned text, metadata, resource views, and pointers remain borrowed under
+ * each operation's documented invalidation rules.
  */
 class InputFieldManager {
 public:
+	/**
+	 * @brief Read the latched failure for the current input-field frame.
+	 *
+	 * A successful later call does not clear an earlier frame failure. UiManager checks this status when completing the frame.
+	 *
+	 * @return Success means no failure was latched; an error means the surrounding frame must be canceled.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * auto result = manager.frameStatus();
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * @endcode
+	 */
+	[[nodiscard]] Status frameStatus() const noexcept {
+		return frameError_ ? Status{unexpectedError(frameError_)} : Status{};
+	}
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	/** @brief Append observation-only development memory accounting to the borrowed sink. */
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
 #endif
 	/**
-	 * @brief Register or update an input field for the current frame.
+	 * @brief Register or update a field and borrow its current frame snapshot.
 	 *
-	 * requestField() marks the field as present for this frame, creates manager
-	 * state when fieldId is new, updates the field config and Clay element ids,
-	 * and returns the current text/focus snapshot for the field. Call it once
-	 * per frame from the element that draws the field.
+	 * Call once per field during its active UI build. Update config and Clay text/content IDs each frame. An unrequested focused field loses primary focus at frame finalization. Text, visible lines, selections, and transaction spans are manager-owned; copy data before field mutation/removal or the next frame invalidates it.
 	 *
-	 * If the currently focused field is not requested in a frame, FlowUi clears
-	 * primary input focus for that field when the frame is finalized. Non-focused
-	 * field state remains cached until removeField() or clear() is called.
-	 *
-	 * @param fieldId Strong element, global, part, or resource identity used to
-	 * address the persistent field state.
-	 * @param request First-use text, behavior configuration, and Clay element ids
-	 * used for text measurement and pointer hit testing.
-	 * @return Current manager-owned text plus focus and selection flags. Returns
-	 * an empty result when fieldId is empty.
-	 *
-	 * @throws std::bad_alloc if internal field storage allocation fails.
+	 * @return FieldQueryResult; an empty strong ID yields an empty snapshot. New fields copy initialText; later requests preserve edited text.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
 	 *
 	 * @code{.cpp}
-	 * const FlowUi::FieldQueryResult field =
-	 *     context.uiManager.inputFields().requestField(context.id, {
-	 *         .initialText = "Search",
-	 *         .config = FlowUi::FieldConfig{
-	 *             .maxBytes = 256,
-	 *             .mode = FlowUi::TextFieldMode::SingleLine,
-	 *             .readOnly = false,
-	 *         },
-	 *         .textElementId = context.clayID(FlowUi::LocalElementName("text")),
-	 *         .contentElementId = context.clayID(FlowUi::LocalElementName("content")),
-	 *     });
+	 * FlowUi::FieldRequest request{};
+	 * request.initialText = "Search";
+	 * request.textElementId = textElementId;
+	 * request.contentElementId = contentElementId;
+	 * const FlowUi::FieldQueryResult field = manager.requestField(fieldId, request);
 	 * @endcode
-	 *
-	 * @see @ref md_docs_2tutorials_2input__fields__and__shortcuts "Input Fields and Shortcuts"
 	 */
 	[[nodiscard]] FieldQueryResult requestField(FlowElementID fieldId, const FieldRequest& request);
-	/** @brief Request the current field snapshot using a global identity.
-	 * The primary requestField() overload's behavior and borrowing rules apply.
+	/**
+	 * @brief Register or update a field and borrow its current frame snapshot.
+	 *
+	 * Call once per field during its active UI build. Update config and Clay text/content IDs each frame. An unrequested focused field loses primary focus at frame finalization. Text, visible lines, selections, and transaction spans are manager-owned; copy data before field mutation/removal or the next frame invalidates it.
+	 *
+	 * @return FieldQueryResult; an empty strong ID yields an empty snapshot. New fields copy initialText; later requests preserve edited text.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * FlowUi::FieldRequest request{};
+	 * request.initialText = "Search";
+	 * request.textElementId = textElementId;
+	 * request.contentElementId = contentElementId;
+	 * const FlowUi::FieldQueryResult field = manager.requestField(fieldId, request);
+	 * @endcode
 	 */
 	[[nodiscard]] FieldQueryResult requestField(GlobalFlowID fieldId, const FieldRequest& request);
-	/** @brief Request the current field snapshot using a semantic part identity.
-	 * The primary requestField() overload's behavior and borrowing rules apply.
+	/**
+	 * @brief Register or update a field and borrow its current frame snapshot.
+	 *
+	 * Call once per field during its active UI build. Update config and Clay text/content IDs each frame. An unrequested focused field loses primary focus at frame finalization. Text, visible lines, selections, and transaction spans are manager-owned; copy data before field mutation/removal or the next frame invalidates it.
+	 *
+	 * @return FieldQueryResult; an empty strong ID yields an empty snapshot. New fields copy initialText; later requests preserve edited text.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * FlowUi::FieldRequest request{};
+	 * request.initialText = "Search";
+	 * request.textElementId = textElementId;
+	 * request.contentElementId = contentElementId;
+	 * const FlowUi::FieldQueryResult field = manager.requestField(fieldId, request);
+	 * @endcode
 	 */
 	[[nodiscard]] FieldQueryResult requestField(FlowElementPartID fieldId,
 												const FieldRequest& request);
-	/** @brief Request the current field snapshot using a window-local InputField resource key.
-	 * The primary requestField() overload's behavior and borrowing rules apply.
+	/**
+	 * @brief Register or update a field and borrow its current frame snapshot.
+	 *
+	 * Call once per field during its active UI build. Update config and Clay text/content IDs each frame. An unrequested focused field loses primary focus at frame finalization. Text, visible lines, selections, and transaction spans are manager-owned; copy data before field mutation/removal or the next frame invalidates it. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.
+	 *
+	 * @return FieldQueryResult; an empty strong ID yields an empty snapshot. New fields copy initialText; later requests preserve edited text.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "search"};
+	 * FlowUi::FieldRequest request{};
+	 * request.initialText = "Search";
+	 * request.textElementId = textElementId;
+	 * request.contentElementId = contentElementId;
+	 * const FlowUi::FieldQueryResult field = manager.requestField(key, request);
+	 * @endcode
 	 */
 	[[nodiscard]] FieldQueryResult requestField(ResourceKey key, const FieldRequest& request);
 
 	/**
-	 * @brief Associate a rendered visible line with its logical document range.
+	 * @brief Associate a visible multiline Clay text node with its document range.
 	 *
-	 * Multiline controls call this once for every VisibleTextLine they emit.
-	 * The frame-scoped handle prevents stale submissions from being accepted.
-	 * @param field Handle returned by this frame's requestField().
-	 * @param span Rendered Clay text ID and exact visible logical UTF-8 range.
-	 * @return True when accepted; false for an expired handle, unknown field,
-	 * invalid text ID/range, or a range not matching a current visible line.
-	 */
-	bool submitTextSpan(FieldHandle field, const FieldTextSpanSubmission& span);
-
-	/**
-	 * @brief Request focus or caret changes for an input field.
+	 * Submit every emitted VisibleTextLine during the same frame as requestField(). FieldHandle::operator bool only tests its slot and does not validate the epoch.
 	 *
-	 * Caret requests are applied immediately to manager state. SetPrimary is the
-	 * normal focus operation for a clicked input field. ClearAll removes focus
-	 * from every field and ignores fieldId. Add creates another caret for the
-	 * requested field and is intended for advanced multi-caret editing.
-	 *
-	 * Calling SetPrimary for a field id that has not been requested yet creates
-	 * empty manager state for that id. The next requestField() call for the same
-	 * id will attach config and Clay element ids to that state.
-	 *
-	 * @param fieldId Stable id of the field to focus or modify. Ignored when
-	 * kind is CaretRequestKind::ClearAll.
-	 * @param kind Caret operation to perform.
-	 *
-	 * @throws std::bad_alloc if the request creates a new field state and
-	 * internal storage allocation fails.
+	 * @return true when accepted; false means an expired handle, unknown field, invalid text ID/range, or range not matching a visible line.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
 	 *
 	 * @code{.cpp}
-	 * context.uiManager.inputFields().requestCaret(
-	 *     context.id,
-	 *     FlowUi::CaretRequestKind::SetPrimary);
+	 * const FlowUi::FieldTextSpanSubmission span{
+	 *     .logicalRange = line.logicalRange,
+	 *     .textElementId = textElementId,
+	 *     .visualLineIndex = line.visualLineIndex,
+	 * };
+	 * const auto accepted = manager.submitTextSpan(field, span);
+	 * @endcode
+	 */
+	[[nodiscard]] bool submitTextSpan(FieldHandle field, const FieldTextSpanSubmission& span);
+
+	/**
+	 * @brief Apply a focus or caret request to persistent field state.
+	 *
+	 * SetPrimary is the normal click-focus operation; Add requests an additional caret. Changes take effect immediately in manager state.
+	 *
+	 * @post The request has completed. SetPrimary may create empty state before requestField(); ClearAll clears every field's focus and ignores a strong identity; ResourceKey overloads still validate their key before applying it.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * manager.requestCaret(fieldId, FlowUi::CaretRequestKind::SetPrimary);
 	 * @endcode
 	 */
 	void requestCaret(FlowElementID fieldId, CaretRequestKind kind);
-	/** @brief Request a focus/caret operation using a global identity.
-	 * The primary requestCaret() overload's behavior and borrowing rules apply.
+	/**
+	 * @brief Apply a focus or caret request to persistent field state.
+	 *
+	 * SetPrimary is the normal click-focus operation; Add requests an additional caret. Changes take effect immediately in manager state.
+	 *
+	 * @post The request has completed. SetPrimary may create empty state before requestField(); ClearAll clears every field's focus and ignores a strong identity; ResourceKey overloads still validate their key before applying it.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * manager.requestCaret(fieldId, FlowUi::CaretRequestKind::SetPrimary);
+	 * @endcode
 	 */
 	void requestCaret(GlobalFlowID fieldId, CaretRequestKind kind);
-	/** @brief Request a focus/caret operation using a semantic part identity.
-	 * The primary requestCaret() overload's behavior and borrowing rules apply.
+	/**
+	 * @brief Apply a focus or caret request to persistent field state.
+	 *
+	 * SetPrimary is the normal click-focus operation; Add requests an additional caret. Changes take effect immediately in manager state.
+	 *
+	 * @post The request has completed. SetPrimary may create empty state before requestField(); ClearAll clears every field's focus and ignores a strong identity; ResourceKey overloads still validate their key before applying it.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * manager.requestCaret(fieldId, FlowUi::CaretRequestKind::SetPrimary);
+	 * @endcode
 	 */
 	void requestCaret(FlowElementPartID fieldId, CaretRequestKind kind);
-	/** @brief Request a focus/caret operation using a window-local InputField resource key.
-	 * The primary requestCaret() overload's behavior and borrowing rules apply.
+	/**
+	 * @brief Apply a focus or caret request to persistent field state.
+	 *
+	 * SetPrimary is the normal click-focus operation; Add requests an additional caret. Changes take effect immediately in manager state. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.
+	 *
+	 * @post The request has completed. SetPrimary may create empty state before requestField(); ClearAll clears every field's focus and ignores a strong identity; ResourceKey overloads still validate their key before applying it.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "search"};
+	 * manager.requestCaret(key, FlowUi::CaretRequestKind::SetPrimary);
+	 * @endcode
 	 */
 	void requestCaret(ResourceKey key, CaretRequestKind kind);
 
 	/**
-	 * @brief Remove a managed field by id.
+	 * @brief Remove a field's text, configuration, carets, and selection.
 	 *
-	 * This discards the field's stored text, config, Clay element ids, carets,
-	 * and selection state. Use it when an external value should replace the
-	 * current editable text, or when a dynamic field is permanently removed from
-	 * the UI.
+	 * Removing a focused field clears or transfers primary focus. All borrowed field text/views/reports become invalid.
 	 *
-	 * If the removed field owns primary input focus, focus is cleared or moved
-	 * to another field that still has carets.
-	 *
-	 * @param fieldId Stable id of the field state to remove.
-	 * @retval true a field with fieldId existed and was removed.
-	 * @retval false fieldId is empty or no matching field exists.
+	 * @return true if a field was removed or false for an empty strong ID/missing field.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
 	 *
 	 * @code{.cpp}
-	 * if (externalValueChanged) {
-	 *     (void)context.uiManager.inputFields().removeField(fieldId);
-	 * }
+	 * const auto removed = manager.removeField(fieldId);
 	 * @endcode
 	 */
-	bool removeField(FlowElementID fieldId);
-	/** @brief Remove stored field state using a global identity.
-	 * The primary removeField() overload's behavior and borrowing rules apply.
-	 */
-	bool removeField(GlobalFlowID fieldId);
-	/** @brief Remove stored field state using a semantic part identity.
-	 * The primary removeField() overload's behavior and borrowing rules apply.
-	 */
-	bool removeField(FlowElementPartID fieldId);
-	/** @brief Remove stored field state using a window-local InputField resource key.
-	 * The primary removeField() overload's behavior and borrowing rules apply.
-	 */
-	bool removeField(ResourceKey key);
-
+	[[nodiscard]] bool removeField(FlowElementID fieldId);
 	/**
-	 * @brief Replace the managed text for an existing input field.
+	 * @brief Remove a field's text, configuration, carets, and selection.
 	 *
-	 * replaceText() updates a field without removing its config, Clay element
-	 * ids, or frame presence state. By default, existing carets and selections
-	 * are remapped through the smallest differing UTF-8 range and then clamped
-	 * to valid boundaries in the replacement text. This keeps carets before and
-	 * after an edited numeric or formatted segment stable. Pass false to clear
-	 * any active carets from the field after updating the text.
+	 * Removing a focused field clears or transfers primary focus. All borrowed field text/views/reports become invalid.
 	 *
-	 * @param fieldId Stable id of the field state to update.
-	 * @param text Replacement text to store for the field.
-	 * @param preserveCaret Whether to preserve and clamp existing caret state.
-	 * Defaults to true.
-	 * @retval true the field existed and its stored text changed.
-	 * @retval false fieldId is empty, no matching field exists, or text already
-	 * matches the stored field text.
-	 *
-	 * @throws std::bad_alloc if copying replacement text requires allocation
-	 * and allocation fails.
+	 * @return true if a field was removed or false for an empty strong ID/missing field.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
 	 *
 	 * @code{.cpp}
-	 * const bool changed = app.ui().inputFields().replaceText(
-	 *     MasterNameField,
-	 *     externalName,
-	 *     false);
+	 * const auto removed = manager.removeField(fieldId);
 	 * @endcode
 	 */
-	bool replaceText(FlowElementID fieldId, std::string_view text, bool preserveCaret = true);
-	/** @brief Replace existing field text using a global identity.
-	 * The primary replaceText() overload's behavior and borrowing rules apply.
-	 */
-	bool replaceText(GlobalFlowID fieldId, std::string_view text, bool preserveCaret = true);
-	/** @brief Replace existing field text using a semantic part identity.
-	 * The primary replaceText() overload's behavior and borrowing rules apply.
-	 */
-	bool replaceText(FlowElementPartID fieldId, std::string_view text, bool preserveCaret = true);
-	/** @brief Replace existing field text using a window-local InputField resource key.
-	 * The primary replaceText() overload's behavior and borrowing rules apply.
-	 */
-	bool replaceText(ResourceKey key, std::string_view text, bool preserveCaret = true);
-
+	[[nodiscard]] bool removeField(GlobalFlowID fieldId);
 	/**
-	 * @brief Clear all managed input field state.
+	 * @brief Remove a field's text, configuration, carets, and selection.
 	 *
-	 * clear() removes every field, clears primary focus, resets key repeat and
-	 * pointer drag state, and drops any frame render overrides. It is a global
-	 * reset for the input field system.
+	 * Removing a focused field clears or transfers primary focus. All borrowed field text/views/reports become invalid.
+	 *
+	 * @return true if a field was removed or false for an empty strong ID/missing field.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
 	 *
 	 * @code{.cpp}
-	 * app.ui().inputFields().clear();
+	 * const auto removed = manager.removeField(fieldId);
+	 * @endcode
+	 */
+	[[nodiscard]] bool removeField(FlowElementPartID fieldId);
+	/**
+	 * @brief Remove a field's text, configuration, carets, and selection.
+	 *
+	 * Removing a focused field clears or transfers primary focus. All borrowed field text/views/reports become invalid. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.
+	 *
+	 * @return true if a field was removed or false for an empty strong ID/missing field.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "search"};
+	 * const auto removed = manager.removeField(key);
+	 * @endcode
+	 */
+	[[nodiscard]] bool removeField(ResourceKey key);
+
+	/**
+	 * @brief Replace an existing field's text while retaining its configuration.
+	 *
+	 * preserveCaret defaults to true: carets/selections are remapped through the smallest differing UTF-8 range and clamped. false clears active carets only after an applied replacement. Programmatic replacement bypasses readOnly, while UTF-8/newline/maxBytes validation still applies. Any field text mutation invalidates borrowed field text/views.
+	 *
+	 * @return true if text changed; false for an empty strong ID, missing field, unchanged text, or a rejected edit (invalid UTF-8/range, newline policy, or maxBytes).
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * const auto changed = manager.replaceText(fieldId, "Updated text", true);
+	 * @endcode
+	 */
+	[[nodiscard]] bool replaceText(FlowElementID fieldId, std::string_view text, bool preserveCaret = true);
+	/**
+	 * @brief Replace an existing field's text while retaining its configuration.
+	 *
+	 * preserveCaret defaults to true: carets/selections are remapped through the smallest differing UTF-8 range and clamped. false clears active carets only after an applied replacement. Programmatic replacement bypasses readOnly, while UTF-8/newline/maxBytes validation still applies. Any field text mutation invalidates borrowed field text/views.
+	 *
+	 * @return true if text changed; false for an empty strong ID, missing field, unchanged text, or a rejected edit (invalid UTF-8/range, newline policy, or maxBytes).
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * const auto changed = manager.replaceText(fieldId, "Updated text", true);
+	 * @endcode
+	 */
+	[[nodiscard]] bool replaceText(GlobalFlowID fieldId, std::string_view text, bool preserveCaret = true);
+	/**
+	 * @brief Replace an existing field's text while retaining its configuration.
+	 *
+	 * preserveCaret defaults to true: carets/selections are remapped through the smallest differing UTF-8 range and clamped. false clears active carets only after an applied replacement. Programmatic replacement bypasses readOnly, while UTF-8/newline/maxBytes validation still applies. Any field text mutation invalidates borrowed field text/views.
+	 *
+	 * @return true if text changed; false for an empty strong ID, missing field, unchanged text, or a rejected edit (invalid UTF-8/range, newline policy, or maxBytes).
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * const auto changed = manager.replaceText(fieldId, "Updated text", true);
+	 * @endcode
+	 */
+	[[nodiscard]] bool replaceText(FlowElementPartID fieldId, std::string_view text, bool preserveCaret = true);
+	/**
+	 * @brief Replace an existing field's text while retaining its configuration.
+	 *
+	 * preserveCaret defaults to true: carets/selections are remapped through the smallest differing UTF-8 range and clamped. false clears active carets only after an applied replacement. Programmatic replacement bypasses readOnly, while UTF-8/newline/maxBytes validation still applies. Any field text mutation invalidates borrowed field text/views. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.
+	 *
+	 * @return true if text changed; false for an empty strong ID, missing field, unchanged text, or a rejected edit (invalid UTF-8/range, newline policy, or maxBytes).
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "search"};
+	 * const auto changed = manager.replaceText(key, "Updated text", true);
+	 * @endcode
+	 */
+	[[nodiscard]] bool replaceText(ResourceKey key, std::string_view text, bool preserveCaret = true);
+
+	/**
+	 * @brief Clear every field and reset focus, repeat, drag, and frame overrides.
+	 *
+	 * All previously borrowed field views, spans, text, and handles must be discarded.
+	 *
+	 * @post The reset has completed.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * manager.clear();
 	 * @endcode
 	 */
 	void clear();
 
 	/**
-	 * @brief Return whether any field owns primary input focus.
+	 * @brief Test whether a primary field has at least one caret.
 	 *
-	 * This is useful when global shortcuts should be suppressed while the user is
-	 * editing text. ShortcutManager uses the same state for
-	 * ShortcutScope::FocusedInput.
+	 * This is a direct noexcept query; it does not report initialization errors.
 	 *
-	 *	@retval true a primary field id is set and that field has at least one caret.
-	 *  @retval false no primary field id is set.
-	 * 
-	 *
-	 * @code{.cpp}
-	 * if (!app.ui().inputFields().hasPrimaryFieldFocus()) {
-	 *     runGlobalShortcut();
-	 * }
-	 * @endcode
+	 * @return Returns false if detached, no primary field exists, or its caret list is empty.
 	 */
-	[[nodiscard]] bool hasPrimaryFieldFocus() const;
-	/** @brief Return whether the primary field exists, has a caret, and is not read-only. */
-	[[nodiscard]] bool canEditPrimaryField() const;
+	[[nodiscard]] bool hasPrimaryFieldFocus() const noexcept;
+	/**
+	 * @brief Test whether the primary field exists, has a caret, and is writable.
+	 *
+	 * This is a direct noexcept query.
+	 *
+	 * @return Returns false for detached, unfocused, missing, caret-free, or read-only fields.
+	 */
+	[[nodiscard]] bool canEditPrimaryField() const noexcept;
 
 	/**
-	 * @brief Return selected text from the primary input field.
+	 * @brief Borrow the earliest selected range in the primary field.
 	 *
-	 * When the focused field has multiple selections, the earliest selected
-	 * range is returned. If no primary field exists, the primary field is gone,
-	 * or no selection is active, the returned view is empty.
+	 * Single-line selections borrow field storage; chunked selections borrow scratch storage reused by a later getSelectedText() call. Copy to std::string immediately to retain it across another query, text mutation, removal, or frame/lifetime change.
 	 *
-	 * @return View of the selected text in manager-owned storage, or an empty
-	 * view when there is no active selection. The view remains valid until the
-	 * selected field text changes or the field is removed.
+	 * @return an empty view if there is no primary field or active selection. Detached state and copy/allocation failures throw.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
 	 *
 	 * @code{.cpp}
-	 * const std::string selected(app.ui().inputFields().getSelectedText());
-	 * if (!selected.empty()) {
-	 *     app.ui().setClipboardText(selected);
-	 * }
+	 * const std::string selectedText{manager.getSelectedText()};
 	 * @endcode
 	 */
 	[[nodiscard]] std::string_view getSelectedText() const;
 
 	/**
-	 * @brief Insert UTF-8 text at the primary caret.
+	 * @brief Insert UTF-8 text at every caret in the primary field, replacing selections.
 	 *
-	 * The text is inserted into the focused field at each caret position. Active
-	 * selections are replaced. The operation respects FieldConfig::readOnly and
-	 * FieldConfig::maxBytes for the target field.
+	 * The input is consumed synchronously. FieldConfig readOnly/maxBytes rules apply; normal keyboard text already comes through the frame pipeline.
 	 *
-	 * This function is intended for paste commands, virtual keyboards, or other
-	 * application-driven text insertion. Normal keyboard text input is collected
-	 * by FlowUi's frame input pipeline and applied automatically.
-	 *
-	 * @param utf8Text UTF-8 text to insert.
-	 * @retval true the focused field text or caret positions changed.
-	 * @retval false utf8Text is empty, no field is focused, the field is read-only, the
-	 * field has no caret, or the insertion was rejected by maxBytes.
-	 *
-	 * @throws std::bad_alloc if copying or inserting text requires allocation
-	 * and allocation fails.
+	 * @return true when text/caret state changed; false for empty text, absent focus/carets, read-only fields, unchanged text/carets, or rejected UTF-8/newline/size policies.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
 	 *
 	 * @code{.cpp}
-	 * const std::string clipboard = app.ui().clipboardText();
-	 * (void)app.ui().inputFields().insertTextAtPrimaryCaret(clipboard);
+	 * const auto changed = manager.insertTextAtPrimaryCaret("Pasted text");
 	 * @endcode
 	 */
-	bool insertTextAtPrimaryCaret(std::string_view utf8Text);
+	[[nodiscard]] bool insertTextAtPrimaryCaret(std::string_view utf8Text);
 
 	/**
-	 * @brief Queue a semantic command for the field focused at submission time.
-	 * @param command Navigation, selection, clipboard, or editing operation.
-	 * @param payload Optional text payload, copied into the command queue.
-	 * @return False when there is no primary focus; true when queued. Commands
-	 * are applied during field processing with the captured selection-extension state.
+	 * @brief Queue a semantic text command for the field focused now.
+	 *
+	 * payload is copied. The queue captures field identity and selection-extension state; commands execute during field processing, not necessarily at submission.
+	 *
+	 * @return true when queued or false when no primary field owns focus.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::TextCommand command = FlowUi::TextCommand::SelectAll;
+	 * const auto queued = manager.enqueueCommand(command);
+	 * @endcode
 	 */
-	bool enqueueCommand(TextCommand command, std::string_view payload = {});
+	[[nodiscard]] bool enqueueCommand(TextCommand command, std::string_view payload = {});
 
 	/**
-	 * @brief Apply a validated replacement batch atomically to an existing field.
-	 * @param fieldId Existing field identity; primary focus is not required.
-	 * @param edits UTF-8 replacements addressed in the original document's byte
-	 * coordinates. Ranges must be valid, nonoverlapping UTF-8 boundaries.
-	 * @param origin Attribution retained in the resulting transaction.
-	 * @return Applied, NoChange, or a rejection describing a missing/read-only
-	 * field, invalid range/UTF-8, disallowed newline, or maxBytes overflow. Rejected
-	 * batches leave text unchanged. Input spans are consumed synchronously.
+	 * @brief Validate and atomically apply a replacement batch to an existing field.
+	 *
+	 * Ranges use original-document UTF-8 byte coordinates, must be in bounds, nonoverlapping, and on codepoint boundaries. Rejections leave text unchanged. No primary focus is needed; readOnly, newline policy, valid UTF-8, and maxBytes are enforced. Input spans/strings are consumed synchronously. origin defaults to Programmatic.
+	 *
+	 * @return EditResult: Applied, NoChange, or a Rejected* outcome. Rejection is an ordinary edit outcome and leaves text unchanged. Operational failures propagate to the frame boundary.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * const std::array edits{FlowUi::TextReplacement{
+	 *     .oldRange = {0, 0},
+	 *     .insertedText = "Hello",
+	 * }};
+	 * const auto edit = manager.applyEdits(fieldId, edits, FlowUi::EditOrigin::Programmatic);
+	 * @endcode
 	 */
-	EditResult applyEdits(
+	[[nodiscard]] EditResult applyEdits(
 		FlowElementID fieldId,
 		std::span<const TextReplacement> edits,
 		EditOrigin origin = EditOrigin::Programmatic);
-	/** @brief Apply an atomic validated replacement batch using a global identity.
-	 * The primary applyEdits() overload's behavior and borrowing rules apply.
+	/**
+	 * @brief Validate and atomically apply a replacement batch to an existing field.
+	 *
+	 * Ranges use original-document UTF-8 byte coordinates, must be in bounds, nonoverlapping, and on codepoint boundaries. Rejections leave text unchanged. No primary focus is needed; readOnly, newline policy, valid UTF-8, and maxBytes are enforced. Input spans/strings are consumed synchronously. origin defaults to Programmatic.
+	 *
+	 * @return EditResult: Applied, NoChange, or a Rejected* outcome. Rejection is an ordinary edit outcome and leaves text unchanged. Operational failures propagate to the frame boundary.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * const std::array edits{FlowUi::TextReplacement{
+	 *     .oldRange = {0, 0},
+	 *     .insertedText = "Hello",
+	 * }};
+	 * const auto edit = manager.applyEdits(fieldId, edits, FlowUi::EditOrigin::Programmatic);
+	 * @endcode
 	 */
-	EditResult applyEdits(
+	[[nodiscard]] EditResult applyEdits(
 		GlobalFlowID fieldId,
 		std::span<const TextReplacement> edits,
 		EditOrigin origin = EditOrigin::Programmatic);
-	/** @brief Apply an atomic validated replacement batch using a semantic part identity.
-	 * The primary applyEdits() overload's behavior and borrowing rules apply.
+	/**
+	 * @brief Validate and atomically apply a replacement batch to an existing field.
+	 *
+	 * Ranges use original-document UTF-8 byte coordinates, must be in bounds, nonoverlapping, and on codepoint boundaries. Rejections leave text unchanged. No primary focus is needed; readOnly, newline policy, valid UTF-8, and maxBytes are enforced. Input spans/strings are consumed synchronously. origin defaults to Programmatic.
+	 *
+	 * @return EditResult: Applied, NoChange, or a Rejected* outcome. Rejection is an ordinary edit outcome and leaves text unchanged. Operational failures propagate to the frame boundary.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * const std::array edits{FlowUi::TextReplacement{
+	 *     .oldRange = {0, 0},
+	 *     .insertedText = "Hello",
+	 * }};
+	 * const auto edit = manager.applyEdits(fieldId, edits, FlowUi::EditOrigin::Programmatic);
+	 * @endcode
 	 */
-	EditResult applyEdits(
+	[[nodiscard]] EditResult applyEdits(
 		FlowElementPartID fieldId,
 		std::span<const TextReplacement> edits,
 		EditOrigin origin = EditOrigin::Programmatic);
-	/** @brief Apply an atomic validated replacement batch using a window-local InputField resource key.
-	 * The primary applyEdits() overload's behavior and borrowing rules apply.
+	/**
+	 * @brief Validate and atomically apply a replacement batch to an existing field.
+	 *
+	 * Ranges use original-document UTF-8 byte coordinates, must be in bounds, nonoverlapping, and on codepoint boundaries. Rejections leave text unchanged. No primary focus is needed; readOnly, newline policy, valid UTF-8, and maxBytes are enforced. Input spans/strings are consumed synchronously. origin defaults to Programmatic. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.
+	 *
+	 * @return EditResult: Applied, NoChange, or a Rejected* outcome. Rejection is an ordinary edit outcome and leaves text unchanged. Operational failures propagate to the frame boundary.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "search"};
+	 * const std::array edits{FlowUi::TextReplacement{
+	 *     .oldRange = {0, 0},
+	 *     .insertedText = "Hello",
+	 * }};
+	 * const auto edit = manager.applyEdits(key, edits, FlowUi::EditOrigin::Programmatic);
+	 * @endcode
 	 */
-	EditResult applyEdits(
+	[[nodiscard]] EditResult applyEdits(
 		ResourceKey key,
 		std::span<const TextReplacement> edits,
 		EditOrigin origin = EditOrigin::Programmatic);
 
 private:
+	mutable FlowUiError frameError_{};
 	friend class UiManager;
 
 	using CaretState = detail::manager_storage::InputCaretState;

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,30 +106,175 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::PopupRequest Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="PopupTypes_8hpp_source.html">PopupTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:ae2232392e47a08307d2c926d72515ecd" id="r_ae2232392e47a08307d2c926d72515ecd"><td class="memItemLeft"><a id="ae2232392e47a08307d2c926d72515ecd" name="ae2232392e47a08307d2c926d72515ecd"></a>
-<a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><b>anchor</b> = PopupAnchor::parent()</td></tr>
-<tr class="memitem:aa80b4de5695820e1e98d28b17bb67322" id="r_aa80b4de5695820e1e98d28b17bb67322"><td class="memItemLeft"><a id="aa80b4de5695820e1e98d28b17bb67322" name="aa80b4de5695820e1e98d28b17bb67322"></a>
-<a class="el" href="structFlowUi_1_1PopupPlacement.html">PopupPlacement</a>&#160;</td><td class="memItemRight"><b>placement</b> {}</td></tr>
-<tr class="memitem:ad2fb816d27a358d80ecf28c55b796de3" id="r_ad2fb816d27a358d80ecf28c55b796de3"><td class="memItemLeft"><a id="ad2fb816d27a358d80ecf28c55b796de3" name="ad2fb816d27a358d80ecf28c55b796de3"></a>
-<a class="el" href="structFlowUi_1_1PopupOverflowPolicy.html">PopupOverflowPolicy</a>&#160;</td><td class="memItemRight"><b>overflow</b> {}</td></tr>
-<tr class="memitem:a4fad9ec533dfe3a275c2664561edb4e7" id="r_a4fad9ec533dfe3a275c2664561edb4e7"><td class="memItemLeft"><a id="a4fad9ec533dfe3a275c2664561edb4e7" name="a4fad9ec533dfe3a275c2664561edb4e7"></a>
-PopupFirstFramePolicy&#160;</td><td class="memItemRight"><b>firstFrame</b> = PopupFirstFramePolicy::DeferUntilMeasured</td></tr>
-<tr class="memitem:a5931df16cfbc018d2f76deffbea32324" id="r_a5931df16cfbc018d2f76deffbea32324"><td class="memItemLeft"><a id="a5931df16cfbc018d2f76deffbea32324" name="a5931df16cfbc018d2f76deffbea32324"></a>
-std::optional&lt; Clay_Dimensions &gt;&#160;</td><td class="memItemRight"><b>expectedSize</b> = std::nullopt</td></tr>
-<tr class="memitem:a32570fd14c6b440d872912fb1a33a5ae" id="r_a32570fd14c6b440d872912fb1a33a5ae"><td class="memItemLeft"><a id="a32570fd14c6b440d872912fb1a33a5ae" name="a32570fd14c6b440d872912fb1a33a5ae"></a>
-PopupLayer&#160;</td><td class="memItemRight"><b>layer</b> = PopupLayer::CasualPopup</td></tr>
-<tr class="memitem:a895d28ceae1a7c358403df704697f76e" id="r_a895d28ceae1a7c358403df704697f76e"><td class="memItemLeft"><a id="a895d28ceae1a7c358403df704697f76e" name="a895d28ceae1a7c358403df704697f76e"></a>
-Clay_PointerCaptureMode&#160;</td><td class="memItemRight"><b>pointerCaptureMode</b> = CLAY_POINTER_CAPTURE_MODE_CAPTURE</td></tr>
-<tr class="memitem:a58558326e7a9ae901f4508d862447024" id="r_a58558326e7a9ae901f4508d862447024"><td class="memItemLeft"><a id="a58558326e7a9ae901f4508d862447024" name="a58558326e7a9ae901f4508d862447024"></a>
-Clay_FloatingClipToElement&#160;</td><td class="memItemRight"><b>clipTo</b> = CLAY_CLIP_TO_NONE</td></tr>
-<tr class="memitem:a058248ce07fac5c5b4754a83e22fe071" id="r_a058248ce07fac5c5b4754a83e22fe071"><td class="memItemLeft"><a id="a058248ce07fac5c5b4754a83e22fe071" name="a058248ce07fac5c5b4754a83e22fe071"></a>
-PopupOutsidePressPolicy&#160;</td><td class="memItemRight"><b>outsidePress</b> = PopupOutsidePressPolicy::DismissAndBlockAnchor</td></tr>
-<tr class="memitem:ae8183704954cbe9ea36f722ca8109d87" id="r_ae8183704954cbe9ea36f722ca8109d87"><td class="memItemLeft"><a id="ae8183704954cbe9ea36f722ca8109d87" name="ae8183704954cbe9ea36f722ca8109d87"></a>
-bool&#160;</td><td class="memItemRight"><b>dismissOnEscape</b> = true</td></tr>
+<tr class="memitem:ae2232392e47a08307d2c926d72515ecd" id="r_ae2232392e47a08307d2c926d72515ecd"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><a class="el" href="#ae2232392e47a08307d2c926d72515ecd">anchor</a> = <a class="el" href="structFlowUi_1_1PopupAnchor.html#a836e904830612c599fe163ad0eb761ce">PopupAnchor::parent</a>()</td></tr>
+<tr class="memitem:aa80b4de5695820e1e98d28b17bb67322" id="r_aa80b4de5695820e1e98d28b17bb67322"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1PopupPlacement.html">PopupPlacement</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa80b4de5695820e1e98d28b17bb67322">placement</a> {}</td></tr>
+<tr class="memitem:ad2fb816d27a358d80ecf28c55b796de3" id="r_ad2fb816d27a358d80ecf28c55b796de3"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1PopupOverflowPolicy.html">PopupOverflowPolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#ad2fb816d27a358d80ecf28c55b796de3">overflow</a> {}</td></tr>
+<tr class="memitem:a4fad9ec533dfe3a275c2664561edb4e7" id="r_a4fad9ec533dfe3a275c2664561edb4e7"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#ac19f705a8ec0d105e28b5376fd6469f3">PopupFirstFramePolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4fad9ec533dfe3a275c2664561edb4e7">firstFrame</a> = <a class="el" href="namespaceFlowUi.html#ac19f705a8ec0d105e28b5376fd6469f3a31d41dd0b5d7f4a5ba49d066292ecf0a">PopupFirstFramePolicy::DeferUntilMeasured</a></td></tr>
+<tr class="memitem:a5931df16cfbc018d2f76deffbea32324" id="r_a5931df16cfbc018d2f76deffbea32324"><td class="memItemLeft">std::optional&lt; Clay_Dimensions &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a5931df16cfbc018d2f76deffbea32324">expectedSize</a> = std::nullopt</td></tr>
+<tr class="memitem:a32570fd14c6b440d872912fb1a33a5ae" id="r_a32570fd14c6b440d872912fb1a33a5ae"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a2aec36e155af968dca852fe5242e834c">PopupLayer</a>&#160;</td><td class="memItemRight"><a class="el" href="#a32570fd14c6b440d872912fb1a33a5ae">layer</a> = <a class="el" href="namespaceFlowUi.html#a2aec36e155af968dca852fe5242e834cabdfd62cb462309b724982f49dcf83928">PopupLayer::CasualPopup</a></td></tr>
+<tr class="memitem:a895d28ceae1a7c358403df704697f76e" id="r_a895d28ceae1a7c358403df704697f76e"><td class="memItemLeft">Clay_PointerCaptureMode&#160;</td><td class="memItemRight"><a class="el" href="#a895d28ceae1a7c358403df704697f76e">pointerCaptureMode</a> = CLAY_POINTER_CAPTURE_MODE_CAPTURE</td></tr>
+<tr class="memitem:a58558326e7a9ae901f4508d862447024" id="r_a58558326e7a9ae901f4508d862447024"><td class="memItemLeft">Clay_FloatingClipToElement&#160;</td><td class="memItemRight"><a class="el" href="#a58558326e7a9ae901f4508d862447024">clipTo</a> = CLAY_CLIP_TO_NONE</td></tr>
+<tr class="memitem:a058248ce07fac5c5b4754a83e22fe071" id="r_a058248ce07fac5c5b4754a83e22fe071"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#aea3bdd18a7224f84bf65c0950f9f74e8">PopupOutsidePressPolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#a058248ce07fac5c5b4754a83e22fe071">outsidePress</a> = <a class="el" href="namespaceFlowUi.html#aea3bdd18a7224f84bf65c0950f9f74e8a0e8715fa8068d51bcf5f4dd3773ae9b8">PopupOutsidePressPolicy::DismissAndBlockAnchor</a></td></tr>
+<tr class="memitem:ae8183704954cbe9ea36f722ca8109d87" id="r_ae8183704954cbe9ea36f722ca8109d87"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ae8183704954cbe9ea36f722ca8109d87">dismissOnEscape</a> = true</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Per-frame popup anchor, geometry, stacking, and dismissal request. Submit once per popup ID during the active UI build. Geometry uses logical layout pixels; placement is resolved after layout. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="ae2232392e47a08307d2c926d72515ecd" name="ae2232392e47a08307d2c926d72515ecd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae2232392e47a08307d2c926d72515ecd">&#9670;&#160;</a></span>anchor</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a> FlowUi::PopupRequest::anchor = <a class="el" href="structFlowUi_1_1PopupAnchor.html#a836e904830612c599fe163ad0eb761ce">PopupAnchor::parent</a>()</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Anchor source; parent by default. </p>
+
+</div>
+</div>
+<a id="a58558326e7a9ae901f4508d862447024" name="a58558326e7a9ae901f4508d862447024"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a58558326e7a9ae901f4508d862447024">&#9670;&#160;</a></span>clipTo</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Clay_FloatingClipToElement FlowUi::PopupRequest::clipTo = CLAY_CLIP_TO_NONE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Clay floating clip target applied to the popup root. </p>
+
+</div>
+</div>
+<a id="ae8183704954cbe9ea36f722ca8109d87" name="ae8183704954cbe9ea36f722ca8109d87"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae8183704954cbe9ea36f722ca8109d87">&#9670;&#160;</a></span>dismissOnEscape</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::PopupRequest::dismissOnEscape = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Allow Escape to dismiss the active popup. </p>
+
+</div>
+</div>
+<a id="a5931df16cfbc018d2f76deffbea32324" name="a5931df16cfbc018d2f76deffbea32324"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5931df16cfbc018d2f76deffbea32324">&#9670;&#160;</a></span>expectedSize</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;Clay_Dimensions&gt; FlowUi::PopupRequest::expectedSize = std::nullopt</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Optional positive finite size estimate in layout pixels used before measurement. </p>
+
+</div>
+</div>
+<a id="a4fad9ec533dfe3a275c2664561edb4e7" name="a4fad9ec533dfe3a275c2664561edb4e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4fad9ec533dfe3a275c2664561edb4e7">&#9670;&#160;</a></span>firstFrame</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#ac19f705a8ec0d105e28b5376fd6469f3">PopupFirstFramePolicy</a> FlowUi::PopupRequest::firstFrame = <a class="el" href="namespaceFlowUi.html#ac19f705a8ec0d105e28b5376fd6469f3a31d41dd0b5d7f4a5ba49d066292ecf0a">PopupFirstFramePolicy::DeferUntilMeasured</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Placement behavior before size measurement. </p>
+
+</div>
+</div>
+<a id="a32570fd14c6b440d872912fb1a33a5ae" name="a32570fd14c6b440d872912fb1a33a5ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a32570fd14c6b440d872912fb1a33a5ae">&#9670;&#160;</a></span>layer</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a2aec36e155af968dca852fe5242e834c">PopupLayer</a> FlowUi::PopupRequest::layer = <a class="el" href="namespaceFlowUi.html#a2aec36e155af968dca852fe5242e834cabdfd62cb462309b724982f49dcf83928">PopupLayer::CasualPopup</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Stacking band for this popup. </p>
+
+</div>
+</div>
+<a id="a058248ce07fac5c5b4754a83e22fe071" name="a058248ce07fac5c5b4754a83e22fe071"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a058248ce07fac5c5b4754a83e22fe071">&#9670;&#160;</a></span>outsidePress</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#aea3bdd18a7224f84bf65c0950f9f74e8">PopupOutsidePressPolicy</a> FlowUi::PopupRequest::outsidePress = <a class="el" href="namespaceFlowUi.html#aea3bdd18a7224f84bf65c0950f9f74e8a0e8715fa8068d51bcf5f4dd3773ae9b8">PopupOutsidePressPolicy::DismissAndBlockAnchor</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Outside-pointer dismissal and gesture ownership policy. </p>
+
+</div>
+</div>
+<a id="ad2fb816d27a358d80ecf28c55b796de3" name="ad2fb816d27a358d80ecf28c55b796de3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad2fb816d27a358d80ecf28c55b796de3">&#9670;&#160;</a></span>overflow</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1PopupOverflowPolicy.html">PopupOverflowPolicy</a> FlowUi::PopupRequest::overflow {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Mirroring and viewport-fit behavior. </p>
+
+</div>
+</div>
+<a id="aa80b4de5695820e1e98d28b17bb67322" name="aa80b4de5695820e1e98d28b17bb67322"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa80b4de5695820e1e98d28b17bb67322">&#9670;&#160;</a></span>placement</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1PopupPlacement.html">PopupPlacement</a> FlowUi::PopupRequest::placement {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Attachment grid points and layout-pixel offset. </p>
+
+</div>
+</div>
+<a id="a895d28ceae1a7c358403df704697f76e" name="a895d28ceae1a7c358403df704697f76e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a895d28ceae1a7c358403df704697f76e">&#9670;&#160;</a></span>pointerCaptureMode</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Clay_PointerCaptureMode FlowUi::PopupRequest::pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_CAPTURE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Clay pointer capture mode applied to the floating root. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="PopupTypes_8hpp_source.html">PopupTypes.hpp</a></li>
 </ul>
@@ -146,7 +291,7 @@ bool&#160;</td><td class="memItemRight"><b>dismissOnEscape</b> = true</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1PopupRequest.html">PopupRequest</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1PopupRequest.html">PopupRequest</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

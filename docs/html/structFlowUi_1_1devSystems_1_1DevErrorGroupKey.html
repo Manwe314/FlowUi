@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,23 +106,79 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevErrorGroupKey Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevErrorReporting_8hpp_source.html">DevErrorReporting.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a5b36874e90dbcea644a7a36024bd48f1" id="r_a5b36874e90dbcea644a7a36024bd48f1"><td class="memItemLeft"><a id="a5b36874e90dbcea644a7a36024bd48f1" name="a5b36874e90dbcea644a7a36024bd48f1"></a>
-ErrorCode&#160;</td><td class="memItemRight"><b>code</b> = ErrorCode::None</td></tr>
-<tr class="memitem:a4462013f2e6d5fb1650d3141e1055f94" id="r_a4462013f2e6d5fb1650d3141e1055f94"><td class="memItemLeft"><a id="a4462013f2e6d5fb1650d3141e1055f94" name="a4462013f2e6d5fb1650d3141e1055f94"></a>
-ErrorSite&#160;</td><td class="memItemRight"><b>site</b> = ErrorSite::None</td></tr>
-<tr class="memitem:a68a2dbca0bb1c470fa4c6e1fe23cf126" id="r_a68a2dbca0bb1c470fa4c6e1fe23cf126"><td class="memItemLeft"><a id="a68a2dbca0bb1c470fa4c6e1fe23cf126" name="a68a2dbca0bb1c470fa4c6e1fe23cf126"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>nativeCode</b> = 0u</td></tr>
-<tr class="memitem:af3eb946cd9288e7b6f8bc7dc9633ddd2" id="r_af3eb946cd9288e7b6f8bc7dc9633ddd2"><td class="memItemLeft"><a id="af3eb946cd9288e7b6f8bc7dc9633ddd2" name="af3eb946cd9288e7b6f8bc7dc9633ddd2"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>sourceId</b> = 0u</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a8540f9aeeb803a9c719a4ae49333ba4b" id="r_a8540f9aeeb803a9c719a4ae49333ba4b"><td class="memItemLeft"><a id="a8540f9aeeb803a9c719a4ae49333ba4b" name="a8540f9aeeb803a9c719a4ae49333ba4b"></a>
-bool&#160;</td><td class="memItemRight"><b>operator==</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorGroupKey.html">DevErrorGroupKey</a> &amp;, const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorGroupKey.html">DevErrorGroupKey</a> &amp;) noexcept=default</td></tr>
+<tr class="memitem:a5b36874e90dbcea644a7a36024bd48f1" id="r_a5b36874e90dbcea644a7a36024bd48f1"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76">ErrorCode</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5b36874e90dbcea644a7a36024bd48f1">code</a> = <a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a6adf97f83acf6453d4a6a4b1070f3754">ErrorCode::None</a></td></tr>
+<tr class="memitem:a4462013f2e6d5fb1650d3141e1055f94" id="r_a4462013f2e6d5fb1650d3141e1055f94"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2">ErrorSite</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4462013f2e6d5fb1650d3141e1055f94">site</a> = <a class="el" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2a6adf97f83acf6453d4a6a4b1070f3754">ErrorSite::None</a></td></tr>
+<tr class="memitem:a68a2dbca0bb1c470fa4c6e1fe23cf126" id="r_a68a2dbca0bb1c470fa4c6e1fe23cf126"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a68a2dbca0bb1c470fa4c6e1fe23cf126">nativeCode</a> = 0u</td></tr>
+<tr class="memitem:af3eb946cd9288e7b6f8bc7dc9633ddd2" id="r_af3eb946cd9288e7b6f8bc7dc9633ddd2"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#af3eb946cd9288e7b6f8bc7dc9633ddd2">sourceId</a> = 0u</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Error contract, native code and source fields used by the selected grouping mode. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a5b36874e90dbcea644a7a36024bd48f1" name="a5b36874e90dbcea644a7a36024bd48f1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5b36874e90dbcea644a7a36024bd48f1">&#9670;&#160;</a></span>code</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76">ErrorCode</a> FlowUi::devSystems::DevErrorGroupKey::code = <a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a6adf97f83acf6453d4a6a4b1070f3754">ErrorCode::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Production error code matched by this rule, query or group. </p>
+
+</div>
+</div>
+<a id="a68a2dbca0bb1c470fa4c6e1fe23cf126" name="a68a2dbca0bb1c470fa4c6e1fe23cf126"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a68a2dbca0bb1c470fa4c6e1fe23cf126">&#9670;&#160;</a></span>nativeCode</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::DevErrorGroupKey::nativeCode = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Native backend error value used by native grouping. </p>
+
+</div>
+</div>
+<a id="a4462013f2e6d5fb1650d3141e1055f94" name="a4462013f2e6d5fb1650d3141e1055f94"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4462013f2e6d5fb1650d3141e1055f94">&#9670;&#160;</a></span>site</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2">ErrorSite</a> FlowUi::devSystems::DevErrorGroupKey::site = <a class="el" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2a6adf97f83acf6453d4a6a4b1070f3754">ErrorSite::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Production error site matched by this rule, query or group. </p>
+
+</div>
+</div>
+<a id="af3eb946cd9288e7b6f8bc7dc9633ddd2" name="af3eb946cd9288e7b6f8bc7dc9633ddd2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af3eb946cd9288e7b6f8bc7dc9633ddd2">&#9670;&#160;</a></span>sourceId</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorGroupKey::sourceId = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Registered diagnostic source identity; zero means unavailable. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevErrorReporting_8hpp_source.html">DevErrorReporting.hpp</a></li>
 </ul>
@@ -139,7 +195,7 @@ bool&#160;</td><td class="memItemRight"><b>operator==</b> (const <a class="el" h
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorGroupKey.html">DevErrorGroupKey</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorGroupKey.html">DevErrorGroupKey</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

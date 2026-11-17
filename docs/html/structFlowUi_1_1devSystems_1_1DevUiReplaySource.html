@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,34 +106,52 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevUiReplaySource Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Borrowed completed-frame replay inputs for development previews.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevAppIntegration_8hpp_source.html">DevAppIntegration.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a296f8b5cebbdf3da10e909c8233d6955" id="r_a296f8b5cebbdf3da10e909c8233d6955"><td class="memItemLeft"><a id="a296f8b5cebbdf3da10e909c8233d6955" name="a296f8b5cebbdf3da10e909c8233d6955"></a>
 &#160;</td><td class="memItemRight"><b>operator bool</b> () const noexcept</td></tr>
+<tr class="memdesc:a296f8b5cebbdf3da10e909c8233d6955"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether renderer, font bindings and nonempty commands are present. <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:aa12381997a1ebfef585f757e3361c1c6" id="r_aa12381997a1ebfef585f757e3361c1c6"><td class="memItemLeft"><a id="aa12381997a1ebfef585f757e3361c1c6" name="aa12381997a1ebfef585f757e3361c1c6"></a>
 const ::VulkanUiRenderer *&#160;</td><td class="memItemRight"><b>renderer</b> = nullptr</td></tr>
+<tr class="memdesc:aa12381997a1ebfef585f757e3361c1c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed renderer that owns the referenced replay resources. <br /></td></tr>
 <tr class="memitem:a857de5a9a930dc5d4b965e44850cc500" id="r_a857de5a9a930dc5d4b965e44850cc500"><td class="memItemLeft"><a id="a857de5a9a930dc5d4b965e44850cc500" name="a857de5a9a930dc5d4b965e44850cc500"></a>
 const ::FlowUi::detail::manager_storage::FontFrameView *&#160;</td><td class="memItemRight"><b>fontFrameView</b> = nullptr</td></tr>
+<tr class="memdesc:a857de5a9a930dc5d4b965e44850cc500"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed font bindings from the source frame publication. <br /></td></tr>
 <tr class="memitem:ab7230acacdf7126b3afb8a56c03dfd15" id="r_ab7230acacdf7126b3afb8a56c03dfd15"><td class="memItemLeft"><a id="ab7230acacdf7126b3afb8a56c03dfd15" name="ab7230acacdf7126b3afb8a56c03dfd15"></a>
 const Clay_RenderCommandArray *&#160;</td><td class="memItemRight"><b>commands</b> = nullptr</td></tr>
+<tr class="memdesc:ab7230acacdf7126b3afb8a56c03dfd15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed completed Clay render commands; a valid replay requires nonempty commands. <br /></td></tr>
 <tr class="memitem:a6670b0cf9f566e1d65b3bd9e66bbf768" id="r_a6670b0cf9f566e1d65b3bd9e66bbf768"><td class="memItemLeft"><a id="a6670b0cf9f566e1d65b3bd9e66bbf768" name="a6670b0cf9f566e1d65b3bd9e66bbf768"></a>
 std::span&lt; const ::FlowUi::detail::storage::BindingHotRecord &gt;&#160;</td><td class="memItemRight"><b>textureBindings</b> {}</td></tr>
+<tr class="memdesc:a6670b0cf9f566e1d65b3bd9e66bbf768"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed texture records aligned with the source frame publication. <br /></td></tr>
 <tr class="memitem:a418f34f0c415772d3551e367d2e9e3be" id="r_a418f34f0c415772d3551e367d2e9e3be"><td class="memItemLeft"><a id="a418f34f0c415772d3551e367d2e9e3be" name="a418f34f0c415772d3551e367d2e9e3be"></a>
 Clay_BoundingBox&#160;</td><td class="memItemRight"><b>sourceRootBounds</b> {}</td></tr>
+<tr class="memdesc:a418f34f0c415772d3551e367d2e9e3be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Source root bounds in layout points used to transform the replay. <br /></td></tr>
 <tr class="memitem:a5771ef3d7dd1b8a4e6fa48ab72eb136b" id="r_a5771ef3d7dd1b8a4e6fa48ab72eb136b"><td class="memItemLeft"><a id="a5771ef3d7dd1b8a4e6fa48ab72eb136b" name="a5771ef3d7dd1b8a4e6fa48ab72eb136b"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>requestKey</b> = 0u</td></tr>
+<tr class="memdesc:a5771ef3d7dd1b8a4e6fa48ab72eb136b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Caller identity used to distinguish replay requests. <br /></td></tr>
 <tr class="memitem:ab6d5444f495a4c0fbd5209ae33c6e696" id="r_ab6d5444f495a4c0fbd5209ae33c6e696"><td class="memItemLeft"><a id="ab6d5444f495a4c0fbd5209ae33c6e696" name="ab6d5444f495a4c0fbd5209ae33c6e696"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>captureSerial</b> = 0u</td></tr>
+<tr class="memdesc:ab6d5444f495a4c0fbd5209ae33c6e696"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serial identifying the captured source publication. <br /></td></tr>
 <tr class="memitem:a9648d94a4d10b2e42341c99d4efd38f5" id="r_a9648d94a4d10b2e42341c99d4efd38f5"><td class="memItemLeft"><a id="a9648d94a4d10b2e42341c99d4efd38f5" name="a9648d94a4d10b2e42341c99d4efd38f5"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>textureFrameSlot</b> = 0u</td></tr>
+<tr class="memdesc:a9648d94a4d10b2e42341c99d4efd38f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Source renderer slot that owns the referenced texture bindings. <br /></td></tr>
 <tr class="memitem:aea9d45ebd36769581ae341e8e7639356" id="r_aea9d45ebd36769581ae341e8e7639356"><td class="memItemLeft"><a id="aea9d45ebd36769581ae341e8e7639356" name="aea9d45ebd36769581ae341e8e7639356"></a>
 float&#160;</td><td class="memItemRight"><b>pointsToPixelsScale</b> = 1.0f</td></tr>
+<tr class="memdesc:aea9d45ebd36769581ae341e8e7639356"><td class="mdescLeft">&#160;</td><td class="mdescRight">Multiplier from layout points to physical replay pixels. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Borrowed completed-frame replay inputs for development previews. </p>
+<p>The source owns none of these objects. Keep the originating renderer and frame publication alive until replay finishes; do not retain views across replacement of the source frame. Available only in development builds. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/<a class="el" href="DevAppIntegration_8hpp_source.html">DevAppIntegration.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -149,7 +167,7 @@ float&#160;</td><td class="memItemRight"><b>pointsToPixelsScale</b> = 1.0f</td><
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html">DevUiReplaySource</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html">DevUiReplaySource</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

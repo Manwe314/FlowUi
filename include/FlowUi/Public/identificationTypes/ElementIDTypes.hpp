@@ -12,12 +12,32 @@ struct FlowDefinitionID {
 	/** Stable numeric identity; zero is invalid. The surrounding type determines its scope. */
 	uint64_t value = 0;
 
-	/** Return whether the identity is nonzero; this does not validate registration. */
+	/**
+	 * Return whether the identity is nonzero; this does not validate registration.
+	 * @par Example
+	 * @code{.cpp}
+	 * constexpr auto first = FlowUi::DefinitionID("editor.document");
+	 * constexpr auto second = FlowUi::DefinitionID("editor.document");
+	 * const bool valid = static_cast<bool>(first);
+	 * const bool same = first == second;
+	 * const std::size_t hash = FlowUi::FlowDefinitionIDHash{}(first);
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return value != 0;
 	}
 
-	/** Compare definition identity values. */
+	/**
+	 * Compare definition identity values.
+	 * @par Example
+	 * @code{.cpp}
+	 * constexpr auto first = FlowUi::DefinitionID("editor.document");
+	 * constexpr auto second = FlowUi::DefinitionID("editor.document");
+	 * const bool valid = static_cast<bool>(first);
+	 * const bool same = first == second;
+	 * const std::size_t hash = FlowUi::FlowDefinitionIDHash{}(first);
+	 * @endcode
+	 */
 	[[nodiscard]] friend constexpr bool operator==(FlowDefinitionID,
 												   FlowDefinitionID) noexcept = default;
 };
@@ -33,12 +53,28 @@ struct FlowElementID {
 	std::string_view debugName{};
 #endif
 
-	/** Return whether the identity is nonzero; this does not validate registration. */
+	/**
+	 * Return whether the identity is nonzero; this does not validate registration.
+	 * @par Example
+	 * @code{.cpp}
+	 * const bool valid = static_cast<bool>(first);
+	 * const bool same = first == second;
+	 * const std::size_t hash = FlowUi::FlowElementIDHash{}(first);
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return value != 0;
 	}
 
-	/** Compare numeric local identities, ignoring developer labels. */
+	/**
+	 * Compare numeric local identities, ignoring developer labels.
+	 * @par Example
+	 * @code{.cpp}
+	 * const bool valid = static_cast<bool>(first);
+	 * const bool same = first == second;
+	 * const std::size_t hash = FlowUi::FlowElementIDHash{}(first);
+	 * @endcode
+	 */
 	[[nodiscard]] friend constexpr bool operator==(FlowElementID lhs, FlowElementID rhs) noexcept {
 		return lhs.value == rhs.value;
 	}
@@ -54,12 +90,28 @@ struct GlobalFlowID {
 	std::string_view debugName{};
 #endif
 
-	/** Return whether the identity is nonzero; this does not validate registration. */
+	/**
+	 * Return whether the identity is nonzero; this does not validate registration.
+	 * @par Example
+	 * @code{.cpp}
+	 * const bool valid = static_cast<bool>(first);
+	 * const bool same = first == second;
+	 * const std::size_t hash = FlowUi::GlobalFlowIDHash{}(first);
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return value != 0;
 	}
 
-	/** Compare numeric global identities, ignoring developer labels. */
+	/**
+	 * Compare numeric global identities, ignoring developer labels.
+	 * @par Example
+	 * @code{.cpp}
+	 * const bool valid = static_cast<bool>(first);
+	 * const bool same = first == second;
+	 * const std::size_t hash = FlowUi::GlobalFlowIDHash{}(first);
+	 * @endcode
+	 */
 	[[nodiscard]] friend constexpr bool operator==(GlobalFlowID lhs, GlobalFlowID rhs) noexcept {
 		return lhs.value == rhs.value;
 	}
@@ -74,12 +126,30 @@ struct FlowElementPart {
 	std::string_view debugName{};
 #endif
 
-	/** Return whether the identity is nonzero; this does not validate registration. */
+	/**
+	 * Return whether the identity is nonzero; this does not validate registration.
+	 * @par Example
+	 * @code{.cpp}
+	 * constexpr auto first = FlowUi::Part("label");
+	 * constexpr auto second = FlowUi::Part("label");
+	 * const bool valid = static_cast<bool>(first);
+	 * const bool same = first == second;
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return token != 0;
 	}
 
-	/** Compare declaration tokens, ignoring developer labels. */
+	/**
+	 * Compare declaration tokens, ignoring developer labels.
+	 * @par Example
+	 * @code{.cpp}
+	 * constexpr auto first = FlowUi::Part("label");
+	 * constexpr auto second = FlowUi::Part("label");
+	 * const bool valid = static_cast<bool>(first);
+	 * const bool same = first == second;
+	 * @endcode
+	 */
 	[[nodiscard]] friend constexpr bool operator==(FlowElementPart lhs,
 												   FlowElementPart rhs) noexcept {
 		return lhs.token == rhs.token;
@@ -95,12 +165,28 @@ struct FlowElementPartID {
 	std::string_view debugName{};
 #endif
 
-	/** Return whether the identity is nonzero; this does not validate registration. */
+	/**
+	 * Return whether the identity is nonzero; this does not validate registration.
+	 * @par Example
+	 * @code{.cpp}
+	 * const bool valid = static_cast<bool>(first);
+	 * const bool same = first == second;
+	 * const std::size_t hash = FlowUi::FlowElementPartIDHash{}(first);
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return value != 0;
 	}
 
-	/** Compare resolved part identities, ignoring developer labels. */
+	/**
+	 * Compare resolved part identities, ignoring developer labels.
+	 * @par Example
+	 * @code{.cpp}
+	 * const bool valid = static_cast<bool>(first);
+	 * const bool same = first == second;
+	 * const std::size_t hash = FlowUi::FlowElementPartIDHash{}(first);
+	 * @endcode
+	 */
 	[[nodiscard]] friend constexpr bool operator==(FlowElementPartID lhs,
 												   FlowElementPartID rhs) noexcept {
 		return lhs.value == rhs.value;

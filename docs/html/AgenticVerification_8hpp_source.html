@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,25 +107,34 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#pragma once</span></div>
-<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="preprocessor">#include &quot;FlowUi/Public/BuildConfig.hpp&quot;</span></div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#if FLOW_UI_AGENTIC_WORKFLOW</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span> </div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &quot;devSystems/devAgenticWorkflow/AgenticJson.hpp&quot;</span></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span> </div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="keyword">namespace </span>FlowUi::devSystems::agentic {</div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>[[nodiscard]] Result&lt;Json&gt; normalize_verification_request(<span class="keyword">const</span> Json&amp; request) <span class="keyword">noexcept</span>;</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>[[nodiscard]] std::string verification_request_digest(<span class="keyword">const</span> Json&amp; normalized_request);</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>[[nodiscard]] Result&lt;Json&gt; verification_report_page(<span class="keyword">const</span> Json&amp; report, <span class="keyword">const</span> Json&amp; arguments,</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>                                                    std::string_view detail = <span class="stringliteral">&quot;all&quot;</span>) noexcept;</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>[[nodiscard]] Json verification_assertion_coverage(const Json&amp; case_reports);</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>[[nodiscard]] std::string_view verification_report_verdict(const Json&amp; coverage,</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>                                                           <span class="keywordtype">bool</span> execution_complete,</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>                                                           <span class="keywordtype">bool</span> cleanup_complete) noexcept;</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>} <span class="comment">// namespace FlowUi::devSystems::agentic</span></div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &quot;FlowUi/Public/BuildConfig.hpp&quot;</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#if FLOW_UI_AGENTIC_WORKFLOW</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &quot;devSystems/devAgenticWorkflow/AgenticJson.hpp&quot;</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi_1_1devSystems_1_1agentic.html">FlowUi::devSystems::agentic</a> {</div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#adc276b3c697e337b591464b799c02055">   14</a></span>[[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;Json&gt;</a> <a class="code hl_function" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#adc276b3c697e337b591464b799c02055">normalize_verification_request</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1agentic_1_1Json.html">Json</a>&amp; request) <span class="keyword">noexcept</span>;</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#abaa89a8ff1d236aef00d0a7a1f48a2d8">   16</a></span>[[nodiscard]] std::string <a class="code hl_function" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#abaa89a8ff1d236aef00d0a7a1f48a2d8">verification_request_digest</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1agentic_1_1Json.html">Json</a>&amp; normalized_request);</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a9079b05c72c74945b7ba0eb8599ad93e">   18</a></span>[[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;Json&gt;</a> <a class="code hl_function" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a9079b05c72c74945b7ba0eb8599ad93e">verification_report_page</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1agentic_1_1Json.html">Json</a>&amp; report, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1agentic_1_1Json.html">Json</a>&amp; arguments,</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>                                                    std::string_view detail = <span class="stringliteral">&quot;all&quot;</span>) noexcept;</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno"><a class="line" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a1de3002c7a2709aa4adf0200c33cff7f">   21</a></span>[[nodiscard]] <a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1agentic_1_1Json.html">Json</a> <a class="code hl_function" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a1de3002c7a2709aa4adf0200c33cff7f">verification_assertion_coverage</a>(const <a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1agentic_1_1Json.html">Json</a>&amp; case_reports);</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno"><a class="line" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#ad10a025c6071a66b79a1ab27ede797fb">   23</a></span>[[nodiscard]] std::string_view <a class="code hl_function" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#ad10a025c6071a66b79a1ab27ede797fb">verification_report_verdict</a>(const <a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1agentic_1_1Json.html">Json</a>&amp; coverage,</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>                                                           <span class="keywordtype">bool</span> execution_complete,</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>                                                           <span class="keywordtype">bool</span> cleanup_complete) noexcept;</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>} <span class="comment">// namespace FlowUi::devSystems::agentic</span></div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html"><div class="ttname"><a href="classFlowUi_1_1Result.html">FlowUi::Result</a></div><div class="ttdef"><b>Definition</b> Result.hpp:77</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html">FlowUi::devSystems::agentic</a></div><div class="ttdoc">Bounded capture, application-declared scenarios and owned evidence APIs. Available when FLOW_UI_AGENT...</div><div class="ttdef"><b>Definition</b> App.hpp:45</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html_a1de3002c7a2709aa4adf0200c33cff7f"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a1de3002c7a2709aa4adf0200c33cff7f">FlowUi::devSystems::agentic::verification_assertion_coverage</a></div><div class="ttdeci">Json verification_assertion_coverage(const Json &amp;case_reports)</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html_a9079b05c72c74945b7ba0eb8599ad93e"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a9079b05c72c74945b7ba0eb8599ad93e">FlowUi::devSystems::agentic::verification_report_page</a></div><div class="ttdeci">Result&lt; Json &gt; verification_report_page(const Json &amp;report, const Json &amp;arguments, std::string_view detail=&quot;all&quot;) noexcept</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html_abaa89a8ff1d236aef00d0a7a1f48a2d8"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html#abaa89a8ff1d236aef00d0a7a1f48a2d8">FlowUi::devSystems::agentic::verification_request_digest</a></div><div class="ttdeci">std::string verification_request_digest(const Json &amp;normalized_request)</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html_ad10a025c6071a66b79a1ab27ede797fb"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html#ad10a025c6071a66b79a1ab27ede797fb">FlowUi::devSystems::agentic::verification_report_verdict</a></div><div class="ttdeci">std::string_view verification_report_verdict(const Json &amp;coverage, bool execution_complete, bool cleanup_complete) noexcept</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html_adc276b3c697e337b591464b799c02055"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html#adc276b3c697e337b591464b799c02055">FlowUi::devSystems::agentic::normalize_verification_request</a></div><div class="ttdeci">Result&lt; Json &gt; normalize_verification_request(const Json &amp;request) noexcept</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1agentic_1_1Json_html"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1agentic_1_1Json.html">FlowUi::devSystems::agentic::Json</a></div><div class="ttdef"><b>Definition</b> AgenticJson.hpp:21</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

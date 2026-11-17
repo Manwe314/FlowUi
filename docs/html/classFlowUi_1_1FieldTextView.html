@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,35 +107,268 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Non-owning access to manager-owned single-line or chunked text.  
+<p>Non-owning access to manager-owned single-line or chunked text.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="InputFieldTypes_8hpp_source.html">InputFieldTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a930080491128525a7434f049508ab3f9" id="r_a930080491128525a7434f049508ab3f9"><td class="memItemLeft"><a id="a930080491128525a7434f049508ab3f9" name="a930080491128525a7434f049508ab3f9"></a>
-size_t&#160;</td><td class="memItemRight"><b>sizeBytes</b> () const noexcept</td></tr>
-<tr class="memitem:a3ffde86236a6b47ef0b2b2eec7636bbf" id="r_a3ffde86236a6b47ef0b2b2eec7636bbf"><td class="memItemLeft"><a id="a3ffde86236a6b47ef0b2b2eec7636bbf" name="a3ffde86236a6b47ef0b2b2eec7636bbf"></a>
-bool&#160;</td><td class="memItemRight"><b>empty</b> () const noexcept</td></tr>
-<tr class="memitem:a07e41b50f4e32cc23b14c997f521a11d" id="r_a07e41b50f4e32cc23b14c997f521a11d"><td class="memItemLeft"><a id="a07e41b50f4e32cc23b14c997f521a11d" name="a07e41b50f4e32cc23b14c997f521a11d"></a>
-std::optional&lt; std::string_view &gt;&#160;</td><td class="memItemRight"><b>contiguous</b> () const noexcept</td></tr>
-<tr class="memitem:ae54ae65e5210c9fae249eaa70ab016ac" id="r_ae54ae65e5210c9fae249eaa70ab016ac"><td class="memItemLeft"><a id="ae54ae65e5210c9fae249eaa70ab016ac" name="ae54ae65e5210c9fae249eaa70ab016ac"></a>
-std::string&#160;</td><td class="memItemRight"><b>copy</b> () const</td></tr>
-<tr class="memitem:a58e3a93ead72a6e71e24b0a087598999" id="r_a58e3a93ead72a6e71e24b0a087598999"><td class="memItemLeft"><a id="a58e3a93ead72a6e71e24b0a087598999" name="a58e3a93ead72a6e71e24b0a087598999"></a>
-std::string&#160;</td><td class="memItemRight"><b>copy</b> (<a class="el" href="structFlowUi_1_1TextRange.html">TextRange</a> range) const</td></tr>
-<tr class="memitem:a1794f955d740fd4fdfca02b7cd138736" id="r_a1794f955d740fd4fdfca02b7cd138736"><td class="memItemLeft"><a id="a1794f955d740fd4fdfca02b7cd138736" name="a1794f955d740fd4fdfca02b7cd138736"></a>
-void&#160;</td><td class="memItemRight"><b>forEachChunk</b> (<a class="el" href="structFlowUi_1_1TextRange.html">TextRange</a> range, const TextChunkVisitor &amp;visitor) const</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:ae1c4d43fb5ad2e814f27b117558ecf53" id="r_ae1c4d43fb5ad2e814f27b117558ecf53"><td class="memItemLeft"><a id="ae1c4d43fb5ad2e814f27b117558ecf53" name="ae1c4d43fb5ad2e814f27b117558ecf53"></a>
-class&#160;</td><td class="memItemRight"><b>InputFieldManager</b></td></tr>
+<tr class="memitem:ab8d946dbb7e7ac69f0d3aa54b2395e42" id="r_ab8d946dbb7e7ac69f0d3aa54b2395e42"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ab8d946dbb7e7ac69f0d3aa54b2395e42">FieldTextView</a> () noexcept=default</td></tr>
+<tr class="memdesc:ab8d946dbb7e7ac69f0d3aa54b2395e42"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct an empty detached text view.  <br /></td></tr>
+<tr class="memitem:a930080491128525a7434f049508ab3f9" id="r_a930080491128525a7434f049508ab3f9"><td class="memItemLeft">size_t&#160;</td><td class="memItemRight"><a class="el" href="#a930080491128525a7434f049508ab3f9">sizeBytes</a> () const noexcept</td></tr>
+<tr class="memdesc:a930080491128525a7434f049508ab3f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the viewed document's UTF-8 byte count.  <br /></td></tr>
+<tr class="memitem:a3ffde86236a6b47ef0b2b2eec7636bbf" id="r_a3ffde86236a6b47ef0b2b2eec7636bbf"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a3ffde86236a6b47ef0b2b2eec7636bbf">empty</a> () const noexcept</td></tr>
+<tr class="memdesc:a3ffde86236a6b47ef0b2b2eec7636bbf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test whether the viewed document has zero bytes.  <br /></td></tr>
+<tr class="memitem:a07e41b50f4e32cc23b14c997f521a11d" id="r_a07e41b50f4e32cc23b14c997f521a11d"><td class="memItemLeft">std::optional&lt; std::string_view &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a07e41b50f4e32cc23b14c997f521a11d">contiguous</a> () const noexcept</td></tr>
+<tr class="memdesc:a07e41b50f4e32cc23b14c997f521a11d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow contiguous text storage if available.  <br /></td></tr>
+<tr class="memitem:ac3880d12092802de2a3d52935163a376" id="r_ac3880d12092802de2a3d52935163a376"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ac3880d12092802de2a3d52935163a376">copy</a> () const noexcept</td></tr>
+<tr class="memdesc:ac3880d12092802de2a3d52935163a376"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy a full document or byte range to caller-owned text.  <br /></td></tr>
+<tr class="memitem:acebad405240297e133d2a519771a6fd5" id="r_acebad405240297e133d2a519771a6fd5"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#acebad405240297e133d2a519771a6fd5">copy</a> (<a class="el" href="structFlowUi_1_1TextRange.html">TextRange</a> range) const noexcept</td></tr>
+<tr class="memdesc:acebad405240297e133d2a519771a6fd5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy a full document or byte range to caller-owned text.  <br /></td></tr>
+<tr class="memitem:a1794f955d740fd4fdfca02b7cd138736" id="r_a1794f955d740fd4fdfca02b7cd138736"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a1794f955d740fd4fdfca02b7cd138736">forEachChunk</a> (<a class="el" href="structFlowUi_1_1TextRange.html">TextRange</a> range, const <a class="el" href="group__flowui__input__field__manager.html#ga6e6a14690106c2e60879978eaa0d1bf4">TextChunkVisitor</a> &amp;visitor) const</td></tr>
+<tr class="memdesc:a1794f955d740fd4fdfca02b7cd138736"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronously visit text chunks overlapping a byte range.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Non-owning access to manager-owned single-line or chunked text. </p>
 <p>The view is invalidated by the next mutation of its field. Single-line text is guaranteed contiguous. Multiline callers explicitly copy a range or visit its chunks, avoiding an accidental full-document flatten per frame. </p>
-</div><hr/>The documentation for this class was generated from the following file:<ul>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="ab8d946dbb7e7ac69f0d3aa54b2395e42" name="ab8d946dbb7e7ac69f0d3aa54b2395e42"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab8d946dbb7e7ac69f0d3aa54b2395e42">&#9670;&#160;</a></span>FieldTextView()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::FieldTextView::FieldTextView </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel default">default</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Construct an empty detached text view. </p>
+<p>The view owns no text.</p>
+<dl class="section post"><dt>Postcondition</dt><dd>The view has zero bytes and no contiguous storage.</dd></dl>
+<div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1FieldTextView.html">FlowUi::FieldTextView</a> textView;</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> isEmpty = textView.<a class="code hl_function" href="#a3ffde86236a6b47ef0b2b2eec7636bbf">empty</a>();</div>
+<div class="ttc" id="aclassFlowUi_1_1FieldTextView_html"><div class="ttname"><a href="classFlowUi_1_1FieldTextView.html">FlowUi::FieldTextView</a></div><div class="ttdoc">Non-owning access to manager-owned single-line or chunked text.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:55</div></div>
+<div class="ttc" id="aclassFlowUi_1_1FieldTextView_html_a3ffde86236a6b47ef0b2b2eec7636bbf"><div class="ttname"><a href="#a3ffde86236a6b47ef0b2b2eec7636bbf">FlowUi::FieldTextView::empty</a></div><div class="ttdeci">bool empty() const noexcept</div><div class="ttdoc">Test whether the viewed document has zero bytes.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:96</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a07e41b50f4e32cc23b14c997f521a11d" name="a07e41b50f4e32cc23b14c997f521a11d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a07e41b50f4e32cc23b14c997f521a11d">&#9670;&#160;</a></span>contiguous()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt; std::string_view &gt; FlowUi::FieldTextView::contiguous </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Borrow contiguous text storage if available. </p>
+<p>The borrowed bytes are invalidated by field mutation/removal or manager destruction; do not assume multiline text is contiguous.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns nullopt for detached or noncontiguous text. A present empty string_view is valid empty contiguous storage.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> contiguousText = value.contiguous();</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ac3880d12092802de2a3d52935163a376" name="ac3880d12092802de2a3d52935163a376"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac3880d12092802de2a3d52935163a376">&#9670;&#160;</a></span>copy() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::string &gt; FlowUi::FieldTextView::copy </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Copy a full document or byte range to caller-owned text. </p>
+<p>The range is half-open in UTF-8 bytes. Copy while the view is valid; the resulting string survives later field mutations.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains an owning std::string. Bounds are clamped to the document; a detached view successfully copies an empty string. Allocation/storage failures are errors. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = value.copy();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line">std::string text = std::move(*result);</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="acebad405240297e133d2a519771a6fd5" name="acebad405240297e133d2a519771a6fd5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acebad405240297e133d2a519771a6fd5">&#9670;&#160;</a></span>copy() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::string &gt; FlowUi::FieldTextView::copy </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1TextRange.html">TextRange</a></td>          <td class="paramname"><span class="paramname"><em>range</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Copy a full document or byte range to caller-owned text. </p>
+<p>The range is half-open in UTF-8 bytes. Copy while the view is valid; the resulting string survives later field mutations.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains an owning std::string. Bounds are clamped to the document; a detached view successfully copies an empty string. Allocation/storage failures are errors. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = value.copy(<a class="code hl_struct" href="structFlowUi_1_1TextRange.html">FlowUi::TextRange</a>{0, value.sizeBytes()});</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line">std::string text = std::move(*result);</div>
+<div class="ttc" id="astructFlowUi_1_1TextRange_html"><div class="ttname"><a href="structFlowUi_1_1TextRange.html">FlowUi::TextRange</a></div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:29</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a3ffde86236a6b47ef0b2b2eec7636bbf" name="a3ffde86236a6b47ef0b2b2eec7636bbf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ffde86236a6b47ef0b2b2eec7636bbf">&#9670;&#160;</a></span>empty()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::FieldTextView::empty </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Test whether the viewed document has zero bytes. </p>
+<p>Valid only while the underlying field view remains alive and unmodified.</p>
+<dl class="section return"><dt>Returns</dt><dd>A detached view is empty.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> isEmpty = value.empty();</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a1794f955d740fd4fdfca02b7cd138736" name="a1794f955d740fd4fdfca02b7cd138736"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1794f955d740fd4fdfca02b7cd138736">&#9670;&#160;</a></span>forEachChunk()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::FieldTextView::forEachChunk </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1TextRange.html">TextRange</a></td>          <td class="paramname"><span class="paramname"><em>range</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__flowui__input__field__manager.html#ga6e6a14690106c2e60879978eaa0d1bf4">TextChunkVisitor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>visitor</em></span>&#160;) const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Synchronously visit text chunks overlapping a byte range. </p>
+<p>Bounds are clamped. Chunks are borrowed only during each call; copy to retain them and do not mutate the field while visiting. Visitor exceptions propagate unchanged; earlier visitor side effects remain visible.</p>
+<dl class="section note"><dt>Note</dt><dd>Makes no callbacks for a detached view or empty clamped range. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">Visitor</td><td>exceptions propagate unchanged.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line">std::string ownedText;</div>
+<div class="line">value.forEachChunk(<a class="code hl_struct" href="structFlowUi_1_1TextRange.html">FlowUi::TextRange</a>{0, value.sizeBytes()}, [&amp;ownedText](std::string_view chunk) { ownedText.append(chunk); });</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a930080491128525a7434f049508ab3f9" name="a930080491128525a7434f049508ab3f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a930080491128525a7434f049508ab3f9">&#9670;&#160;</a></span>sizeBytes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t FlowUi::FieldTextView::sizeBytes </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Read the viewed document's UTF-8 byte count. </p>
+<p>Valid only while the underlying field view remains alive and unmodified.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns zero when detached.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> byteCount = value.sizeBytes();</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="InputFieldTypes_8hpp_source.html">InputFieldTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -151,7 +384,7 @@ class&#160;</td><td class="memItemRight"><b>InputFieldManager</b></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1FieldTextView.html">FieldTextView</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1FieldTextView.html">FieldTextView</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

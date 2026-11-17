@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,24 +106,127 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevErrorContext Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevErrorTypes_8hpp_source.html">DevErrorTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a5807012d5505566d17f385c94de660df" id="r_a5807012d5505566d17f385c94de660df"><td class="memItemLeft"><a id="a5807012d5505566d17f385c94de660df" name="a5807012d5505566d17f385c94de660df"></a>
-AppTickId&#160;</td><td class="memItemRight"><b>appTick</b> = 0u</td></tr>
-<tr class="memitem:abd321f5a1204754eb85294a0b91ae6b8" id="r_abd321f5a1204754eb85294a0b91ae6b8"><td class="memItemLeft"><a id="abd321f5a1204754eb85294a0b91ae6b8" name="abd321f5a1204754eb85294a0b91ae6b8"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1WindowFrameKey.html">WindowFrameKey</a>&#160;</td><td class="memItemRight"><b>frame</b> {}</td></tr>
-<tr class="memitem:ae03d0119cf1a25daf704fa8d353c60ee" id="r_ae03d0119cf1a25daf704fa8d353c60ee"><td class="memItemLeft"><a id="ae03d0119cf1a25daf704fa8d353c60ee" name="ae03d0119cf1a25daf704fa8d353c60ee"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>submissionSerial</b> = 0u</td></tr>
-<tr class="memitem:a4bef0a6734132c1763e8c57f71daa91c" id="r_a4bef0a6734132c1763e8c57f71daa91c"><td class="memItemLeft"><a id="a4bef0a6734132c1763e8c57f71daa91c" name="a4bef0a6734132c1763e8c57f71daa91c"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>primaryEntity</b> = 0u</td></tr>
-<tr class="memitem:a6af801608b09cea4e17eb577f75a2423" id="r_a6af801608b09cea4e17eb577f75a2423"><td class="memItemLeft"><a id="a6af801608b09cea4e17eb577f75a2423" name="a6af801608b09cea4e17eb577f75a2423"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>secondaryEntity</b> = 0u</td></tr>
-<tr class="memitem:ae85ff258625cd0c86cfdeaf8266a35a0" id="r_ae85ff258625cd0c86cfdeaf8266a35a0"><td class="memItemLeft"><a id="ae85ff258625cd0c86cfdeaf8266a35a0" name="ae85ff258625cd0c86cfdeaf8266a35a0"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>timingTrack</b> = 0u</td></tr>
-<tr class="memitem:a82f00b9bc41dcd7a54c314687e705314" id="r_a82f00b9bc41dcd7a54c314687e705314"><td class="memItemLeft"><a id="a82f00b9bc41dcd7a54c314687e705314" name="a82f00b9bc41dcd7a54c314687e705314"></a>
-uint16_t&#160;</td><td class="memItemRight"><b>phase</b> = 0u</td></tr>
+<tr class="memitem:a5807012d5505566d17f385c94de660df" id="r_a5807012d5505566d17f385c94de660df"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5807012d5505566d17f385c94de660df">appTick</a> = 0u</td></tr>
+<tr class="memitem:abd321f5a1204754eb85294a0b91ae6b8" id="r_abd321f5a1204754eb85294a0b91ae6b8"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1WindowFrameKey.html">WindowFrameKey</a>&#160;</td><td class="memItemRight"><a class="el" href="#abd321f5a1204754eb85294a0b91ae6b8">frame</a> {}</td></tr>
+<tr class="memitem:ae03d0119cf1a25daf704fa8d353c60ee" id="r_ae03d0119cf1a25daf704fa8d353c60ee"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ae03d0119cf1a25daf704fa8d353c60ee">submissionSerial</a> = 0u</td></tr>
+<tr class="memitem:a4bef0a6734132c1763e8c57f71daa91c" id="r_a4bef0a6734132c1763e8c57f71daa91c"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a4bef0a6734132c1763e8c57f71daa91c">primaryEntity</a> = 0u</td></tr>
+<tr class="memitem:a6af801608b09cea4e17eb577f75a2423" id="r_a6af801608b09cea4e17eb577f75a2423"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a6af801608b09cea4e17eb577f75a2423">secondaryEntity</a> = 0u</td></tr>
+<tr class="memitem:ae85ff258625cd0c86cfdeaf8266a35a0" id="r_ae85ff258625cd0c86cfdeaf8266a35a0"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#ae85ff258625cd0c86cfdeaf8266a35a0">timingTrack</a> = 0u</td></tr>
+<tr class="memitem:a82f00b9bc41dcd7a54c314687e705314" id="r_a82f00b9bc41dcd7a54c314687e705314"><td class="memItemLeft">uint16_t&#160;</td><td class="memItemRight"><a class="el" href="#a82f00b9bc41dcd7a54c314687e705314">phase</a> = 0u</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Compact application, frame, submission and entity attribution copied into diagnostic records. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a5807012d5505566d17f385c94de660df" name="a5807012d5505566d17f385c94de660df"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5807012d5505566d17f385c94de660df">&#9670;&#160;</a></span>appTick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> FlowUi::devSystems::DevErrorContext::appTick = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Application tick associated with this evidence; zero means unassigned. </p>
+
+</div>
+</div>
+<a id="abd321f5a1204754eb85294a0b91ae6b8" name="abd321f5a1204754eb85294a0b91ae6b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abd321f5a1204754eb85294a0b91ae6b8">&#9670;&#160;</a></span>frame</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1WindowFrameKey.html">WindowFrameKey</a> FlowUi::devSystems::DevErrorContext::frame {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Window and frame sequence associated with this evidence. </p>
+
+</div>
+</div>
+<a id="a82f00b9bc41dcd7a54c314687e705314" name="a82f00b9bc41dcd7a54c314687e705314"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a82f00b9bc41dcd7a54c314687e705314">&#9670;&#160;</a></span>phase</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint16_t FlowUi::devSystems::DevErrorContext::phase = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Current application or capture lifecycle phase. </p>
+
+</div>
+</div>
+<a id="a4bef0a6734132c1763e8c57f71daa91c" name="a4bef0a6734132c1763e8c57f71daa91c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4bef0a6734132c1763e8c57f71daa91c">&#9670;&#160;</a></span>primaryEntity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorContext::primaryEntity = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Primary entity identity copied from the diagnostic producer context. </p>
+
+</div>
+</div>
+<a id="a6af801608b09cea4e17eb577f75a2423" name="a6af801608b09cea4e17eb577f75a2423"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6af801608b09cea4e17eb577f75a2423">&#9670;&#160;</a></span>secondaryEntity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorContext::secondaryEntity = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Secondary entity identity copied from the diagnostic producer context. </p>
+
+</div>
+</div>
+<a id="ae03d0119cf1a25daf704fa8d353c60ee" name="ae03d0119cf1a25daf704fa8d353c60ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae03d0119cf1a25daf704fa8d353c60ee">&#9670;&#160;</a></span>submissionSerial</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorContext::submissionSerial = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Renderer submission sequence associated with this evidence. </p>
+
+</div>
+</div>
+<a id="ae85ff258625cd0c86cfdeaf8266a35a0" name="ae85ff258625cd0c86cfdeaf8266a35a0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae85ff258625cd0c86cfdeaf8266a35a0">&#9670;&#160;</a></span>timingTrack</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::DevErrorContext::timingTrack = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Timing producer track associated with the diagnostic context. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/errors/<a class="el" href="DevErrorTypes_8hpp_source.html">DevErrorTypes.hpp</a></li>
 </ul>
@@ -140,7 +243,7 @@ uint16_t&#160;</td><td class="memItemRight"><b>phase</b> = 0u</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorContext.html">DevErrorContext</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorContext.html">DevErrorContext</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

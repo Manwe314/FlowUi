@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,20 +111,91 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a53a856f8eab35ec03cd19e49703820b1" id="r_a53a856f8eab35ec03cd19e49703820b1"><td class="memItemLeft"><a id="a53a856f8eab35ec03cd19e49703820b1" name="a53a856f8eab35ec03cd19e49703820b1"></a>
-std::shared_lock&lt; std::shared_mutex &gt;&#160;</td><td class="memItemRight"><b>lock</b> {}</td></tr>
-<tr class="memitem:acf61a0f95fdb913f715b1dd07d95de41" id="r_acf61a0f95fdb913f715b1dd07d95de41"><td class="memItemLeft"><a id="acf61a0f95fdb913f715b1dd07d95de41" name="acf61a0f95fdb913f715b1dd07d95de41"></a>
-std::span&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingAppTickReport.html">TimingAppTickReport</a> &gt;&#160;</td><td class="memItemRight"><b>first</b> {}</td></tr>
-<tr class="memitem:a3f153641a90a1594de0ce440cc840f4f" id="r_a3f153641a90a1594de0ce440cc840f4f"><td class="memItemLeft"><a id="a3f153641a90a1594de0ce440cc840f4f" name="a3f153641a90a1594de0ce440cc840f4f"></a>
-std::span&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingAppTickReport.html">TimingAppTickReport</a> &gt;&#160;</td><td class="memItemRight"><b>second</b> {}</td></tr>
-<tr class="memitem:a0b84587b2d6fcf63a645a0cb5f3a3808" id="r_a0b84587b2d6fcf63a645a0cb5f3a3808"><td class="memItemLeft"><a id="a0b84587b2d6fcf63a645a0cb5f3a3808" name="a0b84587b2d6fcf63a645a0cb5f3a3808"></a>
-std::span&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingZoneDescriptor.html">TimingZoneDescriptor</a> &gt;&#160;</td><td class="memItemRight"><b>descriptors</b> {}</td></tr>
-<tr class="memitem:ab2384e0ed79b6162de8399d0fb8acc05" id="r_ab2384e0ed79b6162de8399d0fb8acc05"><td class="memItemLeft"><a id="ab2384e0ed79b6162de8399d0fb8acc05" name="ab2384e0ed79b6162de8399d0fb8acc05"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>generation</b> = 0</td></tr>
+<tr class="memitem:a53a856f8eab35ec03cd19e49703820b1" id="r_a53a856f8eab35ec03cd19e49703820b1"><td class="memItemLeft">std::shared_lock&lt; std::shared_mutex &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a53a856f8eab35ec03cd19e49703820b1">lock</a> {}</td></tr>
+<tr class="memitem:acf61a0f95fdb913f715b1dd07d95de41" id="r_acf61a0f95fdb913f715b1dd07d95de41"><td class="memItemLeft">std::span&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingAppTickReport.html">TimingAppTickReport</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#acf61a0f95fdb913f715b1dd07d95de41">first</a> {}</td></tr>
+<tr class="memitem:a3f153641a90a1594de0ce440cc840f4f" id="r_a3f153641a90a1594de0ce440cc840f4f"><td class="memItemLeft">std::span&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingAppTickReport.html">TimingAppTickReport</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a3f153641a90a1594de0ce440cc840f4f">second</a> {}</td></tr>
+<tr class="memitem:a0b84587b2d6fcf63a645a0cb5f3a3808" id="r_a0b84587b2d6fcf63a645a0cb5f3a3808"><td class="memItemLeft">std::span&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingZoneDescriptor.html">TimingZoneDescriptor</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a0b84587b2d6fcf63a645a0cb5f3a3808">descriptors</a> {}</td></tr>
+<tr class="memitem:ab2384e0ed79b6162de8399d0fb8acc05" id="r_ab2384e0ed79b6162de8399d0fb8acc05"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ab2384e0ed79b6162de8399d0fb8acc05">generation</a> = 0</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Immutable chronological capture lease; never retain it across UI frames. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a0b84587b2d6fcf63a645a0cb5f3a3808" name="a0b84587b2d6fcf63a645a0cb5f3a3808"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b84587b2d6fcf63a645a0cb5f3a3808">&#9670;&#160;</a></span>descriptors</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::span&lt;const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingZoneDescriptor.html">TimingZoneDescriptor</a>&gt; FlowUi::devSystems::TimingCaptureReadView::descriptors {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Timing descriptor metadata associated with the captured records. </p>
+
+</div>
+</div>
+<a id="acf61a0f95fdb913f715b1dd07d95de41" name="acf61a0f95fdb913f715b1dd07d95de41"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acf61a0f95fdb913f715b1dd07d95de41">&#9670;&#160;</a></span>first</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::span&lt;const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingAppTickReport.html">TimingAppTickReport</a>&gt; FlowUi::devSystems::TimingCaptureReadView::first {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>First chronological ring segment borrowed while lock is held. </p>
+
+</div>
+</div>
+<a id="ab2384e0ed79b6162de8399d0fb8acc05" name="ab2384e0ed79b6162de8399d0fb8acc05"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab2384e0ed79b6162de8399d0fb8acc05">&#9670;&#160;</a></span>generation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingCaptureReadView::generation = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Identity of this capture generation. </p>
+
+</div>
+</div>
+<a id="a53a856f8eab35ec03cd19e49703820b1" name="a53a856f8eab35ec03cd19e49703820b1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a53a856f8eab35ec03cd19e49703820b1">&#9670;&#160;</a></span>lock</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::shared_lock&lt;std::shared_mutex&gt; FlowUi::devSystems::TimingCaptureReadView::lock {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Shared reporting lock held for the lifetime of the borrowed capture view. </p>
+
+</div>
+</div>
+<a id="a3f153641a90a1594de0ce440cc840f4f" name="a3f153641a90a1594de0ce440cc840f4f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f153641a90a1594de0ce440cc840f4f">&#9670;&#160;</a></span>second</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::span&lt;const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingAppTickReport.html">TimingAppTickReport</a>&gt; FlowUi::devSystems::TimingCaptureReadView::second {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Second chronological ring segment; empty when the capture does not wrap. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevTimingReporting_8hpp_source.html">DevTimingReporting.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -140,7 +211,7 @@ uint64_t&#160;</td><td class="memItemRight"><b>generation</b> = 0</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1TimingCaptureReadView.html">TimingCaptureReadView</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1TimingCaptureReadView.html">TimingCaptureReadView</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

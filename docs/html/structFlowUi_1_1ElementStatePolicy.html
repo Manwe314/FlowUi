@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,33 +107,144 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Definition-level retention policy applied whenever an element is invoked.  
- <a href="#details">More...</a></p>
-
 <p><code>#include &lt;<a class="el" href="ElementStatePolicy_8hpp_source.html">ElementStatePolicy.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a966794a7d614a76e487960232380bd2f" id="r_a966794a7d614a76e487960232380bd2f"><td class="memItemLeft"><a id="a966794a7d614a76e487960232380bd2f" name="a966794a7d614a76e487960232380bd2f"></a>
-auto&#160;</td><td class="memItemRight"><b>operator&lt;=&gt;</b> (const <a class="el" href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a> &amp;) const noexcept=default</td></tr>
+<tr class="memitem:a966794a7d614a76e487960232380bd2f" id="r_a966794a7d614a76e487960232380bd2f"><td class="memItemLeft">auto&#160;</td><td class="memItemRight"><a class="el" href="#a966794a7d614a76e487960232380bd2f">operator&lt;=&gt;</a> (const <a class="el" href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a> &amp;) const noexcept=default</td></tr>
+<tr class="memdesc:a966794a7d614a76e487960232380bd2f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compare retention mode and grace period by value.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-methods" class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:ae2288106c0174be1afef7a9bf584c89b" id="r_ae2288106c0174be1afef7a9bf584c89b"><td class="memItemLeft"><a id="ae2288106c0174be1afef7a9bf584c89b" name="ae2288106c0174be1afef7a9bf584c89b"></a>
-static constexpr <a class="el" href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a>&#160;</td><td class="memItemRight"><b>transient</b> (uint32_t expiryFrames=DefaultElementStateGraceFrames) noexcept</td></tr>
-<tr class="memitem:abb04d33bea2c0e2b36c638af76105114" id="r_abb04d33bea2c0e2b36c638af76105114"><td class="memItemLeft"><a id="abb04d33bea2c0e2b36c638af76105114" name="abb04d33bea2c0e2b36c638af76105114"></a>
-static constexpr <a class="el" href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a>&#160;</td><td class="memItemRight"><b>windowLifetime</b> () noexcept</td></tr>
+<tr class="memitem:ae2288106c0174be1afef7a9bf584c89b" id="r_ae2288106c0174be1afef7a9bf584c89b"><td class="memItemLeft">static constexpr <a class="el" href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#ae2288106c0174be1afef7a9bf584c89b">transient</a> (uint32_t expiryFrames=<a class="el" href="namespaceFlowUi.html#a75674f0b30b2d18f652753b4d5b4361d">DefaultElementStateGraceFrames</a>) noexcept</td></tr>
+<tr class="memdesc:ae2288106c0174be1afef7a9bf584c89b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a transient policy retaining state for expiryFrames successfully committed absent frames, then expiring on the next absent frame. Canceled frames do not advance retention.  <br /></td></tr>
+<tr class="memitem:abb04d33bea2c0e2b36c638af76105114" id="r_abb04d33bea2c0e2b36c638af76105114"><td class="memItemLeft">static constexpr <a class="el" href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a>&#160;</td><td class="memItemRight"><a class="el" href="#abb04d33bea2c0e2b36c638af76105114">windowLifetime</a> () noexcept</td></tr>
+<tr class="memdesc:abb04d33bea2c0e2b36c638af76105114"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a policy retaining state until explicit erasure or owning-window destruction.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a6572ecbadc707dd6473b3e7c9ec8a578" id="r_a6572ecbadc707dd6473b3e7c9ec8a578"><td class="memItemLeft"><a id="a6572ecbadc707dd6473b3e7c9ec8a578" name="a6572ecbadc707dd6473b3e7c9ec8a578"></a>
-ElementStateRetention&#160;</td><td class="memItemRight"><b>retention</b> = ElementStateRetention::Transient</td></tr>
-<tr class="memitem:a627bcacdc7062c672ba7bbf0a3a36505" id="r_a627bcacdc7062c672ba7bbf0a3a36505"><td class="memItemLeft"><a id="a627bcacdc7062c672ba7bbf0a3a36505" name="a627bcacdc7062c672ba7bbf0a3a36505"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>graceFrames</b> = DefaultElementStateGraceFrames</td></tr>
+<tr class="memitem:a6572ecbadc707dd6473b3e7c9ec8a578" id="r_a6572ecbadc707dd6473b3e7c9ec8a578"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a94cccac6fdb52dc03d209a44823e8aca">ElementStateRetention</a>&#160;</td><td class="memItemRight"><a class="el" href="#a6572ecbadc707dd6473b3e7c9ec8a578">retention</a> = <a class="el" href="namespaceFlowUi.html#a94cccac6fdb52dc03d209a44823e8acaab1f023eff9a6b5308d6024e4c6b3d475">ElementStateRetention::Transient</a></td></tr>
+<tr class="memitem:a627bcacdc7062c672ba7bbf0a3a36505" id="r_a627bcacdc7062c672ba7bbf0a3a36505"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a627bcacdc7062c672ba7bbf0a3a36505">graceFrames</a> = <a class="el" href="namespaceFlowUi.html#a75674f0b30b2d18f652753b4d5b4361d">DefaultElementStateGraceFrames</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Definition-level retention policy applied whenever an element is invoked. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<div class="textblock"><p>State lifetime for an element definition. Transient state tolerates graceFrames committed absent frames and expires on the next absent frame; WindowLifetime retains it until the window closes or state is explicitly erased. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a966794a7d614a76e487960232380bd2f" name="a966794a7d614a76e487960232380bd2f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a966794a7d614a76e487960232380bd2f">&#9670;&#160;</a></span>operator&lt;=&gt;()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto FlowUi::ElementStatePolicy::operator&lt;=&gt; </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a> &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel default">default</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compare retention mode and grace period by value. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
+
+</div>
+</div>
+<a id="ae2288106c0174be1afef7a9bf584c89b" name="ae2288106c0174be1afef7a9bf584c89b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae2288106c0174be1afef7a9bf584c89b">&#9670;&#160;</a></span>transient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a> FlowUi::ElementStatePolicy::transient </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>expiryFrames</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="namespaceFlowUi.html#a75674f0b30b2d18f652753b4d5b4361d">DefaultElementStateGraceFrames</a></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create a transient policy retaining state for expiryFrames successfully committed absent frames, then expiring on the next absent frame. Canceled frames do not advance retention. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
+
+</div>
+</div>
+<a id="abb04d33bea2c0e2b36c638af76105114" name="abb04d33bea2c0e2b36c638af76105114"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abb04d33bea2c0e2b36c638af76105114">&#9670;&#160;</a></span>windowLifetime()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a> FlowUi::ElementStatePolicy::windowLifetime </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create a policy retaining state until explicit erasure or owning-window destruction. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/elements.md </dd></dl>
+
+</div>
+</div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a627bcacdc7062c672ba7bbf0a3a36505" name="a627bcacdc7062c672ba7bbf0a3a36505"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a627bcacdc7062c672ba7bbf0a3a36505">&#9670;&#160;</a></span>graceFrames</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::ElementStatePolicy::graceFrames = <a class="el" href="namespaceFlowUi.html#a75674f0b30b2d18f652753b4d5b4361d">DefaultElementStateGraceFrames</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Absent committed frames tolerated by transient state; ignored for WindowLifetime. </p>
+
+</div>
+</div>
+<a id="a6572ecbadc707dd6473b3e7c9ec8a578" name="a6572ecbadc707dd6473b3e7c9ec8a578"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6572ecbadc707dd6473b3e7c9ec8a578">&#9670;&#160;</a></span>retention</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a94cccac6fdb52dc03d209a44823e8aca">ElementStateRetention</a> FlowUi::ElementStatePolicy::retention = <a class="el" href="namespaceFlowUi.html#a94cccac6fdb52dc03d209a44823e8acaab1f023eff9a6b5308d6024e4c6b3d475">ElementStateRetention::Transient</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Retention mode; transient state is the default. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/elementAuthoring/<a class="el" href="ElementStatePolicy_8hpp_source.html">ElementStatePolicy.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -149,7 +260,7 @@ uint32_t&#160;</td><td class="memItemRight"><b>graceFrames</b> = DefaultElementS
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1ElementStatePolicy.html">ElementStatePolicy</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include <optional>
 #include <string_view>
 
@@ -62,7 +64,7 @@ struct Box {
 	 */
 	static Clay_ElementDeclaration constructElement(BuildContext& context) {
 		Clay_ElementDeclaration declaration{};
-		const auto& theme = context.uiManager.theme<FSELTheme>();
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get();
 		Clay_LayoutConfig layout = {
 			.sizing = context.params.sizing,
 			.padding = context.params.padding,

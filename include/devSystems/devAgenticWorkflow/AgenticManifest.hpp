@@ -75,6 +75,9 @@ public:
 															const Json& provenance) noexcept;
 	/** Resolve one run by its authoritative run.json identity, independent of directory naming. */
 	[[nodiscard]] Result<std::filesystem::path> resolve_run(std::string_view run_id) const noexcept;
+	/** Read the last atomically published service lifecycle status, including failed setup.
+	 * Missing, malformed or unreadable status is an explicit error rather than an empty run. */
+	[[nodiscard]] Result<Json> queryRunStatus(std::string_view runId) const noexcept;
 	/** Stage artifacts, validate, write manifest last, then atomically publish. */
 	[[nodiscard]] Result<AgenticManifest> publish(AgenticCaptureSnapshot snapshot) noexcept;
 	/** Resolve exactly one sealed capture by ID or an explicit portable manifest. */

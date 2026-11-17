@@ -1,3 +1,4 @@
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticManifest.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticAnalysis.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticImage.hpp"
@@ -9,6 +10,7 @@
 #include <cerrno>
 #include <charconv>
 #include <cmath>
+#include <cstdio>
 #include <fstream>
 #include <limits>
 #include <map>
@@ -1018,8 +1020,28 @@ Result<std::filesystem::path> AgenticStore::reserve_run(std::string_view run_id,
 									   }),
 						timestamp.end());
 		const auto path = root_ / "runs" / (timestamp + "_" + std::string(run_id));
+		const auto failedSession = write_json(Json::make_object(
+			{{"schema", "FlowUi.Agentic.Session"}, {"schema_version", "1.0"},
+			 {"run_id", run_id}, {"status", "failed"},
+			 {"reason", "reservation_failed"}, {"last_app_tick", decimal(0)}}));
 		if (!std::filesystem::create_directory(path))
 			return unexpectedError(agentic_error(AgenticError::busy));
+		struct ReservationGuard {
+			const std::filesystem::path& path;
+			const std::string& failedSession;
+			bool committed = false;
+			~ReservationGuard() noexcept {
+				if (!committed) {
+					try {
+						const auto written = atomic_text(path / "session.json", failedSession);
+						if (!written)
+							std::fputs("FlowUi agentic reservation failure status unavailable\n", stderr);
+					} catch (...) {
+						std::fputs("FlowUi agentic reservation failure status unavailable\n", stderr);
+					}
+				}
+			}
+		} reservationGuard{path, failedSession};
 		Json run = provenance;
 		run.set("schema", "FlowUi.Agentic.Run");
 		run.set("schema_version", "1.0");
@@ -1031,6 +1053,7 @@ Result<std::filesystem::path> AgenticStore::reserve_run(std::string_view run_id,
 			return unexpectedError(written.error());
 		std::filesystem::create_directory(path / "captures");
 		std::filesystem::create_directory(path / "comparisons");
+		reservationGuard.committed = true;
 		return path;
 	} catch (...) {
 		return unexpectedError(agentic_error(AgenticError::publication_failed));
@@ -1043,6 +1066,28 @@ Result<std::filesystem::path> AgenticStore::resolve_run(std::string_view run_id)
 		return find_run(root_, run_id);
 	} catch (...) {
 		return unexpectedError(agentic_error(AgenticError::unavailable));
+	}
+}
+Result<Json> AgenticStore::queryRunStatus(std::string_view runId) const noexcept {
+	try {
+		auto run = resolve_run(runId);
+		if (!run)
+			return unexpectedError(run.error());
+		const auto statusPath = *run / "session.json";
+		std::error_code filesystemError;
+		const auto fileStatus = std::filesystem::symlink_status(statusPath, filesystemError);
+		if (filesystemError || !std::filesystem::is_regular_file(fileStatus))
+			return unexpectedError(agentic_error(AgenticError::unavailable));
+		auto contents = read_text(statusPath, 65536);
+		if (!contents)
+			return unexpectedError(contents.error());
+		auto status = parse_json(*contents, 65536);
+		if (!status || !validate_agentic_document(*status, "FlowUi.Agentic.Session") ||
+			member_string(*status, "run_id") != runId)
+			return unexpectedError(agentic_error(AgenticError::integrity_failed));
+		return status;
+	} catch (...) {
+		return unexpectedError(FlowUi::detail::currentExceptionError(ErrorSite::AgenticCommand));
 	}
 }
 Status validate_agentic_document(const Json& document, std::string_view expected_schema) noexcept {

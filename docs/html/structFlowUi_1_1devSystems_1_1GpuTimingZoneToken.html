@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,19 +106,78 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::GpuTimingZoneToken Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevGpuTiming_8hpp_source.html">DevGpuTiming.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a26a408584d9ee1f020199caca7ef50e5" id="r_a26a408584d9ee1f020199caca7ef50e5"><td class="memItemLeft"><a id="a26a408584d9ee1f020199caca7ef50e5" name="a26a408584d9ee1f020199caca7ef50e5"></a>
-constexpr&#160;</td><td class="memItemRight"><b>operator bool</b> () const noexcept</td></tr>
+<tr class="memitem:a26a408584d9ee1f020199caca7ef50e5" id="r_a26a408584d9ee1f020199caca7ef50e5"><td class="memItemLeft">constexpr&#160;</td><td class="memItemRight"><a class="el" href="#a26a408584d9ee1f020199caca7ef50e5">operator bool</a> () const noexcept</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a03780f54d9db4fe6bd2c596fda40377c" id="r_a03780f54d9db4fe6bd2c596fda40377c"><td class="memItemLeft"><a id="a03780f54d9db4fe6bd2c596fda40377c" name="a03780f54d9db4fe6bd2c596fda40377c"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>planIndex</b> = UINT32_MAX</td></tr>
-<tr class="memitem:a1f7c78e97fabe7ac39f4e39070856532" id="r_a1f7c78e97fabe7ac39f4e39070856532"><td class="memItemLeft"><a id="a1f7c78e97fabe7ac39f4e39070856532" name="a1f7c78e97fabe7ac39f4e39070856532"></a>
-bool&#160;</td><td class="memItemRight"><b>active</b> = false</td></tr>
+<tr class="memitem:a03780f54d9db4fe6bd2c596fda40377c" id="r_a03780f54d9db4fe6bd2c596fda40377c"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a03780f54d9db4fe6bd2c596fda40377c">planIndex</a> = UINT32_MAX</td></tr>
+<tr class="memitem:a1f7c78e97fabe7ac39f4e39070856532" id="r_a1f7c78e97fabe7ac39f4e39070856532"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a1f7c78e97fabe7ac39f4e39070856532">active</a> = false</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Frame-slot-local token identifying a planned GPU timestamp pair. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a26a408584d9ee1f020199caca7ef50e5" name="a26a408584d9ee1f020199caca7ef50e5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26a408584d9ee1f020199caca7ef50e5">&#9670;&#160;</a></span>operator bool()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::GpuTimingZoneToken::operator bool </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel explicit">explicit</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return whether this frame, token or thread attachment is valid and active. </p>
+
+</div>
+</div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a1f7c78e97fabe7ac39f4e39070856532" name="a1f7c78e97fabe7ac39f4e39070856532"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1f7c78e97fabe7ac39f4e39070856532">&#9670;&#160;</a></span>active</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::GpuTimingZoneToken::active = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether this token or edit scope was admitted and is still active. </p>
+
+</div>
+</div>
+<a id="a03780f54d9db4fe6bd2c596fda40377c" name="a03780f54d9db4fe6bd2c596fda40377c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a03780f54d9db4fe6bd2c596fda40377c">&#9670;&#160;</a></span>planIndex</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::GpuTimingZoneToken::planIndex = UINT32_MAX</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Zone plan index in the owning frame slot. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/timing/<a class="el" href="DevGpuTiming_8hpp_source.html">DevGpuTiming.hpp</a></li>
 </ul>
@@ -135,7 +194,7 @@ bool&#160;</td><td class="memItemRight"><b>active</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1GpuTimingZoneToken.html">GpuTimingZoneToken</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1GpuTimingZoneToken.html">GpuTimingZoneToken</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

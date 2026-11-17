@@ -10,12 +10,12 @@
 
 namespace FlowUi::devSystems {
 
-DevTooling::DevTooling(const DevToolingConfig& config) noexcept
+DevTooling::DevTooling(const DevToolingConfig& config)
 	: schemas_(config.schema),
 	  overrides_(schemas_, config.overrides),
 	  bakePipeline_(schemas_, overrides_) {
 #if defined(FLOWUI_BAKE_MANIFEST_PATH)
-	try { bakePipeline_.setManifestPath(FLOWUI_BAKE_MANIFEST_PATH); } catch (...) {}
+	bakePipeline_.setManifestPath(FLOWUI_BAKE_MANIFEST_PATH);
 #endif
 }
 DevTooling::~DevTooling() = default;
@@ -32,7 +32,7 @@ void DevTooling::setOverlaySelection(
 			}
 		}
 		overlaySelections_.push_back(WindowOverlaySelection{window, selection});
-	} catch (...) {}
+	} catch (...) { ++droppedOverlaySelectionUpdates_; }
 }
 
 void DevTooling::clearOverlaySelection(WindowId window) noexcept {
@@ -60,11 +60,11 @@ tooling::DevCommandResult DevTooling::bakeActiveEdits() noexcept {
 	return bakePipeline_.bake();
 }
 
-tooling::DevBakeStatusSnapshot DevTooling::queryBakeStatus() const noexcept {
+tooling::DevBakeStatusSnapshot DevTooling::queryBakeStatus() const {
 	return bakePipeline_.queryStatus();
 }
 
-std::vector<tooling::DevBakeDiffEntry> DevTooling::queryBakeDiff() const noexcept {
+std::vector<tooling::DevBakeDiffEntry> DevTooling::queryBakeDiff() const {
 	return bakePipeline_.queryDiff();
 }
 

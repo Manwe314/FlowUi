@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,18 +106,135 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::ElementTimingZone Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevTimingZone_8hpp_source.html">DevTimingZone.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a88eb39b630ada8aa804c9f23405a8696" id="r_a88eb39b630ada8aa804c9f23405a8696"><td class="memItemLeft"><a id="a88eb39b630ada8aa804c9f23405a8696" name="a88eb39b630ada8aa804c9f23405a8696"></a>
-&#160;</td><td class="memItemRight"><b>ElementTimingZone</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> *recorder, <a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a> definition, <a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> instance) noexcept</td></tr>
-<tr class="memitem:afbf0e84f16c86820c0b44abcb185a49c" id="r_afbf0e84f16c86820c0b44abcb185a49c"><td class="memItemLeft"><a id="afbf0e84f16c86820c0b44abcb185a49c" name="afbf0e84f16c86820c0b44abcb185a49c"></a>
-&#160;</td><td class="memItemRight"><b>ElementTimingZone</b> (const ElementTimingZone &amp;)=delete</td></tr>
+<tr class="memitem:a88eb39b630ada8aa804c9f23405a8696" id="r_a88eb39b630ada8aa804c9f23405a8696"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a88eb39b630ada8aa804c9f23405a8696">ElementTimingZone</a> (<a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> *recorder, <a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a> definition, <a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> instance) noexcept</td></tr>
+<tr class="memitem:ad33632e92140624a27cc7fb201dff98f" id="r_ad33632e92140624a27cc7fb201dff98f"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ad33632e92140624a27cc7fb201dff98f">~ElementTimingZone</a> () noexcept</td></tr>
+<tr class="memitem:afbf0e84f16c86820c0b44abcb185a49c" id="r_afbf0e84f16c86820c0b44abcb185a49c"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#afbf0e84f16c86820c0b44abcb185a49c">ElementTimingZone</a> (const ElementTimingZone &amp;)=delete</td></tr>
 <tr class="memitem:a438c64fb542b8641bda02e35550cee90" id="r_a438c64fb542b8641bda02e35550cee90"><td class="memItemLeft"><a id="a438c64fb542b8641bda02e35550cee90" name="a438c64fb542b8641bda02e35550cee90"></a>
-ElementTimingZone &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const ElementTimingZone &amp;)=delete</td></tr>
-<tr class="memitem:a1f2681bba4112c2c8531abd4eb2acef9" id="r_a1f2681bba4112c2c8531abd4eb2acef9"><td class="memItemLeft"><a id="a1f2681bba4112c2c8531abd4eb2acef9" name="a1f2681bba4112c2c8531abd4eb2acef9"></a>
-void&#160;</td><td class="memItemRight"><b>end</b> (TimingRecordFlag result=TimingRecordFlag::Completed) noexcept</td></tr>
+<a class="el" href="#a88eb39b630ada8aa804c9f23405a8696">ElementTimingZone</a> &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const <a class="el" href="#a88eb39b630ada8aa804c9f23405a8696">ElementTimingZone</a> &amp;)=delete</td></tr>
+<tr class="memitem:a1f2681bba4112c2c8531abd4eb2acef9" id="r_a1f2681bba4112c2c8531abd4eb2acef9"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a1f2681bba4112c2c8531abd4eb2acef9">end</a> (<a class="el" href="namespaceFlowUi_1_1devSystems.html#a87af1338d5bbccd7fa17efdee41d0829">TimingRecordFlag</a> result=<a class="el" href="namespaceFlowUi_1_1devSystems.html#a87af1338d5bbccd7fa17efdee41d0829a07ca5050e697392c9ed47e6453f1453f">TimingRecordFlag::Completed</a>) noexcept</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>RAII CPU timing scope that also contributes per-definition aggregate costs. A null recorder disables capture. </p>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a88eb39b630ada8aa804c9f23405a8696" name="a88eb39b630ada8aa804c9f23405a8696"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a88eb39b630ada8aa804c9f23405a8696">&#9670;&#160;</a></span>ElementTimingZone() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::ElementTimingZone::ElementTimingZone </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> *</td>          <td class="paramname"><span class="paramname"><em>recorder</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a></td>          <td class="paramname"><span class="paramname"><em>definition</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a></td>          <td class="paramname"><span class="paramname"><em>instance</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Begin the scoped timing measurement when the recorder or context admits it; null pointers disable capture. Borrowed context and descriptor text must outlive the scope. </p>
+
+</div>
+</div>
+<a id="ad33632e92140624a27cc7fb201dff98f" name="ad33632e92140624a27cc7fb201dff98f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad33632e92140624a27cc7fb201dff98f">&#9670;&#160;</a></span>~ElementTimingZone()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::ElementTimingZone::~ElementTimingZone </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>End any still-active zone as incomplete. </p>
+
+</div>
+</div>
+<a id="afbf0e84f16c86820c0b44abcb185a49c" name="afbf0e84f16c86820c0b44abcb185a49c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afbf0e84f16c86820c0b44abcb185a49c">&#9670;&#160;</a></span>ElementTimingZone() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::ElementTimingZone::ElementTimingZone </td>
+          <td>(</td>
+          <td class="paramtype">const ElementTimingZone &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copying is disabled to preserve ownership and producer identity. </p>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a1f2681bba4112c2c8531abd4eb2acef9" name="a1f2681bba4112c2c8531abd4eb2acef9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1f2681bba4112c2c8531abd4eb2acef9">&#9670;&#160;</a></span>end()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::ElementTimingZone::end </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a87af1338d5bbccd7fa17efdee41d0829">TimingRecordFlag</a></td>          <td class="paramname"><span class="paramname"><em>result</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a87af1338d5bbccd7fa17efdee41d0829a07ca5050e697392c9ed47e6453f1453f">TimingRecordFlag::Completed</a></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>End the admitted zone with the supplied completion flags; inactive tokens are ignored. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/timing/<a class="el" href="DevTimingZone_8hpp_source.html">DevTimingZone.hpp</a></li>
 </ul>
@@ -134,7 +251,7 @@ void&#160;</td><td class="memItemRight"><b>end</b> (TimingRecordFlag result=Timi
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1ElementTimingZone.html">ElementTimingZone</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1ElementTimingZone.html">ElementTimingZone</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

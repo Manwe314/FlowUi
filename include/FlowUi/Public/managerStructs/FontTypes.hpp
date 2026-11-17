@@ -147,18 +147,34 @@ struct FontVariantData {
 	/** @brief Kerning pair lookup table. */
 	std::unordered_map<uint64_t, float> kerningPairs;
 
-	/** @brief Pack leftCodepoint in the high 32 bits and rightCodepoint in the low 32 bits.
-	 * @return Lookup key used by kerningPairs. */
+	/**
+	 * @brief Pack two codepoints into the kerning-table key.
+	 *
+	 * This constexpr/noexcept helper does not validate Unicode scalar values.
+	 *
+	 * @return The left codepoint occupies the high 32 bits and the right occupies the low 32 bits.
+	 *
+	 * @code{.cpp}
+	 * const auto kerningKey = FlowUi::Font::FontVariantData::kerningKey(static_cast<uint32_t>(U'A'), static_cast<uint32_t>(U'V'));
+	 * @endcode
+	 */
 	[[nodiscard]] static constexpr uint64_t kerningKey(uint32_t leftCodepoint,
 													   uint32_t rightCodepoint) noexcept {
 		return (static_cast<uint64_t>(leftCodepoint) << 32u) |
 			   static_cast<uint64_t>(rightCodepoint);
 	}
 
-	/** @brief Return the stored horizontal kerning adjustment, or zero when the pair is absent.
-	 * @param leftCodepoint Unicode codepoint preceding rightCodepoint.
-	 * @param rightCodepoint Following Unicode codepoint.
-	 * @return Adjustment in the variant's font metric units. */
+	/**
+	 * @brief Read the stored horizontal kerning adjustment.
+	 *
+	 * The adjustment is in this variant's metric units; this lookup neither scales nor synthesizes kerning.
+	 *
+	 * @return Returns zero when the codepoint pair is absent.
+	 *
+	 * @code{.cpp}
+	 * const auto advance = value.kerningAdvance(static_cast<uint32_t>(U'A'), static_cast<uint32_t>(U'V'));
+	 * @endcode
+	 */
 	[[nodiscard]] float kerningAdvance(uint32_t leftCodepoint,
 									   uint32_t rightCodepoint) const noexcept {
 		const auto it = kerningPairs.find(kerningKey(leftCodepoint, rightCodepoint));
@@ -173,8 +189,17 @@ struct FontVariantData {
  * need direct access to loaded font metrics or atlas placement data.
  */
 struct FontFaceData {
-	/** @brief Borrow the selected variant; nullptr means the variant list or index is invalid.
-	 * The pointer is invalidated by mutation or destruction of this face's variants. */
+	/**
+	 * @brief Borrow the selected variant of a font face.
+	 *
+	 * The pointer is invalidated by mutation/destruction of the variants or by invalidation of the containing borrowed face.
+	 *
+	 * @return Returns nullptr when the variant list is empty or defaultVariantIndex is out of bounds.
+	 *
+	 * @code{.cpp}
+	 * const auto variant = value.defaultVariant();
+	 * @endcode
+	 */
 	[[nodiscard]] const FontVariantData* defaultVariant() const noexcept {
 		if (variants.empty() || defaultVariantIndex >= variants.size()) {
 			return nullptr;

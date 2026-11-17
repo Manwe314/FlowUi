@@ -23,6 +23,10 @@ Status InputService::initialize() {
 		return unexpectedError(
 			makeError(ErrorCode::ObjectAlreadyInitialized, ErrorSite::InputManagerInitialize));
 	try {
+		if (translatorSink_.capacity() == 0) {
+			const auto initialized = translatorSink_.initialize();
+			if (!initialized) return initialized;
+		}
 		targets_.reserve(128);
 		routingTargets_.reserve(128);
 		captures_.reserve(128);

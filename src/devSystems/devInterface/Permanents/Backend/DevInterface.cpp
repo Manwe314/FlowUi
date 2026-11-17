@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterface.hpp"
 
 #if FLOW_UI_DEV_MODE
@@ -70,30 +71,30 @@ Status DevInterface::synchronize(App& app) {
 	service_changes(app, *session_, windowId_ != InvalidWindowId && !suspended_);
 	service_catalogue(app, *session_, windowId_ != InvalidWindowId && !suspended_ &&
 		session_->activeTab == static_cast<uint64_t>(DevInterfaceTab::Catalogue));
-	auto& capture = app.devMonitoring().performance_capture();
+	auto& capture = FlowUi::ValueOrThrow(app.devMonitoring()).get().performance_capture();
 	const auto& progress = capture.status();
 	if (progress.generation && progress.generation != session_->capture_metadata_generation) {
 		session_->capture_windows = session_->pending_capture_windows.empty()
-										? app.devWindowSnapshot()
+										? FlowUi::ValueOrThrow(app.devWindowSnapshot())
 										: std::move(session_->pending_capture_windows);
 		std::erase_if(session_->capture_windows,
 					  [&](const auto& window) { return window.id == windowId_; });
 		session_->capture_metadata_generation = progress.generation;
 	}
-	const auto tick = app.devMonitoring().timingReporting().current_app_tick();
-	const auto now = app.devMonitoring().timingReporting().current_boundary_ns();
-	const bool toggle_down = shortcutEnabled_ && app.dev_shortcut_down(toggleChord_);
+	const auto tick = FlowUi::ValueOrThrow(app.devMonitoring()).get().timingReporting().current_app_tick();
+	const auto now = FlowUi::ValueOrThrow(app.devMonitoring()).get().timingReporting().current_boundary_ns();
+	const bool toggle_down = shortcutEnabled_ && FlowUi::ValueOrThrow(app.dev_shortcut_down(toggleChord_));
 	const bool requested_toggle = std::exchange(toggleRequested_, false);
 	const bool native_toggle_pressed =
 		toggleChord_.trigger == DevShortcutTrigger::Release ? !toggle_down && toggle_down_
 		: toggleChord_.trigger == DevShortcutTrigger::Down ? toggle_down
-														   : app.dev_shortcut_pressed(toggleChord_);
+														   : FlowUi::ValueOrThrow(app.dev_shortcut_pressed(toggleChord_));
 	const bool toggle_pressed = requested_toggle || native_toggle_pressed;
-	const bool start_pressed = app.dev_shortcut_pressed(progress.settings.start_chord);
+	const bool start_pressed = FlowUi::ValueOrThrow(app.dev_shortcut_pressed(progress.settings.start_chord));
 	toggle_down_ = toggle_down;
 	if (windowId_ != InvalidWindowId && !app.hasWindow(windowId_))
 		windowId_ = InvalidWindowId;
-	if (windowId_ != InvalidWindowId && !suspended_ && app.shouldClose(windowId_)) {
+	if (windowId_ != InvalidWindowId && !suspended_ && FlowUi::ValueOrThrow(app.shouldClose(windowId_))) {
 		auto closed = app.set_dev_window_suspended(windowId_, true);
 		if (!closed)
 			return closed;

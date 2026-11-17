@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,27 +106,42 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevIconCatalogEntry Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Borrowed SVG raster observation with a cached atlas location.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevCatalogTypes_8hpp_source.html">DevCatalogTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a1c26529409f62d1e9cd8fd74dba6da51" id="r_a1c26529409f62d1e9cd8fd74dba6da51"><td class="memItemLeft"><a id="a1c26529409f62d1e9cd8fd74dba6da51" name="a1c26529409f62d1e9cd8fd74dba6da51"></a>
 <a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a>&#160;</td><td class="memItemRight"><b>iconKey</b> {}</td></tr>
+<tr class="memdesc:a1c26529409f62d1e9cd8fd74dba6da51"><td class="mdescLeft">&#160;</td><td class="mdescRight">Registered SVG resource identity. <br /></td></tr>
 <tr class="memitem:a687fe4c79a316649765f71916ca3aaac" id="r_a687fe4c79a316649765f71916ca3aaac"><td class="memItemLeft"><a id="a687fe4c79a316649765f71916ca3aaac" name="a687fe4c79a316649765f71916ca3aaac"></a>
 std::string_view&#160;</td><td class="memItemRight"><b>iconName</b> {}</td></tr>
+<tr class="memdesc:a687fe4c79a316649765f71916ca3aaac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed SVG display/registration name. <br /></td></tr>
 <tr class="memitem:a39089d230691e99b8e0831dbc29e9780" id="r_a39089d230691e99b8e0831dbc29e9780"><td class="memItemLeft"><a id="a39089d230691e99b8e0831dbc29e9780" name="a39089d230691e99b8e0831dbc29e9780"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>targetWidth</b> = 0</td></tr>
+<tr class="memdesc:a39089d230691e99b8e0831dbc29e9780"><td class="mdescLeft">&#160;</td><td class="mdescRight">Raster width in pixels. <br /></td></tr>
 <tr class="memitem:abaddd5ffc30da11a1790a1bfd9aa59b1" id="r_abaddd5ffc30da11a1790a1bfd9aa59b1"><td class="memItemLeft"><a id="abaddd5ffc30da11a1790a1bfd9aa59b1" name="abaddd5ffc30da11a1790a1bfd9aa59b1"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>targetHeight</b> = 0</td></tr>
+<tr class="memdesc:abaddd5ffc30da11a1790a1bfd9aa59b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Raster height in pixels. <br /></td></tr>
 <tr class="memitem:a3b022dd892573f5e6fa21cf97c78c836" id="r_a3b022dd892573f5e6fa21cf97c78c836"><td class="memItemLeft"><a id="a3b022dd892573f5e6fa21cf97c78c836" name="a3b022dd892573f5e6fa21cf97c78c836"></a>
 <a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a>&#160;</td><td class="memItemRight"><b>atlasTexture</b> {}</td></tr>
+<tr class="memdesc:a3b022dd892573f5e6fa21cf97c78c836"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generation-checked atlas texture binding. <br /></td></tr>
 <tr class="memitem:a7756a17db2886257bb148c77079c1322" id="r_a7756a17db2886257bb148c77079c1322"><td class="memItemLeft"><a id="a7756a17db2886257bb148c77079c1322" name="a7756a17db2886257bb148c77079c1322"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevUvRect.html">DevUvRect</a>&#160;</td><td class="memItemRight"><b>atlasUv</b> {}</td></tr>
+<tr class="memdesc:a7756a17db2886257bb148c77079c1322"><td class="mdescLeft">&#160;</td><td class="mdescRight">Normalized raster rectangle within the atlas texture. <br /></td></tr>
 <tr class="memitem:a41bb5aa1bad354033751de2b559fd16a" id="r_a41bb5aa1bad354033751de2b559fd16a"><td class="memItemLeft"><a id="a41bb5aa1bad354033751de2b559fd16a" name="a41bb5aa1bad354033751de2b559fd16a"></a>
 bool&#160;</td><td class="memItemRight"><b>isVectorSvg</b> = true</td></tr>
+<tr class="memdesc:a41bb5aa1bad354033751de2b559fd16a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether this entry originates from a registered SVG. <br /></td></tr>
 <tr class="memitem:afe2c695a7357748f13393086c75a7601" id="r_afe2c695a7357748f13393086c75a7601"><td class="memItemLeft"><a id="afe2c695a7357748f13393086c75a7601" name="afe2c695a7357748f13393086c75a7601"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>atlasLayer</b> = 0</td></tr>
+<tr class="memdesc:afe2c695a7357748f13393086c75a7601"><td class="mdescLeft">&#160;</td><td class="mdescRight">Atlas layer/page containing the raster. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Borrowed SVG raster observation with a cached atlas location. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/catalogue/<a class="el" href="DevCatalogTypes_8hpp_source.html">DevCatalogTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -142,7 +157,7 @@ std::uint32_t&#160;</td><td class="memItemRight"><b>atlasLayer</b> = 0</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevIconCatalogEntry.html">DevIconCatalogEntry</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevIconCatalogEntry.html">DevIconCatalogEntry</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -110,22 +110,30 @@ $(function() {
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span> </div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="keyword">namespace </span>FlowUi {</div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span> </div>
-<div class="foldopen" id="foldopen00007" data-start="{" data-end="};">
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno"><a class="line" href="structFlowUi_1_1StorageMemoryCapacities.html">    7</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1StorageMemoryCapacities.html">StorageMemoryCapacities</a> {</div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span>    uint64_t initialPersistentCpuBytes = 0u;</div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span>    uint64_t initialStringBytes = 0u;</div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>    uint64_t transientBytesPerFramePerWindow = 0u;</div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>    uint64_t transientBytesPerWorker = 0u;</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    uint64_t initialDecodeScratchBytes = 0u;</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    uint64_t initialUploadStagingBytes = 0u;</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    uint64_t initialInstanceBytesPerFrame = 0u;</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>};</div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi.html">FlowUi</a> {</div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span></div>
+<div class="foldopen" id="foldopen00012" data-start="{" data-end="};">
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno"><a class="line" href="structFlowUi_1_1StorageMemoryCapacities.html">   12</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1StorageMemoryCapacities.html">StorageMemoryCapacities</a> {</div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="structFlowUi_1_1StorageMemoryCapacities.html#a8555ee97355465d4781ac834a5ba1cf2">   14</a></span>    uint64_t <a class="code hl_variable" href="structFlowUi_1_1StorageMemoryCapacities.html#a8555ee97355465d4781ac834a5ba1cf2">initialPersistentCpuBytes</a> = 0u;</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="structFlowUi_1_1StorageMemoryCapacities.html#a561c6f63ece524606b3ee423306e2164">   16</a></span>    uint64_t <a class="code hl_variable" href="structFlowUi_1_1StorageMemoryCapacities.html#a561c6f63ece524606b3ee423306e2164">initialStringBytes</a> = 0u;</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="structFlowUi_1_1StorageMemoryCapacities.html#ab6e5a2a754e9b1ce8973b5a1df2bef3f">   18</a></span>    uint64_t <a class="code hl_variable" href="structFlowUi_1_1StorageMemoryCapacities.html#ab6e5a2a754e9b1ce8973b5a1df2bef3f">transientBytesPerFramePerWindow</a> = 0u;</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno"><a class="line" href="structFlowUi_1_1StorageMemoryCapacities.html#a61b0a728d4850d906ab44a548a0c8bd4">   20</a></span>    uint64_t <a class="code hl_variable" href="structFlowUi_1_1StorageMemoryCapacities.html#a61b0a728d4850d906ab44a548a0c8bd4">transientBytesPerWorker</a> = 0u;</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno"><a class="line" href="structFlowUi_1_1StorageMemoryCapacities.html#a431bfe319b4136d9b4750f433817aa7b">   22</a></span>    uint64_t <a class="code hl_variable" href="structFlowUi_1_1StorageMemoryCapacities.html#a431bfe319b4136d9b4750f433817aa7b">initialDecodeScratchBytes</a> = 0u;</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno"><a class="line" href="structFlowUi_1_1StorageMemoryCapacities.html#aba693a45dc40198d834732bba3ba181f">   24</a></span>    uint64_t <a class="code hl_variable" href="structFlowUi_1_1StorageMemoryCapacities.html#aba693a45dc40198d834732bba3ba181f">initialUploadStagingBytes</a> = 0u;</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="structFlowUi_1_1StorageMemoryCapacities.html#ae50d1366f43c04a9e3692b638420d06e">   26</a></span>    uint64_t <a class="code hl_variable" href="structFlowUi_1_1StorageMemoryCapacities.html#ae50d1366f43c04a9e3692b638420d06e">initialInstanceBytesPerFrame</a> = 0u;</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>};</div>
 </div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span> </div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>} <span class="comment">// namespace FlowUi</span></div>
-<div class="ttc" id="astructFlowUi_1_1StorageMemoryCapacities_html"><div class="ttname"><a href="structFlowUi_1_1StorageMemoryCapacities.html">FlowUi::StorageMemoryCapacities</a></div><div class="ttdef"><b>Definition</b> StorageConfig.hpp:7</div></div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="ttc" id="anamespaceFlowUi_html"><div class="ttname"><a href="namespaceFlowUi.html">FlowUi</a></div><div class="ttdef"><b>Definition</b> App.hpp:29</div></div>
+<div class="ttc" id="astructFlowUi_1_1StorageMemoryCapacities_html"><div class="ttname"><a href="structFlowUi_1_1StorageMemoryCapacities.html">FlowUi::StorageMemoryCapacities</a></div><div class="ttdef"><b>Definition</b> StorageConfig.hpp:12</div></div>
+<div class="ttc" id="astructFlowUi_1_1StorageMemoryCapacities_html_a431bfe319b4136d9b4750f433817aa7b"><div class="ttname"><a href="structFlowUi_1_1StorageMemoryCapacities.html#a431bfe319b4136d9b4750f433817aa7b">FlowUi::StorageMemoryCapacities::initialDecodeScratchBytes</a></div><div class="ttdeci">uint64_t initialDecodeScratchBytes</div><div class="ttdef"><b>Definition</b> StorageConfig.hpp:22</div></div>
+<div class="ttc" id="astructFlowUi_1_1StorageMemoryCapacities_html_a561c6f63ece524606b3ee423306e2164"><div class="ttname"><a href="structFlowUi_1_1StorageMemoryCapacities.html#a561c6f63ece524606b3ee423306e2164">FlowUi::StorageMemoryCapacities::initialStringBytes</a></div><div class="ttdeci">uint64_t initialStringBytes</div><div class="ttdef"><b>Definition</b> StorageConfig.hpp:16</div></div>
+<div class="ttc" id="astructFlowUi_1_1StorageMemoryCapacities_html_a61b0a728d4850d906ab44a548a0c8bd4"><div class="ttname"><a href="structFlowUi_1_1StorageMemoryCapacities.html#a61b0a728d4850d906ab44a548a0c8bd4">FlowUi::StorageMemoryCapacities::transientBytesPerWorker</a></div><div class="ttdeci">uint64_t transientBytesPerWorker</div><div class="ttdef"><b>Definition</b> StorageConfig.hpp:20</div></div>
+<div class="ttc" id="astructFlowUi_1_1StorageMemoryCapacities_html_a8555ee97355465d4781ac834a5ba1cf2"><div class="ttname"><a href="structFlowUi_1_1StorageMemoryCapacities.html#a8555ee97355465d4781ac834a5ba1cf2">FlowUi::StorageMemoryCapacities::initialPersistentCpuBytes</a></div><div class="ttdeci">uint64_t initialPersistentCpuBytes</div><div class="ttdef"><b>Definition</b> StorageConfig.hpp:14</div></div>
+<div class="ttc" id="astructFlowUi_1_1StorageMemoryCapacities_html_ab6e5a2a754e9b1ce8973b5a1df2bef3f"><div class="ttname"><a href="structFlowUi_1_1StorageMemoryCapacities.html#ab6e5a2a754e9b1ce8973b5a1df2bef3f">FlowUi::StorageMemoryCapacities::transientBytesPerFramePerWindow</a></div><div class="ttdeci">uint64_t transientBytesPerFramePerWindow</div><div class="ttdef"><b>Definition</b> StorageConfig.hpp:18</div></div>
+<div class="ttc" id="astructFlowUi_1_1StorageMemoryCapacities_html_aba693a45dc40198d834732bba3ba181f"><div class="ttname"><a href="structFlowUi_1_1StorageMemoryCapacities.html#aba693a45dc40198d834732bba3ba181f">FlowUi::StorageMemoryCapacities::initialUploadStagingBytes</a></div><div class="ttdeci">uint64_t initialUploadStagingBytes</div><div class="ttdef"><b>Definition</b> StorageConfig.hpp:24</div></div>
+<div class="ttc" id="astructFlowUi_1_1StorageMemoryCapacities_html_ae50d1366f43c04a9e3692b638420d06e"><div class="ttname"><a href="structFlowUi_1_1StorageMemoryCapacities.html#ae50d1366f43c04a9e3692b638420d06e">FlowUi::StorageMemoryCapacities::initialInstanceBytesPerFrame</a></div><div class="ttdeci">uint64_t initialInstanceBytesPerFrame</div><div class="ttdef"><b>Definition</b> StorageConfig.hpp:26</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

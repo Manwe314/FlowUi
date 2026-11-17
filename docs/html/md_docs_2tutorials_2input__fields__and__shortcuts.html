@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -118,7 +118,7 @@ $(function() {
 <div class="line"><span class="keyword">struct </span>BoardNode {</div>
 <div class="line">    std::uint64_t key = 0;</div>
 <div class="line">    std::string title = <span class="stringliteral">&quot;Node&quot;</span>;</div>
-<div class="line">    Clay_Color color = FlowUi::Flow_Color(<span class="stringliteral">&quot;#202633ff&quot;</span>);</div>
+<div class="line">    Clay_Color color = <a class="code hl_function" href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">FlowUi::Flow_Color</a>(<span class="stringliteral">&quot;#202633ff&quot;</span>);</div>
 <div class="line">};</div>
 <div class="line"> </div>
 <div class="line"><span class="keyword">struct </span>EditableNodeParameters {</div>
@@ -129,11 +129,11 @@ $(function() {
 <div class="line">    <span class="keyword">using </span>Parameters = EditableNodeParameters;</div>
 <div class="line">    <span class="keyword">using </span>BuildContext = <a class="code hl_struct" href="structFlowUi_1_1ElementBuildContext.html">FlowUi::ElementBuildContext&lt;EditableNode&gt;</a>;</div>
 <div class="line">    <span class="keyword">using </span>InteractionContext = <a class="code hl_struct" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext&lt;EditableNode&gt;</a>;</div>
-<div class="line">    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">auto</span> definitionId = FlowUi::DefinitionID(<span class="stringliteral">&quot;tutorial.editable-node&quot;</span>);</div>
+<div class="line">    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">auto</span> definitionId = <a class="code hl_function" href="namespaceFlowUi.html#ab2fb588d55085807dcef2fe103c169ce">FlowUi::DefinitionID</a>(<span class="stringliteral">&quot;tutorial.editable-node&quot;</span>);</div>
 <div class="line">    <span class="keyword">static</span> <span class="keyword">constexpr</span> std::string_view debugName = <span class="stringliteral">&quot;Editable Node&quot;</span>;</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">static</span> <span class="keywordtype">void</span> onPressed(InteractionContext&amp; context) {</div>
-<div class="line">        context.uiManager.shortcuts().setFocusedElement(context.clayID());</div>
+<div class="line">        <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(context.uiManager.shortcuts().setFocusedElement(context.clayID()));</div>
 <div class="line">    }</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">static</span> <span class="keywordtype">void</span> buildElement(BuildContext&amp; context) {</div>
@@ -145,12 +145,12 @@ $(function() {
 <div class="line">        root.layout.padding = CLAY_PADDING_ALL(12);</div>
 <div class="line">        root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;</div>
 <div class="line">        root.backgroundColor = context.params.node != <span class="keyword">nullptr</span></div>
-<div class="line">            ? context.params.node-&gt;color : FlowUi::Flow_Color(<span class="stringliteral">&quot;#303030ff&quot;</span>);</div>
+<div class="line">            ? context.params.node-&gt;color : <a class="code hl_function" href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">FlowUi::Flow_Color</a>(<span class="stringliteral">&quot;#303030ff&quot;</span>);</div>
 <div class="line">        root.cornerRadius = CLAY_CORNER_RADIUS(8);</div>
 <div class="line"> </div>
 <div class="line">        CLAY(context.clayID(), root) {</div>
 <div class="line">            <span class="keywordflow">if</span> (context.params.node != <span class="keyword">nullptr</span>) {</div>
-<div class="line">                context.uiManager.createElement(FlowUi::FSEL::kTextInput, <span class="stringliteral">&quot;title&quot;</span>)</div>
+<div class="line">                context.uiManager.createElement(<a class="code hl_variable" href="namespaceFlowUi_1_1FSEL.html#abec792ccf8f26e44722d02c9f69321ce">FlowUi::FSEL::kTextInput</a>, <span class="stringliteral">&quot;title&quot;</span>)</div>
 <div class="line">                    .setParameters({</div>
 <div class="line">                        .placeholder = <span class="stringliteral">&quot;Node title&quot;</span>,</div>
 <div class="line">                        .value = &amp;context.params.node-&gt;title,</div>
@@ -164,15 +164,20 @@ $(function() {
 <div class="line"> </div>
 <div class="line"><span class="keyword">inline</span> <span class="keyword">constexpr</span> EditableNode kEditableNode{};</div>
 <div class="line"><span class="keyword">static_assert</span>(<a class="code hl_concept" href="conceptFlowUi_1_1FlowElement.html">FlowUi::FlowElement&lt;EditableNode&gt;</a>);</div>
-<div class="ttc" id="aconceptFlowUi_1_1FlowElement_html"><div class="ttname"><a href="conceptFlowUi_1_1FlowElement.html">FlowUi::FlowElement</a></div><div class="ttdef"><b>Definition</b> ElementConcepts.hpp:44</div></div>
-<div class="ttc" id="astructFlowUi_1_1ElementBuildContext_html"><div class="ttname"><a href="structFlowUi_1_1ElementBuildContext.html">FlowUi::ElementBuildContext</a></div><div class="ttdoc">Context passed to constructElement and buildElement callbacks.</div><div class="ttdef"><b>Definition</b> ElementContexts.hpp:53</div></div>
-<div class="ttc" id="astructFlowUi_1_1ElementInteractionContext_html"><div class="ttname"><a href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a></div><div class="ttdoc">Context passed to event and logic callbacks.</div><div class="ttdef"><b>Definition</b> ElementContexts.hpp:157</div></div>
+<div class="ttc" id="aconceptFlowUi_1_1FlowElement_html"><div class="ttname"><a href="conceptFlowUi_1_1FlowElement.html">FlowUi::FlowElement</a></div><div class="ttdef"><b>Definition</b> ElementConcepts.hpp:60</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1FSEL_html_abec792ccf8f26e44722d02c9f69321ce"><div class="ttname"><a href="namespaceFlowUi_1_1FSEL.html#abec792ccf8f26e44722d02c9f69321ce">FlowUi::FSEL::kTextInput</a></div><div class="ttdeci">constexpr TextInput kTextInput</div><div class="ttdef"><b>Definition</b> TextInput.hpp:285</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a5efb614726ef3592ac7dda2318b6bbe0"><div class="ttname"><a href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">FlowUi::Flow_Color</a></div><div class="ttdeci">consteval Clay_Color Flow_Color(const char(&amp;hexRgba)[Size]) noexcept</div><div class="ttdoc">Convert a literal #RRGGBB or #RRGGBBAA color into a Clay_Color at compile time.</div><div class="ttdef"><b>Definition</b> Color.hpp:37</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_ab2fb588d55085807dcef2fe103c169ce"><div class="ttname"><a href="namespaceFlowUi.html#ab2fb588d55085807dcef2fe103c169ce">FlowUi::DefinitionID</a></div><div class="ttdeci">consteval FlowDefinitionID DefinitionID(const char(&amp;name)[N]) noexcept</div><div class="ttdef"><b>Definition</b> ElementID.hpp:243</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_aef54dabee32ff800d39da726c12a2ac8"><div class="ttname"><a href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a></div><div class="ttdeci">Value &amp; ValueOrThrow(Result&lt; Value &gt; &amp;result)</div><div class="ttdoc">Borrow a successful result&#39;s value, or throw FlowUiException preserving its error.</div><div class="ttdef"><b>Definition</b> Color.hpp:66</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementBuildContext_html"><div class="ttname"><a href="structFlowUi_1_1ElementBuildContext.html">FlowUi::ElementBuildContext</a></div><div class="ttdoc">Context passed to constructElement and buildElement callbacks.</div><div class="ttdef"><b>Definition</b> ElementContexts.hpp:55</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementInteractionContext_html"><div class="ttname"><a href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a></div><div class="ttdoc">Context passed to event and logic callbacks.</div><div class="ttdef"><b>Definition</b> ElementContexts.hpp:315</div></div>
 </div><!-- fragment --><p>Register a font family through <span class="tt">FontManager</span> and configure the FSEL theme's font family before drawing text. Keep each borrowed node/string alive during invocation and any action using it. Avoid invalidating container references while constructing the frame. For a list, use a stable data key:</p>
 <div class="fragment"><div class="line"><span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; node : board_nodes) {</div>
-<div class="line">    application.ui().createElement(kEditableNode, FlowUi::Keyed(<span class="stringliteral">&quot;node&quot;</span>, node.key))</div>
+<div class="line">    <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(application.ui()).get().createElement(kEditableNode, <a class="code hl_function" href="namespaceFlowUi.html#a05588c5fcd43864ce0dd395601d4a666">FlowUi::Keyed</a>(<span class="stringliteral">&quot;node&quot;</span>, node.key))</div>
 <div class="line">        .setParameters({.node = &amp;node})</div>
 <div class="line">        .draw();</div>
 <div class="line">}</div>
+<div class="ttc" id="anamespaceFlowUi_html_a05588c5fcd43864ce0dd395601d4a666"><div class="ttname"><a href="namespaceFlowUi.html#a05588c5fcd43864ce0dd395601d4a666">FlowUi::Keyed</a></div><div class="ttdeci">constexpr IndexedElementName Keyed(LocalElementName name, uint64_t key) noexcept</div><div class="ttdef"><b>Definition</b> ElementID.hpp:307</div></div>
 </div><!-- fragment --><p>Primary text focus and focused-element shortcut state are separate. A title field may own the primary caret while the node card remains the shortcut-focused element. Scope ordering lets text copy take precedence over a whole-node copy command.</p>
 <h1>Custom input fields</h1>
 <p>For a custom editor, request the same typed field identity every frame it is visible:</p>
@@ -181,71 +186,74 @@ $(function() {
 <div class="line">    .initialText = <span class="stringliteral">&quot;Untitled&quot;</span>,</div>
 <div class="line">    .config = {</div>
 <div class="line">        .maxBytes = 128,</div>
-<div class="line">        .mode = FlowUi::TextFieldMode::SingleLine,</div>
+<div class="line">        .mode = <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#gga45d425b2fd21c934a3f16050cdc4cccba3e5c1fb76b6543ac61af54b185f02af9">FlowUi::TextFieldMode::SingleLine</a>,</div>
 <div class="line">    },</div>
 <div class="line">    .textElementId = context.clayID(<span class="stringliteral">&quot;title-text&quot;</span>),</div>
 <div class="line">    .contentElementId = context.clayID(<span class="stringliteral">&quot;title-content&quot;</span>),</div>
 <div class="line">});</div>
 <div class="line"><span class="keyword">const</span> std::string owned_text = field.text.copy();</div>
+<div class="ttc" id="agroup__flowui__input__field__manager_html_gga45d425b2fd21c934a3f16050cdc4cccba3e5c1fb76b6543ac61af54b185f02af9"><div class="ttname"><a href="group__flowui__input__field__manager.html#gga45d425b2fd21c934a3f16050cdc4cccba3e5c1fb76b6543ac61af54b185f02af9">FlowUi::TextFieldMode::SingleLine</a></div><div class="ttdeci">@ SingleLine</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:38</div></div>
 </div><!-- fragment --><p><span class="tt">initialText</span> seeds a new field; later requests preserve its edited text. Use <span class="tt">TextFieldMode::MultiLine</span> when line breaks are supported. Mode governs normalization, editing, and keyboard input.</p>
 <p><span class="tt">FieldTextView</span> borrows manager text and can span several chunks. Use <span class="tt">.contiguous()</span> only when the view is contiguous, <span class="tt">.copy()</span> for an owned string, or <span class="tt">.forEachChunk()</span> for traversal. Mutating the field invalidates its borrowed text view. There is no implicit string-view conversion.</p>
 <p>Custom input elements must supply layout and editable text rendering as required by their field mode. FSEL <span class="tt">TextInput</span>, <span class="tt">TextArea</span>, and numeric editors already implement these contracts, including synchronization, focus, and caret/selection presentation.</p>
 <p>Use typed identities with <span class="tt">requestCaret()</span> to focus or add a caret. <span class="tt">ClearAll</span> ignores the supplied identity:</p>
 <div class="fragment"><div class="line">context.uiManager.inputFields().requestCaret(field_id, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
-<div class="line">application.ui().inputFields().requestCaret(</div>
+<div class="line"><a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(application.ui()).get().inputFields().requestCaret(</div>
 <div class="line">    <a class="code hl_struct" href="structFlowUi_1_1FlowElementID.html">FlowUi::FlowElementID</a>{}, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a7aaf620fe818489b59d52585ff04d995">FlowUi::CaretRequestKind::ClearAll</a>);</div>
-<div class="ttc" id="agroup__flowui__input__field__manager_html_ggafeb7e7dce488c324629200446fdbf6c0a7aaf620fe818489b59d52585ff04d995"><div class="ttname"><a href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a7aaf620fe818489b59d52585ff04d995">FlowUi::CaretRequestKind::ClearAll</a></div><div class="ttdeci">@ ClearAll</div><div class="ttdoc">Clear all carets and remove primary input focus.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:219</div></div>
-<div class="ttc" id="agroup__flowui__input__field__manager_html_ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd"><div class="ttname"><a href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a></div><div class="ttdeci">@ SetPrimary</div><div class="ttdoc">Make the requested field the primary focused input field.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:202</div></div>
-<div class="ttc" id="astructFlowUi_1_1FlowElementID_html"><div class="ttname"><a href="structFlowUi_1_1FlowElementID.html">FlowUi::FlowElementID</a></div><div class="ttdef"><b>Definition</b> ElementIDTypes.hpp:23</div></div>
+<div class="ttc" id="agroup__flowui__input__field__manager_html_ggafeb7e7dce488c324629200446fdbf6c0a7aaf620fe818489b59d52585ff04d995"><div class="ttname"><a href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a7aaf620fe818489b59d52585ff04d995">FlowUi::CaretRequestKind::ClearAll</a></div><div class="ttdeci">@ ClearAll</div><div class="ttdoc">Clear all carets and remove primary input focus.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:460</div></div>
+<div class="ttc" id="agroup__flowui__input__field__manager_html_ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd"><div class="ttname"><a href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a></div><div class="ttdeci">@ SetPrimary</div><div class="ttdoc">Make the requested field the primary focused input field.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:443</div></div>
+<div class="ttc" id="astructFlowUi_1_1FlowElementID_html"><div class="ttname"><a href="structFlowUi_1_1FlowElementID.html">FlowUi::FlowElementID</a></div><div class="ttdef"><b>Definition</b> ElementIDTypes.hpp:48</div></div>
 </div><!-- fragment --><p><span class="tt">replaceText(field_id, text, preserve_caret)</span> updates managed text explicitly. <span class="tt">removeField(field_id)</span> removes one field; <span class="tt">clear()</span> resets all managed input state. All accept supported strong identities or <span class="tt">ResourceKey</span>, not path strings. Configure caret/selection appearance through <span class="tt">AppConfig::ui.inputManager</span> before application creation, or field-local overlay styles.</p>
 <h1>Register text shortcuts</h1>
 <p>Shortcut registration returns <span class="tt">Result&lt;ShortcutId&gt;</span>. Check it before retaining the ID. The following uses GLFW key codes; include GLFW's header when using its symbolic constants.</p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> copy_shortcut = application.ui().shortcuts().registerShortcut(</div>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> copy_shortcut = <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(application.ui()).get().shortcuts().registerShortcut(</div>
 <div class="line">    {.key = GLFW_KEY_C, .ctrl = <span class="keyword">true</span>},</div>
 <div class="line">    <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeac39487764c47d7394c716eb92cf51694">FlowUi::ShortcutScope::FocusedInput</a>,</div>
 <div class="line">    100,</div>
 <div class="line">    [](<a class="code hl_struct" href="structFlowUi_1_1ShortcutContext.html">FlowUi::ShortcutContext</a>&amp; context) {</div>
 <div class="line">        <span class="keyword">const</span> std::string selected(context.ui.inputFields().getSelectedText());</div>
 <div class="line">        <span class="keywordflow">if</span> (selected.empty()) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line">        context.ui.setClipboardText(selected);</div>
+<div class="line">        <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(context.ui.setClipboardText(selected));</div>
 <div class="line">        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line">    });</div>
 <div class="line"><span class="keywordflow">if</span> (!copy_shortcut) {</div>
 <div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(copy_shortcut.error());</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> paste_shortcut = application.ui().shortcuts().registerShortcut(</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> paste_shortcut = <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(application.ui()).get().shortcuts().registerShortcut(</div>
 <div class="line">    {.key = GLFW_KEY_V, .ctrl = <span class="keyword">true</span>},</div>
 <div class="line">    <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeac39487764c47d7394c716eb92cf51694">FlowUi::ShortcutScope::FocusedInput</a>,</div>
 <div class="line">    100,</div>
 <div class="line">    [](<a class="code hl_struct" href="structFlowUi_1_1ShortcutContext.html">FlowUi::ShortcutContext</a>&amp; context) {</div>
-<div class="line">        <span class="keywordflow">return</span> context.ui.inputFields().insertTextAtPrimaryCaret(context.ui.clipboardText());</div>
+<div class="line">        <span class="keywordflow">return</span> context.ui.inputFields().insertTextAtPrimaryCaret(<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(context.ui.clipboardText()));</div>
 <div class="line">    });</div>
 <div class="line"><span class="keywordflow">if</span> (!paste_shortcut) {</div>
 <div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(paste_shortcut.error());</div>
 <div class="line">}</div>
 <div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
 <div class="ttc" id="agroup__flowui__shortcut__manager_html_gga1b3c08a536c355e5163a7a367297bfeeac39487764c47d7394c716eb92cf51694"><div class="ttname"><a href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeac39487764c47d7394c716eb92cf51694">FlowUi::ShortcutScope::FocusedInput</a></div><div class="ttdeci">@ FocusedInput</div><div class="ttdoc">Run only while an input field owns primary text focus.</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:29</div></div>
-<div class="ttc" id="astructFlowUi_1_1ShortcutContext_html"><div class="ttname"><a href="structFlowUi_1_1ShortcutContext.html">FlowUi::ShortcutContext</a></div><div class="ttdoc">Runtime data passed to shortcut callbacks.</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:96</div></div>
+<div class="ttc" id="astructFlowUi_1_1ShortcutContext_html"><div class="ttname"><a href="structFlowUi_1_1ShortcutContext.html">FlowUi::ShortcutContext</a></div><div class="ttdoc">Runtime data passed to shortcut callbacks.</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:100</div></div>
 </div><!-- fragment --><p>A callback returns <span class="tt">true</span> only when it handled the chord. Returning <span class="tt">false</span> allows the next eligible handler to run. Text insertion respects read-only fields, byte limits, and selections.</p>
 <h1>Register app commands</h1>
 <p>Semantic application commands can be shared between a Button and a shortcut. Bind an app action once, check the result, and retain only its <span class="tt">AppActionCall</span>:</p>
-<div class="fragment"><div class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> SaveDocument = FlowUi::AppAction(<span class="stringliteral">&quot;editor.save&quot;</span>);</div>
-<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> save_binding = application.actions().appActions().bind(</div>
+<div class="fragment"><div class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> SaveDocument = <a class="code hl_function" href="group__flowui__action__manager.html#ga78191cadc43d03c544c284c66abbd22a">FlowUi::AppAction</a>(<span class="stringliteral">&quot;editor.save&quot;</span>);</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> save_binding = <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(application.actions()).get().appActions().bind(</div>
 <div class="line">    SaveDocument, [](std::string* document) { document-&gt;append(<span class="stringliteral">&quot; saved&quot;</span>); }, &amp;document_text);</div>
 <div class="line"><span class="keywordflow">if</span> (!save_binding) {</div>
 <div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(save_binding.error());</div>
 <div class="line">}</div>
-<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> save_shortcut = application.ui().shortcuts().registerShortcut(</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> save_shortcut = <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(application.ui()).get().shortcuts().registerShortcut(</div>
 <div class="line">    {.key = GLFW_KEY_S, .ctrl = <span class="keyword">true</span>},</div>
 <div class="line">    <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">FlowUi::ShortcutScope::Global</a>,</div>
 <div class="line">    0,</div>
 <div class="line">    *save_binding,</div>
-<div class="line">    FlowUi::ShortcutHandling::Consume);</div>
+<div class="line">    <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#ggaa96df297b2a302ec17595a07e88af64fad2e0379c3a30439bfc1b6869af4408cc">FlowUi::ShortcutHandling::Consume</a>);</div>
 <div class="line"><span class="keywordflow">if</span> (!save_shortcut) {</div>
 <div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(save_shortcut.error());</div>
 <div class="line">}</div>
+<div class="ttc" id="agroup__flowui__action__manager_html_ga78191cadc43d03c544c284c66abbd22a"><div class="ttname"><a href="group__flowui__action__manager.html#ga78191cadc43d03c544c284c66abbd22a">FlowUi::AppAction</a></div><div class="ttdeci">consteval AppActionID AppAction(const char(&amp;name)[N]) noexcept</div><div class="ttdef"><b>Definition</b> AppActionID.hpp:72</div></div>
 <div class="ttc" id="agroup__flowui__shortcut__manager_html_gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8"><div class="ttname"><a href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">FlowUi::ShortcutScope::Global</a></div><div class="ttdeci">@ Global</div><div class="ttdoc">Run regardless of focused input or focused element state.</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:35</div></div>
+<div class="ttc" id="agroup__flowui__shortcut__manager_html_ggaa96df297b2a302ec17595a07e88af64fad2e0379c3a30439bfc1b6869af4408cc"><div class="ttname"><a href="group__flowui__shortcut__manager.html#ggaa96df297b2a302ec17595a07e88af64fad2e0379c3a30439bfc1b6869af4408cc">FlowUi::ShortcutHandling::Consume</a></div><div class="ttdeci">@ Consume</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:59</div></div>
 </div><!-- fragment --><p>The example operation changes a borrowed string to make its effect explicit; substitute the application's actual document-save operation. Borrowed resources must outlive the binding. Shortcuts cannot retain local <span class="tt">UiActionCall</span> recipes; use those for immediate local UI behavior. See <a class="el" href="md_docs_2api_2action__manager.html" title="Action Manager API">Actions</a>.</p>
 <p>Whole-node copy, paste, and delete remain application model operations. Register them in <span class="tt">FocusedElement</span> scope, use <span class="tt">ShortcutContext::focusedElementId</span> to find the model target, and return <span class="tt">false</span> when no suitable target exists. Stage mutations that would invalidate node references until the current UI invocation has completed.</p>
 <h1>Dispatch and lifetime</h1>

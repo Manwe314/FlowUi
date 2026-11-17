@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,18 +106,79 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevErrorRawStackCapture Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevErrorStackProvider_8hpp_source.html">DevErrorStackProvider.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a7b3496c19ff2d1c9615a34035663f3c4" id="r_a7b3496c19ff2d1c9615a34035663f3c4"><td class="memItemLeft"><a id="a7b3496c19ff2d1c9615a34035663f3c4" name="a7b3496c19ff2d1c9615a34035663f3c4"></a>
-DevErrorStackStatus&#160;</td><td class="memItemRight"><b>status</b> = DevErrorStackStatus::Unavailable</td></tr>
-<tr class="memitem:a157fba22cdce19e982d50c067ef8325a" id="r_a157fba22cdce19e982d50c067ef8325a"><td class="memItemLeft"><a id="a157fba22cdce19e982d50c067ef8325a" name="a157fba22cdce19e982d50c067ef8325a"></a>
-uint16_t&#160;</td><td class="memItemRight"><b>frameCount</b> = 0u</td></tr>
-<tr class="memitem:a0bb3096c2cdf141fa62963270e312baa" id="r_a0bb3096c2cdf141fa62963270e312baa"><td class="memItemLeft"><a id="a0bb3096c2cdf141fa62963270e312baa" name="a0bb3096c2cdf141fa62963270e312baa"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>moduleIdentity</b> = 0u</td></tr>
-<tr class="memitem:a2e828575d8f8ac7b932fec4323737827" id="r_a2e828575d8f8ac7b932fec4323737827"><td class="memItemLeft"><a id="a2e828575d8f8ac7b932fec4323737827" name="a2e828575d8f8ac7b932fec4323737827"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>buildIdentity</b> = 0u</td></tr>
+<tr class="memitem:a7b3496c19ff2d1c9615a34035663f3c4" id="r_a7b3496c19ff2d1c9615a34035663f3c4"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ae3fc5636205b0c6938d2ff4dbee553a6">DevErrorStackStatus</a>&#160;</td><td class="memItemRight"><a class="el" href="#a7b3496c19ff2d1c9615a34035663f3c4">status</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ae3fc5636205b0c6938d2ff4dbee553a6a453e6aa38d87b28ccae545967c53004f">DevErrorStackStatus::Unavailable</a></td></tr>
+<tr class="memitem:a157fba22cdce19e982d50c067ef8325a" id="r_a157fba22cdce19e982d50c067ef8325a"><td class="memItemLeft">uint16_t&#160;</td><td class="memItemRight"><a class="el" href="#a157fba22cdce19e982d50c067ef8325a">frameCount</a> = 0u</td></tr>
+<tr class="memitem:a0bb3096c2cdf141fa62963270e312baa" id="r_a0bb3096c2cdf141fa62963270e312baa"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a0bb3096c2cdf141fa62963270e312baa">moduleIdentity</a> = 0u</td></tr>
+<tr class="memitem:a2e828575d8f8ac7b932fec4323737827" id="r_a2e828575d8f8ac7b932fec4323737827"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a2e828575d8f8ac7b932fec4323737827">buildIdentity</a> = 0u</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Capture result for raw program counters written into caller-owned storage. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a2e828575d8f8ac7b932fec4323737827" name="a2e828575d8f8ac7b932fec4323737827"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e828575d8f8ac7b932fec4323737827">&#9670;&#160;</a></span>buildIdentity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorRawStackCapture::buildIdentity = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Build identity needed to interpret captured program counters. </p>
+
+</div>
+</div>
+<a id="a157fba22cdce19e982d50c067ef8325a" name="a157fba22cdce19e982d50c067ef8325a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a157fba22cdce19e982d50c067ef8325a">&#9670;&#160;</a></span>frameCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint16_t FlowUi::devSystems::DevErrorRawStackCapture::frameCount = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of valid raw program counters in frames or the caller destination. </p>
+
+</div>
+</div>
+<a id="a0bb3096c2cdf141fa62963270e312baa" name="a0bb3096c2cdf141fa62963270e312baa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0bb3096c2cdf141fa62963270e312baa">&#9670;&#160;</a></span>moduleIdentity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorRawStackCapture::moduleIdentity = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Module identity needed to interpret captured program counters. </p>
+
+</div>
+</div>
+<a id="a7b3496c19ff2d1c9615a34035663f3c4" name="a7b3496c19ff2d1c9615a34035663f3c4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b3496c19ff2d1c9615a34035663f3c4">&#9670;&#160;</a></span>status</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ae3fc5636205b0c6938d2ff4dbee553a6">DevErrorStackStatus</a> FlowUi::devSystems::DevErrorRawStackCapture::status = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ae3fc5636205b0c6938d2ff4dbee553a6a453e6aa38d87b28ccae545967c53004f">DevErrorStackStatus::Unavailable</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Availability or quality state of this capture result. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/errors/<a class="el" href="DevErrorStackProvider_8hpp_source.html">DevErrorStackProvider.hpp</a></li>
 </ul>
@@ -134,7 +195,7 @@ uint64_t&#160;</td><td class="memItemRight"><b>buildIdentity</b> = 0u</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorRawStackCapture.html">DevErrorRawStackCapture</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorRawStackCapture.html">DevErrorRawStackCapture</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

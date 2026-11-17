@@ -209,18 +209,25 @@ void replace(FieldStorage& storage, TextRange range, std::string_view insertedTe
 	const ChunkLocation start = locate(range.startByte);
 	const ChunkLocation end = locate(range.endByte);
 
-	std::vector<std::string> next;
-	next.reserve(multiline.chunks.size() + insertedText.size() / MultiLineStorage::TargetChunkBytes + 2u);
-	for (size_t i = 0; i < start.index; ++i) next.push_back(std::move(multiline.chunks[i]));
+	// Construct every changed chunk before moving any source chunk. Otherwise a
+	// later string allocation could leave the live document partially moved out.
+	std::vector<std::string> replacementChunks;
+	replacementChunks.reserve(insertedText.size() / MultiLineStorage::TargetChunkBytes + 3u);
 	if (start.index < multiline.chunks.size() && start.offset > 0u) {
-		appendChunked(next, std::string_view(multiline.chunks[start.index]).substr(0, start.offset));
+		appendChunked(replacementChunks, std::string_view(multiline.chunks[start.index]).substr(0, start.offset));
 	}
-	appendChunked(next, insertedText);
+	appendChunked(replacementChunks, insertedText);
 	size_t firstUntouchedChunk = end.index;
 	if (end.index < multiline.chunks.size() && end.offset > 0u) {
-		appendChunked(next, std::string_view(multiline.chunks[end.index]).substr(end.offset));
+		appendChunked(replacementChunks, std::string_view(multiline.chunks[end.index]).substr(end.offset));
 		firstUntouchedChunk = end.index + 1u;
 	}
+	std::vector<std::string> next;
+	next.reserve(start.index + replacementChunks.size() + multiline.chunks.size() - firstUntouchedChunk);
+	for (size_t chunkIndex = 0; chunkIndex < start.index; ++chunkIndex) {
+		next.emplace_back(std::move(multiline.chunks[chunkIndex]));
+	}
+	for (std::string& chunk : replacementChunks) next.emplace_back(std::move(chunk));
 	for (size_t i = firstUntouchedChunk; i < multiline.chunks.size(); ++i) {
 		next.push_back(std::move(multiline.chunks[i]));
 	}

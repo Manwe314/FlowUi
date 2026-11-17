@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstddef>
 #include <iterator>
+#include <memory>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -29,7 +30,7 @@ class ReportingRing {
 		Iterator() noexcept = default;
 		Iterator(Ring& ring, size_t offset) noexcept : ring_(&ring), offset_(offset) {}
 		[[nodiscard]] reference operator*() const noexcept { return (*ring_)[offset_]; }
-		[[nodiscard]] pointer operator->() const noexcept { return &**this; }
+		[[nodiscard]] pointer operator->() const noexcept { return std::addressof(**this); }
 		Iterator& operator++() noexcept {
 			++offset_;
 			return *this;

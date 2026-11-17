@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #pragma once
 #include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
@@ -114,10 +115,10 @@ struct Resources {
 	std::array<TextureRef, static_cast<std::size_t>(Icon::Count)> textures{};
 	explicit Resources([[maybe_unused]] App& app) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
-		auto& icons = app.icons();
+		auto& icons = FlowUi::ValueOrThrow(app.icons()).get();
 		interface_icons::registerDevInterfaceIcons(icons);
 		const auto assign = [&](Icon icon, std::string_view key) {
-			textures[static_cast<std::size_t>(icon)] = icons.textureRef(key);
+			textures[static_cast<std::size_t>(icon)] = FlowUi::ValueOrThrow(icons.textureRef(key));
 		};
 		assign(Icon::Issue, interface_icons::kErrorReporterKey);
 		assign(Icon::Warning, interface_icons::kErrorReporterKey);
@@ -134,7 +135,7 @@ struct Resources {
 		assign(Icon::Fit, interface_icons::kFitKey);
 		assign(Icon::Native, interface_icons::kPreviewResetKey);
 		for (const auto& descriptor : catalogue) {
-			if (!icons.contains(descriptor.key)) {
+			if (!FlowUi::ValueOrThrow(icons.contains(descriptor.key))) {
 				const auto registered = icons.registerSvg(descriptor.key, descriptor.svg);
 				if (!registered)
 					continue;

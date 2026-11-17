@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <limits>
+#include <memory>
 #include <new>
 #include <stdexcept>
 
@@ -74,11 +75,13 @@ void ImageManager::destroy() noexcept {
 	missingPolicy_ = MissingVisualPolicy::UseFallbackTexture;
 }
 
-Result<bool> ImageManager::registerImage(ResourceKey key, std::string_view filePath) {
-	return register_image_file(key, path_from_utf8(filePath));
+Result<bool> ImageManager::registerImage(ResourceKey key, std::string_view filePath) noexcept try {
+	return register_image_file(key, detail::requireApiValue(path_from_utf8(filePath)));
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ImageRegister));
 }
 
-Result<bool> ImageManager::register_image_file(ResourceKey key, const std::filesystem::path& path) {
+Result<bool> ImageManager::register_image_file(ResourceKey key, const std::filesystem::path& path) noexcept try {
 	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ImageRegister));
 	storage::ResourceKey normalized{};
 	try {
@@ -98,17 +101,19 @@ Result<bool> ImageManager::register_image_file(ResourceKey key, const std::files
 	int height = 0;
 	int channels = 0;
 	const auto encoded = read_file_bytes(path);
-	if (!encoded || encoded->size() > static_cast<size_t>(std::numeric_limits<int>::max()))
+	if (!encoded) return unexpectedError(encoded.error());
+	if (encoded->size() > static_cast<size_t>(std::numeric_limits<int>::max()))
 		return unexpectedError(makeError(ErrorCode::AssetReadFailed, ErrorSite::ImageLoad));
-	stbi_uc* decoded = stbi_load_from_memory(encoded->data(), static_cast<int>(encoded->size()), &width, &height, &channels, STBI_rgb_alpha);
+	std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> decodedOwner(
+		stbi_load_from_memory(encoded->data(), static_cast<int>(encoded->size()), &width, &height, &channels, STBI_rgb_alpha),
+		&stbi_image_free);
+	stbi_uc* decoded = decodedOwner.get();
 	if (!decoded || width <= 0 || height <= 0) {
-		if (decoded) stbi_image_free(decoded);
 		return unexpectedError(makeError(ErrorCode::ImageDecodeFailed, ErrorSite::ImageDecode));
 	}
 
 	const uint64_t pixelCount = static_cast<uint64_t>(width) * static_cast<uint64_t>(height);
 	if (pixelCount > std::numeric_limits<size_t>::max() / 4u) {
-		stbi_image_free(decoded);
 		return unexpectedError(makeError(ErrorCode::ImageSizeOverflow, ErrorSite::ImageDecode));
 	}
 	const size_t byteCount = static_cast<size_t>(pixelCount * 4u);
@@ -125,7 +130,7 @@ Result<bool> ImageManager::register_image_file(ResourceKey key, const std::files
 		candidate.pixels = storage_->createBlob(
 			std::span<const std::byte>(reinterpret_cast<const std::byte*>(decoded), byteCount),
 			debugName);
-		stbi_image_free(decoded);
+		decodedOwner.reset();
 		decoded = nullptr;
 
 		candidate.image = storage_->createImage(storage::ImageDesc{
@@ -171,7 +176,7 @@ Result<bool> ImageManager::register_image_file(ResourceKey key, const std::files
 				[key](const DevImageRecord& record) { return record.key == key.name; });
 			DevImageRecord record{
 				.key = std::string(key.name),
-				.sourcePath = path_to_utf8(path),
+				.sourcePath = detail::requireApiValue(path_to_utf8(path)),
 				.texture = texture,
 			};
 			if (existing == devImages_.end()) devImages_.push_back(std::move(record));
@@ -182,18 +187,17 @@ Result<bool> ImageManager::register_image_file(ResourceKey key, const std::files
 		storage_->clearDiagnosticMark(normalized, MissingImageDiagnostic);
 		return inserted;
 	} catch (const std::bad_alloc&) {
-		if (decoded) stbi_image_free(decoded);
 		throw;
 	} catch (const FlowUiException& exception) {
-		if (decoded) stbi_image_free(decoded);
 		return unexpectedError(exception.error());
 	} catch (...) {
-		if (decoded) stbi_image_free(decoded);
 		return unexpectedError(makeError(ErrorCode::ImagePublicationFailed, ErrorSite::ImagePublish));
 	}
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ImageRegister));
 }
 
-Result<bool> ImageManager::removeImage(ResourceKey key) {
+Result<bool> ImageManager::removeImage(ResourceKey key) noexcept try {
 	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ImageRemove));
 	try {
 		const bool removed = storage_->removeTexture(imageKey(*storage_, key));
@@ -209,10 +213,12 @@ Result<bool> ImageManager::removeImage(ResourceKey key) {
 	} catch (const FlowUiException& exception) {
 		return unexpectedError(exception.error());
 	}
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ImageRemove));
 }
 
 #if FLOW_UI_DEV_MODE
-bool ImageManager::visitDevImages(void* userData, DevImageVisitor visitor) const {
+Result<bool> ImageManager::visitDevImages(void* userData, DevImageVisitor visitor) const noexcept try {
 	if (!visitor) return false;
 	for (const DevImageRecord& record : devImages_) {
 		if (!visitor(userData, DevImageView{
@@ -222,16 +228,21 @@ bool ImageManager::visitDevImages(void* userData, DevImageVisitor visitor) const
 		})) return false;
 	}
 	return true;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ImageLookup));
 }
 #endif
 
-bool ImageManager::contains(ResourceKey key) const {
-	return storage_ && static_cast<bool>(storage_->findTexture(imageKey(*storage_, key)));
+Result<bool> ImageManager::contains(ResourceKey key) const noexcept try {
+	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ImageLookup));
+	return static_cast<bool>(storage_->findTexture(imageKey(*storage_, key)));
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ImageLookup));
 }
 
-TextureRef ImageManager::getTexture(ResourceKey key) const {
+Result<TextureRef> ImageManager::getTexture(ResourceKey key) const noexcept try {
 	TextureRef result{};
-	if (!storage_) return result;
+	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ImageLookup));
 	const storage::ResourceKey normalized = imageKey(*storage_, key);
 	result.sourceDomain = ResourceDomain::Image;
 	result.sourceKey = storage_->string(normalized.name);
@@ -255,6 +266,8 @@ TextureRef ImageManager::getTexture(ResourceKey key) const {
 	result.sourceWidth = metadata.sourceWidth;
 	result.sourceHeight = metadata.sourceHeight;
 	return result;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ImageLookup));
 }
 
 } // namespace FlowUi

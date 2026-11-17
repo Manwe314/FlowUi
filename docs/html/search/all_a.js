@@ -1,24 +1,8 @@
 var searchData=
 [
-  ['handle_0',['handle',['../structFlowUi_1_1TextureRef.html#afa9bd316197d0e297f1455843dcef0b2',1,'FlowUi::TextureRef']]],
-  ['has_5fopen_5fpopups_1',['has_open_popups',['../classFlowUi_1_1PopupManager.html#ae96fbe5989be085605215cba276eb746',1,'FlowUi::PopupManager']]],
-  ['hasadldevenumschema_2',['HasAdlDevEnumSchema',['../conceptFlowUi_1_1devSystems_1_1tooling_1_1schema__detail_1_1HasAdlDevEnumSchema.html',1,'FlowUi::devSystems::tooling::schema_detail']]],
-  ['hasadldevschema_3',['HasAdlDevSchema',['../conceptFlowUi_1_1devSystems_1_1tooling_1_1schema__detail_1_1HasAdlDevSchema.html',1,'FlowUi::devSystems::tooling::schema_detail']]],
-  ['hasclipboardaccess_4',['hasClipboardAccess',['../classFlowUi_1_1UiManager.html#a64bfd45ccd65d7eb70792e13a4559a8f',1,'FlowUi::UiManager']]],
-  ['hasintrusivedevschema_5',['HasIntrusiveDevSchema',['../conceptFlowUi_1_1devSystems_1_1tooling_1_1schema__detail_1_1HasIntrusiveDevSchema.html',1,'FlowUi::devSystems::tooling::schema_detail']]],
-  ['hasparts_6',['HasParts',['../conceptFlowUi_1_1HasParts.html',1,'FlowUi']]],
-  ['hasprimarycaret_7',['hasPrimaryCaret',['../structFlowUi_1_1FieldQueryResult.html#adc1df1e3983f22b4afd71ecadbf6d945',1,'FlowUi::FieldQueryResult']]],
-  ['hasprimaryfieldfocus_8',['hasPrimaryFieldFocus',['../classFlowUi_1_1InputFieldManager.html#a4f494c501874c594a05a8e28f8e9954f',1,'FlowUi::InputFieldManager']]],
-  ['hasrendercallback_9',['hasRenderCallback',['../classFlowUi_1_1ViewPort.html#a3c831bc9ef15c303e504f22569d7aca6',1,'FlowUi::ViewPort']]],
-  ['hasresources_10',['HasResources',['../conceptFlowUi_1_1HasResources.html',1,'FlowUi']]],
-  ['hasselection_11',['hasSelection',['../structFlowUi_1_1FieldQueryResult.html#a9d76f82f0b1744a8140a681e49f7e957',1,'FlowUi::FieldQueryResult']]],
-  ['hasstate_12',['HasState',['../conceptFlowUi_1_1HasState.html',1,'FlowUi']]],
-  ['hasvalidsize_13',['hasValidSize',['../classFlowUi_1_1ViewPort.html#a5f2cac10eb5a33309f1900921530e5dc',1,'FlowUi::ViewPort']]],
-  ['haswindow_14',['hasWindow',['../classFlowUi_1_1App.html#a936d6288d15558fe4a130bf2a05df796',1,'FlowUi::App']]],
-  ['height_15',['height',['../structFlowUi_1_1WindowConfig.html#add143cbfcadd4db14d2d76ad409ea37d',1,'FlowUi::WindowConfig::height'],['../structFlowUi_1_1Font_1_1AtlasArrayResource.html#a67ba75e756b068a776f07b2caab4fa4d',1,'FlowUi::Font::AtlasArrayResource::height']]],
-  ['heldelementids_16',['heldElementIds',['../structFlowUi_1_1InteractionSnapshot.html#a7400fda2dd4a98e026278f6bbc95a0ce',1,'FlowUi::InteractionSnapshot']]],
-  ['highdpi_17',['highDPI',['../structFlowUi_1_1WindowConfig.html#a71991fa5d1f255c6bac3a9b0174cf472',1,'FlowUi::WindowConfig']]],
-  ['highlightboxcolor_18',['highlightBoxColor',['../structFlowUi_1_1InputManagerConfig.html#a24137fc630c674e4a0946c3cbaa68bca',1,'FlowUi::InputManagerConfig']]],
-  ['highlightedtextcolor_19',['highlightedTextColor',['../structFlowUi_1_1InputManagerConfig.html#a7f6b15e14cb64bb7c713eb185e4ef6da',1,'FlowUi::InputManagerConfig']]],
-  ['hoveredelementids_20',['hoveredElementIds',['../structFlowUi_1_1InteractionSnapshot.html#a4030653c29e6336590b9b59a6f9068e2',1,'FlowUi::InteractionSnapshot']]]
+  ['job_5fid_0',['job_id',['../structFlowUi_1_1devSystems_1_1agentic_1_1AgenticInteractionReceipt.html#a9285028300a15f36f4d313f368f91acb',1,'FlowUi::devSystems::agentic::AgenticInteractionReceipt::job_id'],['../structFlowUi_1_1devSystems_1_1agentic_1_1AgenticInteractionObservation.html#a7e2bdd8d45eab403bdf0f44214581097',1,'FlowUi::devSystems::agentic::AgenticInteractionObservation::job_id'],['../structFlowUi_1_1devSystems_1_1agentic_1_1AgenticInteractionResult.html#ad0ea2c1da7584355d2b0b0f433d3544a',1,'FlowUi::devSystems::agentic::AgenticInteractionResult::job_id'],['../structFlowUi_1_1devSystems_1_1agentic_1_1AgenticScenarioContext.html#a1b351bfbe8e1b62ba27cffbcc3f657ad',1,'FlowUi::devSystems::agentic::AgenticScenarioContext::job_id'],['../structFlowUi_1_1devSystems_1_1agentic_1_1AgenticCaptureSnapshot.html#a97210d9fc77628bfd1565cef4cc1f0af',1,'FlowUi::devSystems::agentic::AgenticCaptureSnapshot::job_id'],['../structFlowUi_1_1devSystems_1_1agentic_1_1AgenticJobStatus.html#a01793e5f45fcd00e5c59326b673cd523',1,'FlowUi::devSystems::agentic::AgenticJobStatus::job_id']]],
+  ['jobphase_1',['JobPhase',['../namespaceFlowUi_1_1devSystems_1_1agentic.html#ae6b0866d101be01733f94d556b4c4323',1,'FlowUi::devSystems::agentic']]],
+  ['json_2',['Json',['../structFlowUi_1_1devSystems_1_1agentic_1_1Json.html',1,'FlowUi::devSystems::agentic::Json'],['../structFlowUi_1_1devSystems_1_1agentic_1_1Json.html#acee634ba91f47004a7205f62f98ec054',1,'FlowUi::devSystems::agentic::Json::Json()=default'],['../structFlowUi_1_1devSystems_1_1agentic_1_1Json.html#af9698fb126606f00b0b3e7e754db383f',1,'FlowUi::devSystems::agentic::Json::Json(std::string value)'],['../structFlowUi_1_1devSystems_1_1agentic_1_1Json.html#a1e5e6fa0c3f9576998b53c38f19b4ec2',1,'FlowUi::devSystems::agentic::Json::Json(std::string_view value)'],['../structFlowUi_1_1devSystems_1_1agentic_1_1Json.html#abf81c5163c4fb8dbdbbf14a3dd8d18c8',1,'FlowUi::devSystems::agentic::Json::Json(const char *value)'],['../structFlowUi_1_1devSystems_1_1agentic_1_1Json.html#a48e9dd410075f2dbc2bf2f017a428d59',1,'FlowUi::devSystems::agentic::Json::Json(bool value)'],['../structFlowUi_1_1devSystems_1_1agentic_1_1Json.html#a50f6bcd56a224d8c9586674e9433049f',1,'FlowUi::devSystems::agentic::Json::Json(double value)']]],
+  ['json_3',['json',['../structFlowUi_1_1devSystems_1_1tooling_1_1DevSerializedValue.html#ab594805bee4f0d198bd08834e979fa65',1,'FlowUi::devSystems::tooling::DevSerializedValue']]],
+  ['jumptopointer_4',['JumpToPointer',['../namespaceFlowUi_1_1FSEL.html#a2bf4b241b936f246fcf2670fdeaf50b1a589d6dd4c7860e72f99d76bd1ecc397e',1,'FlowUi::FSEL']]]
 ];

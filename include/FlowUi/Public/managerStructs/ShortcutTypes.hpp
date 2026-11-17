@@ -93,7 +93,9 @@ struct ShortcutChord {
  * ShortcutContext provides access to the frame input used for dispatch and to
  * the active UiManager. focusedElementId is ShortcutManager's lightweight focus
  * marker for FocusedElement shortcuts; callbacks may inspect it when they need
- * to distinguish which focused element should handle a shared chord.
+ * to distinguish which focused element should handle a shared chord. This context
+ * and its referenced managers/input snapshots are borrowed for the synchronous
+ * callback only; copy values rather than retaining the context.
  */
 struct ShortcutContext {
 	/** @brief UI manager for the active frame. */
@@ -113,7 +115,10 @@ struct ShortcutContext {
  * @brief Shortcut callback.
  *
  * Return true when the shortcut was handled. A handled shortcut stops further
- * callbacks for the same matching chord.
+ * callbacks for the same matching chord. Registration retains an owned callable;
+ * captured references must remain valid until unregistration and any in-progress
+ * invocation finish. Throwing from a callback is handled by the dispatch/frame
+ * boundary and is separate from registerShortcut() returning an error.
  */
 using ShortcutCallback = std::function<bool(ShortcutContext&)>;
 

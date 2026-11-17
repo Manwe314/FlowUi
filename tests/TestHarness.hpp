@@ -1,5 +1,8 @@
 #pragma once
 
+#include "FlowUi/Public/errorManagement/Result.hpp"
+#include "FlowUi/Public/errorManagement/Exception.hpp"
+
 #include <exception>
 #include <functional>
 #include <iostream>
@@ -14,6 +17,14 @@ class CheckFailure final : public std::runtime_error {
 public:
 	using std::runtime_error::runtime_error;
 };
+
+/** Require a successful operation in a test and move out its value. */
+template <typename Value>
+[[nodiscard]] Value requireValue(Result<Value> result) {
+	if (!result)
+		throw FlowUiException(result.error());
+	return std::move(*result);
+}
 
 class Runner {
 public:

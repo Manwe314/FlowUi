@@ -1,8 +1,8 @@
 # Configuration API
 
-See the [configuration glossary](configuration-glossary.md) for member defaults, units, build conditions, capacity keys, and examples.
+See the [configuration glossary](docs/api/configuration-glossary.md) for member defaults, units, build conditions, capacity keys, and examples.
 
-Configuration headers live under [FlowUi/Public/configurationStructs](../../include/FlowUi/Public/configurationStructs/). Include [AppConfig.hpp](../../include/FlowUi/Public/configurationStructs/AppConfig.hpp) for startup configuration, or the focused owner header for a leaf type. Cursor/frame-input values live in [InputTypes.hpp](../../include/FlowUi/Public/managerStructs/InputTypes.hpp); texture references and shared styling live in [TextureRef.hpp](../../include/FlowUi/Public/TextureRef.hpp) and [FlowUiTheme.hpp](../../include/FlowUi/Public/FlowUiTheme.hpp). Development configuration stays under [devSystems](../../include/devSystems/DevConfig.hpp), and agentic configuration under [devAgenticWorkflow](../../include/devSystems/devAgenticWorkflow/AgenticTypes.hpp), with their existing namespaces and build gates.
+Configuration headers live under [FlowUi/Public/configurationStructs](include/FlowUi/Public/configurationStructs/). Include [AppConfig.hpp](include/FlowUi/Public/configurationStructs/AppConfig.hpp) for startup configuration, or the focused owner header for a leaf type. Cursor/frame-input values live in [InputTypes.hpp](include/FlowUi/Public/managerStructs/InputTypes.hpp); texture references and shared styling live in [TextureRef.hpp](include/FlowUi/Public/TextureRef.hpp) and [FlowUiTheme.hpp](include/FlowUi/Public/FlowUiTheme.hpp). Developer configuration stays under [devSystems](include/devSystems/DevConfig.hpp), and agentic configuration under [devAgenticWorkflow](include/devSystems/devAgenticWorkflow/AgenticTypes.hpp), with their existing namespaces and build gates.
 
 ## Enums
 
@@ -136,19 +136,45 @@ Normalized per-frame input snapshot consumed by managers and custom elements. It
 
 ### **Flow_Color**
 
+#### `template <std::size_t Size> [[nodiscard]] consteval Clay_Color Flow_Color(const char (&hexRgba)[Size]) noexcept`
 
-#### `Clay_Color Flow_Color(std::string_view hexRgba)`
+- **Returns:** `Clay_Color` with RGBA components in the 0–255 range.
+- **Arguments:** `hexRgba` literal in `#RRGGBB` or `#RRGGBBAA` form.
 
-- **Returns:** `Clay_Color`
-- **Arguments:** `hexRgba` color string in `#RRGGBB` or `#RRGGBBAA` form.
-
-Converts a hex RGB/RGBA string into a Clay color. Six-digit RGB receives an implicit `ff` alpha channel. The leading `#` is required; invalid input throws `std::invalid_argument`.
+Decodes the literal during compilation. RGB receives opaque `ff` alpha; invalid literals are rejected during compilation.
 
 **Example:**
 
 ```cpp
-Clay_Color panelColor = FlowUi::Flow_Color("#20242cff");
-Clay_Color opaquePanelColor = FlowUi::Flow_Color("#20242c");
+constexpr Clay_Color panelColor = FlowUi::Flow_Color("#20242cff");
+constexpr Clay_Color opaquePanelColor = FlowUi::Flow_Color("#20242c");
 ```
 
-See: [Owning header](../../include/FlowUi/Public/configurationStructs/AppConfig.hpp).
+See: [Owning header](include/FlowUi/Public/Color.hpp).
+
+### **Flow_Color**
+
+#### `[[nodiscard]] Result<Clay_Color> Flow_Color(std::string_view hexRgba) noexcept`
+
+- **Returns:** Checked RGBA color, or `ColorInvalid` at `ColorParse`.
+- **Arguments:** `hexRgba` runtime text in `#RRGGBB` or `#RRGGBBAA` form.
+
+Use the runtime overload for configuration text. RGB receives opaque `ff` alpha, and components use Clay's 0–255 range.
+
+**Example:**
+
+```cpp
+std::string_view setting = "#20242cff";
+auto result = FlowUi::Flow_Color(setting);
+if (!result)
+    throw FlowUi::FlowUiException(result.error());
+const Clay_Color color = *result;
+```
+
+See: [Owning header](include/FlowUi/Public/Color.hpp).
+
+## Shared values and configuration helpers
+
+`TextureRef::fromStable()` creates an unresolved borrowed-key reference; it does not load, validate or own a texture. [Values](docs/api/values.md) documents handles, packing, identity helpers and capacity ID functions. [Themes](docs/api/theme_manager.md) documents `FlowUiTheme::dark()` and `light()` and their token fields. This legacy theme uses normalized 0–1 color components, whereas `Flow_Color` and ordinary Clay color inputs use 0–255.
+
+[Resources](docs/api/resources.md) documents all filesystem helpers and `defaults::missing_font`, `text_shortcuts`, `input_field_overlay_style`, `missing_texture`, and standard icon registration, with checked examples for every result. [Input](docs/api/input.md) covers sink initialization/emissions and translator composition. See the [configuration glossary](docs/api/configuration-glossary.md) for every startup/default field and operation setting.

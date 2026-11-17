@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
@@ -48,14 +49,14 @@ int main() {
 	config.window.height = 940;
 	config.dev.excludeInternalDevElementsFromCapture = false;
 	config.vk.enableValidation = true;
-	auto app = makeApplication(config);
+	auto app = ::FlowUi::test::requireValue(makeApplication(config));
 	DevInterfaceState session{};
 	session.inspectForest = kDevInterfaceFlowForest;
-	assert(app.themes().registerTheme<BrandTheme>("dark", BrandTheme{}, true));
-	assert(app.themes().registerTheme<BrandTheme>("light", BrandTheme{"Light variant", 14, false},
+	assert(::FlowUi::test::requireValue(app.themes()).get().registerTheme<BrandTheme>("dark", BrandTheme{}, true));
+	assert(::FlowUi::test::requireValue(app.themes()).get().registerTheme<BrandTheme>("light", BrandTheme{"Light variant", 14, false},
 												  false));
-	assert(app.themes().registerTheme<FSEL::FSELTheme>("light", FSEL::FSELTheme{}, false));
-	auto& pipeline = app.devTooling().bakePipeline();
+	assert(::FlowUi::test::requireValue(app.themes()).get().registerTheme<FSEL::FSELTheme>("light", FSEL::FSELTheme{}, false));
+	auto& pipeline = ::FlowUi::test::requireValue(app.devTooling()).get().bakePipeline();
 	const auto manifest =
 		std::filesystem::temp_directory_path() /
 		("flowui-theme-test-" + std::to_string(reinterpret_cast<std::uintptr_t>(&app))) /
@@ -67,7 +68,7 @@ int main() {
 						  float panel_height = 940) {
 		const auto frame_start = std::chrono::steady_clock::now();
 		assert(app.beginFrame());
-		auto& ui = app.ui();
+		auto& ui = ::FlowUi::test::requireValue(app.ui()).get();
 		auto& interaction = const_cast<InteractionSnapshot&>(ui.getPreviousFramesInteraction());
 		interaction = {};
 		auto& input = const_cast<FrameInput&>(ui.getCurrentFrameInput());
@@ -173,12 +174,12 @@ int main() {
 				  << " ui_build_p95_ms=" << timings[timings.size() * 95 / 100]
 				  << " frame_median_ms=" << frame_timings[frame_timings.size() / 2]
 				  << " frame_p95_ms=" << frame_timings[frame_timings.size() * 95 / 100]
-				  << " clay_nodes=" << app.ui().devTreeSnapshot().clay.nodes.size()
+				  << " clay_nodes=" << ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot().clay.nodes.size()
 				  << " idle_value_refreshes=0 idle_serializations=0 idle_leaf_rebuilds=0" << '\n';
 		return 0;
 	}
 
-	auto schema = app.devTooling().schemas().view();
+	auto schema = ::FlowUi::test::requireValue(app.devTooling()).get().schemas().view();
 	const auto theme_type = ::FlowUi::detail::typeHash<BrandTheme>();
 	const auto* brand = schema->findTheme(theme_type);
 	assert(brand);
@@ -226,22 +227,22 @@ int main() {
 		command.field = field;
 		if (kind != tooling::DevOverrideCommandKind::ClearThemeField &&
 			kind != tooling::DevOverrideCommandKind::ResetThemeField)
-			assert(app.devTooling().overrides().copyValue(value, command.value) ==
+			assert(::FlowUi::test::requireValue(app.devTooling()).get().overrides().copyValue(value, command.value) ==
 				   devSystems::tooling::DevValueOperationStatus::Success);
 		if (preview_clear)
 			command.layer = tooling::DevOverrideLayer::EphemeralPreview;
 		tooling::DevChangeSet changes{};
 		changes.transaction = session.nextEditTransaction++;
 		changes.commands.emplace_back(std::move(command));
-		assert(app.devTooling().overrides().submit(std::move(changes)));
+		assert(::FlowUi::test::requireValue(app.devTooling()).get().overrides().submit(std::move(changes)));
 		draw();
-		assert(!app.devTooling().overrides().commandResults().empty());
-		assert(app.devTooling().overrides().commandResults().back().applied);
+		assert(!::FlowUi::test::requireValue(app.devTooling()).get().overrides().commandResults().empty());
+		assert(::FlowUi::test::requireValue(app.devTooling()).get().overrides().commandResults().back().applied);
 	};
 	using Kind = tooling::DevOverrideCommandKind;
 	submit(Kind::SetThemeField, "*", radius, 20.0f);
-	assert(app.themes().getTheme<BrandTheme>("dark").radius == 20);
-	assert(app.themes().getTheme<BrandTheme>("light").radius == 20);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("dark")).get().radius == 20);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("light")).get().radius == 20);
 	assert(cached_token(theme_type, "dark", "radius").live_text == "20");
 	assert(cached_token(theme_type, "dark", "radius").live_edit);
 	assert(!cached_token(theme_type, "dark", "radius").startup_edit);
@@ -252,37 +253,37 @@ int main() {
 	assert(session.theme_editor_model.mixed(theme_type, radius.field));
 
 	submit(Kind::SetThemeField, "*", radius, 22.0f);
-	assert(app.themes().getTheme<BrandTheme>("dark").radius == 22);
-	assert(app.themes().getTheme<BrandTheme>("light").radius == 30);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("dark")).get().radius == 22);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("light")).get().radius == 30);
 	submit(Kind::BeginBatchDrag, "dark", radius, 35.0f);
 	submit(Kind::UpdateBatchDrag, "dark", radius, 36.0f);
-	assert(app.themes().getTheme<BrandTheme>("dark").radius == 36);
-	for (const auto& record : app.devTooling().overrides().themeBakeRecords())
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("dark")).get().radius == 36);
+	for (const auto& record : ::FlowUi::test::requireValue(app.devTooling()).get().overrides().themeBakeRecords())
 		if (record.target.variant == "dark")
 			assert(record.preview_only);
 	submit(Kind::ClearThemeField, "dark", radius, 0.0f, true);
-	assert(app.themes().getTheme<BrandTheme>("dark").radius == 22);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("dark")).get().radius == 22);
 	submit(Kind::BeginBatchDrag, "light", radius, 37.0f);
 	submit(Kind::EndBatchDrag, "light", radius, 38.0f);
-	assert(app.themes().getTheme<BrandTheme>("light").radius == 38);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("light")).get().radius == 38);
 	submit(Kind::BeginBatchDrag, "light", radius, 40.0f);
 	submit(Kind::ClearThemeField, "light", radius, 0.0f, true);
-	assert(app.themes().getTheme<BrandTheme>("light").radius == 38);
-	assert(app.themes().clone_dev_variant(theme_type, "dark", "cloned"));
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("light")).get().radius == 38);
+	assert(::FlowUi::test::requireValue(app.themes()).get().clone_dev_variant(theme_type, "dark", "cloned"));
 	draw();
-	assert(!app.themes().clone_dev_variant(theme_type, "dark", "cloned"));
-	assert(!app.themes().set_dev_active_variant(theme_type, "missing"));
-	assert(app.themes().set_dev_active_variant(theme_type, "light"));
-	assert(app.themes().getActiveTheme<BrandTheme>().radius == 38);
+	assert(!::FlowUi::test::requireValue(app.themes()).get().clone_dev_variant(theme_type, "dark", "cloned"));
+	assert(!::FlowUi::test::requireValue(app.themes()).get().set_dev_active_variant(theme_type, "missing"));
+	assert(::FlowUi::test::requireValue(app.themes()).get().set_dev_active_variant(theme_type, "light"));
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getActiveTheme<BrandTheme>()).get().radius == 38);
 	assert(
-		app.themes().registerTheme<BrandTheme>("future", BrandTheme{"Future", 70, false}, false));
+		::FlowUi::test::requireValue(app.themes()).get().registerTheme<BrandTheme>("future", BrandTheme{"Future", 70, false}, false));
 	draw();
-	assert(app.themes().getTheme<BrandTheme>("future").radius == 22);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("future")).get().radius == 22);
 	submit(Kind::ClearThemeField, "*", radius, 0.0f);
-	assert(app.themes().getTheme<BrandTheme>("dark").radius == 8);
-	assert(app.themes().getTheme<BrandTheme>("light").radius == 38);
-	assert(app.themes().getTheme<BrandTheme>("cloned").radius == 22);
-	assert(app.themes().getTheme<BrandTheme>("future").radius == 70);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("dark")).get().radius == 8);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("light")).get().radius == 38);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("cloned")).get().radius == 22);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("future")).get().radius == 70);
 	assert(!cached_token(theme_type, "dark", "radius").changed);
 	assert(cached_token(theme_type, "light", "radius").changed);
 	assert(!cached_token(theme_type, "future", "radius").changed);
@@ -290,7 +291,7 @@ int main() {
 	const auto name = key(theme_type, {"name"});
 	submit(Kind::SetThemeField, "dark", name, std::string("Changed owned value"));
 	submit(Kind::ClearThemeField, "dark", name, std::string{});
-	assert(app.themes().getTheme<BrandTheme>("dark").name == "Owned string baseline");
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("dark")).get().name == "Owned string baseline");
 	const auto fsel_type = ::FlowUi::detail::typeHash<FSEL::FSELTheme>();
 	const auto color_key = key(fsel_type, {"buttonTheme", "idle", "backgroundColor"});
 	submit(Kind::SetThemeField, "default", color_key, Flow_Color("#d96c35"));
@@ -306,19 +307,19 @@ int main() {
 		LocalElementName{"themes"}.token);
 	const auto scope_button = ::FlowUi::detail::element_id::resolveLocal(
 		theme_inspector, FSEL::Button::definitionId, LocalElementName{"scope"}.token);
-	const auto scope_bounds = Clay_GetElementData(app.ui().toClayEID(scope_button)).boundingBox;
+	const auto scope_bounds = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(scope_button)).boundingBox;
 	assert(scope_bounds.width > 60 && scope_bounds.height >= 28);
 	const auto theme_workbench = ::FlowUi::detail::element_id::resolveLocal(
 		FlowElementID{workbench_id.value}, DevThemeWorkbench::definitionId,
 		LocalElementName{"themes"}.token);
 	const auto sample_button = ::FlowUi::detail::element_id::resolveLocal(
 		theme_workbench, FSEL::Button::definitionId, RuntimeName("sample-button-0").token);
-	const auto sample_bounds = Clay_GetElementData(app.ui().toClayEID(sample_button)).boundingBox;
+	const auto sample_bounds = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(sample_button)).boundingBox;
 	assert(sample_bounds.width > 100 && sample_bounds.height > 20);
 
 	const auto local_clay = [&](FlowElementID owner, FlowDefinitionID definition,
 								std::string_view name) {
-		return app.ui().toClayEID(
+		return ::FlowUi::test::requireValue(app.ui()).get().toClayEID(
 			::FlowUi::detail::element_id::resolveLocal(owner, definition, RuntimeName(name).token));
 	};
 	const auto bounds = [&](std::string_view name) {
@@ -337,7 +338,7 @@ int main() {
 	assert(session.theme_editor_model.leaf_rebuild_count() == warm_leaf_count);
 	assert(session.theme_editor_model.serialization_count() == warm_serialization_count);
 	auto* token_state =
-		app.elements().getStatePointer(kDevThemeWorkbench, app.ui().windowId(), theme_workbench);
+		::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.elements()).get().getStatePointer(kDevThemeWorkbench, ::FlowUi::test::requireValue(app.ui()).get().windowId(), theme_workbench));
 	assert(token_state && token_state->token_indices.size() > token_state->emitted_token_rows);
 	assert(token_state->emitted_token_rows < 20);
 	const auto token_viewport_id =
@@ -371,7 +372,7 @@ int main() {
 	assert(bounds("header").height == 44);
 	const auto inspector_title = ::FlowUi::detail::element_id::resolveLocal(
 		theme_inspector, DevInterfaceInspectorTitle::definitionId, LocalElementName{"title"}.token);
-	assert(Clay_GetElementData(app.ui().toClayEID(inspector_title)).boundingBox.height == 36);
+	assert(Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(inspector_title)).boundingBox.height == 36);
 	const auto metadata_bounds =
 		Clay_GetElementData(
 			local_clay(theme_inspector, DevThemeInspector::definitionId, "metadata"))
@@ -391,7 +392,7 @@ int main() {
 				  << " viewport=" << scroll_before.scrollContainerDimensions.height << '\n';
 		assert(scroll_before.contentDimensions.height >
 			   scroll_before.scrollContainerDimensions.height);
-		auto* native_window = static_cast<GLFWwindow*>(app.nativeWindowHandle());
+		auto* native_window = static_cast<GLFWwindow*>(::FlowUi::test::requireValue(app.nativeWindowHandle()));
 		const auto cursor_callback = glfwSetCursorPosCallback(native_window, nullptr);
 		glfwSetCursorPosCallback(native_window, cursor_callback);
 		const auto scroll_callback = glfwSetScrollCallback(native_window, nullptr);
@@ -486,11 +487,11 @@ int main() {
 			command.theme = {fsel_type, "default"};
 			command.field = key(fsel_type, {"buttonTheme", appearance, "backgroundColor", channel});
 			const float value = 72.f;
-			assert(app.devTooling().overrides().copyValue(value, command.value) ==
+			assert(::FlowUi::test::requireValue(app.devTooling()).get().overrides().copyValue(value, command.value) ==
 				   devSystems::tooling::DevValueOperationStatus::Success);
 			additional_changes.commands.emplace_back(std::move(command));
 		}
-	assert(app.devTooling().overrides().submit(std::move(additional_changes)));
+	assert(::FlowUi::test::requireValue(app.devTooling()).get().overrides().submit(std::move(additional_changes)));
 	session.inspect_theme_tab = 0;
 	draw({}, 0, 340, 400);
 	draw({}, 0, 340, 400);
@@ -503,7 +504,7 @@ int main() {
 	for (std::string_view part : {"track", "fill", "thumb"}) {
 		const auto part_id = local_clay(sample_slider, FSEL::Slider::definitionId, part);
 		bool found_part = false;
-		for (const auto& node : app.ui().devTreeSnapshot().clay.nodes)
+		for (const auto& node : ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot().clay.nodes)
 			if (node.clayId == part_id.id) {
 				found_part = true;
 				assert(node.clipClayId != 0);
@@ -522,7 +523,7 @@ int main() {
 	draw();
 	draw();
 	const auto has_text = [&](std::string_view query) {
-		const auto& snapshot = app.ui().devTreeSnapshot();
+		const auto& snapshot = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot();
 		return std::ranges::any_of(snapshot.clay.nodes, [&](const auto& node) {
 			return snapshot.string(node.text).find(query) != std::string_view::npos;
 		});
@@ -531,10 +532,10 @@ int main() {
 	assert(!has_text("Bake Changes"));
 	std::size_t first_preview_draws = 0;
 	std::size_t second_preview_draws = 0;
-	assert(!app.themes().registerDevPreview<BrandTheme>("", {}));
-	assert(app.themes().registerDevPreview<BrandTheme>("Brand panel", [&](App&, UiManager& ui) {
+	assert(!::FlowUi::test::requireValue(app.themes()).get().registerDevPreview<BrandTheme>("", {}));
+	assert(::FlowUi::test::requireValue(app.themes()).get().registerDevPreview<BrandTheme>("Brand panel", [&](App&, UiManager& ui) {
 		++first_preview_draws;
-		const auto& theme = ui.theme<BrandTheme>();
+		const auto& theme = ::FlowUi::test::requireValue(ui.theme<BrandTheme>()).get();
 		Clay_ElementDeclaration panel{};
 		panel.layout.sizing = {CLAY_SIZING_FIXED(640), CLAY_SIZING_FIXED(440)};
 		panel.cornerRadius = CLAY_CORNER_RADIUS(theme.radius);
@@ -548,10 +549,10 @@ int main() {
 				.draw();
 		}
 	}));
-	assert(app.themes().registerDevPreview<BrandTheme>("Brand caption", [&](App&, UiManager& ui) {
+	assert(::FlowUi::test::requireValue(app.themes()).get().registerDevPreview<BrandTheme>("Brand caption", [&](App&, UiManager& ui) {
 		++second_preview_draws;
 		FSEL::LabelParameters label{};
-		label.text = ui.theme<BrandTheme>().name;
+		label.text = ::FlowUi::test::requireValue(ui.theme<BrandTheme>()).get().name;
 		ui.createElement(FSEL::kLabel, "brand-caption")
 			.setParameters(label)
 			.setDevInternalCapture(true)
@@ -561,12 +562,12 @@ int main() {
 	draw();
 	assert(has_text("Activate this variant"));
 	assert(first_preview_draws == 0);
-	assert(app.themes().setActiveVariant<BrandTheme>("dark"));
+	assert(::FlowUi::test::requireValue(app.themes()).get().setActiveVariant<BrandTheme>("dark"));
 	draw();
 	draw();
 	assert(first_preview_draws > 0 && second_preview_draws > 0);
 	auto* workbench_state =
-		app.elements().getStatePointer(kDevThemeWorkbench, app.ui().windowId(), theme_workbench);
+		::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.elements()).get().getStatePointer(kDevThemeWorkbench, ::FlowUi::test::requireValue(app.ui()).get().windowId(), theme_workbench));
 	assert(workbench_state && workbench_state->preview_options.size() == 4);
 	const auto layout_combo = ::FlowUi::detail::element_id::resolveLocal(
 		theme_workbench, FSEL::ComboBox::definitionId, LocalElementName{"preview-layout"}.token);
@@ -579,7 +580,7 @@ int main() {
 	draw();
 	const auto panel_horizontal = Clay_GetElementData(CLAY_ID("custom-brand-preview")).boundingBox;
 	assert(panel_horizontal.width == 640 && panel_horizontal.height == 440);
-	const auto& snapshot = app.ui().devTreeSnapshot();
+	const auto& snapshot = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot();
 	const auto custom_node = std::ranges::find_if(snapshot.clay.nodes, [](const auto& node) {
 		return node.clayId == CLAY_ID("custom-brand-preview").id;
 	});
@@ -597,7 +598,7 @@ int main() {
 	// The search input must fit both placeholder and typed text vertically.
 	const auto search_id = ::FlowUi::detail::element_id::resolveLocal(
 		theme_workbench, FSEL::TextInput::definitionId, LocalElementName{"token-search"}.token);
-	const auto search_bounds = Clay_GetElementData(app.ui().toClayEID(search_id)).boundingBox;
+	const auto search_bounds = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(search_id)).boundingBox;
 	const auto check_input_text = [&](FlowElementPart part) {
 		const auto part_bounds =
 			Clay_GetElementData(
@@ -632,7 +633,7 @@ int main() {
 	session.inspect_theme_all_variants = false;
 	workbench_state->preview_layout = 0;
 	draw();
-	assert(app.themes().setActiveVariant<BrandTheme>("light"));
+	assert(::FlowUi::test::requireValue(app.themes()).get().setActiveVariant<BrandTheme>("light"));
 	draw();
 	// Drive the shared field-card header and boolean editor through real retained callbacks.
 	const auto inspector = ::FlowUi::detail::element_id::resolveLocal(
@@ -646,40 +647,40 @@ int main() {
 		field_id, DevEditorCardHeader::definitionId, LocalElementName{"header"}.token);
 	click(header);
 	bool expanded = false;
-	for (const auto& node : app.ui().devTreeSnapshot().flow.nodes)
+	for (const auto& node : ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot().flow.nodes)
 		if (node.definition == DevBooleanTypeEditor::definitionId)
 			expanded = true;
 	assert(expanded);
 	FlowElementID toggle{};
-	for (const auto& node : app.ui().devTreeSnapshot().flow.nodes)
+	for (const auto& node : ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot().flow.nodes)
 		if (node.definition == DevBooleanTypeEditor::definitionId)
 			toggle = ::FlowUi::detail::element_id::resolveLocal(FlowElementID{node.instance.value},
 																FSEL::Switch::definitionId,
 																LocalElementName{"value"}.token);
 	assert(toggle);
 	click(toggle);
-	assert(app.themes().getTheme<BrandTheme>("dark").enabled);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("dark")).get().enabled);
 	assert(session.editUndoStack.size() == 1);
 	const auto transaction = session.editUndoStack.back();
 	assert(
-		app.devTooling().overrides().submit({session.nextEditTransaction++, transaction.inverse}));
+		::FlowUi::test::requireValue(app.devTooling()).get().overrides().submit({session.nextEditTransaction++, transaction.inverse}));
 	draw();
-	assert(!app.themes().getTheme<BrandTheme>("dark").enabled);
+	assert(!::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("dark")).get().enabled);
 	assert(
-		app.devTooling().overrides().submit({session.nextEditTransaction++, transaction.forward}));
+		::FlowUi::test::requireValue(app.devTooling()).get().overrides().submit({session.nextEditTransaction++, transaction.forward}));
 	draw();
-	assert(app.themes().getTheme<BrandTheme>("dark").enabled);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("dark")).get().enabled);
 	session.inspect_theme_all_variants = true;
 	draw();
 	click(toggle);
-	assert(app.themes().getTheme<BrandTheme>("light").enabled);
-	assert(app.themes().getTheme<BrandTheme>("dark").enabled);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("light")).get().enabled);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("dark")).get().enabled);
 	const auto general_transaction = session.editUndoStack.back();
-	assert(app.devTooling().overrides().submit(
+	assert(::FlowUi::test::requireValue(app.devTooling()).get().overrides().submit(
 		{session.nextEditTransaction++, general_transaction.inverse}));
 	draw();
-	assert(!app.themes().getTheme<BrandTheme>("light").enabled);
-	assert(app.themes().getTheme<BrandTheme>("dark").enabled);
+	assert(!::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("light")).get().enabled);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getTheme<BrandTheme>("dark")).get().enabled);
 	std::cout << "Theme review frame=" << frames - 1 << " phase=custom-editor\n";
 	// Test a narrower inspector and the empty-selection route without leaking Clay parents.
 	draw({}, 0, 260);
@@ -689,27 +690,27 @@ int main() {
 	std::cout << "Theme review frame=" << frames - 1 << " phase=empty\n";
 	// Publish a new schema, mutate a retained payload, then replace its baselines.
 	const auto runtime_type = ::FlowUi::detail::typeHash<RuntimeTheme>();
-	assert(app.themes().registerTheme<RuntimeTheme>("runtime-cache", RuntimeTheme{}, true));
+	assert(::FlowUi::test::requireValue(app.themes()).get().registerTheme<RuntimeTheme>("runtime-cache", RuntimeTheme{}, true));
 	draw();
 	draw();
 	assert(!cached_token(runtime_type, "runtime-cache", "radius").changed);
 	const auto leaf_count_before_update = session.theme_editor_model.leaf_rebuild_count();
 	const auto refresh_count_before_update = session.theme_editor_model.value_refresh_count();
-	assert(app.themes().updateTheme<RuntimeTheme>("runtime-cache",
+	assert(::FlowUi::test::requireValue(app.themes()).get().updateTheme<RuntimeTheme>("runtime-cache",
 												  [](RuntimeTheme& theme) { theme.radius = 9; }));
 	draw();
 	assert(cached_token(runtime_type, "runtime-cache", "radius").live_text == "9");
 	assert(cached_token(runtime_type, "runtime-cache", "radius").live_edit);
 	assert(session.theme_editor_model.leaf_rebuild_count() == leaf_count_before_update);
 	assert(session.theme_editor_model.value_refresh_count() == refresh_count_before_update + 1);
-	assert(app.themes().registerTheme<RuntimeTheme>("runtime-cache", RuntimeTheme{11}, true));
+	assert(::FlowUi::test::requireValue(app.themes()).get().registerTheme<RuntimeTheme>("runtime-cache", RuntimeTheme{11}, true));
 	draw();
 	assert(cached_token(runtime_type, "runtime-cache", "radius").live_text == "11");
 	assert(!cached_token(runtime_type, "runtime-cache", "radius").changed);
-	assert(app.themes().clone_dev_variant(runtime_type, "runtime-cache", "runtime-clone"));
+	assert(::FlowUi::test::requireValue(app.themes()).get().clone_dev_variant(runtime_type, "runtime-cache", "runtime-clone"));
 	draw();
 	assert(cached_token(runtime_type, "runtime-clone", "radius").live_text == "11");
-	assert(app.themes().setActiveVariant<RuntimeTheme>("runtime-clone"));
+	assert(::FlowUi::test::requireValue(app.themes()).get().setActiveVariant<RuntimeTheme>("runtime-clone"));
 	draw();
 	for (const auto& view : session.theme_editor_model.catalogue())
 		if (view.type == runtime_type) {

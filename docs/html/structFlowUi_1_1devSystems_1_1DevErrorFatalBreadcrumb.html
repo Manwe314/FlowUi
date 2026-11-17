@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,24 +106,127 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevErrorFatalBreadcrumb Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevErrorTypes_8hpp_source.html">DevErrorTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a3f5202da026e49bc1611925d01aeef53" id="r_a3f5202da026e49bc1611925d01aeef53"><td class="memItemLeft"><a id="a3f5202da026e49bc1611925d01aeef53" name="a3f5202da026e49bc1611925d01aeef53"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>sequence</b> = 0u</td></tr>
-<tr class="memitem:ad9b90afa2d212500c8a36056d4d689fd" id="r_ad9b90afa2d212500c8a36056d4d689fd"><td class="memItemLeft"><a id="ad9b90afa2d212500c8a36056d4d689fd" name="ad9b90afa2d212500c8a36056d4d689fd"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>timestampNs</b> = 0u</td></tr>
-<tr class="memitem:a3117d0671d1456ae3b00d85e0dde9612" id="r_a3117d0671d1456ae3b00d85e0dde9612"><td class="memItemLeft"><a id="a3117d0671d1456ae3b00d85e0dde9612" name="a3117d0671d1456ae3b00d85e0dde9612"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>descriptorId</b> = 0u</td></tr>
-<tr class="memitem:ad7f9f3a55dc0f055c0820925409e5467" id="r_ad7f9f3a55dc0f055c0820925409e5467"><td class="memItemLeft"><a id="ad7f9f3a55dc0f055c0820925409e5467" name="ad7f9f3a55dc0f055c0820925409e5467"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>primaryValue</b> = 0u</td></tr>
-<tr class="memitem:add8d019064f6050265b071e2a46e9cfe" id="r_add8d019064f6050265b071e2a46e9cfe"><td class="memItemLeft"><a id="add8d019064f6050265b071e2a46e9cfe" name="add8d019064f6050265b071e2a46e9cfe"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>secondaryValue</b> = 0u</td></tr>
-<tr class="memitem:a20d2b9be4d84ce9a17a21da6762ca9ea" id="r_a20d2b9be4d84ce9a17a21da6762ca9ea"><td class="memItemLeft"><a id="a20d2b9be4d84ce9a17a21da6762ca9ea" name="a20d2b9be4d84ce9a17a21da6762ca9ea"></a>
-DevErrorOccurrenceId&#160;</td><td class="memItemRight"><b>occurrence</b> = 0u</td></tr>
-<tr class="memitem:aa06be218606daa011cc9f5e8dbf2a5c2" id="r_aa06be218606daa011cc9f5e8dbf2a5c2"><td class="memItemLeft"><a id="aa06be218606daa011cc9f5e8dbf2a5c2" name="aa06be218606daa011cc9f5e8dbf2a5c2"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>threadTrack</b> = 0u</td></tr>
+<tr class="memitem:a3f5202da026e49bc1611925d01aeef53" id="r_a3f5202da026e49bc1611925d01aeef53"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a3f5202da026e49bc1611925d01aeef53">sequence</a> = 0u</td></tr>
+<tr class="memitem:ad9b90afa2d212500c8a36056d4d689fd" id="r_ad9b90afa2d212500c8a36056d4d689fd"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ad9b90afa2d212500c8a36056d4d689fd">timestampNs</a> = 0u</td></tr>
+<tr class="memitem:a3117d0671d1456ae3b00d85e0dde9612" id="r_a3117d0671d1456ae3b00d85e0dde9612"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a3117d0671d1456ae3b00d85e0dde9612">descriptorId</a> = 0u</td></tr>
+<tr class="memitem:ad7f9f3a55dc0f055c0820925409e5467" id="r_ad7f9f3a55dc0f055c0820925409e5467"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ad7f9f3a55dc0f055c0820925409e5467">primaryValue</a> = 0u</td></tr>
+<tr class="memitem:add8d019064f6050265b071e2a46e9cfe" id="r_add8d019064f6050265b071e2a46e9cfe"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#add8d019064f6050265b071e2a46e9cfe">secondaryValue</a> = 0u</td></tr>
+<tr class="memitem:a20d2b9be4d84ce9a17a21da6762ca9ea" id="r_a20d2b9be4d84ce9a17a21da6762ca9ea"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a20d2b9be4d84ce9a17a21da6762ca9ea">occurrence</a> = 0u</td></tr>
+<tr class="memitem:aa06be218606daa011cc9f5e8dbf2a5c2" id="r_aa06be218606daa011cc9f5e8dbf2a5c2"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#aa06be218606daa011cc9f5e8dbf2a5c2">threadTrack</a> = 0u</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Compact breadcrumb representation stored inside a fixed fatal capsule. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a3117d0671d1456ae3b00d85e0dde9612" name="a3117d0671d1456ae3b00d85e0dde9612"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3117d0671d1456ae3b00d85e0dde9612">&#9670;&#160;</a></span>descriptorId</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorFatalBreadcrumb::descriptorId = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Registered breadcrumb or advice descriptor identity. </p>
+
+</div>
+</div>
+<a id="a20d2b9be4d84ce9a17a21da6762ca9ea" name="a20d2b9be4d84ce9a17a21da6762ca9ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a20d2b9be4d84ce9a17a21da6762ca9ea">&#9670;&#160;</a></span>occurrence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a> FlowUi::devSystems::DevErrorFatalBreadcrumb::occurrence = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Diagnostic occurrence identity; zero means no explicit occurrence. </p>
+
+</div>
+</div>
+<a id="ad7f9f3a55dc0f055c0820925409e5467" name="ad7f9f3a55dc0f055c0820925409e5467"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad7f9f3a55dc0f055c0820925409e5467">&#9670;&#160;</a></span>primaryValue</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorFatalBreadcrumb::primaryValue = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>First exact numeric value attached to the breadcrumb. </p>
+
+</div>
+</div>
+<a id="add8d019064f6050265b071e2a46e9cfe" name="add8d019064f6050265b071e2a46e9cfe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add8d019064f6050265b071e2a46e9cfe">&#9670;&#160;</a></span>secondaryValue</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorFatalBreadcrumb::secondaryValue = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Second exact numeric value attached to the breadcrumb. </p>
+
+</div>
+</div>
+<a id="a3f5202da026e49bc1611925d01aeef53" name="a3f5202da026e49bc1611925d01aeef53"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f5202da026e49bc1611925d01aeef53">&#9670;&#160;</a></span>sequence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorFatalBreadcrumb::sequence = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Monotonic capture sequence used to order retained records. </p>
+
+</div>
+</div>
+<a id="aa06be218606daa011cc9f5e8dbf2a5c2" name="aa06be218606daa011cc9f5e8dbf2a5c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa06be218606daa011cc9f5e8dbf2a5c2">&#9670;&#160;</a></span>threadTrack</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::DevErrorFatalBreadcrumb::threadTrack = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Producer thread track identity associated with the evidence. </p>
+
+</div>
+</div>
+<a id="ad9b90afa2d212500c8a36056d4d689fd" name="ad9b90afa2d212500c8a36056d4d689fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad9b90afa2d212500c8a36056d4d689fd">&#9670;&#160;</a></span>timestampNs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorFatalBreadcrumb::timestampNs = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Timestamp in the monotonic capture clock, in nanoseconds. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/errors/<a class="el" href="DevErrorTypes_8hpp_source.html">DevErrorTypes.hpp</a></li>
 </ul>
@@ -140,7 +243,7 @@ uint32_t&#160;</td><td class="memItemRight"><b>threadTrack</b> = 0u</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorFatalBreadcrumb.html">DevErrorFatalBreadcrumb</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorFatalBreadcrumb.html">DevErrorFatalBreadcrumb</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

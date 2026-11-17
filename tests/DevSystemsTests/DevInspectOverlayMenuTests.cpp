@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #include <cstdlib>
 #include <iostream>
 
@@ -25,7 +26,7 @@ enum class PointerEvent { None, Press, Release };
 /* Exercise real retained FSEL button callbacks without desktop focus/timing dependencies. */
 [[nodiscard]] bool draw_frame(App& app, FlowElementID control, PointerEvent event) {
 	require(app.beginFrame(), "Menu frame must begin");
-	auto& ui = app.ui();
+	auto& ui = ::FlowUi::test::requireValue(app.ui()).get();
 	// These are mutable manager-owned test inputs exposed through const observer APIs.
 	// Inject the completed interaction snapshot consumed by the normal builder hooks.
 	auto& interaction = const_cast<InteractionSnapshot&>(ui.getPreviousFramesInteraction());
@@ -62,7 +63,7 @@ int main() {
 	config.window.width = 480;
 	config.window.height = 560;
 	config.vk.enableValidation = false;
-	auto app = makeApplication(config);
+	auto app = ::FlowUi::test::requireValue(makeApplication(config));
 	const auto trigger = ::FlowUi::detail::element_id::resolveLocal(
 		FlowElementID{.value = menu_id.value}, FSEL::Button::definitionId,
 		LocalElementName{"trigger"}.token);
@@ -77,7 +78,7 @@ int main() {
 		Keyed("surface-check", 0).token);
 	require(draw_frame(app, checkbox, PointerEvent::Press), "Checkbox press keeps popup open");
 	require(draw_frame(app, checkbox, PointerEvent::Release), "Checkbox toggle keeps popup open");
-	require(!tooling::hasFlag(app.devTooling().inspect_interaction().mode_flags(),
+	require(!tooling::hasFlag(::FlowUi::test::requireValue(app.devTooling()).get().inspect_interaction().mode_flags(),
 							  tooling::DevOverlayModeFlags::BoxModel),
 			"Checkbox must change authoritative overlay flags");
 
@@ -88,18 +89,18 @@ int main() {
 		FlowElementID{.value = menu_id.value}, FSEL::Button::definitionId,
 		LocalElementName{"pick-domain-clay"}.token);
 
-	require(app.devTooling().inspect_interaction().pick_domain() ==
+	require(::FlowUi::test::requireValue(app.devTooling()).get().inspect_interaction().pick_domain() ==
 				tooling::DevInspectPickDomain::Flow,
 			"Initial domain must be Flow");
 	require(draw_frame(app, clay_btn, PointerEvent::Press), "Clay domain press keeps popup open");
 	require(draw_frame(app, clay_btn, PointerEvent::Release), "Clay domain release keeps popup open");
-	require(app.devTooling().inspect_interaction().pick_domain() ==
+	require(::FlowUi::test::requireValue(app.devTooling()).get().inspect_interaction().pick_domain() ==
 				tooling::DevInspectPickDomain::Clay,
 			"Activating Clay domain button must switch pick domain to Clay");
 
 	require(draw_frame(app, flow_btn, PointerEvent::Press), "Flow domain press keeps popup open");
 	require(draw_frame(app, flow_btn, PointerEvent::Release), "Flow domain release keeps popup open");
-	require(app.devTooling().inspect_interaction().pick_domain() ==
+	require(::FlowUi::test::requireValue(app.devTooling()).get().inspect_interaction().pick_domain() ==
 				tooling::DevInspectPickDomain::Flow,
 			"Activating Flow domain button must switch pick domain to Flow");
 

@@ -32,6 +32,26 @@ struct ProbeElement {
 	}
 };
 
+struct ResourceFailure { int marker; };
+struct LazyResources {
+	inline static bool failConstruction = true;
+	inline static int attempts = 0;
+	int marker = 41;
+	explicit LazyResources(FlowUi::App&) {
+		++attempts;
+		if (failConstruction) throw ResourceFailure{75};
+	}
+};
+struct ResourceProbe {
+	using Resources = LazyResources;
+	static constexpr FlowUi::FlowDefinitionID definitionId = FlowUi::DefinitionID("tests/scope/resource-probe");
+	static void buildElement(FlowUi::ElementBuildContext<ResourceProbe>& context) {
+		const auto& resources = context.resources();
+		FLOWUI_CHECK(resources.marker == 41);
+	}
+};
+inline constexpr ResourceProbe kResourceProbe{};
+
 inline constexpr ProbeElement kProbe{};
 inline constexpr FlowUi::GlobalFlowID kGlobalProbe =
 	FlowUi::Global<kProbe>("scope-probe");
@@ -148,8 +168,8 @@ void testScopeLifecycle() {
 	config.window.width = 320;
 	config.window.height = 240;
 	config.vk.enableValidation = false;
-	FlowUi::App app = FlowUi::makeApplication(config);
-	FlowUi::UiManager& ui = app.ui();
+	FlowUi::App app = ::FlowUi::test::requireValue(FlowUi::makeApplication(config));
+	FlowUi::UiManager& ui = ::FlowUi::test::requireValue(app.ui()).get();
 
 	SeenIDs seen;
 	FLOWUI_CHECK(app.beginFrame());
@@ -204,10 +224,17 @@ void testScopeLifecycle() {
 	FLOWUI_CHECK(seen[2] == recursive2);
 
 	seen.clear();
-	FLOWUI_CHECK_THROWS(
-		ui.createElement(kProbe, "throws")
-			.setParameters(ProbeParameters{.seen = &seen, .throwFromBuild = true})
-			.draw());
+	bool caughtOriginal = false;
+	try {
+		(void)ui.createElement(kProbe, "throws")
+			.setParameters(ProbeParameters{.seen = &seen, .throwFromBuild = true}).draw();
+	} catch (const std::runtime_error& exception) {
+		caughtOriginal = std::string_view(exception.what()) == "intentional scope restoration probe";
+	}
+	FLOWUI_CHECK(caughtOriginal);
+	FLOWUI_CHECK(!ui.frameStatus());
+	FLOWUI_CHECK(!app.endFrame());
+	FLOWUI_CHECK(app.beginFrame());
 	ui.createElement(kProbe, "after-throw")
 		.setParameters(ProbeParameters{.seen = &seen})
 		.draw();
@@ -268,6 +295,73 @@ void testScopeLifecycle() {
 	FLOWUI_CHECK(seen[0] ==
 		localID(FlowUi::RootFlowScopeID, ProbeElement::definitionId, "next-frame"));
 	finishFrame(app);
+
+	FLOWUI_CHECK(app.beginFrame());
+	auto partialBuilder = ui.createElement(kProbe, "failed-merge");
+	bool caughtMerge = false;
+	try {
+		(void)partialBuilder.mergeParams([&](ProbeParameters& parameters) {
+			parameters.seen = &seen;
+			throw 57;
+		});
+	} catch (int payload) {
+		caughtMerge = payload == 57;
+	}
+	FLOWUI_CHECK(caughtMerge);
+	FLOWUI_CHECK(!ui.frameStatus());
+	FLOWUI_CHECK(!app.endFrame());
+	FLOWUI_CHECK(app.beginFrame());
+	ui.createElement(kProbe, "after-merge-cancellation").draw();
+	finishFrame(app);
+
+	LazyResources::failConstruction = true;
+	LazyResources::attempts = 0;
+	auto& elements = ::FlowUi::test::requireValue(app.elements()).get();
+	bool caughtResource = false;
+	try {
+		(void)elements.prepare(kResourceProbe);
+	} catch (const ResourceFailure& failure) {
+		caughtResource = failure.marker == 75;
+	}
+	FLOWUI_CHECK(caughtResource && LazyResources::attempts == 1);
+	FLOWUI_CHECK(app.beginFrame());
+	caughtResource = false;
+	try {
+		(void)ui.createElement(kResourceProbe, "failed-lazy-resource").draw();
+	} catch (const ResourceFailure& failure) {
+		caughtResource = failure.marker == 75;
+	}
+	FLOWUI_CHECK(caughtResource && LazyResources::attempts == 1);
+	FLOWUI_CHECK(!app.endFrame());
+	LazyResources::failConstruction = false;
+	FLOWUI_CHECK(elements.prepare(kResourceProbe));
+	FLOWUI_CHECK(LazyResources::attempts == 2);
+	FLOWUI_CHECK(app.runFrame([&](FlowUi::UiManager& activeUi, FlowUi::WindowId) {
+		return activeUi.createElement(kResourceProbe, "resource-retry").draw();
+	}));
+
+	const auto original = FlowUi::makeError(
+		FlowUi::ErrorCode::FrameCapacityExceeded, FlowUi::ErrorSite::UiManagerRender,
+		42, 77, 9);
+	const auto latched = app.runFrame([original](FlowUi::UiManager& activeUi, FlowUi::WindowId) {
+		activeUi.recordFrameError(original);
+		throw 123;
+	});
+	FLOWUI_CHECK(!latched);
+	FLOWUI_CHECK(latched.error().code == original.code);
+	FLOWUI_CHECK(latched.error().site == original.site);
+	FLOWUI_CHECK(latched.error().subject == original.subject);
+	FLOWUI_CHECK(latched.error().auxiliary == original.auxiliary);
+	FLOWUI_CHECK(latched.error().nativeCode == original.nativeCode);
+	const auto unlatched = app.runFrame([](FlowUi::UiManager&, FlowUi::WindowId) {
+		throw 456;
+	});
+	FLOWUI_CHECK(!unlatched);
+	FLOWUI_CHECK(unlatched.error().code == FlowUi::ErrorCode::ForeignExceptionObserved);
+	FLOWUI_CHECK(unlatched.error().site == FlowUi::ErrorSite::AppFrameDispatch);
+	FLOWUI_CHECK(app.runFrame([](FlowUi::UiManager& activeUi, FlowUi::WindowId) {
+		activeUi.createElement(kProbe, "after-latched-failure-cancellation").draw();
+	}));
 }
 
 } // namespace

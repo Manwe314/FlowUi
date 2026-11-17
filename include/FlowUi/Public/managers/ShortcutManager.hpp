@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Private/ApiBoundary.hpp"
+
 #include "FlowUi/Public/configurationStructs/ShortcutManagerConfig.hpp"
 #include "FlowUi/Public/input/Key.hpp"
 
@@ -66,8 +68,32 @@ public:
 	};
 	/** @brief Synchronous observation callback; return false to stop visitation. Arguments are borrowed for the call. */
 	using DevShortcutVisitor = bool (*)(void*, const DevShortcutView&);
-	/** Visit published registrations without retaining or invoking callbacks. */
-	[[nodiscard]] bool visitDevShortcuts(void* target, DevShortcutVisitor visitor) const;
+	/**
+	 * @brief Observe development catalogue entries without invoking application operations.
+	 *
+	 * Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts live shortcut registrations; completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to FlowUiError. Earlier callback effects, including the counter, are not rolled back on failure.
+	 *
+	 * @return Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a detached manager or null visitor. A failed Result is an operational/callback error, not an incomplete-visit bool.
+	 *
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE
+	 * std::size_t count = 0;
+	 * auto result = manager.visitDevShortcuts(&count,
+	 *     [](void* target, const FlowUi::ShortcutManager::DevShortcutView& shortcut) {
+	 *         auto& observedCount = *static_cast<std::size_t*>(target);
+	 *         if (shortcut.id != 0) {
+	 *             ++observedCount;
+	 *         }
+	 *         return true;
+	 *     });
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const bool completed = *result;
+	 * #endif
+	 * @endcode
+	 */
+	[[nodiscard]] Result<bool> visitDevShortcuts(void* target, DevShortcutVisitor visitor) const noexcept;
 	/** Pure dispatcher chord/scope matching, without input injection or callback execution. */
 	[[nodiscard]] static bool devMatches(const DevShortcutView& candidate, const ShortcutChord& chord,
 		bool focused_input, bool focused_element) noexcept;
@@ -79,157 +105,138 @@ public:
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
 #endif
 	/**
-	 * @brief Register a shortcut and return its id.
+	 * @brief Register a keyboard chord and return its window-local registration ID.
 	 *
-	 * The chord is matched against frame input using its key, modifier flags,
-	 * and trigger mode. The scope controls when the callback is eligible to run.
-	 * When multiple callbacks match the same chord, focused scopes are considered
-	 * before global shortcuts, higher priority values run first, and callbacks
-	 * with the same scope and priority run in registration order.
+	 * Matching uses exact modifier requirements and the trigger transition. FocusedInput precedes FocusedElement, then Global; higher priority first, then registration order. Callbacks are owned by the registration, so captured references must outlive it. A callback returning true consumes the chord; false allows subsequent matches. Callback exceptions follow the dispatch/frame boundary policy, not the registration call.
 	 *
-	 * A callback should return true after it handles the shortcut. Returning
-	 * false allows the next matching callback for the same chord to run.
-	 *
-	 * @param chord Key, modifier requirements, and trigger transition to match.
-	 * @param scope Focus condition required before the shortcut may run.
-	 * @param priority Ordering value within the same scope. Higher values run
-	 * first.
-	 * @param callback Function invoked when the chord and scope match.
-	 * @return A result containing the registration id, or a structured error
-	 * when the manager, callback, action, or chord is invalid.
+	 * @return Success contains a nonzero ShortcutId; invalid manager/chord/callback/action or allocation failures are errors.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * const auto copyShortcut =
-	 *     app.ui().shortcuts().registerShortcut(
-	 *         FlowUi::ShortcutChord{
-	 *             .key = FlowUi::keyCode(FlowUi::Key::C),
-	 *             .ctrl = true,
-	 *             .trigger = FlowUi::ShortcutTrigger::Press,
-	 *         },
-	 *         FlowUi::ShortcutScope::FocusedInput,
-	 *         100,
-	 *         [](FlowUi::ShortcutContext& context) {
-	 *             const std::string selected(context.ui.inputFields().getSelectedText());
-	 *             if (selected.empty()) {
-	 *                 return false;
-	 *             }
-	 *             context.ui.setClipboardText(selected);
-	 *             return true;
-	 *         });
-	 *
-	 * const auto pasteShortcut =
-	 *     app.ui().shortcuts().registerShortcut(
-	 *         FlowUi::ShortcutChord{
-	 *             .key = FlowUi::keyCode(FlowUi::Key::V),
-	 *             .ctrl = true,
-	 *             .trigger = FlowUi::ShortcutTrigger::Press,
-	 *         },
-	 *         FlowUi::ShortcutScope::FocusedInput,
-	 *         100,
-	 *         [](FlowUi::ShortcutContext& context) {
-	 *             return context.ui.inputFields().insertTextAtPrimaryCaret(
-	 *                 context.ui.clipboardText());
-	 *         });
-	 *
-	 * if (!copyShortcut || !pasteShortcut) {
-	 *     // Registration failed; key values or callbacks should be checked.
+	 * const FlowUi::ShortcutChord chord{.key = FlowUi::keyCode(FlowUi::Key::S), .ctrl = true};
+	 * bool saveRequested = false;
+	 * FlowUi::ShortcutCallback callback = [&saveRequested](const FlowUi::ShortcutContext&) {
+	 *     saveRequested = true;
+	 *     return true;
+	 * };
+	 * auto result = manager.registerShortcut(chord, FlowUi::ShortcutScope::Global, 100, std::move(callback));
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
 	 * }
+	 * const auto shortcutId = *result;
 	 * @endcode
-	 *
-	 * @see @ref md_docs_2tutorials_2input__fields__and__shortcuts "Input Fields and Shortcuts"
 	 */
 	[[nodiscard]] Result<ShortcutId> registerShortcut(const ShortcutChord& chord,
 													  ShortcutScope scope, int32_t priority,
-													  ShortcutCallback callback);
+													  ShortcutCallback callback) noexcept;
 
 	/**
-	 * @brief Register a retained semantic app action for this window's shortcut scope.
-	 * @param chord Key/modifier transition to match.
-	 * @param scope Required focus condition.
-	 * @param priority Higher values run first within the scope.
-	 * @param action App action identity, resolved when the shortcut dispatches.
-	 * @param handling Whether a successful invocation consumes the matching chord.
-	 * @return Registration ID or an initialization, chord, or action-validation error.
-	 * Unbound/disabled calls are skipped at dispatch. Referenced action resources
-	 * follow AppActions::bind() lifetime rules.
+	 * @brief Register a retained semantic app action for a keyboard chord.
+	 *
+	 * The action is resolved at dispatch; unbound/disabled actions are skipped. handling defaults to Consume; PassThrough allows later matching shortcuts. Referenced action resources follow AppActions::bind() lifetime rules. Scope, priority, and chord matching match callback registration.
+	 *
+	 * @return Success contains a nonzero ShortcutId; invalid manager/chord/callback/action or allocation failures are errors.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ShortcutChord chord{.key = FlowUi::keyCode(FlowUi::Key::S), .ctrl = true};
+	 * auto result = manager.registerShortcut(chord, FlowUi::ShortcutScope::Global, 100, action, FlowUi::ShortcutHandling::Consume);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto shortcutId = *result;
+	 * @endcode
 	 */
 	[[nodiscard]] Result<ShortcutId>
 	registerShortcut(const ShortcutChord& chord, ShortcutScope scope, int32_t priority,
-					 AppActionCall action, ShortcutHandling handling = ShortcutHandling::Consume);
+					 AppActionCall action, ShortcutHandling handling = ShortcutHandling::Consume) noexcept;
 
 	/**
-	 * @brief Unregister a shortcut by id.
+	 * @brief Remove a shortcut registration.
 	 *
-	 * Removes the registered callback and releases the manager's internal
-	 * reference to the chord key. It is valid to unregister from inside a
-	 * shortcut callback.
+	 * It is valid to unregister from inside a shortcut callback. Callback-owned captures are released when their retained registration is no longer needed by dispatch.
 	 *
-	 * @param id Registration id returned by registerShortcut().
-	 * @retval true A shortcut with id existed and was removed.
-	 * @retval false id was 0 or did not match an active registration.
+	 * @return Success contains true if removed or false for zero/unknown IDs.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * if (copyShortcut) {
-	 *     (void)app.ui().shortcuts().unregisterShortcut(*copyShortcut);
+	 * auto result = manager.unregisterShortcut(shortcutId);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto removed = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<bool> unregisterShortcut(ShortcutId id) noexcept;
+
+	/**
+	 * @brief Remove every shortcut and clear the focused-element marker.
+	 *
+	 * Stored callbacks/actions are released and the registration epoch advances; the monotonic ID counter is not reset. Discard IDs for cleared registrations.
+	 *
+	 * @return Success means the reset completed.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * auto result = manager.clear();
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
 	 * }
 	 * @endcode
 	 */
-	bool unregisterShortcut(ShortcutId id);
+	[[nodiscard]] Status clear() noexcept;
 
 	/**
-	 * @brief Remove all registered shortcuts.
+	 * @brief Set the lightweight Clay focus marker used by FocusedElement shortcuts.
 	 *
-	 * Clears every chord registration, resets registration ids, and clears the
-	 * focused element marker.
+	 * This does not assign input-field focus or decide when your application considers an element focused.
 	 *
-	 * @code{.cpp}
-	 * app.ui().shortcuts().clear();
-	 * @endcode
-	 */
-	void clear();
-
-	/**
-	 * @brief Set the currently focused Clay element id.
-	 *
-	 * The focused element marker is used by ShortcutScope::FocusedElement. It is
-	 * a lightweight shortcut classification value; callbacks can inspect
-	 * ShortcutContext::focusedElementId when they need element-specific behavior.
-	 * Conditions with which an element becomes focused is up to the user to decide by calling this function.
-	 *
-	 * @param elementId Clay element id to treat as focused.
+	 * @return Success means the marker was stored; a zero element ID represents no focused element.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * app.ui().shortcuts().setFocusedElement(context.uiManager.toClayEID(context.id));
-	 * @endcode
-	 */
-	void setFocusedElement(Clay_ElementId elementId);
-
-	/**
-	 * @brief Clear focused element state.
-	 *
-	 * After this call, FocusedElement shortcuts are not eligible until another
-	 * non-zero focused element id is set.
-	 *
-	 * @code{.cpp}
-	 * app.ui().shortcuts().clearFocusedElement();
-	 * @endcode
-	 */
-	void clearFocusedElement();
-
-	/**
-	 * @brief Return the currently focused Clay element id.
-	 *
-	 * @return Clay element id currently tracked by ShortcutManager. A zero id
-	 * means no shortcut-focused element is set.
-	 *
-	 * @code{.cpp}
-	 * const Clay_ElementId focused = app.ui().shortcuts().focusedElement();
-	 * if (focused.id != 0u) {
-	 *     // FocusedElement shortcuts can be eligible this frame.
+	 * auto result = manager.setFocusedElement(elementId);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
 	 * }
 	 * @endcode
 	 */
-	[[nodiscard]] Clay_ElementId focusedElement() const;
+	[[nodiscard]] Status setFocusedElement(Clay_ElementId elementId) noexcept;
+
+	/**
+	 * @brief Clear the Clay focus marker.
+	 *
+	 * Input-field focus is independent.
+	 *
+	 * @return Success means FocusedElement registrations are ineligible until a nonzero marker is set.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * auto result = manager.clearFocusedElement();
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * @endcode
+	 */
+	[[nodiscard]] Status clearFocusedElement() noexcept;
+
+	/**
+	 * @brief Read the current lightweight Clay focus marker.
+	 *
+	 * The returned ID is a value, not a borrowed element pointer.
+	 *
+	 * @return Success contains the tracked Clay_ElementId; id == 0 means no marker, not an error.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * auto result = manager.focusedElement();
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto focusedElement = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<Clay_ElementId> focusedElement() const noexcept;
 
 private:
 	friend class UiManager;

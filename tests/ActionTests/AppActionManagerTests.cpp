@@ -62,16 +62,16 @@ void testBindSelectInvokeAndAvailability(FlowUi::test::HeadlessVulkanFixture& vu
 		FlowUi::ActionInvocationStatus::Invoked);
 	FLOWUI_CHECK(value == 1);
 
-	FLOWUI_CHECK(actions.setAvailability(kIncrement, {.enabled = false}));
+	FLOWUI_CHECK(::FlowUi::test::requireValue(actions.setAvailability(kIncrement, {.enabled = false})));
 	FLOWUI_CHECK(!store.manager().availability(FlowUi::ActionCall{bound}).enabled);
 	FLOWUI_CHECK(actions.invoke(bound) == FlowUi::ActionInvocationStatus::Disabled);
 	FLOWUI_CHECK(value == 1);
-	FLOWUI_CHECK(actions.setAvailability(kIncrement, {.enabled = true}));
+	FLOWUI_CHECK(::FlowUi::test::requireValue(actions.setAvailability(kIncrement, {.enabled = true})));
 	FLOWUI_CHECK(actions.invoke(bound) == FlowUi::ActionInvocationStatus::Invoked);
 	FLOWUI_CHECK(value == 2);
-	FLOWUI_CHECK(actions.unbind(kIncrement));
+	FLOWUI_CHECK(::FlowUi::test::requireValue(actions.unbind(kIncrement)));
 	FLOWUI_CHECK(actions.invoke(bound) == FlowUi::ActionInvocationStatus::Unbound);
-	FLOWUI_CHECK(!actions.unbind(kIncrement));
+	FLOWUI_CHECK(!::FlowUi::test::requireValue(actions.unbind(kIncrement)));
 }
 
 void testResultsReplacementAndFailures(FlowUi::test::HeadlessVulkanFixture& vulkan) {
@@ -121,8 +121,44 @@ void testReentrantUnbindAndExceptions(FlowUi::test::HeadlessVulkanFixture& vulka
 	const auto throwingResult = actions.bind(kThrow, &throwAction);
 	FLOWUI_CHECK(throwingResult);
 	const auto throwing = throwingResult.value();
-	FLOWUI_CHECK_THROWS(actions.invoke(throwing));
+	bool caughtOriginal = false;
+	try {
+		(void)actions.invoke(throwing);
+	} catch (const std::runtime_error& exception) {
+		caughtOriginal = std::string_view(exception.what()) == "action failure";
+	}
+	FLOWUI_CHECK(caughtOriginal);
 	FLOWUI_CHECK(actions.isBound(throwing));
+}
+
+struct TransferFailure { int marker; };
+struct ThrowingResult {
+	inline static int destructions = 0;
+	ThrowingResult() = default;
+	ThrowingResult(const ThrowingResult&) = delete;
+	ThrowingResult(ThrowingResult&&) { throw TransferFailure{73}; }
+	~ThrowingResult() noexcept { ++destructions; }
+};
+ThrowingResult makeThrowingResult(int* invocations) {
+	++*invocations;
+	return {};
+}
+void testResultTransferFailure(FlowUi::test::HeadlessVulkanFixture& vulkan) {
+	ActionStore store(vulkan);
+	int invocations = 0;
+	ThrowingResult::destructions = 0;
+	const auto call = ::FlowUi::test::requireValue(store.manager().appActions().bind(
+		FlowUi::AppAction("tests.actions.throwing_result"), &makeThrowingResult, &invocations));
+	bool caughtOriginal = false;
+	try {
+		(void)store.manager().appActions().invokeFor<ThrowingResult>(call);
+	} catch (const TransferFailure& failure) {
+		caughtOriginal = failure.marker == 73;
+	}
+	FLOWUI_CHECK(caughtOriginal);
+	FLOWUI_CHECK(invocations == 1);
+	FLOWUI_CHECK(ThrowingResult::destructions == 1);
+	FLOWUI_CHECK(store.manager().appActions().isBound(call));
 }
 
 void testStorageFailureRollsBack(FlowUi::test::HeadlessVulkanFixture& vulkan) {
@@ -159,6 +195,9 @@ int main() {
 		});
 		runner.run("active bindings survive reentrant unbind and exceptions", [&] {
 			testReentrantUnbindAndExceptions(vulkan);
+		});
+		runner.run("failed result movement preserves exception and single dispatch", [&] {
+			testResultTransferFailure(vulkan);
 		});
 		runner.run("StorageSystem publication failures roll back action records", [&] {
 			testStorageFailureRollsBack(vulkan);

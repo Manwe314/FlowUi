@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,7 +107,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Loads image files and exposes them as FlowUi texture references.  
+<p>App-shared image loading and generation-checked texture lookup.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="ImageManager_8hpp_source.html">ImageManager.hpp</a>&gt;</code></p>
@@ -115,53 +115,54 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:DevImageView" id="r_DevImageView"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1ImageManager_1_1DevImageView.html">DevImageView</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed image registration metadata valid during visitation.  <a href="structFlowUi_1_1ImageManager_1_1DevImageView.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-types" class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
 <tr class="memitem:aeb4281a61ab0f4df0fd175f3a3b3c100" id="r_aeb4281a61ab0f4df0fd175f3a3b3c100"><td class="memItemLeft"><a id="aeb4281a61ab0f4df0fd175f3a3b3c100" name="aeb4281a61ab0f4df0fd175f3a3b3c100"></a>
 using&#160;</td><td class="memItemRight"><b>DevImageVisitor</b> = bool (*)(void*, const <a class="el" href="structFlowUi_1_1ImageManager_1_1DevImageView.html">DevImageView</a>&amp;)</td></tr>
+<tr class="memdesc:aeb4281a61ab0f4df0fd175f3a3b3c100"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronous observation callback; return false to stop visitation. Arguments are borrowed for the call. <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a61a3c6b0f9abef4dad4af59fbd57b4ce" id="r_a61a3c6b0f9abef4dad4af59fbd57b4ce"><td class="memItemLeft"><a id="a61a3c6b0f9abef4dad4af59fbd57b4ce" name="a61a3c6b0f9abef4dad4af59fbd57b4ce"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>devRevision</b> () const noexcept</td></tr>
+<tr class="memdesc:a61a3c6b0f9abef4dad4af59fbd57b4ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the current development-observation revision; zero when support is disabled. <br /></td></tr>
 <tr class="memitem:a66d920c0351c4c800770e6b4bb7ac0f7" id="r_a66d920c0351c4c800770e6b4bb7ac0f7"><td class="memItemLeft"><a id="a66d920c0351c4c800770e6b4bb7ac0f7" name="a66d920c0351c4c800770e6b4bb7ac0f7"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>devImageCount</b> () const noexcept</td></tr>
-<tr class="memitem:a99108de0293e7ee9df436fa0c34541a4" id="r_a99108de0293e7ee9df436fa0c34541a4"><td class="memItemLeft"><a id="a99108de0293e7ee9df436fa0c34541a4" name="a99108de0293e7ee9df436fa0c34541a4"></a>
-bool&#160;</td><td class="memItemRight"><b>visitDevImages</b> (void *userData, DevImageVisitor visitor) const</td></tr>
-<tr class="memitem:ad99d701c881cf0597ffcb47a9aeab096" id="r_ad99d701c881cf0597ffcb47a9aeab096"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ad99d701c881cf0597ffcb47a9aeab096">registerImage</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, std::string_view filePath)</td></tr>
-<tr class="memdesc:ad99d701c881cf0597ffcb47a9aeab096"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load and register an image from disk under a caller-provided key.  <br /></td></tr>
-<tr class="memitem:a068d69dac1c9b27d6efea185e46c2c43" id="r_a068d69dac1c9b27d6efea185e46c2c43"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a068d69dac1c9b27d6efea185e46c2c43">register_image_file</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, const std::filesystem::path &amp;file_path)</td></tr>
-<tr class="memitem:aa934a185f414935e18b306f650542e3d" id="r_aa934a185f414935e18b306f650542e3d"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aa934a185f414935e18b306f650542e3d">register_image_file</a> (std::string_view key, const std::filesystem::path &amp;file_path)</td></tr>
-<tr class="memitem:a00429ed0b20298e922ac4b0df45ea1f3" id="r_a00429ed0b20298e922ac4b0df45ea1f3"><td class="memItemLeft"><a id="a00429ed0b20298e922ac4b0df45ea1f3" name="a00429ed0b20298e922ac4b0df45ea1f3"></a>
-<a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><b>registerImage</b> (std::string_view key, std::string_view filePath)</td></tr>
-<tr class="memitem:a0efdbfcfb4cf1fcd39eaef2bad9f51b5" id="r_a0efdbfcfb4cf1fcd39eaef2bad9f51b5"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a0efdbfcfb4cf1fcd39eaef2bad9f51b5">removeImage</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key)</td></tr>
-<tr class="memdesc:a0efdbfcfb4cf1fcd39eaef2bad9f51b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a registered image by key.  <br /></td></tr>
-<tr class="memitem:a66f2f5903fadfe96a5092955b42528ee" id="r_a66f2f5903fadfe96a5092955b42528ee"><td class="memItemLeft"><a id="a66f2f5903fadfe96a5092955b42528ee" name="a66f2f5903fadfe96a5092955b42528ee"></a>
-<a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><b>removeImage</b> (std::string_view key)</td></tr>
-<tr class="memitem:a731b0c64abbc33fd69821dcd6c6220e5" id="r_a731b0c64abbc33fd69821dcd6c6220e5"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a731b0c64abbc33fd69821dcd6c6220e5">contains</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key) const</td></tr>
-<tr class="memdesc:a731b0c64abbc33fd69821dcd6c6220e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether an image key is registered.  <br /></td></tr>
-<tr class="memitem:a3ce30605daebf796adc6e757a93848c1" id="r_a3ce30605daebf796adc6e757a93848c1"><td class="memItemLeft"><a id="a3ce30605daebf796adc6e757a93848c1" name="a3ce30605daebf796adc6e757a93848c1"></a>
-bool&#160;</td><td class="memItemRight"><b>contains</b> (std::string_view key) const</td></tr>
-<tr class="memitem:a090629fbd73ee907ba693a64fb46cbce" id="r_a090629fbd73ee907ba693a64fb46cbce"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a>&#160;</td><td class="memItemRight"><a class="el" href="#a090629fbd73ee907ba693a64fb46cbce">getTexture</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key) const</td></tr>
-<tr class="memdesc:a090629fbd73ee907ba693a64fb46cbce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the texture reference for a registered image key.  <br /></td></tr>
-<tr class="memitem:a8db367968a237f11a7157d194a3720bc" id="r_a8db367968a237f11a7157d194a3720bc"><td class="memItemLeft"><a id="a8db367968a237f11a7157d194a3720bc" name="a8db367968a237f11a7157d194a3720bc"></a>
-<a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a>&#160;</td><td class="memItemRight"><b>getTexture</b> (std::string_view key) const</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a4097b3e04a4f8ece21f5abe1b10e6323" id="r_a4097b3e04a4f8ece21f5abe1b10e6323"><td class="memItemLeft"><a id="a4097b3e04a4f8ece21f5abe1b10e6323" name="a4097b3e04a4f8ece21f5abe1b10e6323"></a>
-class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
+<tr class="memdesc:a66d920c0351c4c800770e6b4bb7ac0f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of currently published entries in this development catalogue. <br /></td></tr>
+<tr class="memitem:a7021a67555a77afff2b497821fe8ef97" id="r_a7021a67555a77afff2b497821fe8ef97"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a7021a67555a77afff2b497821fe8ef97">visitDevImages</a> (void *userData, <a class="el" href="#aeb4281a61ab0f4df0fd175f3a3b3c100">DevImageVisitor</a> visitor) const noexcept</td></tr>
+<tr class="memdesc:a7021a67555a77afff2b497821fe8ef97"><td class="mdescLeft">&#160;</td><td class="mdescRight">Observe development catalogue entries without invoking application operations.  <br /></td></tr>
+<tr class="memitem:a09eccb8d0b0e9278af5264c7ad8b9611" id="r_a09eccb8d0b0e9278af5264c7ad8b9611"><td class="memItemLeft"><a id="a09eccb8d0b0e9278af5264c7ad8b9611" name="a09eccb8d0b0e9278af5264c7ad8b9611"></a>
+void&#160;</td><td class="memItemRight"><b>setDevMemoryRecorder</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1DevMemoryRecorder.html">devSystems::DevMemoryRecorder</a> *recorder) noexcept</td></tr>
+<tr class="memdesc:a09eccb8d0b0e9278af5264c7ad8b9611"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attach a borrowed development memory recorder; null disables recording. <br /></td></tr>
+<tr class="memitem:adf9edd738fa712ce919f96f0a3c33449" id="r_adf9edd738fa712ce919f96f0a3c33449"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#adf9edd738fa712ce919f96f0a3c33449">registerImage</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, std::string_view filePath) noexcept</td></tr>
+<tr class="memdesc:adf9edd738fa712ce919f96f0a3c33449"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load an encoded image and publish its sampled texture.  <br /></td></tr>
+<tr class="memitem:aef7c8f1cd226ddb37ddb81347cd8c3a6" id="r_aef7c8f1cd226ddb37ddb81347cd8c3a6"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aef7c8f1cd226ddb37ddb81347cd8c3a6">register_image_file</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, const std::filesystem::path &amp;file_path) noexcept</td></tr>
+<tr class="memdesc:aef7c8f1cd226ddb37ddb81347cd8c3a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load an encoded image from a native filesystem path.  <br /></td></tr>
+<tr class="memitem:a75852767cde13753810a326e9a683098" id="r_a75852767cde13753810a326e9a683098"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a75852767cde13753810a326e9a683098">register_image_file</a> (std::string_view key, const std::filesystem::path &amp;file_path) noexcept</td></tr>
+<tr class="memdesc:a75852767cde13753810a326e9a683098"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load an encoded image from a native filesystem path.  <br /></td></tr>
+<tr class="memitem:a4b9267171adab4f80bbf97dc9ee7fd10" id="r_a4b9267171adab4f80bbf97dc9ee7fd10"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a4b9267171adab4f80bbf97dc9ee7fd10">registerImage</a> (std::string_view key, std::string_view filePath) noexcept</td></tr>
+<tr class="memdesc:a4b9267171adab4f80bbf97dc9ee7fd10"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load an encoded image and publish its sampled texture.  <br /></td></tr>
+<tr class="memitem:a4d5f321152e4664fc8f377f24e009d9f" id="r_a4d5f321152e4664fc8f377f24e009d9f"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a4d5f321152e4664fc8f377f24e009d9f">removeImage</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key) noexcept</td></tr>
+<tr class="memdesc:a4d5f321152e4664fc8f377f24e009d9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unregister an image and retire its texture generation.  <br /></td></tr>
+<tr class="memitem:a4b02a332a11b0802e326009e5edd6116" id="r_a4b02a332a11b0802e326009e5edd6116"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a4b02a332a11b0802e326009e5edd6116">removeImage</a> (std::string_view key) noexcept</td></tr>
+<tr class="memdesc:a4b02a332a11b0802e326009e5edd6116"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unregister an image and retire its texture generation.  <br /></td></tr>
+<tr class="memitem:af14bc85c14b3a13c2b1358d53bba8bd4" id="r_af14bc85c14b3a13c2b1358d53bba8bd4"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#af14bc85c14b3a13c2b1358d53bba8bd4">contains</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key) const noexcept</td></tr>
+<tr class="memdesc:af14bc85c14b3a13c2b1358d53bba8bd4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test whether an image key is registered.  <br /></td></tr>
+<tr class="memitem:a5fbd122cdb5cd9105d0ff370fa8c9531" id="r_a5fbd122cdb5cd9105d0ff370fa8c9531"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a5fbd122cdb5cd9105d0ff370fa8c9531">contains</a> (std::string_view key) const noexcept</td></tr>
+<tr class="memdesc:a5fbd122cdb5cd9105d0ff370fa8c9531"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test whether an image key is registered.  <br /></td></tr>
+<tr class="memitem:a176bc03d2783cb04aee9281dffce867e" id="r_a176bc03d2783cb04aee9281dffce867e"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a176bc03d2783cb04aee9281dffce867e">getTexture</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key) const noexcept</td></tr>
+<tr class="memdesc:a176bc03d2783cb04aee9281dffce867e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve an image key to a <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> value.  <br /></td></tr>
+<tr class="memitem:ad9436e136a5f9a688365419c225dd26c" id="r_ad9436e136a5f9a688365419c225dd26c"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ad9436e136a5f9a688365419c225dd26c">getTexture</a> (std::string_view key) const noexcept</td></tr>
+<tr class="memdesc:ad9436e136a5f9a688365419c225dd26c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve an image key to a <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> value.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Loads image files and exposes them as FlowUi texture references. </p>
-<p><a class="el" href="classFlowUi_1_1ImageManager.html" title="Loads image files and exposes them as FlowUi texture references.">ImageManager</a> uploads decoded image files as standalone Vulkan textures and registers them under application-defined keys. The returned <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> can be passed to FlowUi image drawing code and adjusted with <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> options such as fitMode and tintEnabled.</p>
-<div class="fragment"></div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2images__icons__textures.html" title="Images, Icons, and Texture References">Images, Icons, and Texture References</a> </dd>
-<dd>
-<a class="el" href="md_docs_2concepts_2managers.html" title="Managers">Managers</a> </dd></dl>
+<div class="textblock"><p>App-shared image loading and generation-checked texture lookup. </p>
+<p>Recoverable operations return checked Result/Status values. A successful bool payload may be false; inspect the payload only after checking the <a class="el" href="classFlowUi_1_1Result.html">Result</a>. Obtain App-owned managers through the checked <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> getter and unwrap its reference_wrapper with result-&gt;get(). Returned text, metadata, resource views, and pointers remain borrowed under each operation's documented invalidation rules. </p>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
-<a id="a731b0c64abbc33fd69821dcd6c6220e5" name="a731b0c64abbc33fd69821dcd6c6220e5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a731b0c64abbc33fd69821dcd6c6220e5">&#9670;&#160;</a></span>contains()</h2>
+<a id="af14bc85c14b3a13c2b1358d53bba8bd4" name="af14bc85c14b3a13c2b1358d53bba8bd4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af14bc85c14b3a13c2b1358d53bba8bd4">&#9670;&#160;</a></span>contains() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -170,7 +171,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool FlowUi::ImageManager::contains </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::ImageManager::contains </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
           <td> const</td>
@@ -178,31 +179,27 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return whether an image key is registered. </p>
-<p>This lookup does not perform file IO or GPU work. Resource-key normalization may allocate or report an invalid key.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td>string image key to test. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">true</td><td>key is registered. </td></tr>
-    <tr><td class="paramname">false</td><td>key is not registered.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Test whether an image key is registered. </p>
+<p>No file loading or GPU work is performed, but key normalization can allocate or fail. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true when registered or false when absent; an invalid key or detached manager is an error. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;brand/logo&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.contains(key);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> registered = *result;</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+<div class="ttc" id="astructFlowUi_1_1ResourceKey_html"><div class="ttname"><a href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a></div><div class="ttdoc">Human-readable logical identity accepted by FlowUi managers.</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:39</div></div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a090629fbd73ee907ba693a64fb46cbce" name="a090629fbd73ee907ba693a64fb46cbce"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a090629fbd73ee907ba693a64fb46cbce">&#9670;&#160;</a></span>getTexture()</h2>
+<a id="a5fbd122cdb5cd9105d0ff370fa8c9531" name="a5fbd122cdb5cd9105d0ff370fa8c9531"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5fbd122cdb5cd9105d0ff370fa8c9531">&#9670;&#160;</a></span>contains() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -211,7 +208,41 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a> FlowUi::ImageManager::getTexture </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::ImageManager::contains </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Test whether an image key is registered. </p>
+<p>No file loading or GPU work is performed, but key normalization can allocate or fail.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true when registered or false when absent; an invalid key or detached manager is an error. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.contains(<span class="stringliteral">&quot;brand/logo&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> registered = *result;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a176bc03d2783cb04aee9281dffce867e" name="a176bc03d2783cb04aee9281dffce867e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a176bc03d2783cb04aee9281dffce867e">&#9670;&#160;</a></span>getTexture() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a> &gt; FlowUi::ImageManager::getTexture </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
           <td> const</td>
@@ -219,27 +250,59 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return the texture reference for a registered image key. </p>
-<p>The returned <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> contains a generation-checked logical handle and source image dimensions. If key is missing, this function returns an invalid handle and reports the missing key once. The result and its source key borrow manager-owned metadata; removal invalidates the handle.</p>
-<p>Application code may adjust <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> fields such as fitMode and tintEnabled before passing it to image drawing code. Manager-owned handle and UV fields should be left unchanged.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td>string image key to resolve. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> for key, or an invalid fallback reference when missing.</dd></dl>
-<div class="fragment"></div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2images__icons__textures.html" title="Images, Icons, and Texture References">Images, Icons, and Texture References</a> </dd></dl>
+<p>Resolve an image key to a <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> value. </p>
+<p><a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> is a value with borrowed source-key metadata and generation-checked resource identity, not ownership of a texture. Reacquire after replacement/removal and keep borrowed metadata within the <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> lifetime. fit and tint are caller presentation settings. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<dl class="section return"><dt>Returns</dt><dd>A missing key is a successful unavailable reference with an invalid handle. <a class="el" href="namespaceFlowUi.html#afcb760c51c186ef7833830d669eb6324a2e342ea7ae497a4f2beda5ea6096c19c">MissingVisualPolicy::SkipVisual</a> requests omission; the fallback policy requests the renderer fallback, and the missing-key diagnostic is reported once. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;brand/logo&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.getTexture(key);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> texture = *result;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ad9436e136a5f9a688365419c225dd26c" name="ad9436e136a5f9a688365419c225dd26c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad9436e136a5f9a688365419c225dd26c">&#9670;&#160;</a></span>getTexture() <span class="overload">[2/2]</span></h2>
 
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a> &gt; FlowUi::ImageManager::getTexture </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Resolve an image key to a <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> value. </p>
+<p><a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> is a value with borrowed source-key metadata and generation-checked resource identity, not ownership of a texture. Reacquire after replacement/removal and keep borrowed metadata within the <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> lifetime. fit and tint are caller presentation settings.</p>
+<dl class="section return"><dt>Returns</dt><dd>A missing key is a successful unavailable reference with an invalid handle. <a class="el" href="namespaceFlowUi.html#afcb760c51c186ef7833830d669eb6324a2e342ea7ae497a4f2beda5ea6096c19c">MissingVisualPolicy::SkipVisual</a> requests omission; the fallback policy requests the renderer fallback, and the missing-key diagnostic is reported once. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.getTexture(<span class="stringliteral">&quot;brand/logo&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> texture = *result;</div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a068d69dac1c9b27d6efea185e46c2c43" name="a068d69dac1c9b27d6efea185e46c2c43"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a068d69dac1c9b27d6efea185e46c2c43">&#9670;&#160;</a></span>register_image_file() <span class="overload">[1/2]</span></h2>
+<a id="aef7c8f1cd226ddb37ddb81347cd8c3a6" name="aef7c8f1cd226ddb37ddb81347cd8c3a6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aef7c8f1cd226ddb37ddb81347cd8c3a6">&#9670;&#160;</a></span>register_image_file() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -260,16 +323,26 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Load an image through a native filesystem path. </p>
 
+<p>Load an encoded image from a native filesystem path. </p>
+<p>Use this overload for native platform paths. Decoding/publication and lifetime rules match <a class="el" href="#adf9edd738fa712ce919f96f0a3c33449" title="Load an encoded image and publish its sampled texture.">registerImage()</a>. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true for insertion or false for a completed replacement; inspect the <a class="el" href="classFlowUi_1_1Result.html">Result</a> separately from that bool. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;brand/logo&quot;</span>};</div>
+<div class="line"><span class="keyword">const</span> std::filesystem::path assetPath{<span class="stringliteral">&quot;assets/logo.png&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.register_image_file(key, assetPath);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> inserted = *result;</div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="aa934a185f414935e18b306f650542e3d" name="aa934a185f414935e18b306f650542e3d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa934a185f414935e18b306f650542e3d">&#9670;&#160;</a></span>register_image_file() <span class="overload">[2/2]</span></h2>
+<a id="a75852767cde13753810a326e9a683098" name="a75852767cde13753810a326e9a683098"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a75852767cde13753810a326e9a683098">&#9670;&#160;</a></span>register_image_file() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -290,16 +363,25 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Load an image through a native filesystem path under a string key. </p>
 
+<p>Load an encoded image from a native filesystem path. </p>
+<p>Use this overload for native platform paths. Decoding/publication and lifetime rules match <a class="el" href="#adf9edd738fa712ce919f96f0a3c33449" title="Load an encoded image and publish its sampled texture.">registerImage()</a>.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true for insertion or false for a completed replacement; inspect the <a class="el" href="classFlowUi_1_1Result.html">Result</a> separately from that bool. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> std::filesystem::path assetPath{<span class="stringliteral">&quot;assets/logo.png&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.register_image_file(<span class="stringliteral">&quot;brand/logo&quot;</span>, assetPath);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> inserted = *result;</div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="ad99d701c881cf0597ffcb47a9aeab096" name="ad99d701c881cf0597ffcb47a9aeab096"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad99d701c881cf0597ffcb47a9aeab096">&#9670;&#160;</a></span>registerImage()</h2>
+<a id="adf9edd738fa712ce919f96f0a3c33449" name="adf9edd738fa712ce919f96f0a3c33449"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adf9edd738fa712ce919f96f0a3c33449">&#9670;&#160;</a></span>registerImage() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -320,33 +402,63 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Load and register an image from disk under a caller-provided key. </p>
-<p>The image is decoded with stb_image and uploaded as an RGBA8 sRGB Vulkan texture. Supported file formats are the stb_image formats compiled into FlowUi: JPEG, PNG, TGA, BMP, PSD, GIF, HDR, PIC, PNM/PPM, and PGM.</p>
-<p>Registering an existing key replaces the previous image resource and keeps the key active with the new texture data.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td>string image key. </td></tr>
-    <tr><td class="paramname">filePath</td><td>Path to an image file on disk. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A result whose value is true for a newly registered key or false when an existing image was replaced. Initialization, key, file, decode, and upload failures are returned as structured errors. </dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">std::bad_alloc</td><td>if allocating path or registration metadata fails.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Load an encoded image and publish its sampled texture. </p>
+<p>The UTF-8 file path is consumed synchronously. Supported stb_image formats are decoded as RGBA8 sRGB. The replacement is prepared before publication; replaced generations retire after their recorded GPU uses. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true for a new key or false when an existing image was replaced; false is a completed replacement, not an error. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;brand/logo&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.registerImage(key, <span class="stringliteral">&quot;assets/logo.png&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> inserted = *result;</div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a0efdbfcfb4cf1fcd39eaef2bad9f51b5" name="a0efdbfcfb4cf1fcd39eaef2bad9f51b5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0efdbfcfb4cf1fcd39eaef2bad9f51b5">&#9670;&#160;</a></span>removeImage()</h2>
+<a id="a4b9267171adab4f80bbf97dc9ee7fd10" name="a4b9267171adab4f80bbf97dc9ee7fd10"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b9267171adab4f80bbf97dc9ee7fd10">&#9670;&#160;</a></span>registerImage() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::ImageManager::registerImage </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>filePath</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Load an encoded image and publish its sampled texture. </p>
+<p>The UTF-8 file path is consumed synchronously. Supported stb_image formats are decoded as RGBA8 sRGB. The replacement is prepared before publication; replaced generations retire after their recorded GPU uses.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true for a new key or false when an existing image was replaced; false is a completed replacement, not an error. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.registerImage(<span class="stringliteral">&quot;brand/logo&quot;</span>, <span class="stringliteral">&quot;assets/logo.png&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> inserted = *result;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a4d5f321152e4664fc8f377f24e009d9f" name="a4d5f321152e4664fc8f377f24e009d9f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4d5f321152e4664fc8f377f24e009d9f">&#9670;&#160;</a></span>removeImage() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -363,21 +475,106 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Remove a registered image by key. </p>
-<p>Removing an image retires its logical texture generation and GPU resource after the exact last storage submission completes. <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> values previously returned for the key should be treated as invalid after removal.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td>string image key to remove. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A result whose value is true when an image was removed or false when the key was absent. Initialization and storage failures are returned as structured errors.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Unregister an image and retire its texture generation. </p>
+<p>Previously acquired texture handles no longer identify a published generation; reacquire a texture after registering the key again. GPU resources retire after recorded uses finish. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true if removed and false if no image was registered. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;brand/logo&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.removeImage(key);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = *result;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a4b02a332a11b0802e326009e5edd6116" name="a4b02a332a11b0802e326009e5edd6116"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b02a332a11b0802e326009e5edd6116">&#9670;&#160;</a></span>removeImage() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::ImageManager::removeImage </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Unregister an image and retire its texture generation. </p>
+<p>Previously acquired texture handles no longer identify a published generation; reacquire a texture after registering the key again. GPU resources retire after recorded uses finish.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true if removed and false if no image was registered. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.removeImage(<span class="stringliteral">&quot;brand/logo&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = *result;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a7021a67555a77afff2b497821fe8ef97" name="a7021a67555a77afff2b497821fe8ef97"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7021a67555a77afff2b497821fe8ef97">&#9670;&#160;</a></span>visitDevImages()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::ImageManager::visitDevImages </td>
+          <td>(</td>
+          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>userData</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#aeb4281a61ab0f4df0fd175f3a3b3c100">DevImageVisitor</a></td>          <td class="paramname"><span class="paramname"><em>visitor</em></span>&#160;) const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Observe development catalogue entries without invoking application operations. </p>
+<p>Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts named image registrations; completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>. Earlier callback effects, including the counter, are not rolled back on failure.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a null visitor. A failed <a class="el" href="classFlowUi_1_1Result.html">Result</a> is an operational/callback error, not an incomplete-visit bool.</dd></dl>
+<div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line">std::size_t count = 0;</div>
+<div class="line"><span class="keyword">auto</span> result = manager.visitDevImages(&amp;count,</div>
+<div class="line">    [](<span class="keywordtype">void</span>* target, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ImageManager_1_1DevImageView.html">FlowUi::ImageManager::DevImageView</a>&amp; image) {</div>
+<div class="line">        <span class="keyword">auto</span>&amp; observedCount = *<span class="keyword">static_cast&lt;</span>std::size_t*<span class="keyword">&gt;</span>(target);</div>
+<div class="line">        <span class="keywordflow">if</span> (!image.<a class="code hl_variable" href="structFlowUi_1_1ImageManager_1_1DevImageView.html#a38a4a6d50daea7f8916ee24229ffb40b">key</a>.empty()) {</div>
+<div class="line">            ++observedCount;</div>
+<div class="line">        }</div>
+<div class="line">        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">    });</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe">completed</a> = *result;</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html_aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe">FlowUi::devSystems::agentic::AgenticInteractionPhase::completed</a></div><div class="ttdeci">@ completed</div><div class="ttdef"><b>Definition</b> AgenticInteraction.hpp:486</div></div>
+<div class="ttc" id="astructFlowUi_1_1ImageManager_1_1DevImageView_html"><div class="ttname"><a href="structFlowUi_1_1ImageManager_1_1DevImageView.html">FlowUi::ImageManager::DevImageView</a></div><div class="ttdoc">Borrowed image registration metadata valid during visitation.</div><div class="ttdef"><b>Definition</b> ImageManager.hpp:48</div></div>
+<div class="ttc" id="astructFlowUi_1_1ImageManager_1_1DevImageView_html_a38a4a6d50daea7f8916ee24229ffb40b"><div class="ttname"><a href="structFlowUi_1_1ImageManager_1_1DevImageView.html#a38a4a6d50daea7f8916ee24229ffb40b">FlowUi::ImageManager::DevImageView::key</a></div><div class="ttdeci">std::string_view key</div><div class="ttdoc">Borrowed application-defined image registration key.</div><div class="ttdef"><b>Definition</b> ImageManager.hpp:50</div></div>
+</div><!-- fragment -->
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
@@ -396,7 +593,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1ImageManager.html">ImageManager</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1ImageManager.html">ImageManager</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

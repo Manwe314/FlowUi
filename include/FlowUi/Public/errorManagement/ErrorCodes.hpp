@@ -8,6 +8,11 @@ namespace FlowUi {
 /**
  * Return static catalog metadata for code. Unknown values retain the numeric code and receive a fatal
  * process-boundary descriptor named UnknownErrorCode.
+
+ * @par Example
+ * @code{.cpp}
+ * const auto metadata = FlowUi::describeError(FlowUi::ErrorCode::InvalidWindowId);
+ * @endcode
  */
 [[nodiscard]] constexpr ErrorDescriptor describeError(ErrorCode code) noexcept {
 	using detail::localDescriptor;
@@ -93,6 +98,9 @@ namespace FlowUi {
 				ErrorResolution::Propagated,
 				"ForeignExceptionObserved",
 				"User or third-party code threw while FlowUi was active."};
+
+	case ErrorCode::ColorInvalid:
+		return localDescriptor(code, "ColorInvalid", "The runtime color is not a valid hexadecimal color.");
 
 	case ErrorCode::AppUnavailable:
 		return localDescriptor(code, "AppUnavailable", "The FlowUi application is unavailable.");
@@ -842,7 +850,13 @@ namespace FlowUi {
 			"An unknown FlowUi error code was observed."};
 }
 
-/** Return the static code name, or UnknownErrorCode for an unrecognized value. */
+/**
+ * Return the static code name, or UnknownErrorCode for an unrecognized value.
+ * @par Example
+ * @code{.cpp}
+ * const std::string_view name = FlowUi::errorName(FlowUi::ErrorCode::InvalidWindowId);
+ * @endcode
+ */
 [[nodiscard]] constexpr std::string_view errorName(ErrorCode code) noexcept {
 	return describeError(code).name;
 }
@@ -850,6 +864,11 @@ namespace FlowUi {
 /**
  * Return a static, null-terminated diagnostic message for code; unknown values receive the catalog
  * fallback message.
+
+ * @par Example
+ * @code{.cpp}
+ * const std::string_view message = FlowUi::errorMessage(FlowUi::ErrorCode::InvalidWindowId);
+ * @endcode
  */
 [[nodiscard]] constexpr std::string_view errorMessage(ErrorCode code) noexcept {
 	return describeError(code).message;

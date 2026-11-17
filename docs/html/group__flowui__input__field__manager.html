@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,13 +107,13 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Public text input field API.  
+<p>Public text input field API.
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:FlowUi_3A_3AInputFieldManager" id="r_FlowUi_3A_3AInputFieldManager"><td class="memItemLeft">class &#160;</td><td class="memItemRight"><a class="el" href="classFlowUi_1_1InputFieldManager.html">FlowUi::InputFieldManager</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manages text input fields, focus, caret state, and edit operations.  <a href="classFlowUi_1_1InputFieldManager.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Window-owned editable text, caret state, and atomic edit operations.  <a href="classFlowUi_1_1InputFieldManager.html#details">More...</a><br /></td></tr>
 <tr class="memitem:FlowUi_3A_3ATextRange" id="r_FlowUi_3A_3ATextRange"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1TextRange.html">FlowUi::TextRange</a></td></tr>
 <tr class="memitem:FlowUi_3A_3AFieldTextView" id="r_FlowUi_3A_3AFieldTextView"><td class="memItemLeft">class &#160;</td><td class="memItemRight"><a class="el" href="classFlowUi_1_1FieldTextView.html">FlowUi::FieldTextView</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Non-owning access to manager-owned single-line or chunked text.  <a href="classFlowUi_1_1FieldTextView.html#details">More...</a><br /></td></tr>
@@ -127,7 +127,6 @@ Classes</h2></td></tr>
 <tr class="memitem:FlowUi_3A_3AFieldEditTransaction" id="r_FlowUi_3A_3AFieldEditTransaction"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1FieldEditTransaction.html">FlowUi::FieldEditTransaction</a></td></tr>
 <tr class="memitem:FlowUi_3A_3AInputFieldOverlayStyle" id="r_FlowUi_3A_3AInputFieldOverlayStyle"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1InputFieldOverlayStyle.html">FlowUi::InputFieldOverlayStyle</a></td></tr>
 <tr class="memitem:FlowUi_3A_3AFieldConfig" id="r_FlowUi_3A_3AFieldConfig"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1FieldConfig.html">FlowUi::FieldConfig</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Behavior configuration for a requested input field.  <a href="structFlowUi_1_1FieldConfig.html#details">More...</a><br /></td></tr>
 <tr class="memitem:FlowUi_3A_3AFieldRequest" id="r_FlowUi_3A_3AFieldRequest"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1FieldRequest.html">FlowUi::FieldRequest</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Input field request submitted by UI code.  <a href="structFlowUi_1_1FieldRequest.html#details">More...</a><br /></td></tr>
 <tr class="memitem:FlowUi_3A_3AFieldQueryResult" id="r_FlowUi_3A_3AFieldQueryResult"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1FieldQueryResult.html">FlowUi::FieldQueryResult</a></td></tr>
@@ -135,77 +134,92 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-typedef-members" class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:ga6e6a14690106c2e60879978eaa0d1bf4" id="r_ga6e6a14690106c2e60879978eaa0d1bf4"><td class="memItemLeft"><a id="ga6e6a14690106c2e60879978eaa0d1bf4" name="ga6e6a14690106c2e60879978eaa0d1bf4"></a>
-using&#160;</td><td class="memItemRight"><b>FlowUi::TextChunkVisitor</b> = std::function&lt;void(std::string_view)&gt;</td></tr>
+<tr class="memitem:ga6e6a14690106c2e60879978eaa0d1bf4" id="r_ga6e6a14690106c2e60879978eaa0d1bf4"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#ga6e6a14690106c2e60879978eaa0d1bf4">FlowUi::TextChunkVisitor</a> = std::function&lt;void(std::string_view)&gt;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:ga45d425b2fd21c934a3f16050cdc4cccb" id="r_ga45d425b2fd21c934a3f16050cdc4cccb"><td class="memItemLeft"><a id="ga45d425b2fd21c934a3f16050cdc4cccb" name="ga45d425b2fd21c934a3f16050cdc4cccb"></a>enum class &#160;</td><td class="memItemRight"><b>TextFieldMode</b> : uint8_t { <b>SingleLine</b> = 0
-, <b>MultiLine</b>
+<tr class="memitem:ga45d425b2fd21c934a3f16050cdc4cccb" id="r_ga45d425b2fd21c934a3f16050cdc4cccb"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#ga45d425b2fd21c934a3f16050cdc4cccb">FlowUi::TextFieldMode</a> : uint8_t { <a class="el" href="#gga45d425b2fd21c934a3f16050cdc4cccba3e5c1fb76b6543ac61af54b185f02af9">FlowUi::TextFieldMode::SingleLine</a> = 0
+, <a class="el" href="#gga45d425b2fd21c934a3f16050cdc4cccbad16a748b5543974384bc43d392f1e566">FlowUi::TextFieldMode::MultiLine</a>
  }</td></tr>
-<tr class="memitem:ga982197aa3d08150b8465d16683c5fa7a" id="r_ga982197aa3d08150b8465d16683c5fa7a"><td class="memItemLeft"><a id="ga982197aa3d08150b8465d16683c5fa7a" name="ga982197aa3d08150b8465d16683c5fa7a"></a>enum class &#160;</td><td class="memItemRight"><b>TransactionReportDetail</b> : uint8_t { <b>Summary</b> = 0
-, <b>Reversible</b>
+<tr class="memitem:ga982197aa3d08150b8465d16683c5fa7a" id="r_ga982197aa3d08150b8465d16683c5fa7a"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#ga982197aa3d08150b8465d16683c5fa7a">FlowUi::TransactionReportDetail</a> : uint8_t { <a class="el" href="#gga982197aa3d08150b8465d16683c5fa7aa290612199861c31d1036b185b4e69b75">FlowUi::TransactionReportDetail::Summary</a> = 0
+, <a class="el" href="#gga982197aa3d08150b8465d16683c5fa7aaf8ade54b6b2780cf29b2ac6158b58433">FlowUi::TransactionReportDetail::Reversible</a>
  }</td></tr>
-<tr class="memitem:gac4c000112c00c4b93f0377f4718508e6" id="r_gac4c000112c00c4b93f0377f4718508e6"><td class="memItemLeft"><a id="gac4c000112c00c4b93f0377f4718508e6" name="gac4c000112c00c4b93f0377f4718508e6"></a>enum class &#160;</td><td class="memItemRight"><b>EditOrigin</b> : uint8_t { <br />
-&#160;&#160;<b>TypedInput</b> = 0
-, <b>Paste</b>
-, <b>Cut</b>
-, <b>Delete</b>
+<tr class="memitem:gac4c000112c00c4b93f0377f4718508e6" id="r_gac4c000112c00c4b93f0377f4718508e6"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#gac4c000112c00c4b93f0377f4718508e6">FlowUi::EditOrigin</a> : uint8_t { <br />
+&#160;&#160;<a class="el" href="#ggac4c000112c00c4b93f0377f4718508e6a55ef7df313ae4b4080ae4d2756dad48b">FlowUi::EditOrigin::TypedInput</a> = 0
+, <a class="el" href="#ggac4c000112c00c4b93f0377f4718508e6a36bb6559696dc9124986ae120515984f">FlowUi::EditOrigin::Paste</a>
+, <a class="el" href="#ggac4c000112c00c4b93f0377f4718508e6aeb334dca00e390e0d3ebf52d205807d7">FlowUi::EditOrigin::Cut</a>
+, <a class="el" href="#ggac4c000112c00c4b93f0377f4718508e6af2a6c498fb90ee345d997f888fce3b18">FlowUi::EditOrigin::Delete</a>
 , <br />
-&#160;&#160;<b>Programmatic</b>
-, <b>ExternalUndo</b>
-, <b>ExternalRedo</b>
+&#160;&#160;<a class="el" href="#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">FlowUi::EditOrigin::Programmatic</a>
+, <a class="el" href="#ggac4c000112c00c4b93f0377f4718508e6a3c34e7be7c210cc4696ad0407d5a6ea6">FlowUi::EditOrigin::ExternalUndo</a>
+, <a class="el" href="#ggac4c000112c00c4b93f0377f4718508e6a58c123e5862b2bf6820d18d6114f1eb0">FlowUi::EditOrigin::ExternalRedo</a>
 <br />
  }</td></tr>
-<tr class="memitem:ga0dd0f56785ef61ed5789a6389c071875" id="r_ga0dd0f56785ef61ed5789a6389c071875"><td class="memItemLeft"><a id="ga0dd0f56785ef61ed5789a6389c071875" name="ga0dd0f56785ef61ed5789a6389c071875"></a>enum class &#160;</td><td class="memItemRight"><b>EditResult</b> : uint8_t { <br />
-&#160;&#160;<b>Applied</b> = 0
-, <b>NoChange</b>
-, <b>RejectedNoField</b>
-, <b>RejectedNoFocus</b>
+<tr class="memitem:ga0dd0f56785ef61ed5789a6389c071875" id="r_ga0dd0f56785ef61ed5789a6389c071875"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#ga0dd0f56785ef61ed5789a6389c071875">FlowUi::EditResult</a> : uint8_t { <br />
+&#160;&#160;<a class="el" href="#gga0dd0f56785ef61ed5789a6389c071875a733d43480c8589b1368e5def6b480415">FlowUi::EditResult::Applied</a> = 0
+, <a class="el" href="#gga0dd0f56785ef61ed5789a6389c071875a4bac8cdf0a968472b519b3b295d0d48b">FlowUi::EditResult::NoChange</a>
+, <a class="el" href="#gga0dd0f56785ef61ed5789a6389c071875ae258a5788c564f795fa6a0d2226d5aa0">FlowUi::EditResult::RejectedNoField</a>
+, <a class="el" href="#gga0dd0f56785ef61ed5789a6389c071875a8e219a2158681691e95fb268fc7820b6">FlowUi::EditResult::RejectedNoFocus</a>
 , <br />
-&#160;&#160;<b>RejectedReadOnly</b>
-, <b>RejectedInvalidRange</b>
-, <b>RejectedSizeLimit</b>
-, <b>RejectedNewline</b>
+&#160;&#160;<a class="el" href="#gga0dd0f56785ef61ed5789a6389c071875a4222b0e5fbbe391a737d4fc5b93d1e7a">FlowUi::EditResult::RejectedReadOnly</a>
+, <a class="el" href="#gga0dd0f56785ef61ed5789a6389c071875a92b4f357221e196a4e75f56f258ab1cc">FlowUi::EditResult::RejectedInvalidRange</a>
+, <a class="el" href="#gga0dd0f56785ef61ed5789a6389c071875a44ecfe364850bd1e6df5c1b4896add8f">FlowUi::EditResult::RejectedSizeLimit</a>
+, <a class="el" href="#gga0dd0f56785ef61ed5789a6389c071875a1a71093ef34e17c97eee3d8bd50ea7c8">FlowUi::EditResult::RejectedNewline</a>
 , <br />
-&#160;&#160;<b>RejectedInvalidUtf8</b>
+&#160;&#160;<a class="el" href="#gga0dd0f56785ef61ed5789a6389c071875a5a1c3284b08ee3ba67efc3ee25aaf8e3">FlowUi::EditResult::RejectedInvalidUtf8</a>
 <br />
  }</td></tr>
-<tr class="memitem:ga66f3400fb677fed49ba710ebb03efd21" id="r_ga66f3400fb677fed49ba710ebb03efd21"><td class="memItemLeft"><a id="ga66f3400fb677fed49ba710ebb03efd21" name="ga66f3400fb677fed49ba710ebb03efd21"></a>enum class &#160;</td><td class="memItemRight"><b>FieldCommandRequest</b> : uint8_t { <b>Undo</b> = 0
-, <b>Redo</b>
-, <b>Submit</b>
-, <b>Cancel</b>
+<tr class="memitem:ga66f3400fb677fed49ba710ebb03efd21" id="r_ga66f3400fb677fed49ba710ebb03efd21"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#ga66f3400fb677fed49ba710ebb03efd21">FlowUi::FieldCommandRequest</a> : uint8_t { <a class="el" href="#gga66f3400fb677fed49ba710ebb03efd21a1cdc076b28f70afac5fcedadf99fa119">FlowUi::FieldCommandRequest::Undo</a> = 0
+, <a class="el" href="#gga66f3400fb677fed49ba710ebb03efd21a5afeaba074ef570dc720caaa855d49f6">FlowUi::FieldCommandRequest::Redo</a>
+, <a class="el" href="#gga66f3400fb677fed49ba710ebb03efd21aa4d3b161ce1309df1c4e25df28694b7b">FlowUi::FieldCommandRequest::Submit</a>
+, <a class="el" href="#gga66f3400fb677fed49ba710ebb03efd21aea4788705e6873b424c65e91c2846b19">FlowUi::FieldCommandRequest::Cancel</a>
  }</td></tr>
-<tr class="memitem:ga17519737fd3b2a3bd179565b03060d4b" id="r_ga17519737fd3b2a3bd179565b03060d4b"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#ga17519737fd3b2a3bd179565b03060d4b">FlowUi::InputCaretShape</a> : uint8_t { <b>Bar</b> = 0
-, <b>Block</b>
-, <b>Underline</b>
+<tr class="memitem:ga17519737fd3b2a3bd179565b03060d4b" id="r_ga17519737fd3b2a3bd179565b03060d4b"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#ga17519737fd3b2a3bd179565b03060d4b">FlowUi::InputCaretShape</a> : uint8_t { <a class="el" href="#gga17519737fd3b2a3bd179565b03060d4baddc35f88fa71b6ef142ae61f35364653">FlowUi::InputCaretShape::Bar</a> = 0
+, <a class="el" href="#gga17519737fd3b2a3bd179565b03060d4bae1e4c8c9ccd9fc39c391da4bcd093fb2">FlowUi::InputCaretShape::Block</a>
+, <a class="el" href="#gga17519737fd3b2a3bd179565b03060d4ba852721aa5fc738dfedff2945d71da439">FlowUi::InputCaretShape::Underline</a>
  }</td></tr>
-<tr class="memitem:gabc15f2937e19384daee25f8b38ccd88b" id="r_gabc15f2937e19384daee25f8b38ccd88b"><td class="memItemLeft"><a id="gabc15f2937e19384daee25f8b38ccd88b" name="gabc15f2937e19384daee25f8b38ccd88b"></a>enum class &#160;</td><td class="memItemRight"><b>TextCommand</b> : uint8_t { <br />
-&#160;&#160;<b>SelectAll</b> = 0
-, <b>Copy</b>
-, <b>Cut</b>
-, <b>Paste</b>
+<tr class="memitem:gabc15f2937e19384daee25f8b38ccd88b" id="r_gabc15f2937e19384daee25f8b38ccd88b"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#gabc15f2937e19384daee25f8b38ccd88b">FlowUi::TextCommand</a> : uint8_t { <br />
+&#160;&#160;<a class="el" href="#ggabc15f2937e19384daee25f8b38ccd88ba702bbdc91c8e399d7b0807de5b7adc27">FlowUi::TextCommand::SelectAll</a> = 0
+, <a class="el" href="#ggabc15f2937e19384daee25f8b38ccd88ba5fb63579fc981698f97d55bfecb213ea">FlowUi::TextCommand::Copy</a>
+, <a class="el" href="#ggabc15f2937e19384daee25f8b38ccd88baeb334dca00e390e0d3ebf52d205807d7">FlowUi::TextCommand::Cut</a>
+, <a class="el" href="#ggabc15f2937e19384daee25f8b38ccd88ba36bb6559696dc9124986ae120515984f">FlowUi::TextCommand::Paste</a>
 , <br />
-&#160;&#160;<b>RequestUndo</b>
-, <b>RequestRedo</b>
-, <b>MoveWordLeft</b>
-, <b>MoveWordRight</b>
+&#160;&#160;<a class="el" href="#ggabc15f2937e19384daee25f8b38ccd88bad2dbcaab0a25a1523dc5e810785041ff">FlowUi::TextCommand::RequestUndo</a>
+, <a class="el" href="#ggabc15f2937e19384daee25f8b38ccd88baa96486829ee4a6ac242574770e37bfc8">FlowUi::TextCommand::RequestRedo</a>
+, <a class="el" href="#ggabc15f2937e19384daee25f8b38ccd88ba002e07cb5223cd33859d9415774e3177">FlowUi::TextCommand::MoveWordLeft</a>
+, <a class="el" href="#ggabc15f2937e19384daee25f8b38ccd88bad55f7c4e520b18a43dd671c5fa83d5b0">FlowUi::TextCommand::MoveWordRight</a>
 , <br />
-&#160;&#160;<b>MoveDocumentStart</b>
-, <b>MoveDocumentEnd</b>
-, <b>DeleteWordBackward</b>
-, <b>DeleteWordForward</b>
+&#160;&#160;<a class="el" href="#ggabc15f2937e19384daee25f8b38ccd88ba79de21961e4925557bbaaef94c52d24b">FlowUi::TextCommand::MoveDocumentStart</a>
+, <a class="el" href="#ggabc15f2937e19384daee25f8b38ccd88bae5ee83a16e35ac5baf7b204530172911">FlowUi::TextCommand::MoveDocumentEnd</a>
+, <a class="el" href="#ggabc15f2937e19384daee25f8b38ccd88ba6c02931afa83fea81d44f47e137c5278">FlowUi::TextCommand::DeleteWordBackward</a>
+, <a class="el" href="#ggabc15f2937e19384daee25f8b38ccd88ba433dee161f756bb54e2550bc289039d4">FlowUi::TextCommand::DeleteWordForward</a>
 <br />
  }</td></tr>
-<tr class="memitem:gafeb7e7dce488c324629200446fdbf6c0" id="r_gafeb7e7dce488c324629200446fdbf6c0"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#gafeb7e7dce488c324629200446fdbf6c0">FlowUi::CaretRequestKind</a> : uint8_t { <a class="el" href="#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">CaretRequestKind::SetPrimary</a> = 0
-, <a class="el" href="#ggafeb7e7dce488c324629200446fdbf6c0aec211f7c20af43e742bf2570c3cb84f9">CaretRequestKind::Add</a> = 1
-, <a class="el" href="#ggafeb7e7dce488c324629200446fdbf6c0a7aaf620fe818489b59d52585ff04d995">CaretRequestKind::ClearAll</a> = 2
+<tr class="memitem:gafeb7e7dce488c324629200446fdbf6c0" id="r_gafeb7e7dce488c324629200446fdbf6c0"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#gafeb7e7dce488c324629200446fdbf6c0">FlowUi::CaretRequestKind</a> : uint8_t { <a class="el" href="#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a> = 0
+, <a class="el" href="#ggafeb7e7dce488c324629200446fdbf6c0aec211f7c20af43e742bf2570c3cb84f9">FlowUi::CaretRequestKind::Add</a> = 1
+, <a class="el" href="#ggafeb7e7dce488c324629200446fdbf6c0a7aaf620fe818489b59d52585ff04d995">FlowUi::CaretRequestKind::ClearAll</a> = 2
  }</td></tr>
 <tr class="memdesc:gafeb7e7dce488c324629200446fdbf6c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Requested caret operation for an input field.  <a href="#gafeb7e7dce488c324629200446fdbf6c0">More...</a><br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Public text input field API. </p>
-</div><a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
+</div><a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Typedef Documentation</h2>
+<a id="ga6e6a14690106c2e60879978eaa0d1bf4" name="ga6e6a14690106c2e60879978eaa0d1bf4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6e6a14690106c2e60879978eaa0d1bf4">&#9670;&#160;</a></span>TextChunkVisitor</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="#ga6e6a14690106c2e60879978eaa0d1bf4">FlowUi::TextChunkVisitor</a> = std::function&lt;void(std::string_view)&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Synchronous visitor for a borrowed contiguous text chunk. Copy bytes during the call to retain them; do not mutate the field during iteration. </p>
+
+</div>
+</div>
+<a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
 <a id="gafeb7e7dce488c324629200446fdbf6c0" name="gafeb7e7dce488c324629200446fdbf6c0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#gafeb7e7dce488c324629200446fdbf6c0">&#9670;&#160;</a></span>CaretRequestKind</h2>
 
@@ -242,6 +256,121 @@ Enumerations</h2></td></tr>
 
 </div>
 </div>
+<a id="gac4c000112c00c4b93f0377f4718508e6" name="gac4c000112c00c4b93f0377f4718508e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac4c000112c00c4b93f0377f4718508e6">&#9670;&#160;</a></span>EditOrigin</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="#gac4c000112c00c4b93f0377f4718508e6">FlowUi::EditOrigin</a> : uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel strong">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Source attribution for a successful text edit transaction. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ggac4c000112c00c4b93f0377f4718508e6a55ef7df313ae4b4080ae4d2756dad48b" name="ggac4c000112c00c4b93f0377f4718508e6a55ef7df313ae4b4080ae4d2756dad48b"></a>TypedInput&#160;</td><td class="fielddoc"><p>Typed Unicode text input. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggac4c000112c00c4b93f0377f4718508e6a36bb6559696dc9124986ae120515984f" name="ggac4c000112c00c4b93f0377f4718508e6a36bb6559696dc9124986ae120515984f"></a>Paste&#160;</td><td class="fielddoc"><p>Insert clipboard text. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggac4c000112c00c4b93f0377f4718508e6aeb334dca00e390e0d3ebf52d205807d7" name="ggac4c000112c00c4b93f0377f4718508e6aeb334dca00e390e0d3ebf52d205807d7"></a>Cut&#160;</td><td class="fielddoc"><p>Remove selected text and copy it to the clipboard. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggac4c000112c00c4b93f0377f4718508e6af2a6c498fb90ee345d997f888fce3b18" name="ggac4c000112c00c4b93f0377f4718508e6af2a6c498fb90ee345d997f888fce3b18"></a>Delete&#160;</td><td class="fielddoc"><p>Delete text without clipboard transfer. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc" name="ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc"></a>Programmatic&#160;</td><td class="fielddoc"><p>Caller-requested edit. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggac4c000112c00c4b93f0377f4718508e6a3c34e7be7c210cc4696ad0407d5a6ea6" name="ggac4c000112c00c4b93f0377f4718508e6a3c34e7be7c210cc4696ad0407d5a6ea6"></a>ExternalUndo&#160;</td><td class="fielddoc"><p>Application-provided undo edit. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggac4c000112c00c4b93f0377f4718508e6a58c123e5862b2bf6820d18d6114f1eb0" name="ggac4c000112c00c4b93f0377f4718508e6a58c123e5862b2bf6820d18d6114f1eb0"></a>ExternalRedo&#160;</td><td class="fielddoc"><p>Application-provided redo edit. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a id="ga0dd0f56785ef61ed5789a6389c071875" name="ga0dd0f56785ef61ed5789a6389c071875"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0dd0f56785ef61ed5789a6389c071875">&#9670;&#160;</a></span>EditResult</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="#ga0dd0f56785ef61ed5789a6389c071875">FlowUi::EditResult</a> : uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel strong">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Atomic edit outcome. Applied changes the revision; NoChange and rejection outcomes leave the document unchanged. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga0dd0f56785ef61ed5789a6389c071875a733d43480c8589b1368e5def6b480415" name="gga0dd0f56785ef61ed5789a6389c071875a733d43480c8589b1368e5def6b480415"></a>Applied&#160;</td><td class="fielddoc"><p>The atomic edit changed stored text. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga0dd0f56785ef61ed5789a6389c071875a4bac8cdf0a968472b519b3b295d0d48b" name="gga0dd0f56785ef61ed5789a6389c071875a4bac8cdf0a968472b519b3b295d0d48b"></a>NoChange&#160;</td><td class="fielddoc"><p>The edit produced no text change. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga0dd0f56785ef61ed5789a6389c071875ae258a5788c564f795fa6a0d2226d5aa0" name="gga0dd0f56785ef61ed5789a6389c071875ae258a5788c564f795fa6a0d2226d5aa0"></a>RejectedNoField&#160;</td><td class="fielddoc"><p>The requested field does not exist. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga0dd0f56785ef61ed5789a6389c071875a8e219a2158681691e95fb268fc7820b6" name="gga0dd0f56785ef61ed5789a6389c071875a8e219a2158681691e95fb268fc7820b6"></a>RejectedNoFocus&#160;</td><td class="fielddoc"><p>The command requires a focused field. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga0dd0f56785ef61ed5789a6389c071875a4222b0e5fbbe391a737d4fc5b93d1e7a" name="gga0dd0f56785ef61ed5789a6389c071875a4222b0e5fbbe391a737d4fc5b93d1e7a"></a>RejectedReadOnly&#160;</td><td class="fielddoc"><p>The field rejects mutations. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga0dd0f56785ef61ed5789a6389c071875a92b4f357221e196a4e75f56f258ab1cc" name="gga0dd0f56785ef61ed5789a6389c071875a92b4f357221e196a4e75f56f258ab1cc"></a>RejectedInvalidRange&#160;</td><td class="fielddoc"><p>A byte range is invalid or not on a UTF-8 boundary. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga0dd0f56785ef61ed5789a6389c071875a44ecfe364850bd1e6df5c1b4896add8f" name="gga0dd0f56785ef61ed5789a6389c071875a44ecfe364850bd1e6df5c1b4896add8f"></a>RejectedSizeLimit&#160;</td><td class="fielddoc"><p>The resulting text exceeds maxBytes. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga0dd0f56785ef61ed5789a6389c071875a1a71093ef34e17c97eee3d8bd50ea7c8" name="gga0dd0f56785ef61ed5789a6389c071875a1a71093ef34e17c97eee3d8bd50ea7c8"></a>RejectedNewline&#160;</td><td class="fielddoc"><p>Single-line mode rejects inserted newlines. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga0dd0f56785ef61ed5789a6389c071875a5a1c3284b08ee3ba67efc3ee25aaf8e3" name="gga0dd0f56785ef61ed5789a6389c071875a5a1c3284b08ee3ba67efc3ee25aaf8e3"></a>RejectedInvalidUtf8&#160;</td><td class="fielddoc"><p>Inserted bytes are not valid UTF-8. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a id="ga66f3400fb677fed49ba710ebb03efd21" name="ga66f3400fb677fed49ba710ebb03efd21"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga66f3400fb677fed49ba710ebb03efd21">&#9670;&#160;</a></span>FieldCommandRequest</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="#ga66f3400fb677fed49ba710ebb03efd21">FlowUi::FieldCommandRequest</a> : uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel strong">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Command requested by field interaction; the application supplies undo/redo history and handles submit/cancel. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga66f3400fb677fed49ba710ebb03efd21a1cdc076b28f70afac5fcedadf99fa119" name="gga66f3400fb677fed49ba710ebb03efd21a1cdc076b28f70afac5fcedadf99fa119"></a>Undo&#160;</td><td class="fielddoc"><p>Request application undo. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga66f3400fb677fed49ba710ebb03efd21a5afeaba074ef570dc720caaa855d49f6" name="gga66f3400fb677fed49ba710ebb03efd21a5afeaba074ef570dc720caaa855d49f6"></a>Redo&#160;</td><td class="fielddoc"><p>Request application redo. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga66f3400fb677fed49ba710ebb03efd21aa4d3b161ce1309df1c4e25df28694b7b" name="gga66f3400fb677fed49ba710ebb03efd21aa4d3b161ce1309df1c4e25df28694b7b"></a>Submit&#160;</td><td class="fielddoc"><p>Request submission. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga66f3400fb677fed49ba710ebb03efd21aea4788705e6873b424c65e91c2846b19" name="gga66f3400fb677fed49ba710ebb03efd21aea4788705e6873b424c65e91c2846b19"></a>Cancel&#160;</td><td class="fielddoc"><p>Request cancellation. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
 <a id="ga17519737fd3b2a3bd179565b03060d4b" name="ga17519737fd3b2a3bd179565b03060d4b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga17519737fd3b2a3bd179565b03060d4b">&#9670;&#160;</a></span>InputCaretShape</h2>
 
@@ -262,6 +391,121 @@ Enumerations</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Visual form used when the manager emits a field's caret overlay. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga17519737fd3b2a3bd179565b03060d4baddc35f88fa71b6ef142ae61f35364653" name="gga17519737fd3b2a3bd179565b03060d4baddc35f88fa71b6ef142ae61f35364653"></a>Bar&#160;</td><td class="fielddoc"><p>Vertical insertion bar. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga17519737fd3b2a3bd179565b03060d4bae1e4c8c9ccd9fc39c391da4bcd093fb2" name="gga17519737fd3b2a3bd179565b03060d4bae1e4c8c9ccd9fc39c391da4bcd093fb2"></a>Block&#160;</td><td class="fielddoc"><p>Character-width block. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga17519737fd3b2a3bd179565b03060d4ba852721aa5fc738dfedff2945d71da439" name="gga17519737fd3b2a3bd179565b03060d4ba852721aa5fc738dfedff2945d71da439"></a>Underline&#160;</td><td class="fielddoc"><p>Horizontal underline. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a id="gabc15f2937e19384daee25f8b38ccd88b" name="gabc15f2937e19384daee25f8b38ccd88b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gabc15f2937e19384daee25f8b38ccd88b">&#9670;&#160;</a></span>TextCommand</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="#gabc15f2937e19384daee25f8b38ccd88b">FlowUi::TextCommand</a> : uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel strong">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Built-in clipboard, selection, navigation, and undo/redo-request commands dispatched by <a class="el" href="classFlowUi_1_1InputFieldManager.html" title="Window-owned editable text, caret state, and atomic edit operations.">InputFieldManager</a>. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ggabc15f2937e19384daee25f8b38ccd88ba702bbdc91c8e399d7b0807de5b7adc27" name="ggabc15f2937e19384daee25f8b38ccd88ba702bbdc91c8e399d7b0807de5b7adc27"></a>SelectAll&#160;</td><td class="fielddoc"><p>Select the whole document. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggabc15f2937e19384daee25f8b38ccd88ba5fb63579fc981698f97d55bfecb213ea" name="ggabc15f2937e19384daee25f8b38ccd88ba5fb63579fc981698f97d55bfecb213ea"></a>Copy&#160;</td><td class="fielddoc"><p>Copy selected text. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggabc15f2937e19384daee25f8b38ccd88baeb334dca00e390e0d3ebf52d205807d7" name="ggabc15f2937e19384daee25f8b38ccd88baeb334dca00e390e0d3ebf52d205807d7"></a>Cut&#160;</td><td class="fielddoc"><p>Remove selected text and copy it to the clipboard. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggabc15f2937e19384daee25f8b38ccd88ba36bb6559696dc9124986ae120515984f" name="ggabc15f2937e19384daee25f8b38ccd88ba36bb6559696dc9124986ae120515984f"></a>Paste&#160;</td><td class="fielddoc"><p>Insert clipboard text. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggabc15f2937e19384daee25f8b38ccd88bad2dbcaab0a25a1523dc5e810785041ff" name="ggabc15f2937e19384daee25f8b38ccd88bad2dbcaab0a25a1523dc5e810785041ff"></a>RequestUndo&#160;</td><td class="fielddoc"><p>Publish an Undo command request. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggabc15f2937e19384daee25f8b38ccd88baa96486829ee4a6ac242574770e37bfc8" name="ggabc15f2937e19384daee25f8b38ccd88baa96486829ee4a6ac242574770e37bfc8"></a>RequestRedo&#160;</td><td class="fielddoc"><p>Publish a Redo command request. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggabc15f2937e19384daee25f8b38ccd88ba002e07cb5223cd33859d9415774e3177" name="ggabc15f2937e19384daee25f8b38ccd88ba002e07cb5223cd33859d9415774e3177"></a>MoveWordLeft&#160;</td><td class="fielddoc"><p>Move carets to preceding word boundaries. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggabc15f2937e19384daee25f8b38ccd88bad55f7c4e520b18a43dd671c5fa83d5b0" name="ggabc15f2937e19384daee25f8b38ccd88bad55f7c4e520b18a43dd671c5fa83d5b0"></a>MoveWordRight&#160;</td><td class="fielddoc"><p>Move carets to following word boundaries. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggabc15f2937e19384daee25f8b38ccd88ba79de21961e4925557bbaaef94c52d24b" name="ggabc15f2937e19384daee25f8b38ccd88ba79de21961e4925557bbaaef94c52d24b"></a>MoveDocumentStart&#160;</td><td class="fielddoc"><p>Move carets to document start. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggabc15f2937e19384daee25f8b38ccd88bae5ee83a16e35ac5baf7b204530172911" name="ggabc15f2937e19384daee25f8b38ccd88bae5ee83a16e35ac5baf7b204530172911"></a>MoveDocumentEnd&#160;</td><td class="fielddoc"><p>Move carets to document end. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggabc15f2937e19384daee25f8b38ccd88ba6c02931afa83fea81d44f47e137c5278" name="ggabc15f2937e19384daee25f8b38ccd88ba6c02931afa83fea81d44f47e137c5278"></a>DeleteWordBackward&#160;</td><td class="fielddoc"><p>Delete to preceding word boundaries. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggabc15f2937e19384daee25f8b38ccd88ba433dee161f756bb54e2550bc289039d4" name="ggabc15f2937e19384daee25f8b38ccd88ba433dee161f756bb54e2550bc289039d4"></a>DeleteWordForward&#160;</td><td class="fielddoc"><p>Delete to following word boundaries. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a id="ga45d425b2fd21c934a3f16050cdc4cccb" name="ga45d425b2fd21c934a3f16050cdc4cccb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga45d425b2fd21c934a3f16050cdc4cccb">&#9670;&#160;</a></span>TextFieldMode</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="#ga45d425b2fd21c934a3f16050cdc4cccb">FlowUi::TextFieldMode</a> : uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel strong">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Text storage and newline policy for a field: contiguous single-line text or chunked multiline text. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga45d425b2fd21c934a3f16050cdc4cccba3e5c1fb76b6543ac61af54b185f02af9" name="gga45d425b2fd21c934a3f16050cdc4cccba3e5c1fb76b6543ac61af54b185f02af9"></a>SingleLine&#160;</td><td class="fielddoc"><p>Reject line endings and use contiguous storage. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga45d425b2fd21c934a3f16050cdc4cccbad16a748b5543974384bc43d392f1e566" name="gga45d425b2fd21c934a3f16050cdc4cccbad16a748b5543974384bc43d392f1e566"></a>MultiLine&#160;</td><td class="fielddoc"><p>Normalize newlines and use chunked document storage. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a id="ga982197aa3d08150b8465d16683c5fa7a" name="ga982197aa3d08150b8465d16683c5fa7a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga982197aa3d08150b8465d16683c5fa7a">&#9670;&#160;</a></span>TransactionReportDetail</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="#ga982197aa3d08150b8465d16683c5fa7a">FlowUi::TransactionReportDetail</a> : uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel strong">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Report detail: Summary retains counts/ranges; Reversible additionally retains removed and inserted bytes for external undo. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga982197aa3d08150b8465d16683c5fa7aa290612199861c31d1036b185b4e69b75" name="gga982197aa3d08150b8465d16683c5fa7aa290612199861c31d1036b185b4e69b75"></a>Summary&#160;</td><td class="fielddoc"><p>Ranges and byte counts only. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga982197aa3d08150b8465d16683c5fa7aaf8ade54b6b2780cf29b2ac6158b58433" name="gga982197aa3d08150b8465d16683c5fa7aaf8ade54b6b2780cf29b2ac6158b58433"></a>Reversible&#160;</td><td class="fielddoc"><p>Include removed and inserted byte payloads. </p>
+</td></tr>
+</table>
 
 </div>
 </div>

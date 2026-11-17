@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,16 +106,63 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::PopupOverflowPolicy Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="PopupTypes_8hpp_source.html">PopupTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:acfd442182d08c75e85e5646a9b4c0c71" id="r_acfd442182d08c75e85e5646a9b4c0c71"><td class="memItemLeft"><a id="acfd442182d08c75e85e5646a9b4c0c71" name="acfd442182d08c75e85e5646a9b4c0c71"></a>
-bool&#160;</td><td class="memItemRight"><b>flipX</b> = true</td></tr>
-<tr class="memitem:afdfadf02188667a4d491ad40cbea29f9" id="r_afdfadf02188667a4d491ad40cbea29f9"><td class="memItemLeft"><a id="afdfadf02188667a4d491ad40cbea29f9" name="afdfadf02188667a4d491ad40cbea29f9"></a>
-bool&#160;</td><td class="memItemRight"><b>flipY</b> = true</td></tr>
-<tr class="memitem:a2fa59749c349bf04e532edac3787e1d7" id="r_a2fa59749c349bf04e532edac3787e1d7"><td class="memItemLeft"><a id="a2fa59749c349bf04e532edac3787e1d7" name="a2fa59749c349bf04e532edac3787e1d7"></a>
-bool&#160;</td><td class="memItemRight"><b>shiftToFit</b> = true</td></tr>
+<tr class="memitem:acfd442182d08c75e85e5646a9b4c0c71" id="r_acfd442182d08c75e85e5646a9b4c0c71"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#acfd442182d08c75e85e5646a9b4c0c71">flipX</a> = true</td></tr>
+<tr class="memitem:afdfadf02188667a4d491ad40cbea29f9" id="r_afdfadf02188667a4d491ad40cbea29f9"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#afdfadf02188667a4d491ad40cbea29f9">flipY</a> = true</td></tr>
+<tr class="memitem:a2fa59749c349bf04e532edac3787e1d7" id="r_a2fa59749c349bf04e532edac3787e1d7"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a2fa59749c349bf04e532edac3787e1d7">shiftToFit</a> = true</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Placement adjustments allowed when a popup would extend beyond its window viewport. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="acfd442182d08c75e85e5646a9b4c0c71" name="acfd442182d08c75e85e5646a9b4c0c71"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acfd442182d08c75e85e5646a9b4c0c71">&#9670;&#160;</a></span>flipX</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::PopupOverflowPolicy::flipX = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Try horizontally mirrored attachment points when placement overflows. </p>
+
+</div>
+</div>
+<a id="afdfadf02188667a4d491ad40cbea29f9" name="afdfadf02188667a4d491ad40cbea29f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afdfadf02188667a4d491ad40cbea29f9">&#9670;&#160;</a></span>flipY</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::PopupOverflowPolicy::flipY = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Try vertically mirrored attachment points when placement overflows. </p>
+
+</div>
+</div>
+<a id="a2fa59749c349bf04e532edac3787e1d7" name="a2fa59749c349bf04e532edac3787e1d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2fa59749c349bf04e532edac3787e1d7">&#9670;&#160;</a></span>shiftToFit</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::PopupOverflowPolicy::shiftToFit = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Shift the selected placement into the viewport bounds. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="PopupTypes_8hpp_source.html">PopupTypes.hpp</a></li>
 </ul>
@@ -132,7 +179,7 @@ bool&#160;</td><td class="memItemRight"><b>shiftToFit</b> = true</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1PopupOverflowPolicy.html">PopupOverflowPolicy</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1PopupOverflowPolicy.html">PopupOverflowPolicy</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

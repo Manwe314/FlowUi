@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,33 +111,48 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:aa1a8112cee216cb89622d27aae9d5ba8" id="r_aa1a8112cee216cb89622d27aae9d5ba8"><td class="memItemLeft"><a id="aa1a8112cee216cb89622d27aae9d5ba8" name="aa1a8112cee216cb89622d27aae9d5ba8"></a>
+constexpr&#160;</td><td class="memItemRight"><b>DevInspectTarget</b> () noexcept=default</td></tr>
+<tr class="memdesc:aa1a8112cee216cb89622d27aae9d5ba8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct an empty selection with no window or target identity. <br /></td></tr>
 <tr class="memitem:acf386dfb1274e7edbb606e0732804da4" id="r_acf386dfb1274e7edbb606e0732804da4"><td class="memItemLeft"><a id="acf386dfb1274e7edbb606e0732804da4" name="acf386dfb1274e7edbb606e0732804da4"></a>
-constexpr&#160;</td><td class="memItemRight"><b>DevInspectTarget</b> (WindowId win, <a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a> def, ::FlowUi::detail::element::ElementInstanceKey inst) noexcept</td></tr>
+constexpr&#160;</td><td class="memItemRight"><b>DevInspectTarget</b> (<a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> win, <a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a> def, ::FlowUi::detail::element::ElementInstanceKey inst) noexcept</td></tr>
+<tr class="memdesc:acf386dfb1274e7edbb606e0732804da4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a window-qualified typed Flow selection from definition/instance identities. <br /></td></tr>
 <tr class="memitem:aa928e6cb5e62640ce4554fd578338642" id="r_aa928e6cb5e62640ce4554fd578338642"><td class="memItemLeft"><a id="aa928e6cb5e62640ce4554fd578338642" name="aa928e6cb5e62640ce4554fd578338642"></a>
-constexpr&#160;</td><td class="memItemRight"><b>DevInspectTarget</b> (WindowId win, uint32_t c_id, uint32_t c_root, uint32_t c_index, uint64_t s_key) noexcept</td></tr>
+constexpr&#160;</td><td class="memItemRight"><b>DevInspectTarget</b> (<a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> win, uint32_t c_id, uint32_t c_root, uint32_t c_index, uint64_t s_key) noexcept</td></tr>
+<tr class="memdesc:aa928e6cb5e62640ce4554fd578338642"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a window-qualified raw Clay selection with its stable correlation key. <br /></td></tr>
 <tr class="memitem:aa38c1ed6928680f345333bac4e4db009" id="r_aa38c1ed6928680f345333bac4e4db009"><td class="memItemLeft"><a id="aa38c1ed6928680f345333bac4e4db009" name="aa38c1ed6928680f345333bac4e4db009"></a>
 &#160;</td><td class="memItemRight"><b>operator bool</b> () const noexcept</td></tr>
+<tr class="memdesc:aa38c1ed6928680f345333bac4e4db009"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether a nonzero window and a valid Flow/Clay target identity are present. <br /></td></tr>
 <tr class="memitem:a2e2b19444ce37f8486995ed637c82796" id="r_a2e2b19444ce37f8486995ed637c82796"><td class="memItemLeft"><a id="a2e2b19444ce37f8486995ed637c82796" name="a2e2b19444ce37f8486995ed637c82796"></a>
-bool&#160;</td><td class="memItemRight"><b>operator==</b> (const DevInspectTarget &amp;) const noexcept=default</td></tr>
+bool&#160;</td><td class="memItemRight"><b>operator==</b> (const <a class="el" href="#aa1a8112cee216cb89622d27aae9d5ba8">DevInspectTarget</a> &amp;) const noexcept=default</td></tr>
+<tr class="memdesc:a2e2b19444ce37f8486995ed637c82796"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compare every copied target-identity field, including the last resolved Clay index. <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a61af9465c59e22b886c973f521bf8d96" id="r_a61af9465c59e22b886c973f521bf8d96"><td class="memItemLeft"><a id="a61af9465c59e22b886c973f521bf8d96" name="a61af9465c59e22b886c973f521bf8d96"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>selection_key</b> = 0u</td></tr>
+<tr class="memdesc:a61af9465c59e22b886c973f521bf8d96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stable selection key independent of transient snapshot indices. <br /></td></tr>
 <tr class="memitem:a0826d4b5485c2966363c9d87334d17fb" id="r_a0826d4b5485c2966363c9d87334d17fb"><td class="memItemLeft"><a id="a0826d4b5485c2966363c9d87334d17fb" name="a0826d4b5485c2966363c9d87334d17fb"></a>
 ::FlowUi::detail::element::ElementInstanceKey&#160;</td><td class="memItemRight"><b>instance</b> {}</td></tr>
+<tr class="memdesc:a0826d4b5485c2966363c9d87334d17fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flow instance address when kind is Flow. <br /></td></tr>
 <tr class="memitem:a7b40d6f1dc351e1dfdd8ac84208094ae" id="r_a7b40d6f1dc351e1dfdd8ac84208094ae"><td class="memItemLeft"><a id="a7b40d6f1dc351e1dfdd8ac84208094ae" name="a7b40d6f1dc351e1dfdd8ac84208094ae"></a>
 <a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a>&#160;</td><td class="memItemRight"><b>definition</b> {}</td></tr>
+<tr class="memdesc:a7b40d6f1dc351e1dfdd8ac84208094ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flow definition identity when kind is Flow. <br /></td></tr>
 <tr class="memitem:acbf8964be2fda580b13f8bf74e6e1a1c" id="r_acbf8964be2fda580b13f8bf74e6e1a1c"><td class="memItemLeft"><a id="acbf8964be2fda580b13f8bf74e6e1a1c" name="acbf8964be2fda580b13f8bf74e6e1a1c"></a>
-WindowId&#160;</td><td class="memItemRight"><b>window</b> = InvalidWindowId</td></tr>
+<a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a>&#160;</td><td class="memItemRight"><b>window</b> = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td></tr>
+<tr class="memdesc:acbf8964be2fda580b13f8bf74e6e1a1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Application window owning the selected target. <br /></td></tr>
 <tr class="memitem:a1d8c4cfc476d1ae0974e503e1737cd79" id="r_a1d8c4cfc476d1ae0974e503e1737cd79"><td class="memItemLeft"><a id="a1d8c4cfc476d1ae0974e503e1737cd79" name="a1d8c4cfc476d1ae0974e503e1737cd79"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>clay_id</b> = 0u</td></tr>
+<tr class="memdesc:a1d8c4cfc476d1ae0974e503e1737cd79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Raw Clay element ID for Clay picks. <br /></td></tr>
 <tr class="memitem:a9396bc642ad697272e397e816939e877" id="r_a9396bc642ad697272e397e816939e877"><td class="memItemLeft"><a id="a9396bc642ad697272e397e816939e877" name="a9396bc642ad697272e397e816939e877"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>clay_root</b> = 0u</td></tr>
+<tr class="memdesc:a9396bc642ad697272e397e816939e877"><td class="mdescLeft">&#160;</td><td class="mdescRight">Raw Clay root ID used to disambiguate attachment forests. <br /></td></tr>
 <tr class="memitem:ad5f9815fff8db08f87b0b3bd5213df50" id="r_ad5f9815fff8db08f87b0b3bd5213df50"><td class="memItemLeft"><a id="ad5f9815fff8db08f87b0b3bd5213df50" name="ad5f9815fff8db08f87b0b3bd5213df50"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>clay_index</b> = UINT32_MAX</td></tr>
+<tr class="memdesc:ad5f9815fff8db08f87b0b3bd5213df50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Last resolved Clay index; refresh against a new snapshot. <br /></td></tr>
 <tr class="memitem:ad35c8d653dbc21cc8d22299e2a6bf9c0" id="r_ad35c8d653dbc21cc8d22299e2a6bf9c0"><td class="memItemLeft"><a id="ad35c8d653dbc21cc8d22299e2a6bf9c0" name="ad35c8d653dbc21cc8d22299e2a6bf9c0"></a>
-DevInspectTargetKind&#160;</td><td class="memItemRight"><b>kind</b> = DevInspectTargetKind::None</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#ae180f9dd61f60bf239103b4dc0758c00">DevInspectTargetKind</a>&#160;</td><td class="memItemRight"><b>kind</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#ae180f9dd61f60bf239103b4dc0758c00a6adf97f83acf6453d4a6a4b1070f3754">DevInspectTargetKind::None</a></td></tr>
+<tr class="memdesc:ad35c8d653dbc21cc8d22299e2a6bf9c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flow, raw Clay, or empty selection. <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Window-qualified identity retained independently of a captured tree's indices. </p>
@@ -157,7 +172,7 @@ DevInspectTargetKind&#160;</td><td class="memItemRight"><b>kind</b> = DevInspect
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevInspectTarget.html">DevInspectTarget</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevInspectTarget.html">DevInspectTarget</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -103,6 +103,15 @@ void json_contract() {
 	require(!parse_decimal(Json("18446744073709551616")), "uint64 overflow accepted");
 	require(!parse_decimal(Json("01")), "noncanonical uint64 accepted");
 	require(!parse_json("\"\xc0\x80\""), "overlong UTF8 accepted");
+	const std::string allowedNesting = std::string(64, '[') + "0" + std::string(64, ']');
+	require(bool(parse_json(allowedNesting)), "supported JSON nesting depth rejected");
+	const std::string excessiveNesting = std::string(65, '[') + "0" + std::string(65, ']');
+	const auto depthFailure = parse_json(excessiveNesting);
+	require(!depthFailure && depthFailure.error().code == ErrorCode::AgenticInvalidRequest,
+			"JSON nesting limit did not report invalid input");
+	const auto byteFailure = parse_json("[0]", 2);
+	require(!byteFailure && byteFailure.error().code == ErrorCode::AgenticBudgetExhausted,
+			"JSON byte budget did not report exhaustion");
 }
 void cadence_contract() {
 	std::vector<AgenticFrameRecord> frames;

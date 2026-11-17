@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,34 +106,220 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevContainerMemoryAccumulator Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevContainerMemory_8hpp_source.html">DevContainerMemory.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ab4fffaec0513b3a16a3b032730de9fc6" id="r_ab4fffaec0513b3a16a3b032730de9fc6"><td class="memTemplParams" colspan="2"><a id="ab4fffaec0513b3a16a3b032730de9fc6" name="ab4fffaec0513b3a16a3b032730de9fc6"></a>
-template&lt;class T, class Allocator&gt; </td></tr>
-<tr class="memitem:ab4fffaec0513b3a16a3b032730de9fc6 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><b>add</b> (const std::vector&lt; T, Allocator &gt; &amp;value) noexcept</td></tr>
-<tr class="memitem:a815cc919a540bf9527c163eed0f168de" id="r_a815cc919a540bf9527c163eed0f168de"><td class="memTemplParams" colspan="2"><a id="a815cc919a540bf9527c163eed0f168de" name="a815cc919a540bf9527c163eed0f168de"></a>
-template&lt;class Char, class Traits, class Allocator&gt; </td></tr>
-<tr class="memitem:a815cc919a540bf9527c163eed0f168de template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><b>add</b> (const std::basic_string&lt; Char, Traits, Allocator &gt; &amp;value) noexcept</td></tr>
-<tr class="memitem:a370b800142b5db25bd05d34d0181585b" id="r_a370b800142b5db25bd05d34d0181585b"><td class="memTemplParams" colspan="2"><a id="a370b800142b5db25bd05d34d0181585b" name="a370b800142b5db25bd05d34d0181585b"></a>
-template&lt;class Container&gt; </td></tr>
-<tr class="memitem:a370b800142b5db25bd05d34d0181585b template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><b>addNodeContainer</b> (const Container &amp;value) noexcept</td></tr>
-<tr class="memitem:ad88ec5a775d7e4b0fd5d4283e669586b" id="r_ad88ec5a775d7e4b0fd5d4283e669586b"><td class="memItemLeft"><a id="ad88ec5a775d7e4b0fd5d4283e669586b" name="ad88ec5a775d7e4b0fd5d4283e669586b"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1MemoryValueSample.html">MemoryValueSample</a>&#160;</td><td class="memItemRight"><b>sample</b> (MemorySourceId source, WindowId window=InvalidWindowId) const noexcept</td></tr>
+<tr class="memitem:ab4fffaec0513b3a16a3b032730de9fc6" id="r_ab4fffaec0513b3a16a3b032730de9fc6"><td class="memTemplParams" colspan="2">template&lt;class T, class Allocator&gt; </td></tr>
+<tr class="memitem:ab4fffaec0513b3a16a3b032730de9fc6 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ab4fffaec0513b3a16a3b032730de9fc6">add</a> (const std::vector&lt; T, Allocator &gt; &amp;value) noexcept</td></tr>
+<tr class="memitem:a815cc919a540bf9527c163eed0f168de" id="r_a815cc919a540bf9527c163eed0f168de"><td class="memTemplParams" colspan="2">template&lt;class Char, class Traits, class Allocator&gt; </td></tr>
+<tr class="memitem:a815cc919a540bf9527c163eed0f168de template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a815cc919a540bf9527c163eed0f168de">add</a> (const std::basic_string&lt; Char, Traits, Allocator &gt; &amp;value) noexcept</td></tr>
+<tr class="memitem:a370b800142b5db25bd05d34d0181585b" id="r_a370b800142b5db25bd05d34d0181585b"><td class="memTemplParams" colspan="2">template&lt;class Container&gt; </td></tr>
+<tr class="memitem:a370b800142b5db25bd05d34d0181585b template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a370b800142b5db25bd05d34d0181585b">addNodeContainer</a> (const Container &amp;value) noexcept</td></tr>
+<tr class="memitem:ad88ec5a775d7e4b0fd5d4283e669586b" id="r_ad88ec5a775d7e4b0fd5d4283e669586b"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryValueSample.html">MemoryValueSample</a>&#160;</td><td class="memItemRight"><a class="el" href="#ad88ec5a775d7e4b0fd5d4283e669586b">sample</a> (<a class="el" href="namespaceFlowUi_1_1devSystems.html#ad77f8008bc1cd25d210f535c630fb739">MemorySourceId</a> source, <a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> window=<a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a>) const noexcept</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a28d9774d9f1da099021d181b392102a6" id="r_a28d9774d9f1da099021d181b392102a6"><td class="memItemLeft"><a id="a28d9774d9f1da099021d181b392102a6" name="a28d9774d9f1da099021d181b392102a6"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>liveBytes</b> = 0u</td></tr>
-<tr class="memitem:a75269a49cf694ac6144b6f9474bca384" id="r_a75269a49cf694ac6144b6f9474bca384"><td class="memItemLeft"><a id="a75269a49cf694ac6144b6f9474bca384" name="a75269a49cf694ac6144b6f9474bca384"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>capacityBytes</b> = 0u</td></tr>
-<tr class="memitem:a3ebe0858af54dd0702abdd0eaed30af8" id="r_a3ebe0858af54dd0702abdd0eaed30af8"><td class="memItemLeft"><a id="a3ebe0858af54dd0702abdd0eaed30af8" name="a3ebe0858af54dd0702abdd0eaed30af8"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>objectCount</b> = 0u</td></tr>
-<tr class="memitem:a6bc192bd13f4e4a5b9b387e051a086f2" id="r_a6bc192bd13f4e4a5b9b387e051a086f2"><td class="memItemLeft"><a id="a6bc192bd13f4e4a5b9b387e051a086f2" name="a6bc192bd13f4e4a5b9b387e051a086f2"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>capacityCount</b> = 0u</td></tr>
-<tr class="memitem:a48cc9cd4ee3f6432e026f4edeb026802" id="r_a48cc9cd4ee3f6432e026f4edeb026802"><td class="memItemLeft"><a id="a48cc9cd4ee3f6432e026f4edeb026802" name="a48cc9cd4ee3f6432e026f4edeb026802"></a>
-MemorySampleFlag&#160;</td><td class="memItemRight"><b>flags</b> = MemorySampleFlag::Estimate</td></tr>
+<tr class="memitem:a28d9774d9f1da099021d181b392102a6" id="r_a28d9774d9f1da099021d181b392102a6"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a28d9774d9f1da099021d181b392102a6">liveBytes</a> = 0u</td></tr>
+<tr class="memitem:a75269a49cf694ac6144b6f9474bca384" id="r_a75269a49cf694ac6144b6f9474bca384"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a75269a49cf694ac6144b6f9474bca384">capacityBytes</a> = 0u</td></tr>
+<tr class="memitem:a3ebe0858af54dd0702abdd0eaed30af8" id="r_a3ebe0858af54dd0702abdd0eaed30af8"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a3ebe0858af54dd0702abdd0eaed30af8">objectCount</a> = 0u</td></tr>
+<tr class="memitem:a6bc192bd13f4e4a5b9b387e051a086f2" id="r_a6bc192bd13f4e4a5b9b387e051a086f2"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a6bc192bd13f4e4a5b9b387e051a086f2">capacityCount</a> = 0u</td></tr>
+<tr class="memitem:a48cc9cd4ee3f6432e026f4edeb026802" id="r_a48cc9cd4ee3f6432e026f4edeb026802"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a211f6ef27eb50d8223611d793550d034">MemorySampleFlag</a>&#160;</td><td class="memItemRight"><a class="el" href="#a48cc9cd4ee3f6432e026f4edeb026802">flags</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a211f6ef27eb50d8223611d793550d034a2ce37c92703f186e5d0e483cb38e5319">MemorySampleFlag::Estimate</a></td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Estimate aggregate container payload and backing without owning or allocating source data. Node- container estimates omit allocator/node overhead; strings may use inline storage. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a815cc919a540bf9527c163eed0f168de" name="a815cc919a540bf9527c163eed0f168de"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a815cc919a540bf9527c163eed0f168de">&#9670;&#160;</a></span>add() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Char, class Traits, class Allocator&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevContainerMemoryAccumulator::add </td>
+          <td>(</td>
+          <td class="paramtype">const std::basic_string&lt; Char, Traits, Allocator &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>value</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Accumulate string character size/capacity; no claim is made about heap versus inline storage. </p>
+
+</div>
+</div>
+<a id="ab4fffaec0513b3a16a3b032730de9fc6" name="ab4fffaec0513b3a16a3b032730de9fc6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab4fffaec0513b3a16a3b032730de9fc6">&#9670;&#160;</a></span>add() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class T, class Allocator&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevContainerMemoryAccumulator::add </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; T, Allocator &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>value</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Accumulate vector size/capacity multiplied by sizeof(T); nested payloads are excluded. </p>
+
+</div>
+</div>
+<a id="a370b800142b5db25bd05d34d0181585b" name="a370b800142b5db25bd05d34d0181585b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a370b800142b5db25bd05d34d0181585b">&#9670;&#160;</a></span>addNodeContainer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Container&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevContainerMemoryAccumulator::addNodeContainer </td>
+          <td>(</td>
+          <td class="paramtype">const Container &amp;</td>          <td class="paramname"><span class="paramname"><em>value</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Estimate node-container value payload and pointer-sized hash buckets; allocator/node metadata is excluded. </p>
+
+</div>
+</div>
+<a id="ad88ec5a775d7e4b0fd5d4283e669586b" name="ad88ec5a775d7e4b0fd5d4283e669586b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad88ec5a775d7e4b0fd5d4283e669586b">&#9670;&#160;</a></span>sample()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryValueSample.html">MemoryValueSample</a> FlowUi::devSystems::DevContainerMemoryAccumulator::sample </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad77f8008bc1cd25d210f535c630fb739">MemorySourceId</a></td>          <td class="paramname"><span class="paramname"><em>source</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a></td>          <td class="paramname"><span class="paramname"><em>window</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></span>&#160;) const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return aggregate values attributed to source and window; zero window indicates app-wide data. </p>
+
+</div>
+</div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a75269a49cf694ac6144b6f9474bca384" name="a75269a49cf694ac6144b6f9474bca384"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a75269a49cf694ac6144b6f9474bca384">&#9670;&#160;</a></span>capacityBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevContainerMemoryAccumulator::capacityBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Accumulated estimated backing capacity bytes. </p>
+
+</div>
+</div>
+<a id="a6bc192bd13f4e4a5b9b387e051a086f2" name="a6bc192bd13f4e4a5b9b387e051a086f2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6bc192bd13f4e4a5b9b387e051a086f2">&#9670;&#160;</a></span>capacityCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevContainerMemoryAccumulator::capacityCount = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Accumulated reserved element/character capacity, including estimated hash buckets. </p>
+
+</div>
+</div>
+<a id="a48cc9cd4ee3f6432e026f4edeb026802" name="a48cc9cd4ee3f6432e026f4edeb026802"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a48cc9cd4ee3f6432e026f4edeb026802">&#9670;&#160;</a></span>flags</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a211f6ef27eb50d8223611d793550d034">MemorySampleFlag</a> FlowUi::devSystems::DevContainerMemoryAccumulator::flags = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a211f6ef27eb50d8223611d793550d034a2ce37c92703f186e5d0e483cb38e5319">MemorySampleFlag::Estimate</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Qualifiers applied to samples produced by this accumulator. </p>
+
+</div>
+</div>
+<a id="a28d9774d9f1da099021d181b392102a6" name="a28d9774d9f1da099021d181b392102a6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a28d9774d9f1da099021d181b392102a6">&#9670;&#160;</a></span>liveBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevContainerMemoryAccumulator::liveBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Accumulated live element payload bytes. </p>
+
+</div>
+</div>
+<a id="a3ebe0858af54dd0702abdd0eaed30af8" name="a3ebe0858af54dd0702abdd0eaed30af8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ebe0858af54dd0702abdd0eaed30af8">&#9670;&#160;</a></span>objectCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevContainerMemoryAccumulator::objectCount = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Accumulated live element or character count. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/memory/<a class="el" href="DevContainerMemory_8hpp_source.html">DevContainerMemory.hpp</a></li>
 </ul>
@@ -150,7 +336,7 @@ MemorySampleFlag&#160;</td><td class="memItemRight"><b>flags</b> = MemorySampleF
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevContainerMemoryAccumulator.html">DevContainerMemoryAccumulator</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevContainerMemoryAccumulator.html">DevContainerMemoryAccumulator</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

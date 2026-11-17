@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,26 +107,33 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>App-exclusive lifecycle and application entry points.  
+<p>App-exclusive lifecycle and application entry points.
 <a href="#details">More...</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-namespaces" class="groupheader"><a id="namespaces" name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:FlowUi_3A_3AdevSystems" id="r_FlowUi_3A_3AdevSystems"><td class="memItemLeft">namespace &#160;</td><td class="memItemRight"><a class="el" href="namespaceFlowUi_1_1devSystems.html">FlowUi::devSystems</a></td></tr>
+<tr class="memdesc:namespaceFlowUi_1_1devSystems"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optional development monitoring, reporting and application extension APIs. Available when FLOW_UI_DEV_MODE is enabled. <br /></td></tr>
+<tr class="memitem:FlowUi_3A_3AdevSystems_3A_3Aagentic" id="r_FlowUi_3A_3AdevSystems_3A_3Aagentic"><td class="memItemLeft">namespace &#160;</td><td class="memItemRight"><a class="el" href="namespaceFlowUi_1_1devSystems_1_1agentic.html">FlowUi::devSystems::agentic</a></td></tr>
+<tr class="memdesc:namespaceFlowUi_1_1devSystems_1_1agentic"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bounded capture, application-declared scenarios and owned evidence APIs. Available when FLOW_UI_AGENTIC_WORKFLOW is enabled. <br /></td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:FlowUi_3A_3AElementBuilder_3C_20Element_20_3E" id="r_FlowUi_3A_3AElementBuilder_3C_20Element_20_3E"><td class="memItemLeft">class &#160;</td><td class="memItemRight"><a class="el" href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder&lt; Element &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Builder returned by <a class="el" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803" title="Create a builder for a typed FlowUi element instance.">UiManager::createElement()</a>.  <a href="classFlowUi_1_1ElementBuilder.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Builder returned by <a class="el" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803" title="Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve und...">UiManager::createElement()</a>.  <a href="classFlowUi_1_1ElementBuilder.html#details">More...</a><br /></td></tr>
 <tr class="memitem:FlowUi_3A_3AApp" id="r_FlowUi_3A_3AApp"><td class="memItemLeft">class &#160;</td><td class="memItemRight"><a class="el" href="classFlowUi_1_1App.html">FlowUi::App</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Main FlowUi application object and owner of runtime managers.  <a href="classFlowUi_1_1App.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Main <a class="el" href="namespaceFlowUi.html">FlowUi</a> application object and owner of runtime managers.  <a href="classFlowUi_1_1App.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga8afb464a3691ca644406ac41ff5281d2" id="r_ga8afb464a3691ca644406ac41ff5281d2"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1App.html">App</a>&#160;</td><td class="memItemRight"><a class="el" href="#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a> (const <a class="el" href="structFlowUi_1_1AppConfig.html">AppConfig</a> &amp;cfg)</td></tr>
-<tr class="memdesc:ga8afb464a3691ca644406ac41ff5281d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a running FlowUi application from configuration.  <br /></td></tr>
+<tr class="memitem:gac333afcb2ea79328646bb4410e459233" id="r_gac333afcb2ea79328646bb4410e459233"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="classFlowUi_1_1App.html">App</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#gac333afcb2ea79328646bb4410e459233">FlowUi::makeApplication</a> (const <a class="el" href="structFlowUi_1_1AppConfig.html">AppConfig</a> &amp;cfg)</td></tr>
+<tr class="memdesc:gac333afcb2ea79328646bb4410e459233"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a running <a class="el" href="namespaceFlowUi.html">FlowUi</a> application from configuration.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>App-exclusive lifecycle and application entry points. </p>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
-<a id="ga8afb464a3691ca644406ac41ff5281d2" name="ga8afb464a3691ca644406ac41ff5281d2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga8afb464a3691ca644406ac41ff5281d2">&#9670;&#160;</a></span>makeApplication()</h2>
+<a id="gac333afcb2ea79328646bb4410e459233" name="gac333afcb2ea79328646bb4410e459233"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac333afcb2ea79328646bb4410e459233">&#9670;&#160;</a></span>makeApplication()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -135,7 +142,7 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classFlowUi_1_1App.html">App</a> FlowUi::makeApplication </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="classFlowUi_1_1App.html">App</a> &gt; FlowUi::makeApplication </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structFlowUi_1_1AppConfig.html">AppConfig</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>cfg</em></span></td><td>)</td>
           <td></td>
@@ -143,25 +150,34 @@ Functions</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Create a running FlowUi application from configuration. </p>
+<p>Create a running <a class="el" href="namespaceFlowUi.html">FlowUi</a> application from configuration. </p>
 <p>Creates an <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> object, allocates its internal implementation, and initializes the runtime managers.</p>
-<p>Example: </p><div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a> config{};</div>
-<div class="line"><a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> application = <a class="code hl_function" href="#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a>(config);</div>
-<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:61</div></div>
-<div class="ttc" id="agroup__flowui__app_html_ga8afb464a3691ca644406ac41ff5281d2"><div class="ttname"><a href="#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a></div><div class="ttdeci">App makeApplication(const AppConfig &amp;cfg)</div><div class="ttdoc">Create a running FlowUi application from configuration.</div></div>
-<div class="ttc" id="astructFlowUi_1_1AppConfig_html"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a></div><div class="ttdoc">Top-level configuration used to initialize a FlowUi app.</div><div class="ttdef"><b>Definition</b> AppConfig.hpp:24</div></div>
-</div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">cfg</td><td>Configuration struct used for initialization. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd><a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> object initialized with the passed config struct. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Sole owner of the initialized runtime and semantic main window, or a structured configuration, allocation, platform, resource, or rendering error. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Runtime access and window/frame work must remain on the creating platform thread.</dd>
+<dd>
+Check success before continuing or reading a value. This noexcept <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> boundary returns operational failures as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> and preserves their attribution. Caller argument construction occurs before entry.</dd></dl>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a> configuration{};</div>
+<div class="line"><span class="keyword">auto</span> result = <a class="code hl_function" href="#gac333afcb2ea79328646bb4410e459233">FlowUi::makeApplication</a>(configuration);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><a class="code hl_enumvalue" href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818aac863f346e618f9a959b5c95d5d28941">FlowUi::App</a> application = std::move(*result);</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+<div class="ttc" id="agroup__flowui__app_html_gac333afcb2ea79328646bb4410e459233"><div class="ttname"><a href="#gac333afcb2ea79328646bb4410e459233">FlowUi::makeApplication</a></div><div class="ttdeci">Result&lt; App &gt; makeApplication(const AppConfig &amp;cfg) noexcept</div><div class="ttdoc">Create a running FlowUi application from configuration.</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a84c8eba1ce3d492712d1998687e6d818aac863f346e618f9a959b5c95d5d28941"><div class="ttname"><a href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818aac863f346e618f9a959b5c95d5d28941">FlowUi::ErrorDomain::App</a></div><div class="ttdeci">@ App</div><div class="ttdef"><b>Definition</b> ErrorTypes.hpp:22</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppConfig_html"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a></div><div class="ttdef"><b>Definition</b> AppConfig.hpp:23</div></div>
+</div><!-- fragment --> </dd></dl>
 
 </div>
 </div>

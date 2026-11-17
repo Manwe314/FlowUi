@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,16 +107,24 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Semantic app actions and transient UI action recipes.  
+<p>Semantic app actions and transient UI action recipes.
 <a href="#details">More...</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-namespaces" class="groupheader"><a id="namespaces" name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:FlowUi_3A_3AdevSystems" id="r_FlowUi_3A_3AdevSystems"><td class="memItemLeft">namespace &#160;</td><td class="memItemRight"><a class="el" href="namespaceFlowUi_1_1devSystems.html">FlowUi::devSystems</a></td></tr>
+<tr class="memdesc:namespaceFlowUi_1_1devSystems"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optional development monitoring, reporting and application extension APIs. Available when FLOW_UI_DEV_MODE is enabled. <br /></td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:FlowUi_3A_3AAppActionID" id="r_FlowUi_3A_3AAppActionID"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1AppActionID.html">FlowUi::AppActionID</a></td></tr>
 <tr class="memitem:FlowUi_3A_3AAppActionIDHash" id="r_FlowUi_3A_3AAppActionIDHash"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1AppActionIDHash.html">FlowUi::AppActionIDHash</a></td></tr>
 <tr class="memitem:FlowUi_3A_3AAppActions" id="r_FlowUi_3A_3AAppActions"><td class="memItemLeft">class &#160;</td><td class="memItemRight"><a class="el" href="classFlowUi_1_1AppActions.html">FlowUi::AppActions</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retained application actions addressed by stable <a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> values.  <a href="classFlowUi_1_1AppActions.html#details">More...</a><br /></td></tr>
 <tr class="memitem:FlowUi_3A_3AUiActions" id="r_FlowUi_3A_3AUiActions"><td class="memItemLeft">class &#160;</td><td class="memItemRight"><a class="el" href="classFlowUi_1_1UiActions.html">FlowUi::UiActions</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct compact UI calls from typed recipes and borrowed resources.  <a href="classFlowUi_1_1UiActions.html#details">More...</a><br /></td></tr>
 <tr class="memitem:FlowUi_3A_3AActionManager" id="r_FlowUi_3A_3AActionManager"><td class="memItemLeft">class &#160;</td><td class="memItemRight"><a class="el" href="classFlowUi_1_1ActionManager.html">FlowUi::ActionManager</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">App-owned dispatcher for retained semantic actions and compact UI calls.  <a href="classFlowUi_1_1ActionManager.html#details">More...</a><br /></td></tr>
 <tr class="memitem:FlowUi_3A_3AActionSourceLocation" id="r_FlowUi_3A_3AActionSourceLocation"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1ActionSourceLocation.html">FlowUi::ActionSourceLocation</a></td></tr>
 <tr class="memitem:FlowUi_3A_3AAppActionCall" id="r_FlowUi_3A_3AAppActionCall"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1AppActionCall.html">FlowUi::AppActionCall</a></td></tr>
 <tr class="memitem:FlowUi_3A_3AUiActionCall" id="r_FlowUi_3A_3AUiActionCall"><td class="memItemLeft">class &#160;</td><td class="memItemRight"><a class="el" href="classFlowUi_1_1UiActionCall.html">FlowUi::UiActionCall</a></td></tr>
@@ -133,69 +141,587 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:ga60a85a4c4368cb76aff45496b33b19cd" id="r_ga60a85a4c4368cb76aff45496b33b19cd"><td class="memItemLeft"><a id="ga60a85a4c4368cb76aff45496b33b19cd" name="ga60a85a4c4368cb76aff45496b33b19cd"></a>enum class &#160;</td><td class="memItemRight"><b>ActionCallKind</b> : uint8_t { <b>None</b> = 0
-, <b>App</b>
-, <b>Ui</b>
-, <b>UiRecipe</b>
+<tr class="memitem:ga60a85a4c4368cb76aff45496b33b19cd" id="r_ga60a85a4c4368cb76aff45496b33b19cd"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#ga60a85a4c4368cb76aff45496b33b19cd">FlowUi::ActionCallKind</a> : uint8_t { <a class="el" href="#gga60a85a4c4368cb76aff45496b33b19cda6adf97f83acf6453d4a6a4b1070f3754">FlowUi::ActionCallKind::None</a> = 0
+, <a class="el" href="#gga60a85a4c4368cb76aff45496b33b19cdaac863f346e618f9a959b5c95d5d28941">FlowUi::ActionCallKind::App</a>
+, <a class="el" href="#gga60a85a4c4368cb76aff45496b33b19cda730b1d2ffece9a1c748a54cd0bb0e363">FlowUi::ActionCallKind::Ui</a>
+, <a class="el" href="#gga60a85a4c4368cb76aff45496b33b19cda37fc6579d7911837c2de1b3ad6088a40">FlowUi::ActionCallKind::UiRecipe</a>
  }</td></tr>
-<tr class="memitem:ga9d1bf355b9b6efbdfd521544535423dc" id="r_ga9d1bf355b9b6efbdfd521544535423dc"><td class="memItemLeft"><a id="ga9d1bf355b9b6efbdfd521544535423dc" name="ga9d1bf355b9b6efbdfd521544535423dc"></a>enum class &#160;</td><td class="memItemRight"><b>ActionInvocationStatus</b> : uint8_t { <b>Invoked</b> = 0
-, <b>Empty</b>
-, <b>Unbound</b>
-, <b>Disabled</b>
+<tr class="memitem:ga9d1bf355b9b6efbdfd521544535423dc" id="r_ga9d1bf355b9b6efbdfd521544535423dc"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#ga9d1bf355b9b6efbdfd521544535423dc">FlowUi::ActionInvocationStatus</a> : uint8_t { <a class="el" href="#gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1">FlowUi::ActionInvocationStatus::Invoked</a> = 0
+, <a class="el" href="#gga9d1bf355b9b6efbdfd521544535423dcace2c8aed9c2fa0cfbed56cbda4d8bf07">FlowUi::ActionInvocationStatus::Empty</a>
+, <a class="el" href="#gga9d1bf355b9b6efbdfd521544535423dcaedac80248b7bf68ccfaa9c78bfb81c32">FlowUi::ActionInvocationStatus::Unbound</a>
+, <a class="el" href="#gga9d1bf355b9b6efbdfd521544535423dcab9f5c797ebbf55adccdd8539a65a0241">FlowUi::ActionInvocationStatus::Disabled</a>
  }</td></tr>
-<tr class="memitem:gab6bb8ae73c3f5aa724070004f2095cc2" id="r_gab6bb8ae73c3f5aa724070004f2095cc2"><td class="memItemLeft"><a id="gab6bb8ae73c3f5aa724070004f2095cc2" name="gab6bb8ae73c3f5aa724070004f2095cc2"></a>enum class &#160;</td><td class="memItemRight"><b>ActionInvokeError</b> : uint8_t { <b>Empty</b> = 0
-, <b>Unbound</b>
-, <b>Disabled</b>
-, <b>ResultTypeMismatch</b>
+<tr class="memitem:gab6bb8ae73c3f5aa724070004f2095cc2" id="r_gab6bb8ae73c3f5aa724070004f2095cc2"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#gab6bb8ae73c3f5aa724070004f2095cc2">FlowUi::ActionInvokeError</a> : uint8_t { <a class="el" href="#ggab6bb8ae73c3f5aa724070004f2095cc2ace2c8aed9c2fa0cfbed56cbda4d8bf07">FlowUi::ActionInvokeError::Empty</a> = 0
+, <a class="el" href="#ggab6bb8ae73c3f5aa724070004f2095cc2aedac80248b7bf68ccfaa9c78bfb81c32">FlowUi::ActionInvokeError::Unbound</a>
+, <a class="el" href="#ggab6bb8ae73c3f5aa724070004f2095cc2ab9f5c797ebbf55adccdd8539a65a0241">FlowUi::ActionInvokeError::Disabled</a>
+, <a class="el" href="#ggab6bb8ae73c3f5aa724070004f2095cc2a637089eb01f68407190eff2ef36af88d">FlowUi::ActionInvokeError::ResultTypeMismatch</a>
  }</td></tr>
-<tr class="memitem:gada1a2f6902950293d796b8531ba9bac0" id="r_gada1a2f6902950293d796b8531ba9bac0"><td class="memItemLeft"><a id="gada1a2f6902950293d796b8531ba9bac0" name="gada1a2f6902950293d796b8531ba9bac0"></a>enum class &#160;</td><td class="memItemRight"><b>ActionInvocationSourceKind</b> : uint8_t { <br />
-&#160;&#160;<b>Direct</b> = 0
-, <b>UiManager</b>
-, <b>ElementHovered</b>
-, <b>ElementPressed</b>
+<tr class="memitem:gada1a2f6902950293d796b8531ba9bac0" id="r_gada1a2f6902950293d796b8531ba9bac0"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#gada1a2f6902950293d796b8531ba9bac0">FlowUi::ActionInvocationSourceKind</a> : uint8_t { <br />
+&#160;&#160;<a class="el" href="#ggada1a2f6902950293d796b8531ba9bac0afd1dd0c603be8170f9eae0be9f2f6afb">FlowUi::ActionInvocationSourceKind::Direct</a> = 0
+, <a class="el" href="#ggada1a2f6902950293d796b8531ba9bac0a94f292d465bdfb75d77710ac6095b67d">FlowUi::ActionInvocationSourceKind::UiManager</a>
+, <a class="el" href="#ggada1a2f6902950293d796b8531ba9bac0ae3a21ce831fd24e7818e03e635977686">FlowUi::ActionInvocationSourceKind::ElementHovered</a>
+, <a class="el" href="#ggada1a2f6902950293d796b8531ba9bac0a4463198a2789d666c53b1a743be968be">FlowUi::ActionInvocationSourceKind::ElementPressed</a>
 , <br />
-&#160;&#160;<b>ElementHeld</b>
-, <b>ElementReleased</b>
-, <b>ElementLogic</b>
-, <b>Shortcut</b>
+&#160;&#160;<a class="el" href="#ggada1a2f6902950293d796b8531ba9bac0a412c9d0d06199593efefa5a67c9fe510">FlowUi::ActionInvocationSourceKind::ElementHeld</a>
+, <a class="el" href="#ggada1a2f6902950293d796b8531ba9bac0a040008341301ecb6611db91e83783121">FlowUi::ActionInvocationSourceKind::ElementReleased</a>
+, <a class="el" href="#ggada1a2f6902950293d796b8531ba9bac0a3c658aacaa02f4ade5ee6e03234c881b">FlowUi::ActionInvocationSourceKind::ElementLogic</a>
+, <a class="el" href="#ggada1a2f6902950293d796b8531ba9bac0a756210d98ce28018652ca05e1dcaaf3e">FlowUi::ActionInvocationSourceKind::Shortcut</a>
+, <br />
+&#160;&#160;<a class="el" href="#ggada1a2f6902950293d796b8531ba9bac0a481f7aa8cb01451780fc240ebda1ee90">FlowUi::ActionInvocationSourceKind::Agentic</a>
 <br />
  }</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga78191cadc43d03c544c284c66abbd22a" id="r_ga78191cadc43d03c544c284c66abbd22a"><td class="memTemplParams" colspan="2"><a id="ga78191cadc43d03c544c284c66abbd22a" name="ga78191cadc43d03c544c284c66abbd22a"></a>
-template&lt;std::size_t N&gt; </td></tr>
-<tr class="memitem:ga78191cadc43d03c544c284c66abbd22a template"><td class="memItemLeft">consteval <a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a>&#160;</td><td class="memItemRight"><b>FlowUi::AppAction</b> (const char(&amp;name)[N]) noexcept</td></tr>
-<tr class="memitem:gacdad6414e42de4732d233f9d02e09b06" id="r_gacdad6414e42de4732d233f9d02e09b06"><td class="memTemplParams" colspan="2"><a id="gacdad6414e42de4732d233f9d02e09b06" name="gacdad6414e42de4732d233f9d02e09b06"></a>
-template&lt;typename Fn&gt; </td></tr>
-<tr class="memitem:gacdad6414e42de4732d233f9d02e09b06 template"><td class="memItemLeft">constexpr auto&#160;</td><td class="memItemRight"><b>FlowUi::UiAction</b> (Fn fn, <a class="el" href="structFlowUi_1_1ActionSourceLocation.html">ActionSourceLocation</a> source=<a class="el" href="structFlowUi_1_1ActionSourceLocation.html#a70b6d9a7996b1aed48b2c00a1cec15f8">ActionSourceLocation::current</a>())</td></tr>
-<tr class="memitem:ga5884a5b489a248a7c64b64193b3112d6" id="r_ga5884a5b489a248a7c64b64193b3112d6"><td class="memTemplParams" colspan="2"><a id="ga5884a5b489a248a7c64b64193b3112d6" name="ga5884a5b489a248a7c64b64193b3112d6"></a>
-template&lt;std::size_t N, typename Fn&gt; </td></tr>
-<tr class="memitem:ga5884a5b489a248a7c64b64193b3112d6 template"><td class="memItemLeft">consteval auto&#160;</td><td class="memItemRight"><b>FlowUi::UiAction</b> (const char(&amp;name)[N], Fn fn, <a class="el" href="structFlowUi_1_1ActionSourceLocation.html">ActionSourceLocation</a> source=<a class="el" href="structFlowUi_1_1ActionSourceLocation.html#a70b6d9a7996b1aed48b2c00a1cec15f8">ActionSourceLocation::current</a>())</td></tr>
-<tr class="memitem:ga2fa222aa97a38170f434304fcdc7184d" id="r_ga2fa222aa97a38170f434304fcdc7184d"><td class="memTemplParams" colspan="2"><a id="ga2fa222aa97a38170f434304fcdc7184d" name="ga2fa222aa97a38170f434304fcdc7184d"></a>
-template&lt;typename Operation, typename... Resources&gt; </td></tr>
-<tr class="memitem:ga2fa222aa97a38170f434304fcdc7184d template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1UiActionCall.html">UiActionCall</a>&#160;</td><td class="memItemRight"><b>FlowUi::UiActions::make</b> (<a class="el" href="structFlowUi_1_1UiActionRecipe.html">UiActionRecipe</a>&lt; Operation &gt; recipe, Resources &amp;&amp;... resources) const</td></tr>
-<tr class="memitem:gab2d7dad2e88c776b251fdfcf2b2a88c0" id="r_gab2d7dad2e88c776b251fdfcf2b2a88c0"><td class="memTemplParams" colspan="2"><a id="gab2d7dad2e88c776b251fdfcf2b2a88c0" name="gab2d7dad2e88c776b251fdfcf2b2a88c0"></a>
-template&lt;typename Callable, typename... Resources&gt; </td></tr>
-<tr class="memitem:gab2d7dad2e88c776b251fdfcf2b2a88c0 template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> &gt;&#160;</td><td class="memItemRight"><b>FlowUi::AppActions::bind</b> (<a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> id, Callable &amp;&amp;callable, Resources &amp;&amp;... resources)</td></tr>
-<tr class="memitem:ga2dddfd5fa8c1072d802b0db60e90376c" id="r_ga2dddfd5fa8c1072d802b0db60e90376c"><td class="memTemplParams" colspan="2"><a id="ga2dddfd5fa8c1072d802b0db60e90376c" name="ga2dddfd5fa8c1072d802b0db60e90376c"></a>
-template&lt;typename Callable, typename... Resources&gt; </td></tr>
-<tr class="memitem:ga2dddfd5fa8c1072d802b0db60e90376c template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> &gt;&#160;</td><td class="memItemRight"><b>FlowUi::AppActions::bind</b> (<a class="el" href="structFlowUi_1_1AppActionDescriptor.html">AppActionDescriptor</a> descriptor, Callable &amp;&amp;callable, Resources &amp;&amp;... resources)</td></tr>
-<tr class="memitem:gaaf0c15fa5763845a8850cc04990dafda" id="r_gaaf0c15fa5763845a8850cc04990dafda"><td class="memTemplParams" colspan="2"><a id="gaaf0c15fa5763845a8850cc04990dafda" name="gaaf0c15fa5763845a8850cc04990dafda"></a>
-template&lt;typename Callable, typename... Resources&gt; </td></tr>
-<tr class="memitem:gaaf0c15fa5763845a8850cc04990dafda template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> &gt;&#160;</td><td class="memItemRight"><b>FlowUi::AppActions::rebind</b> (<a class="el" href="structFlowUi_1_1AppActionDescriptor.html">AppActionDescriptor</a> descriptor, Callable &amp;&amp;callable, Resources &amp;&amp;... resources)</td></tr>
-<tr class="memitem:ga59dfeefc68a0b8e14536d441dd0dd09f" id="r_ga59dfeefc68a0b8e14536d441dd0dd09f"><td class="memTemplParams" colspan="2"><a id="ga59dfeefc68a0b8e14536d441dd0dd09f" name="ga59dfeefc68a0b8e14536d441dd0dd09f"></a>
-template&lt;typename <a class="el" href="classFlowUi_1_1Result.html">Result</a>&gt; </td></tr>
-<tr class="memitem:ga59dfeefc68a0b8e14536d441dd0dd09f template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1ActionResult.html">ActionResult</a>&lt; <a class="el" href="classFlowUi_1_1Result.html">Result</a> &gt;&#160;</td><td class="memItemRight"><b>FlowUi::AppActions::invokeFor</b> (<a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> call)</td></tr>
+<tr class="memitem:ga78191cadc43d03c544c284c66abbd22a" id="r_ga78191cadc43d03c544c284c66abbd22a"><td class="memTemplParams" colspan="2">template&lt;std::size_t N&gt; </td></tr>
+<tr class="memitem:ga78191cadc43d03c544c284c66abbd22a template"><td class="memItemLeft">consteval <a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a>&#160;</td><td class="memItemRight"><a class="el" href="#ga78191cadc43d03c544c284c66abbd22a">FlowUi::AppAction</a> (const char(&amp;name)[N]) noexcept</td></tr>
+<tr class="memitem:ga39b6472605f9f479ce549d4104e4afa4" id="r_ga39b6472605f9f479ce549d4104e4afa4"><td class="memTemplParams" colspan="2">template&lt;typename Fn&gt; </td></tr>
+<tr class="memitem:ga39b6472605f9f479ce549d4104e4afa4 template"><td class="memItemLeft">constexpr auto&#160;</td><td class="memItemRight"><a class="el" href="#ga39b6472605f9f479ce549d4104e4afa4">FlowUi::UiAction</a> (Fn fn, <a class="el" href="structFlowUi_1_1ActionSourceLocation.html">ActionSourceLocation</a> source=<a class="el" href="structFlowUi_1_1ActionSourceLocation.html#a70b6d9a7996b1aed48b2c00a1cec15f8">ActionSourceLocation::current</a>()) noexcept</td></tr>
+<tr class="memitem:ga90d373821fd47b59e2cb87077d603ab1" id="r_ga90d373821fd47b59e2cb87077d603ab1"><td class="memTemplParams" colspan="2">template&lt;std::size_t N, typename Fn&gt; </td></tr>
+<tr class="memitem:ga90d373821fd47b59e2cb87077d603ab1 template"><td class="memItemLeft">consteval auto&#160;</td><td class="memItemRight"><a class="el" href="#ga90d373821fd47b59e2cb87077d603ab1">FlowUi::UiAction</a> (const char(&amp;name)[N], Fn fn, <a class="el" href="structFlowUi_1_1ActionSourceLocation.html">ActionSourceLocation</a> source=<a class="el" href="structFlowUi_1_1ActionSourceLocation.html#a70b6d9a7996b1aed48b2c00a1cec15f8">ActionSourceLocation::current</a>()) noexcept</td></tr>
+<tr class="memitem:gaed2e7828505874abd12a93b22aa7ad79" id="r_gaed2e7828505874abd12a93b22aa7ad79"><td class="memTemplParams" colspan="2">template&lt;typename Operation, typename... Resources&gt; </td></tr>
+<tr class="memitem:gaed2e7828505874abd12a93b22aa7ad79 template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1UiActionCall.html">UiActionCall</a>&#160;</td><td class="memItemRight"><a class="el" href="#gaed2e7828505874abd12a93b22aa7ad79">FlowUi::UiActions::make</a> (<a class="el" href="structFlowUi_1_1UiActionRecipe.html">UiActionRecipe</a>&lt; Operation &gt; recipe, Resources &amp;&amp;... resources) const noexcept</td></tr>
+<tr class="memdesc:gaed2e7828505874abd12a93b22aa7ad79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pack a stateless, trivial, concrete void-returning UiAction recipe and its arguments into a direct <a class="el" href="classFlowUi_1_1UiActionCall.html">UiActionCall</a> with no retained app binding.  <br /></td></tr>
+<tr class="memitem:gab2d7dad2e88c776b251fdfcf2b2a88c0" id="r_gab2d7dad2e88c776b251fdfcf2b2a88c0"><td class="memTemplParams" colspan="2">template&lt;typename Callable, typename... Resources&gt; </td></tr>
+<tr class="memitem:gab2d7dad2e88c776b251fdfcf2b2a88c0 template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#gab2d7dad2e88c776b251fdfcf2b2a88c0">FlowUi::AppActions::bind</a> (<a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> id, Callable &amp;&amp;callable, Resources &amp;&amp;... resources)</td></tr>
+<tr class="memdesc:gab2d7dad2e88c776b251fdfcf2b2a88c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a retained application binding and return its <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a>. The ID must be nonzero and unbound; the descriptor overload also copies its diagnostic name.  <br /></td></tr>
+<tr class="memitem:ga2dddfd5fa8c1072d802b0db60e90376c" id="r_ga2dddfd5fa8c1072d802b0db60e90376c"><td class="memTemplParams" colspan="2">template&lt;typename Callable, typename... Resources&gt; </td></tr>
+<tr class="memitem:ga2dddfd5fa8c1072d802b0db60e90376c template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ga2dddfd5fa8c1072d802b0db60e90376c">FlowUi::AppActions::bind</a> (<a class="el" href="structFlowUi_1_1AppActionDescriptor.html">AppActionDescriptor</a> descriptor, Callable &amp;&amp;callable, Resources &amp;&amp;... resources)</td></tr>
+<tr class="memdesc:ga2dddfd5fa8c1072d802b0db60e90376c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a retained application binding and return its <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a>. The ID must be nonzero and unbound; the descriptor overload also copies its diagnostic name.  <br /></td></tr>
+<tr class="memitem:gaaf0c15fa5763845a8850cc04990dafda" id="r_gaaf0c15fa5763845a8850cc04990dafda"><td class="memTemplParams" colspan="2">template&lt;typename Callable, typename... Resources&gt; </td></tr>
+<tr class="memitem:gaaf0c15fa5763845a8850cc04990dafda template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#gaaf0c15fa5763845a8850cc04990dafda">FlowUi::AppActions::rebind</a> (<a class="el" href="structFlowUi_1_1AppActionDescriptor.html">AppActionDescriptor</a> descriptor, Callable &amp;&amp;callable, Resources &amp;&amp;... resources)</td></tr>
+<tr class="memdesc:gaaf0c15fa5763845a8850cc04990dafda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace an existing retained binding at the same identity. Active invocations finish on their original binding; future calls resolve the replacement. A missing binding is returned as an error.  <br /></td></tr>
+<tr class="memitem:ga59dfeefc68a0b8e14536d441dd0dd09f" id="r_ga59dfeefc68a0b8e14536d441dd0dd09f"><td class="memTemplParams" colspan="2">template&lt;typename <a class="el" href="classFlowUi_1_1Result.html">Result</a>&gt; </td></tr>
+<tr class="memitem:ga59dfeefc68a0b8e14536d441dd0dd09f template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1ActionResult.html">ActionResult</a>&lt; <a class="el" href="classFlowUi_1_1Result.html">Result</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ga59dfeefc68a0b8e14536d441dd0dd09f">FlowUi::AppActions::invokeFor</a> (<a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> call)</td></tr>
+<tr class="memdesc:ga59dfeefc68a0b8e14536d441dd0dd09f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke only when the bound result type exactly matches <a class="el" href="classFlowUi_1_1Result.html">Result</a>. Return <a class="el" href="classFlowUi_1_1ActionResult.html">ActionResult&lt;Result&gt;</a>, whose errors are Empty, Unbound, Disabled and ResultTypeMismatch. This is distinct from <a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;T&gt;</a>.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:ga6b2e429a8cc9a1e51d3af4d26496c487" id="r_ga6b2e429a8cc9a1e51d3af4d26496c487"><td class="memItemLeft"><a id="ga6b2e429a8cc9a1e51d3af4d26496c487" name="ga6b2e429a8cc9a1e51d3af4d26496c487"></a>
-constexpr <a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a>&#160;</td><td class="memItemRight"><b>FlowUi::InvalidAppActionID</b> {}</td></tr>
+<tr class="memitem:ga6b2e429a8cc9a1e51d3af4d26496c487" id="r_ga6b2e429a8cc9a1e51d3af4d26496c487"><td class="memItemLeft">constexpr <a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a>&#160;</td><td class="memItemRight"><a class="el" href="#ga6b2e429a8cc9a1e51d3af4d26496c487">FlowUi::InvalidAppActionID</a> {}</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Semantic app actions and transient UI action recipes. </p>
-</div></div><!-- contents -->
+</div><a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
+<a id="ga60a85a4c4368cb76aff45496b33b19cd" name="ga60a85a4c4368cb76aff45496b33b19cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga60a85a4c4368cb76aff45496b33b19cd">&#9670;&#160;</a></span>ActionCallKind</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="#ga60a85a4c4368cb76aff45496b33b19cd">FlowUi::ActionCallKind</a> : uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel strong">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Stored call representation; UiRecipe resolves a previously published UI recipe by stable identity. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga60a85a4c4368cb76aff45496b33b19cda6adf97f83acf6453d4a6a4b1070f3754" name="gga60a85a4c4368cb76aff45496b33b19cda6adf97f83acf6453d4a6a4b1070f3754"></a>None&#160;</td><td class="fielddoc"><p>No call or source identity. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga60a85a4c4368cb76aff45496b33b19cdaac863f346e618f9a959b5c95d5d28941" name="gga60a85a4c4368cb76aff45496b33b19cdaac863f346e618f9a959b5c95d5d28941"></a>App&#160;</td><td class="fielddoc"><p>Stable application action dispatched through its binding. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga60a85a4c4368cb76aff45496b33b19cda730b1d2ffece9a1c748a54cd0bb0e363" name="gga60a85a4c4368cb76aff45496b33b19cda730b1d2ffece9a1c748a54cd0bb0e363"></a>Ui&#160;</td><td class="fielddoc"><p>UI call with inline borrowed resource bindings. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga60a85a4c4368cb76aff45496b33b19cda37fc6579d7911837c2de1b3ad6088a40" name="gga60a85a4c4368cb76aff45496b33b19cda37fc6579d7911837c2de1b3ad6088a40"></a>UiRecipe&#160;</td><td class="fielddoc"><p>Stable reference resolved through a previously published UI recipe. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a id="gada1a2f6902950293d796b8531ba9bac0" name="gada1a2f6902950293d796b8531ba9bac0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gada1a2f6902950293d796b8531ba9bac0">&#9670;&#160;</a></span>ActionInvocationSourceKind</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="#gada1a2f6902950293d796b8531ba9bac0">FlowUi::ActionInvocationSourceKind</a> : uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel strong">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Origin of an action invocation recorded for diagnostics. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ggada1a2f6902950293d796b8531ba9bac0afd1dd0c603be8170f9eae0be9f2f6afb" name="ggada1a2f6902950293d796b8531ba9bac0afd1dd0c603be8170f9eae0be9f2f6afb"></a>Direct&#160;</td><td class="fielddoc"><p>Direct caller invocation without a more specific source. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggada1a2f6902950293d796b8531ba9bac0a94f292d465bdfb75d77710ac6095b67d" name="ggada1a2f6902950293d796b8531ba9bac0a94f292d465bdfb75d77710ac6095b67d"></a>UiManager&#160;</td><td class="fielddoc"><p>Invocation requested by <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a>. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggada1a2f6902950293d796b8531ba9bac0ae3a21ce831fd24e7818e03e635977686" name="ggada1a2f6902950293d796b8531ba9bac0ae3a21ce831fd24e7818e03e635977686"></a>ElementHovered&#160;</td><td class="fielddoc"><p>An element hover callback. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggada1a2f6902950293d796b8531ba9bac0a4463198a2789d666c53b1a743be968be" name="ggada1a2f6902950293d796b8531ba9bac0a4463198a2789d666c53b1a743be968be"></a>ElementPressed&#160;</td><td class="fielddoc"><p>An element press callback. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggada1a2f6902950293d796b8531ba9bac0a412c9d0d06199593efefa5a67c9fe510" name="ggada1a2f6902950293d796b8531ba9bac0a412c9d0d06199593efefa5a67c9fe510"></a>ElementHeld&#160;</td><td class="fielddoc"><p>An element held callback. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggada1a2f6902950293d796b8531ba9bac0a040008341301ecb6611db91e83783121" name="ggada1a2f6902950293d796b8531ba9bac0a040008341301ecb6611db91e83783121"></a>ElementReleased&#160;</td><td class="fielddoc"><p>An element release callback. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggada1a2f6902950293d796b8531ba9bac0a3c658aacaa02f4ade5ee6e03234c881b" name="ggada1a2f6902950293d796b8531ba9bac0a3c658aacaa02f4ade5ee6e03234c881b"></a>ElementLogic&#160;</td><td class="fielddoc"><p>An element logic callback. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggada1a2f6902950293d796b8531ba9bac0a756210d98ce28018652ca05e1dcaaf3e" name="ggada1a2f6902950293d796b8531ba9bac0a756210d98ce28018652ca05e1dcaaf3e"></a>Shortcut&#160;</td><td class="fielddoc"><p>A registered keyboard shortcut. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggada1a2f6902950293d796b8531ba9bac0a481f7aa8cb01451780fc240ebda1ee90" name="ggada1a2f6902950293d796b8531ba9bac0a481f7aa8cb01451780fc240ebda1ee90"></a>Agentic&#160;</td><td class="fielddoc"><p>An attached agentic workflow command. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a id="ga9d1bf355b9b6efbdfd521544535423dc" name="ga9d1bf355b9b6efbdfd521544535423dc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9d1bf355b9b6efbdfd521544535423dc">&#9670;&#160;</a></span>ActionInvocationStatus</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="#ga9d1bf355b9b6efbdfd521544535423dc">FlowUi::ActionInvocationStatus</a> : uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel strong">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Outcome of invoking an action while discarding any result. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1" name="gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1"></a>Invoked&#160;</td><td class="fielddoc"><p>The operation ran successfully. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga9d1bf355b9b6efbdfd521544535423dcace2c8aed9c2fa0cfbed56cbda4d8bf07" name="gga9d1bf355b9b6efbdfd521544535423dcace2c8aed9c2fa0cfbed56cbda4d8bf07"></a>Empty&#160;</td><td class="fielddoc"><p>The call contains no operation. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga9d1bf355b9b6efbdfd521544535423dcaedac80248b7bf68ccfaa9c78bfb81c32" name="gga9d1bf355b9b6efbdfd521544535423dcaedac80248b7bf68ccfaa9c78bfb81c32"></a>Unbound&#160;</td><td class="fielddoc"><p>The application binding or published UI recipe is unavailable. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga9d1bf355b9b6efbdfd521544535423dcab9f5c797ebbf55adccdd8539a65a0241" name="gga9d1bf355b9b6efbdfd521544535423dcab9f5c797ebbf55adccdd8539a65a0241"></a>Disabled&#160;</td><td class="fielddoc"><p>The resolved operation is disabled. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a id="gab6bb8ae73c3f5aa724070004f2095cc2" name="gab6bb8ae73c3f5aa724070004f2095cc2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab6bb8ae73c3f5aa724070004f2095cc2">&#9670;&#160;</a></span>ActionInvokeError</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="#gab6bb8ae73c3f5aa724070004f2095cc2">FlowUi::ActionInvokeError</a> : uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel strong">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Reason a typed application-action invocation did not produce a result. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ggab6bb8ae73c3f5aa724070004f2095cc2ace2c8aed9c2fa0cfbed56cbda4d8bf07" name="ggab6bb8ae73c3f5aa724070004f2095cc2ace2c8aed9c2fa0cfbed56cbda4d8bf07"></a>Empty&#160;</td><td class="fielddoc"><p>The call contains no application operation. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggab6bb8ae73c3f5aa724070004f2095cc2aedac80248b7bf68ccfaa9c78bfb81c32" name="ggab6bb8ae73c3f5aa724070004f2095cc2aedac80248b7bf68ccfaa9c78bfb81c32"></a>Unbound&#160;</td><td class="fielddoc"><p>The application binding or published UI recipe is unavailable. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggab6bb8ae73c3f5aa724070004f2095cc2ab9f5c797ebbf55adccdd8539a65a0241" name="ggab6bb8ae73c3f5aa724070004f2095cc2ab9f5c797ebbf55adccdd8539a65a0241"></a>Disabled&#160;</td><td class="fielddoc"><p>The resolved operation is disabled. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggab6bb8ae73c3f5aa724070004f2095cc2a637089eb01f68407190eff2ef36af88d" name="ggab6bb8ae73c3f5aa724070004f2095cc2a637089eb01f68407190eff2ef36af88d"></a>ResultTypeMismatch&#160;</td><td class="fielddoc"><p>The requested result type differs from the bound action result. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a id="ga78191cadc43d03c544c284c66abbd22a" name="ga78191cadc43d03c544c284c66abbd22a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga78191cadc43d03c544c284c66abbd22a">&#9670;&#160;</a></span>AppAction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t N&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> FlowUi::AppAction </td>
+          <td>(</td>
+          <td class="paramtype">const char(&amp;)</td>          <td class="paramname"><span class="paramname"><em>name</em></span>[N]</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel consteval">consteval</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Hash a stable authored literal into an application-action identity at compile time. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name</td><td>Nonempty action name; developer builds borrow its literal storage. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Action ID for binding and invocation; an empty literal produces the invalid zero ID. </dd></dl>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1AppActionID.html">FlowUi::AppActionID</a> save = <a class="code hl_function" href="#ga78191cadc43d03c544c284c66abbd22a">FlowUi::AppAction</a>(<span class="stringliteral">&quot;application.save&quot;</span>);</div>
+<div class="ttc" id="agroup__flowui__action__manager_html_ga78191cadc43d03c544c284c66abbd22a"><div class="ttname"><a href="#ga78191cadc43d03c544c284c66abbd22a">FlowUi::AppAction</a></div><div class="ttdeci">consteval AppActionID AppAction(const char(&amp;name)[N]) noexcept</div><div class="ttdef"><b>Definition</b> AppActionID.hpp:72</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppActionID_html"><div class="ttname"><a href="structFlowUi_1_1AppActionID.html">FlowUi::AppActionID</a></div><div class="ttdef"><b>Definition</b> AppActionID.hpp:20</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="ga2dddfd5fa8c1072d802b0db60e90376c" name="ga2dddfd5fa8c1072d802b0db60e90376c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2dddfd5fa8c1072d802b0db60e90376c">&#9670;&#160;</a></span>bind() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Callable, typename... Resources&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> &gt; FlowUi::AppActions::bind </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1AppActionDescriptor.html">AppActionDescriptor</a></td>          <td class="paramname"><span class="paramname"><em>descriptor</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Callable &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>callable</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Resources &amp;&amp;...</td>          <td class="paramname"><span class="paramname"><em>resources</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create a retained application binding and return its <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a>. The ID must be nonzero and unbound; the descriptor overload also copies its diagnostic name. </p>
+<p>Hybrid contract: structured binding validation/publication failures are returned; arbitrary callable construction exceptions propagate unchanged. Resources supplied as pointers/std::ref/std::cref are borrowed and must outlive binding retirement and all in-progress calls. Callable objects must meet the bind restrictions: function/member pointer, stateless concrete callable, or explicitly borrowed callable.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">int</span> saveCount = 0;</div>
+<div class="line"><span class="keyword">auto</span> result = actions.bind(<a class="code hl_struct" href="structFlowUi_1_1AppActionDescriptor.html">FlowUi::AppActionDescriptor</a>{.id = <a class="code hl_function" href="#ga78191cadc43d03c544c284c66abbd22a">FlowUi::AppAction</a>(<span class="stringliteral">&quot;docs.save&quot;</span>), .<a class="code hl_variable" href="structFlowUi_1_1AppActionID.html#a05a1eb6bb5fc28088ac510442e9c8f1e">debugName</a> = <span class="stringliteral">&quot;Save&quot;</span>}, [](<span class="keywordtype">int</span>&amp; saveCount) { ++saveCount; }, std::ref(saveCount));</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> FlowUi::AppActionCall save = *result;</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppActionDescriptor_html"><div class="ttname"><a href="structFlowUi_1_1AppActionDescriptor.html">FlowUi::AppActionDescriptor</a></div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:220</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppActionID_html_a05a1eb6bb5fc28088ac510442e9c8f1e"><div class="ttname"><a href="structFlowUi_1_1AppActionID.html#a05a1eb6bb5fc28088ac510442e9c8f1e">FlowUi::AppActionID::debugName</a></div><div class="ttdeci">std::string_view debugName</div><div class="ttdef"><b>Definition</b> AppActionID.hpp:25</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="gab2d7dad2e88c776b251fdfcf2b2a88c0" name="gab2d7dad2e88c776b251fdfcf2b2a88c0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab2d7dad2e88c776b251fdfcf2b2a88c0">&#9670;&#160;</a></span>bind() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Callable, typename... Resources&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> &gt; FlowUi::AppActions::bind </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Callable &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>callable</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Resources &amp;&amp;...</td>          <td class="paramname"><span class="paramname"><em>resources</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create a retained application binding and return its <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a>. The ID must be nonzero and unbound; the descriptor overload also copies its diagnostic name. </p>
+<p>Hybrid contract: structured binding validation/publication failures are returned; arbitrary callable construction exceptions propagate unchanged. Resources supplied as pointers/std::ref/std::cref are borrowed and must outlive binding retirement and all in-progress calls. Callable objects must meet the bind restrictions: function/member pointer, stateless concrete callable, or explicitly borrowed callable.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">int</span> saveCount = 0;</div>
+<div class="line"><span class="keyword">auto</span> result = actions.bind(<a class="code hl_function" href="#ga78191cadc43d03c544c284c66abbd22a">FlowUi::AppAction</a>(<span class="stringliteral">&quot;docs.save&quot;</span>), [](<span class="keywordtype">int</span>&amp; saveCount) { ++saveCount; }, std::ref(saveCount));</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1AppActionCall.html">FlowUi::AppActionCall</a> save = *result;</div>
+<div class="ttc" id="astructFlowUi_1_1AppActionCall_html"><div class="ttname"><a href="structFlowUi_1_1AppActionCall.html">FlowUi::AppActionCall</a></div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:58</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="ga59dfeefc68a0b8e14536d441dd0dd09f" name="ga59dfeefc68a0b8e14536d441dd0dd09f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga59dfeefc68a0b8e14536d441dd0dd09f">&#9670;&#160;</a></span>invokeFor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename <a class="el" href="classFlowUi_1_1Result.html">Result</a>&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1ActionResult.html">ActionResult</a>&lt; <a class="el" href="classFlowUi_1_1Result.html">Result</a> &gt; FlowUi::AppActions::invokeFor </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a></td>          <td class="paramname"><span class="paramname"><em>call</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Invoke only when the bound result type exactly matches <a class="el" href="classFlowUi_1_1Result.html">Result</a>. Return <a class="el" href="classFlowUi_1_1ActionResult.html">ActionResult&lt;Result&gt;</a>, whose errors are Empty, Unbound, Disabled and ResultTypeMismatch. This is distinct from <a class="el" href="classFlowUi_1_1Result.html">FlowUi::Result&lt;T&gt;</a>. </p>
+<p>Callback and owned-result movement exceptions propagate unchanged. Side effects are not rolled back or automatically retried. invokeFor requires nonthrowing destruction of owned payloads; reference and array result types are rejected.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">auto</span> result = actions.invokeFor&lt;<span class="keywordtype">int</span>&gt;(countCall);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keyword">const</span> <a class="code hl_enumeration" href="#gab6bb8ae73c3f5aa724070004f2095cc2">FlowUi::ActionInvokeError</a> error = result.error();</div>
+<div class="line">    <span class="keywordflow">return</span>; <span class="comment">// Handle the dispatch failure in the surrounding application code.</span></div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">int</span> displayedCount = result.value();</div>
+<div class="ttc" id="agroup__flowui__action__manager_html_gab6bb8ae73c3f5aa724070004f2095cc2"><div class="ttname"><a href="#gab6bb8ae73c3f5aa724070004f2095cc2">FlowUi::ActionInvokeError</a></div><div class="ttdeci">ActionInvokeError</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:252</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="gaed2e7828505874abd12a93b22aa7ad79" name="gaed2e7828505874abd12a93b22aa7ad79"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaed2e7828505874abd12a93b22aa7ad79">&#9670;&#160;</a></span>make()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Operation, typename... Resources&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1UiActionCall.html">UiActionCall</a> FlowUi::UiActions::make </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1UiActionRecipe.html">UiActionRecipe</a>&lt; Operation &gt;</td>          <td class="paramname"><span class="paramname"><em>recipe</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Resources &amp;&amp;...</td>          <td class="paramname"><span class="paramname"><em>resources</em></span>&#160;) const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Pack a stateless, trivial, concrete void-returning UiAction recipe and its arguments into a direct <a class="el" href="classFlowUi_1_1UiActionCall.html">UiActionCall</a> with no retained app binding. </p>
+<p>Arguments must match the recipe and fit <a class="el" href="classFlowUi_1_1UiActionCall.html#a0d35bc4e73b87c84c56c0395b422c9de">UiActionCall::InlineBytes</a> = 2 * sizeof(void*), which is 16 bytes with 64-bit pointers. Referenced lvalues must outlive every call copy; value arguments are stored inline. Argument conversion must be nothrow; perform fallible conversion before <a class="el" href="#gaed2e7828505874abd12a93b22aa7ad79" title="Pack a stateless, trivial, concrete void-returning UiAction recipe and its arguments into a direct Ui...">make()</a>. Size and argument rules are compile-time checks.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">bool</span> panelOpen = <span class="keyword">false</span>;</div>
+<div class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> toggle = <a class="code hl_function" href="#ga39b6472605f9f479ce549d4104e4afa4">FlowUi::UiAction</a>(<span class="stringliteral">&quot;docs.toggle&quot;</span>, [](<span class="keywordtype">bool</span>&amp; open) { open = !open; });</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1UiActionCall.html">FlowUi::UiActionCall</a> call = actions.make(toggle, panelOpen);</div>
+<div class="ttc" id="aclassFlowUi_1_1UiActionCall_html"><div class="ttname"><a href="classFlowUi_1_1UiActionCall.html">FlowUi::UiActionCall</a></div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:78</div></div>
+<div class="ttc" id="agroup__flowui__action__manager_html_ga39b6472605f9f479ce549d4104e4afa4"><div class="ttname"><a href="#ga39b6472605f9f479ce549d4104e4afa4">FlowUi::UiAction</a></div><div class="ttdeci">constexpr auto UiAction(Fn fn, ActionSourceLocation source=ActionSourceLocation::current()) noexcept</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:451</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="gaaf0c15fa5763845a8850cc04990dafda" name="gaaf0c15fa5763845a8850cc04990dafda"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaaf0c15fa5763845a8850cc04990dafda">&#9670;&#160;</a></span>rebind()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Callable, typename... Resources&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1AppActionCall.html">AppActionCall</a> &gt; FlowUi::AppActions::rebind </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1AppActionDescriptor.html">AppActionDescriptor</a></td>          <td class="paramname"><span class="paramname"><em>descriptor</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Callable &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>callable</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Resources &amp;&amp;...</td>          <td class="paramname"><span class="paramname"><em>resources</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Replace an existing retained binding at the same identity. Active invocations finish on their original binding; future calls resolve the replacement. A missing binding is returned as an error. </p>
+<p>Hybrid contract: structured binding validation/publication failures are returned; arbitrary callable construction exceptions propagate unchanged. Resources supplied as pointers/std::ref/std::cref are borrowed and must outlive binding retirement and all in-progress calls. Callable objects must meet the bind restrictions: function/member pointer, stateless concrete callable, or explicitly borrowed callable.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">int</span> saveCount = 0;</div>
+<div class="line"><span class="keyword">auto</span> result = actions.rebind(<a class="code hl_struct" href="structFlowUi_1_1AppActionDescriptor.html">FlowUi::AppActionDescriptor</a>{.id = <a class="code hl_function" href="#ga78191cadc43d03c544c284c66abbd22a">FlowUi::AppAction</a>(<span class="stringliteral">&quot;docs.save&quot;</span>), .<a class="code hl_variable" href="structFlowUi_1_1AppActionID.html#a05a1eb6bb5fc28088ac510442e9c8f1e">debugName</a> = <span class="stringliteral">&quot;Save&quot;</span>}, [](<span class="keywordtype">int</span>&amp; saveCount) { ++saveCount; }, std::ref(saveCount));</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> FlowUi::AppActionCall save = *result;</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="ga90d373821fd47b59e2cb87077d603ab1" name="ga90d373821fd47b59e2cb87077d603ab1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga90d373821fd47b59e2cb87077d603ab1">&#9670;&#160;</a></span>UiAction() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t N, typename Fn&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto FlowUi::UiAction </td>
+          <td>(</td>
+          <td class="paramtype">const char(&amp;)</td>          <td class="paramname"><span class="paramname"><em>name</em></span>[N], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Fn</td>          <td class="paramname"><span class="paramname"><em>fn</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ActionSourceLocation.html">ActionSourceLocation</a></td>          <td class="paramname"><span class="paramname"><em>source</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="structFlowUi_1_1ActionSourceLocation.html#a70b6d9a7996b1aed48b2c00a1cec15f8">ActionSourceLocation::current</a>()</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel consteval">consteval</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create a named UI action recipe with an identity hashed from a nonempty literal. Reusing a name denotes the same authored recipe identity. </p><dl class="section user"><dt>Arguments</dt><dd><ul>
+<li><code class="param">name</code> Stable authored recipe name; the literal is borrowed in developer builds.</li>
+<li><code class="param">fn</code> Stateless concrete operation returning void. </li>
+</ul>
+</dd></dl>
+<dl class="section note"><dt>Note</dt><dd>In development builds, the additional source argument records the recipe definition location. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Named recipe to bind through <a class="el" href="#gaed2e7828505874abd12a93b22aa7ad79" title="Pack a stateless, trivial, concrete void-returning UiAction recipe and its arguments into a direct Ui...">UiActions::make()</a>.</dd></dl>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">bool</span> open = <span class="keyword">false</span>;</div>
+<div class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> toggle = <a class="code hl_function" href="#ga39b6472605f9f479ce549d4104e4afa4">FlowUi::UiAction</a>(</div>
+<div class="line">    <span class="stringliteral">&quot;docs.named.toggle&quot;</span>, [](<span class="keywordtype">bool</span>&amp; value) { value = !value; });</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1UiActionCall.html">FlowUi::UiActionCall</a> call = actions.make(toggle, open); <span class="comment">// open must outlive the call.</span></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a id="ga39b6472605f9f479ce549d4104e4afa4" name="ga39b6472605f9f479ce549d4104e4afa4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga39b6472605f9f479ce549d4104e4afa4">&#9670;&#160;</a></span>UiAction() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Fn&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto FlowUi::UiAction </td>
+          <td>(</td>
+          <td class="paramtype">Fn</td>          <td class="paramname"><span class="paramname"><em>fn</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ActionSourceLocation.html">ActionSourceLocation</a></td>          <td class="paramname"><span class="paramname"><em>source</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="structFlowUi_1_1ActionSourceLocation.html#a70b6d9a7996b1aed48b2c00a1cec15f8">ActionSourceLocation::current</a>()</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create a UI action recipe whose identity follows the concrete callable type. The callable must be stateless, trivial, default-constructible, non-generic, and return void. </p><dl class="section user"><dt>Arguments</dt><dd><ul>
+<li><code class="param">fn</code> Operation accepting the resource arguments later supplied to <a class="el" href="#gaed2e7828505874abd12a93b22aa7ad79" title="Pack a stateless, trivial, concrete void-returning UiAction recipe and its arguments into a direct Ui...">UiActions::make()</a>. </li>
+</ul>
+</dd></dl>
+<dl class="section note"><dt>Note</dt><dd>In development builds, the additional source argument records the recipe definition location. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Recipe containing fn and its generated type identity.</dd></dl>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">bool</span> open = <span class="keyword">false</span>;</div>
+<div class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> toggle = <a class="code hl_function" href="#ga39b6472605f9f479ce549d4104e4afa4">FlowUi::UiAction</a>([](<span class="keywordtype">bool</span>&amp; value) { value = !value; });</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1UiActionCall.html">FlowUi::UiActionCall</a> call = actions.make(toggle, open); <span class="comment">// open must outlive the call.</span></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Variable Documentation</h2>
+<a id="ga6b2e429a8cc9a1e51d3af4d26496c487" name="ga6b2e429a8cc9a1e51d3af4d26496c487"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6b2e429a8cc9a1e51d3af4d26496c487">&#9670;&#160;</a></span>InvalidAppActionID</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> FlowUi::InvalidAppActionID {}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel constexpr">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Sentinel for an absent application action. </p>
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <div id="page-nav" class="page-nav-panel">
 <div id="page-nav-resize-handle"></div>

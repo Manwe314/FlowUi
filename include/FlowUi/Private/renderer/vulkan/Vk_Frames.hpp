@@ -17,7 +17,10 @@ struct FrameVk {
 		VkCommandBuffer cmd = VK_NULL_HANDLE;
 		VkSemaphore imageAvailable = VK_NULL_HANDLE;
 		VkFence inFlight = VK_NULL_HANDLE;
+		VkFence imageAcquired = VK_NULL_HANDLE;
 		FlowUi::detail::storage::SubmissionToken storageSubmission{};
+		bool submissionPending = false;
+		bool acquisitionPending = false;
 #if FLOW_UI_DEV_MODE
 		FlowUi::devSystems::GpuTimingFrameSlot gpuTiming{};
 #endif

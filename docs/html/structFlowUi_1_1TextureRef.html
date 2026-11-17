@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,24 +107,22 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Renderer texture reference returned by image, icon, and viewport managers.  
+<p>Renderer texture reference returned by image, icon, and viewport managers.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="TextureRef_8hpp_source.html">TextureRef.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-methods" class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a5f5bc7a9973228c17b24ee920ac8cb41" id="r_a5f5bc7a9973228c17b24ee920ac8cb41"><td class="memItemLeft"><a id="a5f5bc7a9973228c17b24ee920ac8cb41" name="a5f5bc7a9973228c17b24ee920ac8cb41"></a>
-static constexpr <a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a>&#160;</td><td class="memItemRight"><b>fromStable</b> (ResourceDomain domain, std::string_view key, TextureFitMode fit=TextureFitMode::Contain, bool tint=false) noexcept</td></tr>
+<tr class="memitem:a5f5bc7a9973228c17b24ee920ac8cb41" id="r_a5f5bc7a9973228c17b24ee920ac8cb41"><td class="memItemLeft">static constexpr <a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5f5bc7a9973228c17b24ee920ac8cb41">fromStable</a> (<a class="el" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040f">ResourceDomain</a> domain, std::string_view key, <a class="el" href="namespaceFlowUi.html#af2bd0da1549931d06a4ae124e15a54cc">TextureFitMode</a> fit=<a class="el" href="namespaceFlowUi.html#af2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">TextureFitMode::Contain</a>, bool tint=false) noexcept</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a977ce0a0d96ebc101a4efdaa35ac047a" id="r_a977ce0a0d96ebc101a4efdaa35ac047a"><td class="memItemLeft"><a id="a977ce0a0d96ebc101a4efdaa35ac047a" name="a977ce0a0d96ebc101a4efdaa35ac047a"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>sourceKey</b> {}</td></tr>
+<tr class="memitem:a977ce0a0d96ebc101a4efdaa35ac047a" id="r_a977ce0a0d96ebc101a4efdaa35ac047a"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a977ce0a0d96ebc101a4efdaa35ac047a">sourceKey</a> {}</td></tr>
 <tr class="memitem:afa9bd316197d0e297f1455843dcef0b2" id="r_afa9bd316197d0e297f1455843dcef0b2"><td class="memItemLeft"><a id="afa9bd316197d0e297f1455843dcef0b2" name="afa9bd316197d0e297f1455843dcef0b2"></a>
 <a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a>&#160;</td><td class="memItemRight"><b>handle</b> {}</td></tr>
 <tr class="memdesc:afa9bd316197d0e297f1455843dcef0b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager-owned logical texture handle; do not edit manually. <br /></td></tr>
-<tr class="memitem:ab06d2ca1bd4334e1d15e41c88c2a0089" id="r_ab06d2ca1bd4334e1d15e41c88c2a0089"><td class="memItemLeft">ResourceDomain&#160;</td><td class="memItemRight"><a class="el" href="#ab06d2ca1bd4334e1d15e41c88c2a0089">sourceDomain</a> = ResourceDomain::Auto</td></tr>
+<tr class="memitem:ab06d2ca1bd4334e1d15e41c88c2a0089" id="r_ab06d2ca1bd4334e1d15e41c88c2a0089"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040f">ResourceDomain</a>&#160;</td><td class="memItemRight"><a class="el" href="#ab06d2ca1bd4334e1d15e41c88c2a0089">sourceDomain</a> = <a class="el" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa06b9281e396db002010bde1de57262eb">ResourceDomain::Auto</a></td></tr>
 <tr class="memitem:a0fd2e9a966502077ffcaf7bc79ba82fb" id="r_a0fd2e9a966502077ffcaf7bc79ba82fb"><td class="memItemLeft"><a id="a0fd2e9a966502077ffcaf7bc79ba82fb" name="a0fd2e9a966502077ffcaf7bc79ba82fb"></a>
 float&#160;</td><td class="memItemRight"><b>uv0x</b> = 0.0f</td></tr>
 <tr class="memdesc:a0fd2e9a966502077ffcaf7bc79ba82fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager-owned left U coordinate; do not edit manually. <br /></td></tr>
@@ -137,7 +135,7 @@ float&#160;</td><td class="memItemRight"><b>uv1x</b> = 1.0f</td></tr>
 <tr class="memitem:ab493e246cf30856eb386ca05d1d50cc7" id="r_ab493e246cf30856eb386ca05d1d50cc7"><td class="memItemLeft"><a id="ab493e246cf30856eb386ca05d1d50cc7" name="ab493e246cf30856eb386ca05d1d50cc7"></a>
 float&#160;</td><td class="memItemRight"><b>uv1y</b> = 1.0f</td></tr>
 <tr class="memdesc:ab493e246cf30856eb386ca05d1d50cc7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager-owned bottom V coordinate; do not edit manually. <br /></td></tr>
-<tr class="memitem:a6eaac4b006ded5cf41011800cce39c7c" id="r_a6eaac4b006ded5cf41011800cce39c7c"><td class="memItemLeft">TextureFitMode&#160;</td><td class="memItemRight"><a class="el" href="#a6eaac4b006ded5cf41011800cce39c7c">fitMode</a> = TextureFitMode::Contain</td></tr>
+<tr class="memitem:a6eaac4b006ded5cf41011800cce39c7c" id="r_a6eaac4b006ded5cf41011800cce39c7c"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#af2bd0da1549931d06a4ae124e15a54cc">TextureFitMode</a>&#160;</td><td class="memItemRight"><a class="el" href="#a6eaac4b006ded5cf41011800cce39c7c">fitMode</a> = <a class="el" href="namespaceFlowUi.html#af2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">TextureFitMode::Contain</a></td></tr>
 <tr class="memdesc:a6eaac4b006ded5cf41011800cce39c7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Texture fit behavior inside the target rectangle.  <br /></td></tr>
 <tr class="memitem:a6a9d218f073e486e784478abe06cbd91" id="r_a6a9d218f073e486e784478abe06cbd91"><td class="memItemLeft"><a id="a6a9d218f073e486e784478abe06cbd91" name="a6a9d218f073e486e784478abe06cbd91"></a>
 int32_t&#160;</td><td class="memItemRight"><b>sourceWidth</b> = 0</td></tr>
@@ -151,8 +149,66 @@ int32_t&#160;</td><td class="memItemRight"><b>sourceHeight</b> = 0</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Renderer texture reference returned by image, icon, and viewport managers. </p>
-<p>Treat this as a manager-owned handle with optional render settings. After obtaining a <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a>, application code may adjust fitMode and tintEnabled. The handle, UV coordinates, and source dimensions are populated by FlowUi managers and should normally be left unchanged. </p>
-</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<p>Treat this as a manager-owned handle with optional render settings. After obtaining a <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a>, application code may adjust fitMode and tintEnabled. The handle, UV coordinates, and source dimensions are populated by <a class="el" href="namespaceFlowUi.html">FlowUi</a> managers and should normally be left unchanged. <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> owns no GPU resource and does not extend manager or sourceKey storage lifetime. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a5f5bc7a9973228c17b24ee920ac8cb41" name="a5f5bc7a9973228c17b24ee920ac8cb41"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f5bc7a9973228c17b24ee920ac8cb41">&#9670;&#160;</a></span>fromStable()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a> FlowUi::TextureRef::fromStable </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040f">ResourceDomain</a></td>          <td class="paramname"><span class="paramname"><em>domain</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi.html#af2bd0da1549931d06a4ae124e15a54cc">TextureFitMode</a></td>          <td class="paramname"><span class="paramname"><em>fit</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="namespaceFlowUi.html#af2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">TextureFitMode::Contain</a></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>tint</em></span><span class="paramdefsep"> = </span><span class="paramdefval">false</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create an unresolved texture reference from a borrowed manager key. The receiving renderer/manager resolves it later; this does not load or validate a resource. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">domain</td><td>Manager namespace containing key. </td></tr>
+    <tr><td class="paramname">key</td><td>Borrowed logical lookup key. </td></tr>
+    <tr><td class="paramname">fit</td><td>Texture sizing policy. </td></tr>
+    <tr><td class="paramname">tint</td><td>Whether to multiply by the image command color. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Reference with no resolved texture handle.</dd></dl>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> texture = <a class="code hl_function" href="#a5f5bc7a9973228c17b24ee920ac8cb41">FlowUi::TextureRef::fromStable</a>(</div>
+<div class="line">    <a class="code hl_enumvalue" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa817434295a673aed431435658b65d9a7">FlowUi::ResourceDomain::Icon</a>, <span class="stringliteral">&quot;icons/save&quot;</span>,</div>
+<div class="line">    <a class="code hl_enumvalue" href="namespaceFlowUi.html#af2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">FlowUi::TextureFitMode::Contain</a>, <span class="keyword">true</span>);</div>
+<div class="ttc" id="anamespaceFlowUi_html_a8a53729d0d10acbed01b5aed921e040fa817434295a673aed431435658b65d9a7"><div class="ttname"><a href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa817434295a673aed431435658b65d9a7">FlowUi::ResourceDomain::Icon</a></div><div class="ttdeci">@ Icon</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:16</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_af2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484"><div class="ttname"><a href="namespaceFlowUi.html#af2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">FlowUi::TextureFitMode::Contain</a></div><div class="ttdeci">@ Contain</div><div class="ttdoc">Fit the whole texture inside the target rectangle without cropping.</div><div class="ttdef"><b>Definition</b> TextureRef.hpp:15</div></div>
+<div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> TextureRef.hpp:31</div></div>
+<div class="ttc" id="astructFlowUi_1_1TextureRef_html_a5f5bc7a9973228c17b24ee920ac8cb41"><div class="ttname"><a href="#a5f5bc7a9973228c17b24ee920ac8cb41">FlowUi::TextureRef::fromStable</a></div><div class="ttdeci">static constexpr TextureRef fromStable(ResourceDomain domain, std::string_view key, TextureFitMode fit=TextureFitMode::Contain, bool tint=false) noexcept</div><div class="ttdef"><b>Definition</b> TextureRef.hpp:53</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a6eaac4b006ded5cf41011800cce39c7c" name="a6eaac4b006ded5cf41011800cce39c7c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6eaac4b006ded5cf41011800cce39c7c">&#9670;&#160;</a></span>fitMode</h2>
 
@@ -160,14 +216,14 @@ int32_t&#160;</td><td class="memItemRight"><b>sourceHeight</b> = 0</td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">TextureFitMode FlowUi::TextureRef::fitMode = TextureFitMode::Contain</td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#af2bd0da1549931d06a4ae124e15a54cc">TextureFitMode</a> FlowUi::TextureRef::fitMode = <a class="el" href="namespaceFlowUi.html#af2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">TextureFitMode::Contain</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Texture fit behavior inside the target rectangle. </p>
 <p>Application code may change this after obtaining the <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a>.</p>
-<dl class="section see"><dt>See also</dt><dd>FlowUi::TextureFitMode </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="namespaceFlowUi.html#af2bd0da1549931d06a4ae124e15a54cc" title="Texture layout mode inside a target rectangle.">FlowUi::TextureFitMode</a> </dd></dl>
 
 </div>
 </div>
@@ -193,11 +249,26 @@ int32_t&#160;</td><td class="memItemRight"><b>sourceHeight</b> = 0</td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">ResourceDomain FlowUi::TextureRef::sourceDomain = ResourceDomain::Auto</td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040f">ResourceDomain</a> FlowUi::TextureRef::sourceDomain = <a class="el" href="namespaceFlowUi.html#a8a53729d0d10acbed01b5aed921e040fa06b9281e396db002010bde1de57262eb">ResourceDomain::Auto</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p>Stable manager lookup retained for overrides and baked changes. </p>
+
+</div>
+</div>
+<a id="a977ce0a0d96ebc101a4efdaa35ac047a" name="a977ce0a0d96ebc101a4efdaa35ac047a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a977ce0a0d96ebc101a4efdaa35ac047a">&#9670;&#160;</a></span>sourceKey</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::TextureRef::sourceKey {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed logical source key used for stable reconstruction; backing bytes must outlive retained references. </p>
 
 </div>
 </div>
@@ -234,7 +305,7 @@ int32_t&#160;</td><td class="memItemRight"><b>sourceHeight</b> = 0</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1TextureRef.html">TextureRef</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1TextureRef.html">TextureRef</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

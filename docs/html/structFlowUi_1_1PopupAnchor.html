@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,35 +106,329 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::PopupAnchor Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="PopupTypes_8hpp_source.html">PopupTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-methods" class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a836e904830612c599fe163ad0eb761ce" id="r_a836e904830612c599fe163ad0eb761ce"><td class="memItemLeft"><a id="a836e904830612c599fe163ad0eb761ce" name="a836e904830612c599fe163ad0eb761ce"></a>
-static constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><b>parent</b> () noexcept</td></tr>
-<tr class="memitem:a9ef582ec5bec1a31ab38db0593adcd1f" id="r_a9ef582ec5bec1a31ab38db0593adcd1f"><td class="memItemLeft"><a id="a9ef582ec5bec1a31ab38db0593adcd1f" name="a9ef582ec5bec1a31ab38db0593adcd1f"></a>
-static constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><b>element</b> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> id) noexcept</td></tr>
-<tr class="memitem:a2a2562e8e2d332740608ff53e3f26790" id="r_a2a2562e8e2d332740608ff53e3f26790"><td class="memItemLeft"><a id="a2a2562e8e2d332740608ff53e3f26790" name="a2a2562e8e2d332740608ff53e3f26790"></a>
-static constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><b>element</b> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> id) noexcept</td></tr>
-<tr class="memitem:a9b0768082dc72949f43b18443c9d011a" id="r_a9b0768082dc72949f43b18443c9d011a"><td class="memItemLeft"><a id="a9b0768082dc72949f43b18443c9d011a" name="a9b0768082dc72949f43b18443c9d011a"></a>
-static constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><b>element</b> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> id) noexcept</td></tr>
-<tr class="memitem:a02a9a1bdc190105dd4bc399624694151" id="r_a02a9a1bdc190105dd4bc399624694151"><td class="memItemLeft"><a id="a02a9a1bdc190105dd4bc399624694151" name="a02a9a1bdc190105dd4bc399624694151"></a>
-static constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><b>pointerSnapshot</b> () noexcept</td></tr>
-<tr class="memitem:ae9f9213d6505cf90ced3578e1d39f16e" id="r_ae9f9213d6505cf90ced3578e1d39f16e"><td class="memItemLeft"><a id="ae9f9213d6505cf90ced3578e1d39f16e" name="ae9f9213d6505cf90ced3578e1d39f16e"></a>
-static constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><b>pointerFollow</b> () noexcept</td></tr>
-<tr class="memitem:ac1d3a91bbcd3ded1a9f2f900d7217e46" id="r_ac1d3a91bbcd3ded1a9f2f900d7217e46"><td class="memItemLeft"><a id="ac1d3a91bbcd3ded1a9f2f900d7217e46" name="ac1d3a91bbcd3ded1a9f2f900d7217e46"></a>
-static constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><b>position</b> (Clay_Vector2 value) noexcept</td></tr>
-<tr class="memitem:a5bb0706a21fe05c93f32300117dd20ef" id="r_a5bb0706a21fe05c93f32300117dd20ef"><td class="memItemLeft"><a id="a5bb0706a21fe05c93f32300117dd20ef" name="a5bb0706a21fe05c93f32300117dd20ef"></a>
-static constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><b>viewport</b> () noexcept</td></tr>
+<tr class="memitem:a836e904830612c599fe163ad0eb761ce" id="r_a836e904830612c599fe163ad0eb761ce"><td class="memItemLeft">static constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><a class="el" href="#a836e904830612c599fe163ad0eb761ce">parent</a> () noexcept</td></tr>
+<tr class="memdesc:a836e904830612c599fe163ad0eb761ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an anchor for the current Clay parent.  <br /></td></tr>
+<tr class="memitem:a9ef582ec5bec1a31ab38db0593adcd1f" id="r_a9ef582ec5bec1a31ab38db0593adcd1f"><td class="memItemLeft">static constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><a class="el" href="#a9ef582ec5bec1a31ab38db0593adcd1f">element</a> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> id) noexcept</td></tr>
+<tr class="memdesc:a9ef582ec5bec1a31ab38db0593adcd1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an anchor for a Flow element or semantic part in the current window.  <br /></td></tr>
+<tr class="memitem:a2a2562e8e2d332740608ff53e3f26790" id="r_a2a2562e8e2d332740608ff53e3f26790"><td class="memItemLeft">static constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><a class="el" href="#a2a2562e8e2d332740608ff53e3f26790">element</a> (<a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> id) noexcept</td></tr>
+<tr class="memdesc:a2a2562e8e2d332740608ff53e3f26790"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an anchor for a Flow element or semantic part in the current window.  <br /></td></tr>
+<tr class="memitem:a9b0768082dc72949f43b18443c9d011a" id="r_a9b0768082dc72949f43b18443c9d011a"><td class="memItemLeft">static constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><a class="el" href="#a9b0768082dc72949f43b18443c9d011a">element</a> (<a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> id) noexcept</td></tr>
+<tr class="memdesc:a9b0768082dc72949f43b18443c9d011a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an anchor for a Flow element or semantic part in the current window.  <br /></td></tr>
+<tr class="memitem:a02a9a1bdc190105dd4bc399624694151" id="r_a02a9a1bdc190105dd4bc399624694151"><td class="memItemLeft">static constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><a class="el" href="#a02a9a1bdc190105dd4bc399624694151">pointerSnapshot</a> () noexcept</td></tr>
+<tr class="memdesc:a02a9a1bdc190105dd4bc399624694151"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an anchor at the pointer position first resolved for this popup.  <br /></td></tr>
+<tr class="memitem:ae9f9213d6505cf90ced3578e1d39f16e" id="r_ae9f9213d6505cf90ced3578e1d39f16e"><td class="memItemLeft">static constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><a class="el" href="#ae9f9213d6505cf90ced3578e1d39f16e">pointerFollow</a> () noexcept</td></tr>
+<tr class="memdesc:ae9f9213d6505cf90ced3578e1d39f16e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an anchor that follows the current frame pointer.  <br /></td></tr>
+<tr class="memitem:ac1d3a91bbcd3ded1a9f2f900d7217e46" id="r_ac1d3a91bbcd3ded1a9f2f900d7217e46"><td class="memItemLeft">static constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><a class="el" href="#ac1d3a91bbcd3ded1a9f2f900d7217e46">position</a> (Clay_Vector2 value) noexcept</td></tr>
+<tr class="memdesc:ac1d3a91bbcd3ded1a9f2f900d7217e46"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an anchor at an explicit window-layout coordinate.  <br /></td></tr>
+<tr class="memitem:a5bb0706a21fe05c93f32300117dd20ef" id="r_a5bb0706a21fe05c93f32300117dd20ef"><td class="memItemLeft">static constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5bb0706a21fe05c93f32300117dd20ef">viewport</a> () noexcept</td></tr>
+<tr class="memdesc:a5bb0706a21fe05c93f32300117dd20ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an anchor for the current window viewport rectangle.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a75cb2c088c5b4222712189d946493b3c" id="r_a75cb2c088c5b4222712189d946493b3c"><td class="memItemLeft"><a id="a75cb2c088c5b4222712189d946493b3c" name="a75cb2c088c5b4222712189d946493b3c"></a>
-PopupAnchorKind&#160;</td><td class="memItemRight"><b>kind</b> = PopupAnchorKind::Parent</td></tr>
-<tr class="memitem:a4f71a3de47b897beafa85e28dcf02006" id="r_a4f71a3de47b897beafa85e28dcf02006"><td class="memItemLeft"><a id="a4f71a3de47b897beafa85e28dcf02006" name="a4f71a3de47b897beafa85e28dcf02006"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>elementValue</b> = 0</td></tr>
-<tr class="memitem:a71289661bf20b725b35f9dff08de9122" id="r_a71289661bf20b725b35f9dff08de9122"><td class="memItemLeft"><a id="a71289661bf20b725b35f9dff08de9122" name="a71289661bf20b725b35f9dff08de9122"></a>
-Clay_Vector2&#160;</td><td class="memItemRight"><b>coordinate</b> {}</td></tr>
+<tr class="memitem:a75cb2c088c5b4222712189d946493b3c" id="r_a75cb2c088c5b4222712189d946493b3c"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#abbe917549e71b26dce40670933a2528d">PopupAnchorKind</a>&#160;</td><td class="memItemRight"><a class="el" href="#a75cb2c088c5b4222712189d946493b3c">kind</a> = <a class="el" href="namespaceFlowUi.html#abbe917549e71b26dce40670933a2528da30269022e9d8f51beaabb52e5d0de2b7">PopupAnchorKind::Parent</a></td></tr>
+<tr class="memitem:a4f71a3de47b897beafa85e28dcf02006" id="r_a4f71a3de47b897beafa85e28dcf02006"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a4f71a3de47b897beafa85e28dcf02006">elementValue</a> = 0</td></tr>
+<tr class="memitem:a71289661bf20b725b35f9dff08de9122" id="r_a71289661bf20b725b35f9dff08de9122"><td class="memItemLeft">Clay_Vector2&#160;</td><td class="memItemRight"><a class="el" href="#a71289661bf20b725b35f9dff08de9122">coordinate</a> {}</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Popup anchor descriptor. Prefer the named factories so only payload fields relevant to kind are populated. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a9ef582ec5bec1a31ab38db0593adcd1f" name="a9ef582ec5bec1a31ab38db0593adcd1f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9ef582ec5bec1a31ab38db0593adcd1f">&#9670;&#160;</a></span>element() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a> FlowUi::PopupAnchor::element </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create an anchor for a Flow element or semantic part in the current window. </p>
+<p>Local, global, and semantic part IDs all resolve in the popup's current window; a global name does not select a different window.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns an Element descriptor containing the supplied identity value.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> anchor = <a class="code hl_function" href="#a9ef582ec5bec1a31ab38db0593adcd1f">FlowUi::PopupAnchor::element</a>(fieldId);</div>
+<div class="ttc" id="astructFlowUi_1_1PopupAnchor_html_a9ef582ec5bec1a31ab38db0593adcd1f"><div class="ttname"><a href="#a9ef582ec5bec1a31ab38db0593adcd1f">FlowUi::PopupAnchor::element</a></div><div class="ttdeci">static constexpr PopupAnchor element(FlowElementID id) noexcept</div><div class="ttdoc">Create an anchor for a Flow element or semantic part in the current window.</div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:125</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a9b0768082dc72949f43b18443c9d011a" name="a9b0768082dc72949f43b18443c9d011a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9b0768082dc72949f43b18443c9d011a">&#9670;&#160;</a></span>element() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a> FlowUi::PopupAnchor::element </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create an anchor for a Flow element or semantic part in the current window. </p>
+<p>Local, global, and semantic part IDs all resolve in the popup's current window; a global name does not select a different window.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns an Element descriptor containing the supplied identity value.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> anchor = <a class="code hl_function" href="#a9ef582ec5bec1a31ab38db0593adcd1f">FlowUi::PopupAnchor::element</a>(fieldId);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a2a2562e8e2d332740608ff53e3f26790" name="a2a2562e8e2d332740608ff53e3f26790"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a2562e8e2d332740608ff53e3f26790">&#9670;&#160;</a></span>element() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a> FlowUi::PopupAnchor::element </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create an anchor for a Flow element or semantic part in the current window. </p>
+<p>Local, global, and semantic part IDs all resolve in the popup's current window; a global name does not select a different window.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns an Element descriptor containing the supplied identity value.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> anchor = <a class="code hl_function" href="#a9ef582ec5bec1a31ab38db0593adcd1f">FlowUi::PopupAnchor::element</a>(fieldId);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a836e904830612c599fe163ad0eb761ce" name="a836e904830612c599fe163ad0eb761ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a836e904830612c599fe163ad0eb761ce">&#9670;&#160;</a></span>parent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a> FlowUi::PopupAnchor::parent </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create an anchor for the current Clay parent. </p>
+<p>This constexpr/noexcept factory owns no UI object.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns a value descriptor; placement is resolved during popup layout.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> anchor = <a class="code hl_function" href="#a836e904830612c599fe163ad0eb761ce">FlowUi::PopupAnchor::parent</a>();</div>
+<div class="ttc" id="astructFlowUi_1_1PopupAnchor_html_a836e904830612c599fe163ad0eb761ce"><div class="ttname"><a href="#a836e904830612c599fe163ad0eb761ce">FlowUi::PopupAnchor::parent</a></div><div class="ttdeci">static constexpr PopupAnchor parent() noexcept</div><div class="ttdoc">Create an anchor for the current Clay parent.</div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:110</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ae9f9213d6505cf90ced3578e1d39f16e" name="ae9f9213d6505cf90ced3578e1d39f16e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae9f9213d6505cf90ced3578e1d39f16e">&#9670;&#160;</a></span>pointerFollow()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a> FlowUi::PopupAnchor::pointerFollow </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create an anchor that follows the current frame pointer. </p>
+<p>This constexpr/noexcept factory owns no pointer state.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns a value descriptor sampled when submitted.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> anchor = <a class="code hl_function" href="#ae9f9213d6505cf90ced3578e1d39f16e">FlowUi::PopupAnchor::pointerFollow</a>();</div>
+<div class="ttc" id="astructFlowUi_1_1PopupAnchor_html_ae9f9213d6505cf90ced3578e1d39f16e"><div class="ttname"><a href="#ae9f9213d6505cf90ced3578e1d39f16e">FlowUi::PopupAnchor::pointerFollow</a></div><div class="ttdeci">static constexpr PopupAnchor pointerFollow() noexcept</div><div class="ttdoc">Create an anchor that follows the current frame pointer.</div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:194</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a02a9a1bdc190105dd4bc399624694151" name="a02a9a1bdc190105dd4bc399624694151"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a02a9a1bdc190105dd4bc399624694151">&#9670;&#160;</a></span>pointerSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a> FlowUi::PopupAnchor::pointerSnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create an anchor at the pointer position first resolved for this popup. </p>
+<p>This constexpr/noexcept factory does not sample input immediately.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns a value descriptor; the resolved coordinate is retained while the popup remains open.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> anchor = <a class="code hl_function" href="#a02a9a1bdc190105dd4bc399624694151">FlowUi::PopupAnchor::pointerSnapshot</a>();</div>
+<div class="ttc" id="astructFlowUi_1_1PopupAnchor_html_a02a9a1bdc190105dd4bc399624694151"><div class="ttname"><a href="#a02a9a1bdc190105dd4bc399624694151">FlowUi::PopupAnchor::pointerSnapshot</a></div><div class="ttdeci">static constexpr PopupAnchor pointerSnapshot() noexcept</div><div class="ttdoc">Create an anchor at the pointer position first resolved for this popup.</div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:179</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ac1d3a91bbcd3ded1a9f2f900d7217e46" name="ac1d3a91bbcd3ded1a9f2f900d7217e46"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac1d3a91bbcd3ded1a9f2f900d7217e46">&#9670;&#160;</a></span>position()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a> FlowUi::PopupAnchor::position </td>
+          <td>(</td>
+          <td class="paramtype">Clay_Vector2</td>          <td class="paramname"><span class="paramname"><em>value</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create an anchor at an explicit window-layout coordinate. </p>
+<p>Coordinates use logical layout pixels, not framebuffer pixels.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns a Position descriptor storing the coordinate.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> anchor = <a class="code hl_function" href="#ac1d3a91bbcd3ded1a9f2f900d7217e46">FlowUi::PopupAnchor::position</a>(Clay_Vector2{24.0f, 48.0f});</div>
+<div class="ttc" id="astructFlowUi_1_1PopupAnchor_html_ac1d3a91bbcd3ded1a9f2f900d7217e46"><div class="ttname"><a href="#ac1d3a91bbcd3ded1a9f2f900d7217e46">FlowUi::PopupAnchor::position</a></div><div class="ttdeci">static constexpr PopupAnchor position(Clay_Vector2 value) noexcept</div><div class="ttdoc">Create an anchor at an explicit window-layout coordinate.</div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:209</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a5bb0706a21fe05c93f32300117dd20ef" name="a5bb0706a21fe05c93f32300117dd20ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5bb0706a21fe05c93f32300117dd20ef">&#9670;&#160;</a></span>viewport()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a> FlowUi::PopupAnchor::viewport </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create an anchor for the current window viewport rectangle. </p>
+<p>This constexpr/noexcept factory owns no viewport object.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns a value descriptor resolved during layout.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> anchor = <a class="code hl_function" href="#a5bb0706a21fe05c93f32300117dd20ef">FlowUi::PopupAnchor::viewport</a>();</div>
+<div class="ttc" id="astructFlowUi_1_1PopupAnchor_html_a5bb0706a21fe05c93f32300117dd20ef"><div class="ttname"><a href="#a5bb0706a21fe05c93f32300117dd20ef">FlowUi::PopupAnchor::viewport</a></div><div class="ttdeci">static constexpr PopupAnchor viewport() noexcept</div><div class="ttdoc">Create an anchor for the current window viewport rectangle.</div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:227</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a71289661bf20b725b35f9dff08de9122" name="a71289661bf20b725b35f9dff08de9122"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a71289661bf20b725b35f9dff08de9122">&#9670;&#160;</a></span>coordinate</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Clay_Vector2 FlowUi::PopupAnchor::coordinate {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Window layout coordinate used only for Position anchors. </p>
+
+</div>
+</div>
+<a id="a4f71a3de47b897beafa85e28dcf02006" name="a4f71a3de47b897beafa85e28dcf02006"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4f71a3de47b897beafa85e28dcf02006">&#9670;&#160;</a></span>elementValue</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::PopupAnchor::elementValue = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Numeric Flow identity used only for Element anchors. </p>
+
+</div>
+</div>
+<a id="a75cb2c088c5b4222712189d946493b3c" name="a75cb2c088c5b4222712189d946493b3c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a75cb2c088c5b4222712189d946493b3c">&#9670;&#160;</a></span>kind</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#abbe917549e71b26dce40670933a2528d">PopupAnchorKind</a> FlowUi::PopupAnchor::kind = <a class="el" href="namespaceFlowUi.html#abbe917549e71b26dce40670933a2528da30269022e9d8f51beaabb52e5d0de2b7">PopupAnchorKind::Parent</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Active anchor representation. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="PopupTypes_8hpp_source.html">PopupTypes.hpp</a></li>
 </ul>
@@ -151,7 +445,7 @@ Clay_Vector2&#160;</td><td class="memItemRight"><b>coordinate</b> {}</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1PopupAnchor.html">PopupAnchor</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

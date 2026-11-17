@@ -92,22 +92,22 @@ Create the named viewport after `makeApplication()`.
 ```cpp
 FlowUi::App app = FlowUi::makeApplication(config);
 
-const bool created = app.viewPorts().create("scene/preview", previewInfo);
+const bool created = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.viewPorts()).get().create("scene/preview", previewInfo));
 (void)created;
 ```
 
 Use `contains()` for lightweight checks.
 
 ```cpp
-if (!app.viewPorts().contains("scene/preview")) {
-    (void)app.viewPorts().create("scene/preview", previewInfo);
+if (!FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.viewPorts()).get().contains("scene/preview"))) {
+    (void)FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.viewPorts()).get().create("scene/preview", previewInfo));
 }
 ```
 
 Use `getViewPort()` when you need to configure the viewport object.
 
 ```cpp
-FlowUi::ViewPort* preview = app.viewPorts().getViewPort("scene/preview");
+FlowUi::ViewPort* preview = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.viewPorts()).get().getViewPort("scene/preview"));
 if (!preview) {
     throw std::runtime_error("Preview viewport was not created.");
 }
@@ -116,7 +116,7 @@ if (!preview) {
 The const overload is useful for read-only inspection:
 
 ```cpp
-const FlowUi::ViewPort* readOnlyPreview = app.viewPorts().getViewPort("scene/preview");
+const FlowUi::ViewPort* readOnlyPreview = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.viewPorts()).get().getViewPort("scene/preview"));
 ```
 
 The viewport also stores its own key. That is useful when helper code receives a viewport pointer and still needs the stable name for logging, lookup tables, or element parameters.
@@ -150,7 +150,7 @@ Most scene previews should keep clearing enabled. Disabling clear is more useful
 Ask the viewport manager for shared Vulkan handles.
 
 ```cpp
-const FlowUi::ViewPortVulkanInterop& vk = app.viewPorts().getVulkanInterop();
+const FlowUi::ViewPortVulkanInterop& vk = FlowUi::ValueOrThrow(app.viewPorts()).get().getVulkanInterop();
 ```
 
 The returned struct includes:
@@ -200,7 +200,7 @@ Keep the renderer alive as long as the viewport callback may use it.
 
 ```cpp
 auto previewRenderer =
-    std::make_shared<PreviewSceneRenderer>(app.viewPorts().getVulkanInterop());
+    std::make_shared<PreviewSceneRenderer>(FlowUi::ValueOrThrow(app.viewPorts()).get().getVulkanInterop());
 ```
 
 The `shared_ptr` callback overload shown in the next chapter is useful because the viewport retains the renderer for you.
@@ -342,7 +342,7 @@ The tag declares only its parameter capability. The build callback borrows the v
 `ViewPortManager::getTexture(key)` is the most convenient way to draw by key.
 
 ```cpp
-FlowUi::TextureRef sceneTexture = app.viewPorts().getTexture("scene/preview");
+FlowUi::TextureRef sceneTexture = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.viewPorts()).get().getTexture("scene/preview"));
 ```
 
 If the key is missing, it returns fallback texture id `0` and logs a warning once.
@@ -352,7 +352,7 @@ If the key is missing, it returns fallback texture id `0` and logs a warning onc
 If you already have a viewport pointer, you can ask it for the current frame texture directly.
 
 ```cpp
-if (FlowUi::ViewPort* viewport = app.viewPorts().getViewPort("scene/preview")) {
+if (FlowUi::ViewPort* viewport = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.viewPorts()).get().getViewPort("scene/preview"))) {
     FlowUi::TextureRef sceneTexture = viewport->textureRef();
 }
 ```
@@ -381,7 +381,7 @@ This means a render callback usually runs only when the viewport texture was ref
 You can inspect current size from the viewport object.
 
 ```cpp
-if (const FlowUi::ViewPort* viewport = app.viewPorts().getViewPort("scene/preview")) {
+if (const FlowUi::ViewPort* viewport = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.viewPorts()).get().getViewPort("scene/preview"))) {
     if (viewport->hasValidSize()) {
         VkExtent2D size = viewport->getSize();
         (void)size;
@@ -396,7 +396,7 @@ Before the viewport has been referenced by UI, its size may be invalid or still 
 Remove a viewport when the scene preview is permanently closed.
 
 ```cpp
-const bool removed = app.viewPorts().remove("scene/preview");
+const bool removed = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.viewPorts()).get().remove("scene/preview"));
 ```
 
 Removal destroys per-frame viewport resources and can block because the implementation waits for the Vulkan device to become idle before releasing resources.
@@ -404,7 +404,7 @@ Removal destroys per-frame viewport resources and can block because the implemen
 If the app only wants to stop drawing custom scene commands, keep the viewport and clear the callback instead.
 
 ```cpp
-if (FlowUi::ViewPort* viewport = app.viewPorts().getViewPort("scene/preview")) {
+if (FlowUi::ViewPort* viewport = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.viewPorts()).get().getViewPort("scene/preview"))) {
     viewport->clearRenderCallback();
 }
 ```
@@ -418,14 +418,14 @@ Setup creates the viewport, creates renderer resources through Vulkan interop, a
 ```cpp
 FlowUi::App app = FlowUi::makeApplication(config);
 
-(void)app.viewPorts().create("scene/preview", FlowUi::ViewPortCreateInfo{
+(void)FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.viewPorts()).get().create("scene/preview", FlowUi::ViewPortCreateInfo{
     .colorFormat = VK_FORMAT_R8G8B8A8_UNORM,
     .clearColor = {0.02f, 0.02f, 0.03f, 1.0f},
     .clearEveryFrame = true,
-});
+}));
 
-FlowUi::ViewPort* preview = app.viewPorts().getViewPort("scene/preview");
-auto renderer = std::make_shared<PreviewSceneRenderer>(app.viewPorts().getVulkanInterop());
+FlowUi::ViewPort* preview = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.viewPorts()).get().getViewPort("scene/preview"));
+auto renderer = std::make_shared<PreviewSceneRenderer>(FlowUi::ValueOrThrow(app.viewPorts()).get().getVulkanInterop());
 
 preview->setRenderCallback(
     renderer,
@@ -437,7 +437,7 @@ preview->setRenderCallback(
 The frame loop draws the preview element like ordinary UI.
 
 ```cpp
-while (!app.shouldClose()) {
+while (!FlowUi::ValueOrThrow(app.shouldClose())) {
     app.beginFrame();
 
     app.ui()

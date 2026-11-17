@@ -100,6 +100,14 @@ public:
 		const storage::ResourceKey key = makeThemeResourceKey(typeHash, variantNameId);
 
 		auto [type_iterator, new_type] = typeRegistry_.try_emplace(typeHash);
+		struct TypeRegistrationRollback {
+			std::unordered_map<uint64_t, TypeRegistrationRecord>& registry;
+			uint64_t hash;
+			bool removeOnFailure;
+			~TypeRegistrationRollback() noexcept {
+				if (removeOnFailure) registry.erase(hash);
+			}
+		} typeRollback{typeRegistry_, typeHash, new_type};
 		TypeRegistrationRecord& typeRecord = type_iterator->second;
 		if (new_type)
 			::FlowUi::detail::reserve_initial_capacity(
@@ -127,16 +135,20 @@ public:
 			void* rawRecord = storage_->managerRecordData(existingIt->second.handle, storage::ResourceKind::UiTheme);
 			auto* header = reinterpret_cast<storage::ThemeRecordHeader*>(rawRecord);
 			auto* payload = reinterpret_cast<T*>(header->payload());
+			// Validate phase/revision before user assignment can change the live payload.
+			// A throwing assignment may partially mutate it, so invalidate readers first.
+			storage_->noteManagerMutation(InvalidWindowId);
+			header->revision++;
 			*payload = std::move(themeData);
 #if FLOW_UI_DEV_MODE
 			existingIt->second.authored = std::move(authored_baseline);
 			existingIt->second.startup = std::move(startup_baseline);
 #endif
-			header->revision++;
 
 			if (makeActive || typeRecord.activeVariantNameId == 0) {
 				typeRecord.activeVariantNameId = variantNameId;
 			}
+			typeRollback.removeOnFailure = false;
 			return existingIt->second.handle;
 		}
 
@@ -195,8 +207,17 @@ public:
 			header->~ThemeRecordHeader();
 		};
 
-		storage::ManagerRecordHandle handle = storage_->createManagerRecord(desc);
-		typeRecord.variants[variantNameId] = ThemeVariantRegistrationRecord{
+		// Allocate the registry node before acquiring a storage-owned payload.
+		// Publishing the prepared record below only moves nonthrowing handles/owners.
+		auto variantIterator = typeRecord.variants.try_emplace(variantNameId).first;
+		storage::ManagerRecordHandle handle{};
+		try {
+			handle = storage_->createManagerRecord(desc);
+		} catch (...) {
+			typeRecord.variants.erase(variantIterator);
+			throw;
+		}
+		variantIterator->second = ThemeVariantRegistrationRecord{
 			.handle = handle,
 			.resourceKey = key,
 #if FLOW_UI_DEV_MODE
@@ -208,6 +229,7 @@ public:
 		if (makeActive || typeRecord.activeVariantNameId == 0) {
 			typeRecord.activeVariantNameId = variantNameId;
 		}
+		typeRollback.removeOnFailure = false;
 
 		return handle;
 	}
@@ -229,12 +251,13 @@ public:
 		auto varIt = it->second.variants.find(variantNameId);
 		if (varIt == it->second.variants.end()) return false;
 
+		storage_->noteManagerMutation(InvalidWindowId);
 		it->second.activeVariantNameId = variantNameId;
 		return true;
 	}
 
 	template <typename T>
-	[[nodiscard]] const T* getActiveThemeVariant() const noexcept {
+	[[nodiscard]] const T* getActiveThemeVariant() const {
 		std::lock_guard<std::mutex> lock(mutex_);
 		const uint64_t typeHash = detail::typeHash<T>();
 
@@ -252,7 +275,7 @@ public:
 	}
 
 	template <typename T>
-	[[nodiscard]] const T* getThemeVariant(storage::StringId variantNameId) const noexcept {
+	[[nodiscard]] const T* getThemeVariant(storage::StringId variantNameId) const {
 		std::lock_guard<std::mutex> lock(mutex_);
 		const uint64_t typeHash = detail::typeHash<T>();
 
@@ -271,8 +294,6 @@ public:
 
 	template <typename T>
 	bool queueThemeMutation(storage::StringId variantNameId, std::function<void(T&)> mutator) {
-		static_assert(std::is_copy_constructible_v<T> && std::is_nothrow_move_assignable_v<T>,
-			"Staged FlowUi themes must support an allocation-safe rollback copy.");
 		std::lock_guard<std::mutex> lock(mutex_);
 		const uint64_t typeHash = detail::typeHash<T>();
 		const auto typeIt = typeRegistry_.find(typeHash);
@@ -282,14 +303,7 @@ public:
 			.typeHash = typeHash,
 			.variantNameId = variantNameId,
 			.mutator = [userMutator = std::move(mutator)](void* rawPayload) {
-				auto* typedPayload = reinterpret_cast<T*>(rawPayload);
-				T rollback(*typedPayload);
-				try {
-					userMutator(*typedPayload);
-				} catch (...) {
-					*typedPayload = std::move(rollback);
-					throw;
-				}
+				userMutator(*reinterpret_cast<T*>(rawPayload));
 			}
 		});
 		return true;
@@ -297,8 +311,6 @@ public:
 
 	template <typename T>
 	bool queueActiveThemeMutation(std::function<void(T&)> mutator) {
-		static_assert(std::is_copy_constructible_v<T> && std::is_nothrow_move_assignable_v<T>,
-			"Staged FlowUi themes must support an allocation-safe rollback copy.");
 		std::lock_guard<std::mutex> lock(mutex_);
 		const uint64_t typeHash = detail::typeHash<T>();
 
@@ -309,14 +321,7 @@ public:
 			.typeHash = typeHash,
 			.variantNameId = it->second.activeVariantNameId,
 			.mutator = [userMutator = std::move(mutator)](void* rawPayload) {
-				auto* typedPayload = reinterpret_cast<T*>(rawPayload);
-				T rollback(*typedPayload);
-				try {
-					userMutator(*typedPayload);
-				} catch (...) {
-					*typedPayload = std::move(rollback);
-					throw;
-				}
+				userMutator(*reinterpret_cast<T*>(rawPayload));
 			}
 		});
 		return true;

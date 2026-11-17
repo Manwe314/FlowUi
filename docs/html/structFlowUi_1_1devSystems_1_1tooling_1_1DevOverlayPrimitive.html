@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,31 +106,48 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevOverlayPrimitive Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Owned renderer-only debug primitive in UI layout coordinates.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevOverlayCommandBuffer_8hpp_source.html">DevOverlayCommandBuffer.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a3322c0a691551f1689f591e43e62ec9a" id="r_a3322c0a691551f1689f591e43e62ec9a"><td class="memItemLeft"><a id="a3322c0a691551f1689f591e43e62ec9a" name="a3322c0a691551f1689f591e43e62ec9a"></a>
-DevOverlayPrimitiveKind&#160;</td><td class="memItemRight"><b>kind</b> = DevOverlayPrimitiveKind::FilledRect</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#ac6b362efbfd556bc01c43d0d39b1693b">DevOverlayPrimitiveKind</a>&#160;</td><td class="memItemRight"><b>kind</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#ac6b362efbfd556bc01c43d0d39b1693baf536a8d8659ab658384e065ccafc0f99">DevOverlayPrimitiveKind::FilledRect</a></td></tr>
+<tr class="memdesc:a3322c0a691551f1689f591e43e62ec9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Primitive shape or text/texture operation. <br /></td></tr>
 <tr class="memitem:a23ed0c18dda3b5a33900b73174ec4d2c" id="r_a23ed0c18dda3b5a33900b73174ec4d2c"><td class="memItemLeft"><a id="a23ed0c18dda3b5a33900b73174ec4d2c" name="a23ed0c18dda3b5a33900b73174ec4d2c"></a>
 RectF&#160;</td><td class="memItemRight"><b>bounds</b> {}</td></tr>
+<tr class="memdesc:a23ed0c18dda3b5a33900b73174ec4d2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Layout-space rectangle, or line endpoints encoded by the renderer. <br /></td></tr>
 <tr class="memitem:a7855b93f545297a0b6e033b0fcd3a53e" id="r_a7855b93f545297a0b6e033b0fcd3a53e"><td class="memItemLeft"><a id="a7855b93f545297a0b6e033b0fcd3a53e" name="a7855b93f545297a0b6e033b0fcd3a53e"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>colorRGBA</b> = 0xFFFFFFFFu</td></tr>
+<tr class="memdesc:a7855b93f545297a0b6e033b0fcd3a53e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Packed RGBA debug color. <br /></td></tr>
 <tr class="memitem:af5e3c691fa55a9c67c59838a4f90ada4" id="r_af5e3c691fa55a9c67c59838a4f90ada4"><td class="memItemLeft"><a id="af5e3c691fa55a9c67c59838a4f90ada4" name="af5e3c691fa55a9c67c59838a4f90ada4"></a>
 float&#160;</td><td class="memItemRight"><b>cornerRadius</b> [4] {0.0f, 0.0f, 0.0f, 0.0f}</td></tr>
+<tr class="memdesc:af5e3c691fa55a9c67c59838a4f90ada4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Per-corner radius in UI layout units. <br /></td></tr>
 <tr class="memitem:a7c28d8fef14b28ecef3ac904a3e3c483" id="r_a7c28d8fef14b28ecef3ac904a3e3c483"><td class="memItemLeft"><a id="a7c28d8fef14b28ecef3ac904a3e3c483" name="a7c28d8fef14b28ecef3ac904a3e3c483"></a>
 float&#160;</td><td class="memItemRight"><b>borderWidth</b> [4] {0.0f, 0.0f, 0.0f, 0.0f}</td></tr>
+<tr class="memdesc:a7c28d8fef14b28ecef3ac904a3e3c483"><td class="mdescLeft">&#160;</td><td class="mdescRight">Per-edge stroke widths in UI layout units. <br /></td></tr>
 <tr class="memitem:ac8b1e94f609d74496c60c4f433de3a36" id="r_ac8b1e94f609d74496c60c4f433de3a36"><td class="memItemLeft"><a id="ac8b1e94f609d74496c60c4f433de3a36" name="ac8b1e94f609d74496c60c4f433de3a36"></a>
 std::string&#160;</td><td class="memItemRight"><b>textLabel</b> {}</td></tr>
+<tr class="memdesc:ac8b1e94f609d74496c60c4f433de3a36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Owned text for a TextLabel primitive. <br /></td></tr>
 <tr class="memitem:a7c7af0df15894a7232b6027eb3f1684f" id="r_a7c7af0df15894a7232b6027eb3f1684f"><td class="memItemLeft"><a id="a7c7af0df15894a7232b6027eb3f1684f" name="a7c7af0df15894a7232b6027eb3f1684f"></a>
-FontId&#160;</td><td class="memItemRight"><b>fontId</b> = 0</td></tr>
+<a class="el" href="namespaceFlowUi.html#a45ed3353542a8e69aead84b91e7d88ed">FontId</a>&#160;</td><td class="memItemRight"><b>fontId</b> = 0</td></tr>
+<tr class="memdesc:a7c7af0df15894a7232b6027eb3f1684f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Concrete font used for text primitives. <br /></td></tr>
 <tr class="memitem:a40a2b44c49af5152e9c3be583af60b90" id="r_a40a2b44c49af5152e9c3be583af60b90"><td class="memItemLeft"><a id="a40a2b44c49af5152e9c3be583af60b90" name="a40a2b44c49af5152e9c3be583af60b90"></a>
 float&#160;</td><td class="memItemRight"><b>textSizePoints</b> = 11.0f</td></tr>
+<tr class="memdesc:a40a2b44c49af5152e9c3be583af60b90"><td class="mdescLeft">&#160;</td><td class="mdescRight">Text size in points. <br /></td></tr>
 <tr class="memitem:ae797ac95c7635a6440157dbc6f4fba50" id="r_ae797ac95c7635a6440157dbc6f4fba50"><td class="memItemLeft"><a id="ae797ac95c7635a6440157dbc6f4fba50" name="ae797ac95c7635a6440157dbc6f4fba50"></a>
 uint16_t&#160;</td><td class="memItemRight"><b>letterSpacing</b> = 0</td></tr>
+<tr class="memdesc:ae797ac95c7635a6440157dbc6f4fba50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Additional text spacing consumed by the text layout service. <br /></td></tr>
 <tr class="memitem:aa1695be4fe9a403eb4c71b5f791357e8" id="r_aa1695be4fe9a403eb4c71b5f791357e8"><td class="memItemLeft"><a id="aa1695be4fe9a403eb4c71b5f791357e8" name="aa1695be4fe9a403eb4c71b5f791357e8"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>textureIndex</b> = 0</td></tr>
+<tr class="memdesc:aa1695be4fe9a403eb4c71b5f791357e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Renderer texture slot for a TextureQuad primitive. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Owned renderer-only debug primitive in UI layout coordinates. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/overlay/<a class="el" href="DevOverlayCommandBuffer_8hpp_source.html">DevOverlayCommandBuffer.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -146,7 +163,7 @@ uint32_t&#160;</td><td class="memItemRight"><b>textureIndex</b> = 0</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverlayPrimitive.html">DevOverlayPrimitive</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverlayPrimitive.html">DevOverlayPrimitive</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

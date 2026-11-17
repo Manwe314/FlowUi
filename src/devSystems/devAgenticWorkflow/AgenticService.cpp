@@ -1,3 +1,4 @@
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticService.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticInteractionRuntime.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticVerification.hpp"
@@ -8,6 +9,7 @@
 #include "devSystems/devAgenticWorkflow/AgenticLocalTransport.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticManifest.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticProvenance.hpp"
+#include "devSystems/devAgenticWorkflow/detail/AgenticProvenanceState.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterface.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/errors/DevError.hpp"
@@ -65,7 +67,18 @@ namespace {
 	try {
 		auto temporary = destination;
 		temporary += ".pending";
+		struct PendingFileGuard {
+			const std::filesystem::path& path;
+			bool owned = false;
+			~PendingFileGuard() noexcept {
+				if (owned) {
+					std::error_code error;
+					std::filesystem::remove(path, error);
+				}
+			}
+		} pendingFileGuard{temporary};
 		std::ofstream output(temporary, std::ios::binary | std::ios::trunc);
+		pendingFileGuard.owned = output.is_open();
 		const auto bytes = write_json(value);
 		output.write(bytes.data(), static_cast<std::streamsize>(bytes.size()));
 		output.close();
@@ -78,6 +91,7 @@ namespace {
 #else
 		std::filesystem::rename(temporary, destination);
 #endif
+		pendingFileGuard.owned = false;
 		return {};
 	} catch (...) {
 		return unexpectedError(agentic_error(AgenticError::publication_failed));
@@ -120,6 +134,7 @@ struct AgenticWorkflowService::Impl {
 		std::string request_digest, idempotency_key;
 		std::uint64_t prepare_tick = 0, finalizing_ns = 0;
 		std::uint64_t admitted_images = 0, image_bytes = 0, image_failure_baseline = 0;
+		std::uint64_t observationFailureBaseline = 0;
 		std::uint64_t scenario_start_ns = 0;
 		std::size_t scenario_index = SIZE_MAX;
 		bool controller_requested = false, scenario_setup = false, scenario_verified = false,
@@ -184,6 +199,7 @@ struct AgenticWorkflowService::Impl {
 	AgenticDependencies dependencies;
 	AgenticWorkflowConfig config;
 	AgenticCapabilities capabilities;
+	detail::AgenticBinaryIdentity binaryIdentity;
 	std::unique_ptr<AgenticStore> store;
 	std::filesystem::path run_path, descriptor_path;
 	AgenticLocalEndpoint endpoint;
@@ -201,6 +217,7 @@ struct AgenticWorkflowService::Impl {
 	std::optional<AgenticCaptureSnapshot> publication;
 	std::string publishing_job;
 	std::atomic<std::uint64_t> writer_owned_bytes{0};
+	std::atomic<std::uint64_t> observationFailures{0};
 	std::jthread writer;
 	mutable std::recursive_mutex mutex;
 	std::condition_variable_any condition;
@@ -208,7 +225,9 @@ struct AgenticWorkflowService::Impl {
 	AgenticSafePoint safe_point;
 	std::uint64_t last_session_ns = 0;
 	std::size_t active_job = SIZE_MAX;
-	bool admission = false, stop_writer = false, configured = false, manual_busy = false;
+	std::atomic<bool> admission{false};
+	bool stop_writer = false, configured = false, manual_busy = false,
+		 configuring = false;
 	bool optional_collection = true;
 	bool verification_admission = false, verification_dirty = false;
 	AgenticWorkflowService* owner_service = nullptr;
@@ -408,7 +427,7 @@ struct AgenticWorkflowService::Impl {
 			dependencies.tooling->overrides().set_value_collection(job.previous_value_collection);
 			for (const auto& [window_id, collected] : job.previous_tree_collection)
 				if (dependencies.application->hasWindow(static_cast<WindowId>(window_id)))
-					dependencies.application->ui(static_cast<WindowId>(window_id))
+					FlowUi::detail::requireApiValue(dependencies.application->ui(static_cast<WindowId>(window_id))).get()
 						.set_dev_tree_collection(collected);
 			optional_collection = true;
 		} else {
@@ -418,9 +437,9 @@ struct AgenticWorkflowService::Impl {
 			dependencies.monitoring->timing().setConfig(verification_timing);
 			job.previous_value_collection = dependencies.tooling->overrides().value_collection();
 			job.previous_tree_collection.reserve(
-				dependencies.application->devWindowSnapshot().size());
-			for (const auto& window : dependencies.application->devWindowSnapshot()) {
-				auto& ui = dependencies.application->ui(window.id);
+				FlowUi::detail::requireApiValue(dependencies.application->devWindowSnapshot()).size());
+			for (const auto& window : FlowUi::detail::requireApiValue(dependencies.application->devWindowSnapshot())) {
+				auto& ui = FlowUi::detail::requireApiValue(dependencies.application->ui(window.id)).get();
 				job.previous_tree_collection.emplace_back(window.id, ui.dev_tree_collection());
 				ui.set_dev_tree_collection(false);
 			}
@@ -573,6 +592,11 @@ struct AgenticWorkflowService::Impl {
 	}
 	void materialize(Job& job) {
 		job.status.phase = JobPhase::materializing;
+		if (observationFailures.load(std::memory_order_relaxed) !=
+			job.observationFailureBaseline) {
+			job.snapshot.partial = true;
+			job.snapshot.limitations.emplace_back("service_observation_failed");
+		}
 		if (interaction) {
 			const auto copied_interaction = interaction->materialize(job.snapshot);
 			if (!copied_interaction) {
@@ -673,7 +697,7 @@ struct AgenticWorkflowService::Impl {
 				fail_job(*job, "manual_capture_busy");
 				return;
 			}
-			const auto windows = dependencies.application->devWindowSnapshot();
+			const auto windows = FlowUi::detail::requireApiValue(dependencies.application->devWindowSnapshot());
 			if (job->snapshot.request.window_ids.empty())
 				for (const auto& window : windows)
 					if (!dependencies.interface || window.id != dependencies.interface->windowId())
@@ -723,9 +747,9 @@ struct AgenticWorkflowService::Impl {
 		if (job->status.phase == JobPhase::preparing || job->status.phase == JobPhase::warming_up) {
 			job->status.phase = JobPhase::warming_up;
 			if (!job->provenance_prepared) {
-				const auto provenance = complete_provenance(
+				const auto provenance = detail::complete_provenance(
 					job->snapshot, *dependencies.application, *dependencies.monitoring,
-					*dependencies.tooling, *dependencies.resource_configuration);
+					*dependencies.tooling, *dependencies.resource_configuration, binaryIdentity);
 				if (!provenance) {
 					fail_job(*job, "provenance_preparation_failed");
 					return;
@@ -882,12 +906,74 @@ AgenticWorkflowService::~AgenticWorkflowService() {
 }
 
 Status AgenticWorkflowService::configure(const AgenticWorkflowConfig& configuration) noexcept {
+	struct ConfigurationGuard {
+		Impl& implementation;
+		bool armed = false;
+		bool committed = false;
+		bool descriptorPublished = false;
+		bool runReserved = false;
+		~ConfigurationGuard() noexcept {
+			if (!armed || committed)
+				return;
+			// This guard runs after the configuration lock is released, so an IPC
+			// handler waiting for that lock can finish before server.stop() joins it.
+			const auto stopped = implementation.server.stop();
+			if (!stopped)
+				std::fputs("FlowUi agentic setup transport cleanup incomplete\n", stderr);
+			if (descriptorPublished) {
+				std::error_code error;
+				std::filesystem::remove(implementation.descriptor_path, error);
+			}
+			if (runReserved) {
+				try {
+					const auto written = atomic_json(
+						implementation.run_path / "session.json",
+						Json::make_object({{"schema", "FlowUi.Agentic.Session"},
+										   {"schema_version", "1.0"},
+										   {"run_id", implementation.config.run_id},
+										   {"status", "failed"},
+										   {"reason", "configuration_failed"},
+										   {"last_app_tick", decimal(0)}}));
+					if (!written)
+						std::fputs("FlowUi agentic failed-run status publication failed\n", stderr);
+				} catch (...) {
+					std::fputs("FlowUi agentic failed-run status publication failed\n", stderr);
+				}
+			}
+			try {
+				std::lock_guard lock(implementation.mutex);
+				implementation.configuring = false;
+				// The retained failed run is no longer owned by a live service. A later
+				// shutdown or fresh-ID retry must not rewrite its failure status.
+				implementation.run_path.clear();
+				implementation.descriptor_path.clear();
+			} catch (...) {
+				// Keep setup unavailable if its synchronization cannot be reacquired.
+				return;
+			}
+		}
+	} configurationGuard{*impl_};
 	try {
 		std::lock_guard lock(impl_->mutex);
-		if (impl_->configured || !impl_->dependencies.application ||
+		struct LockedConfigurationGuard {
+			ConfigurationGuard& transaction;
+			~LockedConfigurationGuard() noexcept {
+				if (!transaction.armed || transaction.committed)
+					return;
+				auto& implementation = transaction.implementation;
+				implementation.interaction.reset();
+				implementation.admission = false;
+				implementation.configured = false;
+				implementation.capabilities.enabled = false;
+			}
+		} lockedConfigurationGuard{configurationGuard};
+		if (impl_->configured || impl_->configuring || !impl_->dependencies.application ||
 			!impl_->dependencies.monitoring || !impl_->dependencies.tooling ||
 			!impl_->dependencies.themes || !impl_->dependencies.resource_configuration)
 			return unexpectedError(agentic_error(AgenticError::invalid_request));
+		configurationGuard.armed = true;
+		impl_->configuring = true;
+		impl_->binaryIdentity = {};
 		impl_->config = configuration;
 		if (configuration.store_path.empty() && !configuration.enabled.has_value()) {
 			if (const char* store_path = std::getenv("FLOWUI_AGENTIC_STORE");
@@ -950,6 +1036,8 @@ Status AgenticWorkflowService::configure(const AgenticWorkflowConfig& configurat
 			 {"scenarios_registered", Json::number(0)}});
 		if (!config.enabled.value_or(false)) {
 			impl_->configured = true;
+			impl_->configuring = false;
+			configurationGuard.committed = true;
 			return {};
 		}
 		if (config.store_path.empty() || config.limits.maximum_queued_jobs == 0 ||
@@ -1003,7 +1091,17 @@ Status AgenticWorkflowService::configure(const AgenticWorkflowConfig& configurat
 		auto reserved = impl_->store->reserve_run(config.run_id, provenance);
 		if (!reserved)
 			return unexpectedError(reserved.error());
-		impl_->run_path = *reserved;
+		impl_->run_path = std::move(*reserved);
+		configurationGuard.runReserved = true;
+		auto session = atomic_json(
+			impl_->run_path / "session.json",
+			Json::make_object({{"schema", "FlowUi.Agentic.Session"},
+							   {"schema_version", "1.0"},
+							   {"run_id", config.run_id},
+							   {"status", "configuring"},
+							   {"last_app_tick", decimal(0)}}));
+		if (!session)
+			return session;
 		impl_->jobs.reserve(256);
 		impl_->capture_receipts.reserve(Impl::maximum_capture_receipts);
 		impl_->capabilities.details.set(
@@ -1035,11 +1133,6 @@ Status AgenticWorkflowService::configure(const AgenticWorkflowConfig& configurat
 		impl_->command_batch.reserve(config.limits.maximum_queued_jobs);
 		impl_->reviews.reserve(64);
 		impl_->receipts.reserve(64);
-		impl_->admission = true;
-		impl_->writer = std::jthread([implementation = impl_.get()](std::stop_token stop_token) {
-			implementation->writer_loop(stop_token);
-		});
-		impl_->configured = true;
 		if (config.input_control_enabled || config.action_control_enabled)
 			impl_->interaction = std::make_unique<AgenticInteractionRuntime>(
 				*this, *impl_->dependencies.application, config);
@@ -1084,11 +1177,28 @@ Status AgenticWorkflowService::configure(const AgenticWorkflowConfig& configurat
 			auto published = atomic_json(impl_->descriptor_path, descriptor);
 			if (!published)
 				return published;
+			configurationGuard.descriptorPublished = true;
 			std::filesystem::permissions(impl_->descriptor_path,
 										 std::filesystem::perms::owner_read |
 											 std::filesystem::perms::owner_write,
 										 std::filesystem::perm_options::replace);
 		}
+		session = atomic_json(
+			impl_->run_path / "session.json",
+			Json::make_object({{"schema", "FlowUi.Agentic.Session"},
+							   {"schema_version", "1.0"},
+							   {"run_id", config.run_id},
+							   {"status", "running"},
+							   {"last_app_tick", decimal(0)}}));
+		if (!session)
+			return session;
+		impl_->writer = std::jthread([implementation = impl_.get()](std::stop_token stop_token) {
+			implementation->writer_loop(stop_token);
+		});
+		impl_->admission = true;
+		impl_->configured = true;
+		impl_->configuring = false;
+		configurationGuard.committed = true;
 		return {};
 	} catch (...) {
 		return unexpectedError(agentic_error(AgenticError::publication_failed));
@@ -1098,7 +1208,10 @@ Status AgenticWorkflowService::configure(const AgenticWorkflowConfig& configurat
 Result<AgenticCapabilities> AgenticWorkflowService::capabilities() const noexcept {
 	try {
 		std::lock_guard lock(impl_->mutex);
-		return impl_->capabilities;
+		auto snapshot = impl_->capabilities;
+		snapshot.details.set("observation_failures",
+			decimal(impl_->observationFailures.load(std::memory_order_relaxed)));
+		return snapshot;
 	} catch (...) {
 		return unexpectedError(agentic_error(AgenticError::budget_exhausted));
 	}
@@ -1150,6 +1263,8 @@ AgenticWorkflowService::request_capture(const AgenticCaptureRequest& request) no
 		if (!job_id || !capture_id)
 			return unexpectedError(agentic_error(AgenticError::publication_failed));
 		auto job = std::make_unique<Impl::Job>();
+		job->observationFailureBaseline =
+			impl_->observationFailures.load(std::memory_order_relaxed);
 		job->snapshot.request = plan->request;
 		job->snapshot.run_id = impl_->config.run_id;
 		job->snapshot.capture_id = *capture_id;
@@ -1222,24 +1337,32 @@ Result<AgenticJobStatus> AgenticWorkflowService::query_job(std::string_view job_
 	}
 }
 Status AgenticWorkflowService::cancel_job(std::string_view job_id) noexcept {
-	std::lock_guard lock(impl_->mutex);
-	auto* job = impl_->find_job(job_id);
-	if (!job && impl_->interaction && impl_->interaction->owns_job(job_id))
-		return impl_->interaction->request_cancel(job_id);
-	if (!job)
-		return unexpectedError(agentic_error(AgenticError::unavailable));
-	if (job->status.phase == JobPhase::publishing || job->status.phase == JobPhase::sealed)
-		return unexpectedError(agentic_error(AgenticError::busy));
-	job->status.cancellation_requested = true;
-	return {};
+	try {
+		std::lock_guard lock(impl_->mutex);
+		auto* job = impl_->find_job(job_id);
+		if (!job && impl_->interaction && impl_->interaction->owns_job(job_id))
+			return impl_->interaction->request_cancel(job_id);
+		if (!job)
+			return unexpectedError(agentic_error(AgenticError::unavailable));
+		if (job->status.phase == JobPhase::publishing || job->status.phase == JobPhase::sealed)
+			return unexpectedError(agentic_error(AgenticError::busy));
+		job->status.cancellation_requested = true;
+		return {};
+	} catch (...) {
+		return unexpectedError(FlowUi::detail::currentExceptionError(ErrorSite::AgenticCommand));
+	}
 }
 Status AgenticWorkflowService::stop_capture(std::string_view job_id) noexcept {
-	std::lock_guard lock(impl_->mutex);
-	auto* job = impl_->find_job(job_id);
-	if (!job || terminal(job->status.phase))
-		return unexpectedError(agentic_error(AgenticError::unavailable));
-	job->stop_requested = true;
-	return {};
+	try {
+		std::lock_guard lock(impl_->mutex);
+		auto* job = impl_->find_job(job_id);
+		if (!job || terminal(job->status.phase))
+			return unexpectedError(agentic_error(AgenticError::unavailable));
+		job->stop_requested = true;
+		return {};
+	} catch (...) {
+		return unexpectedError(FlowUi::detail::currentExceptionError(ErrorSite::AgenticCommand));
+	}
 }
 Status AgenticWorkflowService::register_scenario(AgenticScenario scenario) noexcept {
 	try {
@@ -1321,37 +1444,43 @@ void AgenticWorkflowService::advance_safe_point(const AgenticSafePoint& safe_poi
 				impl_->capabilities.limitations.emplace_back("session_publication_failed");
 		}
 	} catch (...) {
-		std::lock_guard lock(impl_->mutex);
-		if (auto* job = impl_->active()) {
-			job->status.phase = JobPhase::failed;
-			job->status.reason = "safe_point_failure";
-			if (!impl_->optional_collection) {
-				try {
+		impl_->observationFailures.fetch_add(1, std::memory_order_relaxed);
+		try {
+			std::lock_guard lock(impl_->mutex);
+			if (auto* job = impl_->active()) {
+				job->status.phase = JobPhase::failed;
+				impl_->active_job = SIZE_MAX;
+				job->status.reason = "safe_point_failure";
+				if (!impl_->optional_collection)
 					impl_->set_collection_policy(*job, true);
-				} catch (...) {}
 			}
-			impl_->active_job = SIZE_MAX;
+		} catch (...) {
+			// The failure counter remains observable if cleanup synchronization fails.
 		}
 	}
 }
 Result<AgenticInteractionRuntime*> AgenticWorkflowService::interaction_runtime() noexcept {
-	std::lock_guard lock(impl_->mutex);
-	if (std::this_thread::get_id() != impl_->platform_thread || !impl_->interaction)
-		return unexpectedError(agentic_error(AgenticError::unavailable));
-	return impl_->interaction.get();
+	return FlowUi::detail::catchResult<Result<AgenticInteractionRuntime*>>(ErrorSite::AgenticCommand, [&]() -> Result<AgenticInteractionRuntime*> {
+		std::lock_guard lock(impl_->mutex);
+		if (std::this_thread::get_id() != impl_->platform_thread || !impl_->interaction)
+			return unexpectedError(agentic_error(AgenticError::unavailable));
+		return impl_->interaction.get();
+	});
 }
 Result<AgenticJobId>
 AgenticWorkflowService::start_interaction(const Json& plan,
 										  std::string_view idempotency_key) noexcept {
-	std::lock_guard lock(impl_->mutex);
-	if (std::this_thread::get_id() != impl_->platform_thread || !impl_->interaction)
-		return unexpectedError(agentic_error(AgenticError::unavailable));
-	const auto* capture = impl_->active();
-	const std::string_view owner =
-		capture && (capture->scenario_index != SIZE_MAX || capture->verification_owned)
-			? std::string_view(capture->status.job_id)
-			: std::string_view{};
-	return impl_->interaction->start_plan(plan, idempotency_key, owner);
+	return FlowUi::detail::catchResult<Result<AgenticJobId>>(ErrorSite::AgenticCommand, [&]() -> Result<AgenticJobId> {
+		std::lock_guard lock(impl_->mutex);
+		if (std::this_thread::get_id() != impl_->platform_thread || !impl_->interaction)
+			return unexpectedError(agentic_error(AgenticError::unavailable));
+		const auto* capture = impl_->active();
+		const std::string_view owner =
+			capture && (capture->scenario_index != SIZE_MAX || capture->verification_owned)
+				? std::string_view(capture->status.job_id)
+				: std::string_view{};
+		return impl_->interaction->start_plan(plan, idempotency_key, owner);
+	});
 }
 Status
 AgenticWorkflowService::track_owned_interaction(std::string_view owner_job_id,
@@ -1370,42 +1499,56 @@ AgenticWorkflowService::track_owned_interaction(std::string_view owner_job_id,
 }
 Result<AgenticContentPolicy>
 AgenticWorkflowService::interaction_content_policy(std::string_view owner) const noexcept {
-	std::lock_guard lock(impl_->mutex);
-	const auto* capture = impl_->active();
-	if (!capture || capture->status.job_id != owner ||
-		(capture->scenario_index == SIZE_MAX && !capture->verification_owned))
-		return unexpectedError(agentic_error(AgenticError::invalid_scope));
-	return capture->snapshot.request.content;
+	return FlowUi::detail::catchResult<Result<AgenticContentPolicy>>(ErrorSite::AgenticCommand, [&]() -> Result<AgenticContentPolicy> {
+		std::lock_guard lock(impl_->mutex);
+		const auto* capture = impl_->active();
+		if (!capture || capture->status.job_id != owner ||
+			(capture->scenario_index == SIZE_MAX && !capture->verification_owned))
+			return unexpectedError(agentic_error(AgenticError::invalid_scope));
+		return capture->snapshot.request.content;
+	});
 }
 Result<std::uint64_t>
 AgenticWorkflowService::interaction_snapshot_budget(std::string_view owner) const noexcept {
-	std::lock_guard lock(impl_->mutex);
-	const auto* capture = impl_->active();
-	if (!capture || capture->status.job_id != owner ||
-		(capture->scenario_index == SIZE_MAX && !capture->verification_owned))
-		return unexpectedError(agentic_error(AgenticError::invalid_scope));
-	return capture->snapshot.request.limits.maximum_snapshot_bytes;
+	return FlowUi::detail::catchResult<Result<std::uint64_t>>(ErrorSite::AgenticCommand, [&]() -> Result<std::uint64_t> {
+		std::lock_guard lock(impl_->mutex);
+		const auto* capture = impl_->active();
+		if (!capture || capture->status.job_id != owner ||
+			(capture->scenario_index == SIZE_MAX && !capture->verification_owned))
+			return unexpectedError(agentic_error(AgenticError::invalid_scope));
+		return capture->snapshot.request.limits.maximum_snapshot_bytes;
+	});
 }
 Status AgenticWorkflowService::select_frame_input(const EvidenceFrameKey& key, FrameInput& input,
 												  float ui_scale) noexcept {
-	std::lock_guard lock(impl_->mutex);
-	return impl_->interaction ? impl_->interaction->select_input(key, input, ui_scale) : Status{};
+	return FlowUi::detail::catchResult<Status>(ErrorSite::AgenticCommand, [&]() -> Status {
+		std::lock_guard lock(impl_->mutex);
+		return impl_->interaction ? impl_->interaction->select_input(key, input, ui_scale) : Status{};
+	});
 }
 Result<AgenticInteractionResult>
 AgenticWorkflowService::query_interaction(std::string_view job_id) const noexcept {
-	std::lock_guard lock(impl_->mutex);
-	if (!impl_->interaction)
-		return unexpectedError(agentic_error(AgenticError::unavailable));
-	return impl_->interaction->query_result(job_id);
+	return FlowUi::detail::catchResult<Result<AgenticInteractionResult>>(ErrorSite::AgenticCommand, [&]() -> Result<AgenticInteractionResult> {
+		std::lock_guard lock(impl_->mutex);
+		if (!impl_->interaction)
+			return unexpectedError(agentic_error(AgenticError::unavailable));
+		return impl_->interaction->query_result(job_id);
+	});
 }
 void AgenticWorkflowService::observe_interaction(const EvidenceFrameKey& key) noexcept {
-	std::lock_guard lock(impl_->mutex);
-	if (impl_->interaction)
-		impl_->interaction->observe_ui(key);
+	try {
+		std::lock_guard lock(impl_->mutex);
+		if (impl_->interaction)
+			impl_->interaction->observe_ui(key);
+	} catch (...) {
+		impl_->observationFailures.fetch_add(1, std::memory_order_relaxed);
+	}
 }
-bool AgenticWorkflowService::interaction_controls_window(std::uint64_t window_id) const noexcept {
-	std::lock_guard lock(impl_->mutex);
-	return impl_->interaction && impl_->interaction->controls_window(window_id);
+Result<bool> AgenticWorkflowService::interaction_controls_window(std::uint64_t window_id) const noexcept {
+	return FlowUi::detail::catchResult<Result<bool>>(ErrorSite::AgenticCommand, [&]() -> Result<bool> {
+		std::lock_guard lock(impl_->mutex);
+		return impl_->interaction && impl_->interaction->controls_window(window_id);
+	});
 }
 void AgenticWorkflowService::observe_frame(AgenticFrameRecord frame) noexcept {
 	try {
@@ -1455,11 +1598,7 @@ void AgenticWorkflowService::observe_frame(AgenticFrameRecord frame) noexcept {
 		}
 		job->snapshot.frames.emplace_back(std::move(frame));
 	} catch (...) {
-		std::lock_guard lock(impl_->mutex);
-		if (auto* job = impl_->active()) {
-			job->snapshot.partial = true;
-			job->stop_requested = true;
-		}
+		impl_->observationFailures.fetch_add(1, std::memory_order_relaxed);
 	}
 }
 frame_capture::AgenticFrameCaptureRequest
@@ -1522,6 +1661,7 @@ AgenticWorkflowService::image_request(const AgenticFrameRecord& frame) noexcept 
 			job->checkpoint_admitted = true;
 		return result;
 	} catch (...) {
+		impl_->observationFailures.fetch_add(1, std::memory_order_relaxed);
 		return {};
 	}
 }
@@ -1572,7 +1712,7 @@ void AgenticWorkflowService::observe_tree(std::uint64_t window_id) noexcept {
 					  window_id) == job->snapshot.request.window_ids.end())
 			return;
 		const auto& tree =
-			impl_->dependencies.application->ui(static_cast<WindowId>(window_id)).devTreeSnapshot();
+			FlowUi::detail::requireApiValue(impl_->dependencies.application->ui(static_cast<WindowId>(window_id))).get().devTreeSnapshot();
 		const auto tree_id =
 			"tree_" + std::to_string(window_id) + "_" + std::to_string(tree.generation);
 		if (std::any_of(job->snapshot.artifacts.begin(), job->snapshot.artifacts.end(),
@@ -1593,20 +1733,22 @@ void AgenticWorkflowService::observe_tree(std::uint64_t window_id) noexcept {
 		else if (job->verification_owned)
 			job->checkpoint_tree_recorded = true;
 	} catch (...) {
-		std::lock_guard lock(impl_->mutex);
-		if (auto* job = impl_->active())
-			job->snapshot.partial = true;
+		impl_->observationFailures.fetch_add(1, std::memory_order_relaxed);
 	}
 }
-bool AgenticWorkflowService::capture_lease_active() const noexcept {
-	std::lock_guard lock(impl_->mutex);
-	return impl_->active_verification() || impl_->active() || !impl_->publishing_job.empty() ||
-		   std::any_of(impl_->jobs.begin(), impl_->jobs.end(),
-					   [](const auto& job) { return !terminal(job->status.phase); });
+Result<bool> AgenticWorkflowService::capture_lease_active() const noexcept {
+	return FlowUi::detail::catchResult<Result<bool>>(ErrorSite::AgenticCommand, [&]() -> Result<bool> {
+		std::lock_guard lock(impl_->mutex);
+		return impl_->active_verification() || impl_->active() || !impl_->publishing_job.empty() ||
+			   std::any_of(impl_->jobs.begin(), impl_->jobs.end(),
+						   [](const auto& job) { return !terminal(job->status.phase); });
+	});
 }
-bool AgenticWorkflowService::optional_collection_enabled() const noexcept {
-	std::lock_guard lock(impl_->mutex);
-	return impl_->optional_collection;
+Result<bool> AgenticWorkflowService::optional_collection_enabled() const noexcept {
+	return FlowUi::detail::catchResult<Result<bool>>(ErrorSite::AgenticCommand, [&]() -> Result<bool> {
+		std::lock_guard lock(impl_->mutex);
+		return impl_->optional_collection;
+	});
 }
 void AgenticWorkflowService::prepare_window_collection(std::uint64_t window_id) noexcept {
 	try {
@@ -1615,7 +1757,7 @@ void AgenticWorkflowService::prepare_window_collection(std::uint64_t window_id) 
 		if (!job || impl_->optional_collection)
 			return;
 		auto& policies = job->previous_tree_collection;
-		auto& ui = impl_->dependencies.application->ui(static_cast<WindowId>(window_id));
+		auto& ui = FlowUi::detail::requireApiValue(impl_->dependencies.application->ui(static_cast<WindowId>(window_id))).get();
 		if (std::none_of(policies.begin(), policies.end(),
 						 [&](const auto& policy) { return policy.first == window_id; })) {
 			policies.emplace_back(window_id, ui.dev_tree_collection());
@@ -1627,25 +1769,30 @@ void AgenticWorkflowService::prepare_window_collection(std::uint64_t window_id) 
 		}
 		ui.set_dev_tree_collection(false);
 	} catch (...) {
-		std::lock_guard lock(impl_->mutex);
-		if (auto* job = impl_->active())
-			job->snapshot.partial = true;
+		impl_->observationFailures.fetch_add(1, std::memory_order_relaxed);
 	}
 }
-bool AgenticWorkflowService::visual_capture_enabled() const noexcept {
-	std::lock_guard lock(impl_->mutex);
-	return impl_->config.enabled.value_or(false) && impl_->config.visual_capture_enabled;
+Result<bool> AgenticWorkflowService::visual_capture_enabled() const noexcept {
+	return FlowUi::detail::catchResult<Result<bool>>(ErrorSite::AgenticCommand, [&]() -> Result<bool> {
+		std::lock_guard lock(impl_->mutex);
+		return impl_->config.enabled.value_or(false) && impl_->config.visual_capture_enabled;
+	});
 }
 std::uint64_t AgenticWorkflowService::owned_memory_bytes() const noexcept {
 	try {
 		std::lock_guard lock(impl_->mutex);
 		std::uint64_t bytes = sizeof(Impl) +
+							  impl_->binaryIdentity.digest.capacity() +
 							  impl_->jobs.capacity() * sizeof(std::unique_ptr<Impl::Job>) +
 							  impl_->jobs.size() * sizeof(Impl::Job) +
 							  impl_->writer_owned_bytes.load(std::memory_order_relaxed);
 		for (const auto& job : impl_->jobs) {
 			const auto owned = snapshot_owned_bytes(job->snapshot);
-			bytes += owned ? *owned : 0;
+			if (!owned) {
+				impl_->observationFailures.fetch_add(1, std::memory_order_relaxed);
+				return 0;
+			}
+			bytes += *owned;
 		}
 		bytes += impl_->capture_receipts.capacity() * sizeof(Impl::CaptureReceipt);
 		for (const auto& receipt : impl_->capture_receipts)
@@ -1674,17 +1821,22 @@ std::uint64_t AgenticWorkflowService::owned_memory_bytes() const noexcept {
 			bytes += impl_->interaction->owned_memory_bytes();
 		if (impl_->publication) {
 			const auto owned = snapshot_owned_bytes(*impl_->publication);
-			bytes += owned ? *owned : 0;
+			if (!owned) {
+				impl_->observationFailures.fetch_add(1, std::memory_order_relaxed);
+				return 0;
+			}
+			bytes += *owned;
 		}
 		if (impl_->verification_publication)
 			bytes += retained_json_bytes(impl_->verification_publication->report);
 		return bytes;
 	} catch (...) {
+		impl_->observationFailures.fetch_add(1, std::memory_order_relaxed);
 		return 0;
 	}
 }
 void AgenticWorkflowService::rebind_application(App& application) noexcept {
-	std::lock_guard lock(impl_->mutex);
+	// App ownership moves only while platform-thread callbacks and frames are quiescent.
 	impl_->dependencies.application = &application;
 	if (impl_->interaction)
 		impl_->interaction->rebind_application(application);
@@ -1776,9 +1928,9 @@ Result<Json> AgenticWorkflowService::submit_command(const AgenticCommandRequest&
 				return impl_->failure(request, result.error());
 			auto metadata = to_json(*result);
 			auto windows = Json::make_array();
-			for (const auto& window : impl_->dependencies.application->devWindowSnapshot()) {
-				const auto logical = impl_->dependencies.application->windowSize(window.id);
-				const auto physical = impl_->dependencies.application->framebufferSize(window.id);
+			for (const auto& window : FlowUi::detail::requireApiValue(impl_->dependencies.application->devWindowSnapshot())) {
+				const auto logical = FlowUi::detail::requireApiValue(impl_->dependencies.application->windowSize(window.id));
+				const auto physical = FlowUi::detail::requireApiValue(impl_->dependencies.application->framebufferSize(window.id));
 				windows.array.emplace_back(Json::make_object(
 					{{"window_id", decimal(window.id)},
 					 {"title", window.title},
@@ -1946,22 +2098,29 @@ Result<Json> AgenticWorkflowService::submit_command(const AgenticCommandRequest&
 		return unexpectedError(agentic_error(AgenticError::budget_exhausted));
 	}
 }
-void AgenticWorkflowService::stop_admission() noexcept {
-	{
+Status AgenticWorkflowService::stop_admission() noexcept {
+	impl_->admission.store(false);
+	impl_->condition.notify_all();
+	Status cleanup;
+	try {
 		std::lock_guard lock(impl_->mutex);
-		impl_->admission = false;
-		impl_->condition.notify_all();
 		for (auto& command : impl_->commands) {
 			try {
 				command.result.set_value(unexpectedError(agentic_error(AgenticError::canceled)));
-			} catch (...) {}
+			} catch (...) {
+				cleanup = unexpectedError(
+					FlowUi::detail::currentExceptionError(ErrorSite::AgenticCommand));
+			}
 		}
 		impl_->commands.clear();
+	} catch (...) {
+		cleanup = unexpectedError(FlowUi::detail::currentExceptionError(ErrorSite::AgenticCommand));
 	}
-	impl_->server.stop();
+	const auto transport = impl_->server.stop();
+	return cleanup ? transport : cleanup;
 }
 Status AgenticWorkflowService::shutdown(const AgenticShutdownPolicy& policy) noexcept {
-	stop_admission();
+	const auto admission = stop_admission();
 	try {
 		{
 			std::lock_guard lock(impl_->mutex);
@@ -2010,7 +2169,7 @@ Status AgenticWorkflowService::shutdown(const AgenticShutdownPolicy& policy) noe
 			if (!written)
 				return written;
 		}
-		return {};
+		return admission;
 	} catch (...) {
 		impl_->writer.request_stop();
 		impl_->condition.notify_all();

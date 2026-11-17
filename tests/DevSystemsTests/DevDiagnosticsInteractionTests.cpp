@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #include <GLFW/glfw3.h>
 #ifdef NDEBUG
 #undef NDEBUG
@@ -50,8 +51,8 @@ constexpr auto recorded_breadcrumb = makeDevErrorBreadcrumb("diagnostics.test.be
 									 .count());
 }
 void check_horizontal_bounds(App& app, FlowElementID surface) {
-	const auto& snapshot = app.ui().devTreeSnapshot();
-	const auto bounds = Clay_GetElementData(app.ui().toClayEID(surface));
+	const auto& snapshot = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot();
+	const auto bounds = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(surface));
 	assert(bounds.found && bounds.boundingBox.width > 0);
 	for (const auto& node : snapshot.clay.nodes) {
 		auto owner = node.directFlowOwner;
@@ -99,12 +100,12 @@ int main() {
 	config.dev.monitoring.errors.level = DevErrorCaptureLevel::Causal;
 	config.dev.monitoring.errorReporting.retainedOccurrenceCapacity = 1024;
 	config.vk.enableValidation = true;
-	auto app = makeApplication(config);
+	auto app = ::FlowUi::test::requireValue(makeApplication(config));
 	DevInterfaceState session;
 	session.activeTab = static_cast<uint64_t>(DevInterfaceTab::Diagnostics);
 	auto& state = session.diagnostics;
-	auto& monitoring = app.devMonitoring().errors();
-	auto& reporting = app.devMonitoring().errorReporting();
+	auto& monitoring = ::FlowUi::test::requireValue(app.devMonitoring()).get().errors();
+	auto& reporting = ::FlowUi::test::requireValue(app.devMonitoring()).get().errorReporting();
 	auto attachment = monitoring.attachCurrentThread("diagnostics-interaction-fixture");
 	assert(attachment);
 	uint64_t first_id = 0, latest_id = 0;
@@ -139,13 +140,13 @@ int main() {
 						  Clay_Vector2 pointer = {-1, -1}) {
 		service_diagnostics(app, session, true);
 		assert(app.beginFrame());
-		const auto& native_input = app.ui().getCurrentFrameInput();
+		const auto& native_input = ::FlowUi::test::requireValue(app.ui()).get().getCurrentFrameInput();
 		last_native_pointer = {native_input.mouseX, native_input.mouseY};
 		last_native_scroll = native_input.scrollY;
 		auto& interaction =
-			const_cast<InteractionSnapshot&>(app.ui().getPreviousFramesInteraction());
+			const_cast<InteractionSnapshot&>(::FlowUi::test::requireValue(app.ui()).get().getPreviousFramesInteraction());
 		interaction = {};
-		auto& input = const_cast<FrameInput&>(app.ui().getCurrentFrameInput());
+		auto& input = const_cast<FrameInput&>(::FlowUi::test::requireValue(app.ui()).get().getCurrentFrameInput());
 		input.mouseX = pointer.x;
 		input.mouseY = pointer.y;
 		input.windowFocused = true;
@@ -155,7 +156,7 @@ int main() {
 		if (key >= 0)
 			input.keyDown[key] = true;
 		if (control.value) {
-			const auto identity = app.ui().toClayEID(control).id;
+			const auto identity = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(control).id;
 			interaction.hoveredElementIds.emplace_back(identity);
 			if (event == 1)
 				interaction.pressedElementIds.emplace_back(identity);
@@ -167,7 +168,7 @@ int main() {
 		root.backgroundColor = interface_theme::kDepth0Keel;
 		CLAY(CLAY_ID("diagnostics-test"), root) {
 			if (draw_controls)
-				app.ui()
+				::FlowUi::test::requireValue(app.ui()).get()
 					.createElement(kDevDiagnosticsControls, controls_id)
 					.setParameters({&app, &session})
 					.draw();
@@ -179,7 +180,7 @@ int main() {
 										  .height = CLAY_SIZING_GROW(0)};
 				selector.clip = {.horizontal = true, .vertical = true};
 				CLAY(CLAY_ID("diagnostics-test-selector"), selector)
-				app.ui()
+				::FlowUi::test::requireValue(app.ui()).get()
 					.createElement(kDevDiagnosticsSelector, selector_id)
 					.setParameters({&app, &session})
 					.draw();
@@ -188,7 +189,7 @@ int main() {
 										   .height = CLAY_SIZING_GROW(0)};
 				workbench.clip = {.horizontal = true, .vertical = true};
 				CLAY(CLAY_ID("diagnostics-test-workbench"), workbench)
-				app.ui()
+				::FlowUi::test::requireValue(app.ui()).get()
 					.createElement(kDevDiagnosticsWorkbench, workbench_id)
 					.setParameters({&app, &session})
 					.draw();
@@ -197,7 +198,7 @@ int main() {
 										   .height = CLAY_SIZING_GROW(0)};
 				inspector.clip = {.horizontal = true, .vertical = true};
 				CLAY(CLAY_ID("diagnostics-test-inspector"), inspector)
-				app.ui()
+				::FlowUi::test::requireValue(app.ui()).get()
 					.createElement(kDevDiagnosticsInspector, inspector_id)
 					.setParameters({&app, &session})
 					.draw();
@@ -212,17 +213,17 @@ int main() {
 			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		}
 	};
-	const auto inspector_scroll_id = app.ui().toClayEID(local(
+	const auto inspector_scroll_id = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(local(
 		FlowElementID{inspector_id.value}, DevDiagnosticsInspector::definitionId, "scroll-body"));
-	const auto workbench_scroll_id = app.ui().toClayEID(
+	const auto workbench_scroll_id = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(
 		local(FlowElementID{workbench_id.value}, DevDiagnosticsWorkbench::definitionId, "scroll"));
-	const auto popover_scroll_id = app.ui().toClayEID(local(
+	const auto popover_scroll_id = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(local(
 		FlowElementID{controls_id.value}, DevDiagnosticsControls::definitionId, "popover-body"));
 	const auto click = [&](FlowElementID identity) {
 		for (int attempt = 0; attempt < 2; ++attempt) {
 			for (const auto scroll_identity :
 				 {inspector_scroll_id, workbench_scroll_id, popover_scroll_id}) {
-				const auto control = Clay_GetElementData(app.ui().toClayEID(identity));
+				const auto control = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(identity));
 				const auto viewport = Clay_GetElementData(scroll_identity);
 				const auto scroll = Clay_GetScrollContainerData(scroll_identity);
 				if (!control.found || !viewport.found || !scroll.found || !scroll.scrollPosition ||
@@ -260,7 +261,7 @@ int main() {
 		assert(viewport.found && before.found && before.scrollPosition);
 		assert(before.contentDimensions.height > before.scrollContainerDimensions.height + 1);
 		const float old_position = before.scrollPosition->y;
-		auto* window = static_cast<GLFWwindow*>(app.nativeWindowHandle());
+		auto* window = static_cast<GLFWwindow*>(::FlowUi::test::requireValue(app.nativeWindowHandle()));
 		glfwFocusWindow(window);
 		glfwSetCursorPos(window, viewport.boundingBox.x + viewport.boundingBox.width / 2,
 						 viewport.boundingBox.y + viewport.boundingBox.height / 2);
@@ -296,12 +297,12 @@ int main() {
 		local(hovered_issue, diagnostics_ui::Control::definitionId, "tooltip");
 	draw(hovered_issue, 0, -1, {200, 450});
 	draw(hovered_issue, 0, -1, {200, 450});
-	const auto tooltip = Clay_GetElementData(app.ui().toClayEID(tooltip_identity));
+	const auto tooltip = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(tooltip_identity));
 	assert(tooltip.found && tooltip.boundingBox.x >= 212);
 	assert(tooltip.boundingBox.y + tooltip.boundingBox.height <= 438 + 1);
 	preview("selector-tooltip");
 	draw(hovered_issue, 0, -1, {1380, 8});
-	const auto edge_tooltip = Clay_GetElementData(app.ui().toClayEID(tooltip_identity));
+	const auto edge_tooltip = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(tooltip_identity));
 	assert(edge_tooltip.found && edge_tooltip.boundingBox.y >= 20);
 	assert(edge_tooltip.boundingBox.x + edge_tooltip.boundingBox.width <= 1392 + 1);
 	draw();
@@ -310,10 +311,10 @@ int main() {
 	assert(state.focus_kind == 1 && state.focus_sequence == raised_sequence);
 	click(local(FlowElementID{inspector_id.value}, DevDiagnosticsCopy::definitionId,
 				Keyed("copy", 90000)));
-	assert(app.clipboardText() == std::to_string(latest_id));
+	assert(::FlowUi::test::requireValue(app.clipboardText()) == std::to_string(latest_id));
 	click(local(FlowElementID{inspector_id.value}, DevDiagnosticsCopy::definitionId,
 				Keyed("copy", 104)));
-	assert(app.clipboardText() == recorded_source.location.file);
+	assert(::FlowUi::test::requireValue(app.clipboardText()) == recorded_source.location.file);
 	const auto source_disclosure =
 		local(FlowElementID{inspector_id.value}, FSEL::Button::definitionId,
 			  Keyed("section-disclosure", 1));
@@ -325,7 +326,7 @@ int main() {
 	if (state.selected_id != first_id) {
 		const auto* group = selected_diagnostics_group(state);
 		const auto control =
-			Clay_GetElementData(app.ui().toClayEID(workbench_control(LocalElementName{"first"})));
+			Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(workbench_control(LocalElementName{"first"})));
 		std::cerr << "First retained selection: expected=" << first_id
 				  << " actual=" << state.selected_id << " groups=" << state.groups.size()
 				  << " history=" << state.history.size() << " first=" << (group ? group->first : 0)
@@ -347,7 +348,7 @@ int main() {
 									DevDiagnosticsControls::definitionId, Keyed("help", 1));
 	draw(trigger_help, 0, -1, {700, 250});
 	draw(trigger_help, 0, -1, {700, 250});
-	assert(Clay_GetElementData(app.ui().toClayEID(local(FlowElementID{controls_id.value},
+	assert(Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(local(FlowElementID{controls_id.value},
 														DevDiagnosticsControls::definitionId,
 														Keyed("help-tooltip", 1))))
 			   .found);
@@ -452,7 +453,7 @@ int main() {
 		local(FlowElementID{selector_id.value}, decltype(diagnostics_ui::kNumber)::definitionId,
 			  "first-tick");
 	check_centered_input(app, diagnostics_ui::kNumber, numeric_identity);
-	const auto filter_scroll = app.ui().toClayEID(local(
+	const auto filter_scroll = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(local(
 		FlowElementID{selector_id.value}, DevDiagnosticsSelector::definitionId, "filter-scroll"));
 	wheel(filter_scroll, -6);
 	wheel(filter_scroll, 6);
@@ -464,17 +465,17 @@ int main() {
 		draw();
 		draw();
 		const auto track = Clay_GetElementData(
-			app.ui().toClayEID(local(FlowElementID{selector_id.value},
+			::FlowUi::test::requireValue(app.ui()).get().toClayEID(local(FlowElementID{selector_id.value},
 									 DevDiagnosticsSelector::definitionId, "activity-track")));
 		assert(track.found);
 		const auto clip = Clay_GetElementData(
-			app.ui().toClayEID(local(FlowElementID{selector_id.value},
+			::FlowUi::test::requireValue(app.ui()).get().toClayEID(local(FlowElementID{selector_id.value},
 									 DevDiagnosticsSelector::definitionId, "activity-clip")));
 		assert(clip.found && track.boundingBox.width <= clip.boundingBox.width + 1);
 		for (uint64_t choice = 0; choice < 3; ++choice) {
 			const auto identity = local(FlowElementID{selector_id.value},
 										FSEL::RadioChoice::definitionId, Keyed("activity", choice));
-			const auto radio = Clay_GetElementData(app.ui().toClayEID(identity));
+			const auto radio = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(identity));
 			assert(radio.found && radio.boundingBox.x >= track.boundingBox.x - 1);
 			assert(radio.boundingBox.x + radio.boundingBox.width <=
 				   track.boundingBox.x + track.boundingBox.width + 1);
@@ -497,7 +498,7 @@ int main() {
 	refresh_diagnostics_model(state, reporting, monotonic_ns(), true);
 	draw();
 	draw();
-	const auto selector_scroll = app.ui().toClayEID(
+	const auto selector_scroll = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(
 		local(FlowElementID{selector_id.value}, DevDiagnosticsSelector::definitionId, "scroll"));
 	wheel(selector_scroll, -6);
 	wheel(selector_scroll, 6);

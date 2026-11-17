@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['makeapplication_0',['makeApplication',['../classFlowUi_1_1App.html#a0e81b469c9c30dc378eb1a22914a1ef0',1,'FlowUi::App']]]
+  ['makeapplication_0',['makeApplication',['../classFlowUi_1_1App.html#a25dd886b206cf01c2e02b7f0fe24c647',1,'FlowUi::App']]]
 ];

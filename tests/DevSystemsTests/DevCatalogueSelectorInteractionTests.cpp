@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
@@ -31,14 +32,14 @@ template <class Identity>
 	return ::FlowUi::detail::element_id::resolveLocal(parent, definition, identity.token);
 }
 [[nodiscard]] const tooling::DevClayNode& clay_node(App& app, FlowElementID identity) noexcept {
-	const auto& nodes = app.ui().devTreeSnapshot().clay.nodes;
+	const auto& nodes = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot().clay.nodes;
 	const auto found =
-		std::ranges::find(nodes, app.ui().toClayEID(identity).id, &tooling::DevClayNode::clayId);
+		std::ranges::find(nodes, ::FlowUi::test::requireValue(app.ui()).get().toClayEID(identity).id, &tooling::DevClayNode::clayId);
 	assert(found != nodes.end());
 	return *found;
 }
 [[nodiscard]] FlowElementID node_with_text(App& app, std::string_view text) noexcept {
-	const auto& snapshot = app.ui().devTreeSnapshot();
+	const auto& snapshot = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot();
 	const auto found = std::ranges::find_if(
 		snapshot.clay.nodes, [&](const auto& node) { return snapshot.string(node.text) == text; });
 	assert(found != snapshot.clay.nodes.end());
@@ -58,7 +59,7 @@ int main() {
 	config.window.height = 700;
 	config.dev.excludeInternalDevElementsFromCapture = false;
 	config.vk.enableValidation = true;
-	auto app = makeApplication(config);
+	auto app = ::FlowUi::test::requireValue(makeApplication(config));
 	DevInterfaceState session{};
 	auto& catalogue = session.catalogue;
 	catalogue.assets.reserve(42);
@@ -88,9 +89,9 @@ int main() {
 						  float pointer_y = -10, std::string_view replacement_text = {}) {
 		assert(app.beginFrame());
 		auto& interaction =
-			const_cast<InteractionSnapshot&>(app.ui().getPreviousFramesInteraction());
+			const_cast<InteractionSnapshot&>(::FlowUi::test::requireValue(app.ui()).get().getPreviousFramesInteraction());
 		interaction = {};
-		auto& input = const_cast<FrameInput&>(app.ui().getCurrentFrameInput());
+		auto& input = const_cast<FrameInput&>(::FlowUi::test::requireValue(app.ui()).get().getCurrentFrameInput());
 		input.windowFocused = true;
 		input.mouseDown = {};
 		input.mouseDown[0] = event == 1 || event == 3;
@@ -99,7 +100,7 @@ int main() {
 		for (const auto control : {target, extra}) {
 			if (!control)
 				continue;
-			const auto clay_identity = app.ui().toClayEID(control).id;
+			const auto clay_identity = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(control).id;
 			interaction.hoveredElementIds.emplace_back(clay_identity);
 			if (event == 1)
 				interaction.pressedElementIds.emplace_back(clay_identity);
@@ -111,7 +112,7 @@ int main() {
 		if (!replacement_text.empty()) {
 			const auto hex_input = local(FlowElementID{color_editor_id.value},
 										 FSEL::TextInput::definitionId, LocalElementName{"hex"});
-			assert(app.ui().inputFields().replaceText(hex_input, replacement_text, true));
+			assert(::FlowUi::test::requireValue(app.ui()).get().inputFields().replaceText(hex_input, replacement_text, true));
 		}
 		Clay_ElementDeclaration root{};
 		root.layout.sizing = {.width = CLAY_SIZING_FIXED(280), .height = CLAY_SIZING_FIXED(520)};
@@ -119,17 +120,17 @@ int main() {
 		root.clip = {.horizontal = true, .vertical = true};
 		CLAY(CLAY_ID("catalogue-selector-regression-root"), root) {
 			if (show_color)
-				app.ui()
+				::FlowUi::test::requireValue(app.ui()).get()
 					.createElement(kDevColorTypeEditor, color_editor_id)
 					.setParameters({.editor = &color_editor})
 					.draw();
 			else if (show_changes)
-				app.ui()
+				::FlowUi::test::requireValue(app.ui()).get()
 					.createElement(kDevChangesSelector, changes_selector)
 					.setParameters({&app, &session})
 					.draw();
 			else
-				app.ui()
+				::FlowUi::test::requireValue(app.ui()).get()
 					.createElement(kDevCatalogueSelector, catalogue_selector)
 					.setParameters({&app, &session})
 					.draw();
@@ -155,14 +156,14 @@ int main() {
 		local(catalogue_owner, diagnostics_ui::Control::definitionId, LocalElementName{"all"});
 	const auto search =
 		local(catalogue_owner, DevSelectorSearch::definitionId, Keyed("search", catalogue.domain));
-	const auto all_bounds = Clay_GetElementData(app.ui().toClayEID(all)).boundingBox;
-	const auto search_bounds = Clay_GetElementData(app.ui().toClayEID(search)).boundingBox;
+	const auto all_bounds = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(all)).boundingBox;
+	const auto search_bounds = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(search)).boundingBox;
 	assert(all_bounds.y + all_bounds.height <= search_bounds.y);
 	assert(search_bounds.height == 28);
 
 	const auto icon_node =
 		local(catalogue_owner, DevNode::definitionId, Keyed("browser-node", 101));
-	assert(Clay_GetElementData(app.ui().toClayEID(icon_node)).boundingBox.height == 25);
+	assert(Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(icon_node)).boundingBox.height == 25);
 	click(icon_node);
 	assert(catalogue.selected_identity == 101);
 	const auto disclosure = local(icon_node, DevNode::definitionId, LocalElementName{"disclosure"});
@@ -198,23 +199,23 @@ int main() {
 							   LocalElementName{"browser-section"});
 	const auto splitter = local(catalogue_owner, FSEL::SplitterHandle::definitionId,
 								LocalElementName{"domain-splitter"});
-	const auto domains_before = Clay_GetElementData(app.ui().toClayEID(domains)).boundingBox;
-	const auto browser_before = Clay_GetElementData(app.ui().toClayEID(browser)).boundingBox;
+	const auto domains_before = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(domains)).boundingBox;
+	const auto browser_before = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(browser)).boundingBox;
 	assert(domains_before.height == 255);
-	const auto splitter_before = Clay_GetElementData(app.ui().toClayEID(splitter)).boundingBox;
+	const auto splitter_before = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(splitter)).boundingBox;
 	const float pointer_start = splitter_before.y + splitter_before.height / 2;
 	draw(splitter, 1, {}, pointer_start);
 	draw(splitter, 3, {}, pointer_start - 80);
 	draw(splitter, 2, {}, pointer_start - 80);
 	draw();
-	const auto domains_after = Clay_GetElementData(app.ui().toClayEID(domains)).boundingBox;
-	const auto browser_after = Clay_GetElementData(app.ui().toClayEID(browser)).boundingBox;
+	const auto domains_after = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(domains)).boundingBox;
+	const auto browser_after = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(browser)).boundingBox;
 	assert(std::abs(domains_before.height - domains_after.height - 80) < .5f);
 	assert(std::abs(browser_after.height - browser_before.height - 80) < .5f);
 	assert(std::abs(browser_before.y - browser_after.y - 80) < .5f);
 	assert(std::abs(domains_after.height - catalogue.domain_height) < .5f);
 	assert(std::abs(browser_after.y + browser_after.height - 520) < .5f);
-	const auto domain_scroll = Clay_GetScrollContainerData(app.ui().toClayEID(domains));
+	const auto domain_scroll = Clay_GetScrollContainerData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(domains));
 	assert(domain_scroll.found &&
 		   domain_scroll.contentDimensions.height > domain_scroll.scrollContainerDimensions.height);
 
@@ -232,10 +233,10 @@ int main() {
 	const auto browser_scroll_id =
 		local(catalogue_owner, DevCatalogueSelector::definitionId,
 			  Keyed("browser", static_cast<uint64_t>(DevCatalogueDomain::Icons)));
-	const auto browser_bounds = Clay_GetElementData(app.ui().toClayEID(browser)).boundingBox;
+	const auto browser_bounds = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(browser)).boundingBox;
 	const auto viewport_bounds =
-		Clay_GetElementData(app.ui().toClayEID(browser_scroll_id)).boundingBox;
-	const auto browser_scroll = Clay_GetScrollContainerData(app.ui().toClayEID(browser_scroll_id));
+		Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(browser_scroll_id)).boundingBox;
+	const auto browser_scroll = Clay_GetScrollContainerData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(browser_scroll_id));
 	assert(browser_scroll.found && browser_scroll.scrollPosition);
 	assert(std::abs(browser_bounds.height - browser_after.height) < .5f);
 	assert(viewport_bounds.y >= browser_bounds.y);
@@ -248,13 +249,13 @@ int main() {
 	const auto second_node =
 		local(catalogue_owner, DevNode::definitionId, Keyed("browser-node", 102));
 	const auto node_before_scroll =
-		Clay_GetElementData(app.ui().toClayEID(second_node)).boundingBox;
-	const auto count_before_scroll = Clay_GetElementData(app.ui().toClayEID(all)).boundingBox;
+		Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(second_node)).boundingBox;
+	const auto count_before_scroll = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(all)).boundingBox;
 	browser_scroll.scrollPosition->y = -100;
 	draw();
-	const auto node_after_scroll = Clay_GetElementData(app.ui().toClayEID(second_node)).boundingBox;
+	const auto node_after_scroll = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(second_node)).boundingBox;
 	assert(std::abs(node_after_scroll.y - node_before_scroll.y + 100) < .5f);
-	assert(Clay_GetElementData(app.ui().toClayEID(all)).boundingBox.y == count_before_scroll.y);
+	assert(Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(all)).boundingBox.y == count_before_scroll.y);
 
 	show_changes = true;
 	const auto changes_choice = local(FlowElementID{changes_selector.value},
@@ -262,7 +263,7 @@ int main() {
 	draw();
 	click(changes_choice);
 	assert(session.changes.domain == 2);
-	app.ui().shortcuts().setFocusedElement(app.ui().toClayEID(changes_choice));
+	::FlowUi::test::requireValue(app.ui()).get().shortcuts().setFocusedElement(::FlowUi::test::requireValue(app.ui()).get().toClayEID(changes_choice));
 	draw();
 	check_left_indicator(app, changes_choice);
 	// The shared color picker edits only this preview's caller-owned color.
@@ -271,35 +272,35 @@ int main() {
 	draw();
 	const auto hex_input = local(FlowElementID{color_editor_id.value},
 								 FSEL::TextInput::definitionId, LocalElementName{"hex"});
-	const auto transactions_before = app.devTooling().overrides().stats().committedTransactions;
-	const auto rejected_before = app.devTooling().overrides().stats().rejectedTransactions;
-	const auto results_before = app.devTooling().overrides().commandResults().size();
+	const auto transactions_before = ::FlowUi::test::requireValue(app.devTooling()).get().overrides().stats().committedTransactions;
+	const auto rejected_before = ::FlowUi::test::requireValue(app.devTooling()).get().overrides().stats().rejectedTransactions;
+	const auto results_before = ::FlowUi::test::requireValue(app.devTooling()).get().overrides().commandResults().size();
 	const auto edit_transaction_before = session.nextEditTransaction;
 	const auto undo_count_before = session.editUndoStack.size();
-	app.ui().inputFields().requestCaret(hex_input, CaretRequestKind::SetPrimary);
+	::FlowUi::test::requireValue(app.ui()).get().inputFields().requestCaret(hex_input, CaretRequestKind::SetPrimary);
 	draw();
 	draw({}, 0, {}, -10, "#33669980");
 	assert(color_editor.draftValid);
 	assert(preview_color.r == 51 && preview_color.g == 102 && preview_color.b == 153 &&
 		   preview_color.a == 128);
 	const auto* input_state =
-		app.ui().elements().getStatePointerConst(FSEL::kTextInput, app.ui().windowId(), hex_input);
+		::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().elements().getStatePointerConst(FSEL::kTextInput, ::FlowUi::test::requireValue(app.ui()).get().windowId(), hex_input));
 	assert(input_state && input_state->editSessionDirty && input_state->wasFocused);
-	app.ui().inputFields().requestCaret(hex_input, CaretRequestKind::ClearAll);
+	::FlowUi::test::requireValue(app.ui()).get().inputFields().requestCaret(hex_input, CaretRequestKind::ClearAll);
 	draw();
 	draw();
 	input_state =
-		app.ui().elements().getStatePointerConst(FSEL::kTextInput, app.ui().windowId(), hex_input);
+		::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().elements().getStatePointerConst(FSEL::kTextInput, ::FlowUi::test::requireValue(app.ui()).get().windowId(), hex_input));
 	assert(input_state && !input_state->editSessionDirty && !input_state->wasFocused);
 	assert(preview_color.r == 51 && preview_color.g == 102 && preview_color.b == 153 &&
 		   preview_color.a == 128);
 	assert(!color_editor.previewActive);
 	assert(session.nextEditTransaction == edit_transaction_before);
 	assert(session.editUndoStack.size() == undo_count_before);
-	const auto overrides_after = app.devTooling().overrides().stats();
+	const auto overrides_after = ::FlowUi::test::requireValue(app.devTooling()).get().overrides().stats();
 	assert(overrides_after.committedTransactions == transactions_before);
 	assert(overrides_after.rejectedTransactions == rejected_before);
-	assert(app.devTooling().overrides().commandResults().size() == results_before);
+	assert(::FlowUi::test::requireValue(app.devTooling()).get().overrides().commandResults().size() == results_before);
 
 	std::cout << "Catalogue selector interaction and split geometry passed\n";
 }

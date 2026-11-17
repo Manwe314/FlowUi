@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,34 +107,178 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
+<p>Per-operation performance capture policy copied when capture is armed. Requires FLOW_UI_DEV_MODE. Durations are nanoseconds; warmup counts clean application ticks. The selected start/end modes determine which trigger fields apply.
+ <a href="#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="DevPerformanceCapture_8hpp_source.html">DevPerformanceCapture.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a4e9c9ff77ef45e9345504485097a76f2" id="r_a4e9c9ff77ef45e9345504485097a76f2"><td class="memItemLeft"><a id="a4e9c9ff77ef45e9345504485097a76f2" name="a4e9c9ff77ef45e9345504485097a76f2"></a>
-<a class="el" href="structFlowUi_1_1DevShortcutChord.html">DevShortcutChord</a>&#160;</td><td class="memItemRight"><b>start_chord</b> {.key = 297, .ctrl = true, .shift = true}</td></tr>
-<tr class="memitem:aa4d0095329775cd6b7f4856ecb8be9e0" id="r_aa4d0095329775cd6b7f4856ecb8be9e0"><td class="memItemLeft"><a id="aa4d0095329775cd6b7f4856ecb8be9e0" name="aa4d0095329775cd6b7f4856ecb8be9e0"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>duration_ns</b> = 5'000'000'000</td></tr>
-<tr class="memitem:a7f6457e038c93ab2ae5390264b3a54a3" id="r_a7f6457e038c93ab2ae5390264b3a54a3"><td class="memItemLeft"><a id="a7f6457e038c93ab2ae5390264b3a54a3" name="a7f6457e038c93ab2ae5390264b3a54a3"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>budget_ns</b> = 16'600'000</td></tr>
-<tr class="memitem:ad54632b421c00de7f907e130fff01386" id="r_ad54632b421c00de7f907e130fff01386"><td class="memItemLeft"><a id="ad54632b421c00de7f907e130fff01386" name="ad54632b421c00de7f907e130fff01386"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>post_event_ns</b> = 500'000'000</td></tr>
-<tr class="memitem:a19fb02a38f5742f1835679005349c247" id="r_a19fb02a38f5742f1835679005349c247"><td class="memItemLeft"><a id="a19fb02a38f5742f1835679005349c247" name="a19fb02a38f5742f1835679005349c247"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>finalization_timeout_ns</b> = 2'000'000'000</td></tr>
-<tr class="memitem:a86b2123ce57becac8bfb3e477c448736" id="r_a86b2123ce57becac8bfb3e477c448736"><td class="memItemLeft"><a id="a86b2123ce57becac8bfb3e477c448736" name="a86b2123ce57becac8bfb3e477c448736"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>warmup_ticks</b> = 0</td></tr>
-<tr class="memitem:ac6f3e99da65ec59e61d269858e9d45cb" id="r_ac6f3e99da65ec59e61d269858e9d45cb"><td class="memItemLeft"><a id="ac6f3e99da65ec59e61d269858e9d45cb" name="ac6f3e99da65ec59e61d269858e9d45cb"></a>
-WindowId&#160;</td><td class="memItemRight"><b>budget_window</b> = InvalidWindowId</td></tr>
-<tr class="memitem:abd3d5f9f4b9d58cda0ff8e4f1e4da1f2" id="r_abd3d5f9f4b9d58cda0ff8e4f1e4da1f2"><td class="memItemLeft"><a id="abd3d5f9f4b9d58cda0ff8e4f1e4da1f2" name="abd3d5f9f4b9d58cda0ff8e4f1e4da1f2"></a>
-PerformanceCaptureStartMode&#160;</td><td class="memItemRight"><b>start_mode</b> = PerformanceCaptureStartMode::Immediate</td></tr>
-<tr class="memitem:aee1bedc22b7141a21f1478b59b56e4e3" id="r_aee1bedc22b7141a21f1478b59b56e4e3"><td class="memItemLeft"><a id="aee1bedc22b7141a21f1478b59b56e4e3" name="aee1bedc22b7141a21f1478b59b56e4e3"></a>
-PerformanceCaptureEndMode&#160;</td><td class="memItemRight"><b>end_mode</b> = PerformanceCaptureEndMode::Duration</td></tr>
-<tr class="memitem:abe90626f6820c22d1554624aa3362a4c" id="r_abe90626f6820c22d1554624aa3362a4c"><td class="memItemLeft"><a id="abe90626f6820c22d1554624aa3362a4c" name="abe90626f6820c22d1554624aa3362a4c"></a>
-bool&#160;</td><td class="memItemRight"><b>reopen_interface</b> = true</td></tr>
+<tr class="memitem:a4e9c9ff77ef45e9345504485097a76f2" id="r_a4e9c9ff77ef45e9345504485097a76f2"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1DevShortcutChord.html">DevShortcutChord</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4e9c9ff77ef45e9345504485097a76f2">start_chord</a> {.key = 297, .ctrl = true, .shift = true}</td></tr>
+<tr class="memitem:aa4d0095329775cd6b7f4856ecb8be9e0" id="r_aa4d0095329775cd6b7f4856ecb8be9e0"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#aa4d0095329775cd6b7f4856ecb8be9e0">duration_ns</a> = 5'000'000'000</td></tr>
+<tr class="memitem:a7f6457e038c93ab2ae5390264b3a54a3" id="r_a7f6457e038c93ab2ae5390264b3a54a3"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a7f6457e038c93ab2ae5390264b3a54a3">budget_ns</a> = 16'600'000</td></tr>
+<tr class="memitem:ad54632b421c00de7f907e130fff01386" id="r_ad54632b421c00de7f907e130fff01386"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ad54632b421c00de7f907e130fff01386">post_event_ns</a> = 500'000'000</td></tr>
+<tr class="memitem:a19fb02a38f5742f1835679005349c247" id="r_a19fb02a38f5742f1835679005349c247"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a19fb02a38f5742f1835679005349c247">finalization_timeout_ns</a> = 2'000'000'000</td></tr>
+<tr class="memitem:a86b2123ce57becac8bfb3e477c448736" id="r_a86b2123ce57becac8bfb3e477c448736"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a86b2123ce57becac8bfb3e477c448736">warmup_ticks</a> = 0</td></tr>
+<tr class="memitem:ac6f3e99da65ec59e61d269858e9d45cb" id="r_ac6f3e99da65ec59e61d269858e9d45cb"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a>&#160;</td><td class="memItemRight"><a class="el" href="#ac6f3e99da65ec59e61d269858e9d45cb">budget_window</a> = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td></tr>
+<tr class="memitem:abd3d5f9f4b9d58cda0ff8e4f1e4da1f2" id="r_abd3d5f9f4b9d58cda0ff8e4f1e4da1f2"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a19417954718a937771e2c4e678603ccc">PerformanceCaptureStartMode</a>&#160;</td><td class="memItemRight"><a class="el" href="#abd3d5f9f4b9d58cda0ff8e4f1e4da1f2">start_mode</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a19417954718a937771e2c4e678603ccca43f6615bbb2c40a5306ff804094420b1">PerformanceCaptureStartMode::Immediate</a></td></tr>
+<tr class="memitem:aee1bedc22b7141a21f1478b59b56e4e3" id="r_aee1bedc22b7141a21f1478b59b56e4e3"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a7c74165dbef5546adea697a28af02a2c">PerformanceCaptureEndMode</a>&#160;</td><td class="memItemRight"><a class="el" href="#aee1bedc22b7141a21f1478b59b56e4e3">end_mode</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a7c74165dbef5546adea697a28af02a2cae02d2ae03de9d493df2b6b2d2813d302">PerformanceCaptureEndMode::Duration</a></td></tr>
+<tr class="memitem:abe90626f6820c22d1554624aa3362a4c" id="r_abe90626f6820c22d1554624aa3362a4c"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#abe90626f6820c22d1554624aa3362a4c">reopen_interface</a> = true</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Immutable recording policy, independent of investigation filters. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<div class="textblock"><p>Per-operation performance capture policy copied when capture is armed. Requires FLOW_UI_DEV_MODE. Durations are nanoseconds; warmup counts clean application ticks. The selected start/end modes determine which trigger fields apply. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a7f6457e038c93ab2ae5390264b3a54a3" name="a7f6457e038c93ab2ae5390264b3a54a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f6457e038c93ab2ae5390264b3a54a3">&#9670;&#160;</a></span>budget_ns</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::PerformanceCaptureSettings::budget_ns = 16'600'000</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Window frame threshold in nanoseconds when end_mode is BudgetEvent. </p>
+
+</div>
+</div>
+<a id="ac6f3e99da65ec59e61d269858e9d45cb" name="ac6f3e99da65ec59e61d269858e9d45cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac6f3e99da65ec59e61d269858e9d45cb">&#9670;&#160;</a></span>budget_window</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> FlowUi::devSystems::PerformanceCaptureSettings::budget_window = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Window used for budget evaluation; InvalidWindowId selects the configured default. </p>
+
+</div>
+</div>
+<a id="aa4d0095329775cd6b7f4856ecb8be9e0" name="aa4d0095329775cd6b7f4856ecb8be9e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa4d0095329775cd6b7f4856ecb8be9e0">&#9670;&#160;</a></span>duration_ns</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::PerformanceCaptureSettings::duration_ns = 5'000'000'000</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Recording duration in nanoseconds for duration-based captures. </p>
+
+</div>
+</div>
+<a id="aee1bedc22b7141a21f1478b59b56e4e3" name="aee1bedc22b7141a21f1478b59b56e4e3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aee1bedc22b7141a21f1478b59b56e4e3">&#9670;&#160;</a></span>end_mode</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a7c74165dbef5546adea697a28af02a2c">PerformanceCaptureEndMode</a> FlowUi::devSystems::PerformanceCaptureSettings::end_mode = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a7c74165dbef5546adea697a28af02a2cae02d2ae03de9d493df2b6b2d2813d302">PerformanceCaptureEndMode::Duration</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Condition that ends capture admission. </p>
+
+</div>
+</div>
+<a id="a19fb02a38f5742f1835679005349c247" name="a19fb02a38f5742f1835679005349c247"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a19fb02a38f5742f1835679005349c247">&#9670;&#160;</a></span>finalization_timeout_ns</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::PerformanceCaptureSettings::finalization_timeout_ns = 2'000'000'000</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Maximum nanoseconds to wait for pending measurements before sealing incomplete. </p>
+
+</div>
+</div>
+<a id="ad54632b421c00de7f907e130fff01386" name="ad54632b421c00de7f907e130fff01386"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad54632b421c00de7f907e130fff01386">&#9670;&#160;</a></span>post_event_ns</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::PerformanceCaptureSettings::post_event_ns = 500'000'000</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Nanoseconds collected after the first budget event when end_mode is BudgetEvent. </p>
+
+</div>
+</div>
+<a id="abe90626f6820c22d1554624aa3362a4c" name="abe90626f6820c22d1554624aa3362a4c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abe90626f6820c22d1554624aa3362a4c">&#9670;&#160;</a></span>reopen_interface</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::PerformanceCaptureSettings::reopen_interface = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Request reopening the developer interface after capture finalization. </p>
+
+</div>
+</div>
+<a id="a4e9c9ff77ef45e9345504485097a76f2" name="a4e9c9ff77ef45e9345504485097a76f2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4e9c9ff77ef45e9345504485097a76f2">&#9670;&#160;</a></span>start_chord</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1DevShortcutChord.html">DevShortcutChord</a> FlowUi::devSystems::PerformanceCaptureSettings::start_chord {.key = 297, .ctrl = true, .shift = true}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Keyboard chord used when start_mode selects shortcut triggering. </p>
+
+</div>
+</div>
+<a id="abd3d5f9f4b9d58cda0ff8e4f1e4da1f2" name="abd3d5f9f4b9d58cda0ff8e4f1e4da1f2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abd3d5f9f4b9d58cda0ff8e4f1e4da1f2">&#9670;&#160;</a></span>start_mode</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a19417954718a937771e2c4e678603ccc">PerformanceCaptureStartMode</a> FlowUi::devSystems::PerformanceCaptureSettings::start_mode = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a19417954718a937771e2c4e678603ccca43f6615bbb2c40a5306ff804094420b1">PerformanceCaptureStartMode::Immediate</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Condition that begins an armed capture. </p>
+
+</div>
+</div>
+<a id="a86b2123ce57becac8bfb3e477c448736" name="a86b2123ce57becac8bfb3e477c448736"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a86b2123ce57becac8bfb3e477c448736">&#9670;&#160;</a></span>warmup_ticks</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::PerformanceCaptureSettings::warmup_ticks = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Clean application ticks skipped before capture admission starts. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevPerformanceCapture_8hpp_source.html">DevPerformanceCapture.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -150,7 +294,7 @@ bool&#160;</td><td class="memItemRight"><b>reopen_interface</b> = true</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1PerformanceCaptureSettings.html">PerformanceCaptureSettings</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1PerformanceCaptureSettings.html">PerformanceCaptureSettings</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -1,4 +1,5 @@
 #pragma once
+#include "FlowUi/Private/ApiBoundary.hpp"
 
 #include "FlowUi/Public/BuildConfig.hpp"
 
@@ -52,78 +53,159 @@ struct ActionManagerAccess;
 class AppActions {
 public:
 	/**
-	 * @brief Bind a previously unbound semantic action identity.
-	 * @param id Nonzero application action identity.
-	 * @param callable Function/member pointer, stateless callable, or explicitly borrowed callable.
-	 * @param resources Borrowed arguments supplied as pointers or std::ref/std::cref.
-	 * @return A retained call, or an initialization, identity, duplicate-binding,
-	 * creation, or publication error. Allocation failure may throw std::bad_alloc.
-	 * @note The callable and referenced resources must remain valid until the
-	 * binding is retired and all in-progress invocations finish.
+	 * @brief Create a retained application binding and return its AppActionCall. The ID must be nonzero and unbound; the descriptor overload also copies its diagnostic name.
+	 *
+	 * Hybrid contract: structured binding validation/publication failures are returned; arbitrary callable construction exceptions propagate unchanged. Resources supplied as pointers/std::ref/std::cref are borrowed and must outlive binding retirement and all in-progress calls. Callable objects must meet the bind restrictions: function/member pointer, stateless concrete callable, or explicitly borrowed callable.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * int saveCount = 0;
+	 * auto result = actions.bind(FlowUi::AppAction("docs.save"), [](int& saveCount) { ++saveCount; }, std::ref(saveCount));
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::AppActionCall save = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/action_manager.md
 	 */
 	template <typename Callable, typename... Resources>
 	[[nodiscard]] Result<AppActionCall> bind(AppActionID id, Callable&& callable,
 											 Resources&&... resources);
 
 	/**
-	 * @brief Bind an action with explicit diagnostic metadata.
-	 * @param descriptor Nonzero action identity and diagnostic name; the name is copied.
-	 * @param callable Callable satisfying the same restrictions as bind(AppActionID, Callable&&, Resources&&...).
-	 * @param resources Borrowed arguments; their targets must outlive use of the binding.
-	 * @return A retained call, or the same structured failures as the ID overload.
+	 * @brief Create a retained application binding and return its AppActionCall. The ID must be nonzero and unbound; the descriptor overload also copies its diagnostic name.
+	 *
+	 * Hybrid contract: structured binding validation/publication failures are returned; arbitrary callable construction exceptions propagate unchanged. Resources supplied as pointers/std::ref/std::cref are borrowed and must outlive binding retirement and all in-progress calls. Callable objects must meet the bind restrictions: function/member pointer, stateless concrete callable, or explicitly borrowed callable.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * int saveCount = 0;
+	 * auto result = actions.bind(FlowUi::AppActionDescriptor{.id = FlowUi::AppAction("docs.save"), .debugName = "Save"}, [](int& saveCount) { ++saveCount; }, std::ref(saveCount));
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::AppActionCall save = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/action_manager.md
 	 */
 	template <typename Callable, typename... Resources>
 	[[nodiscard]] Result<AppActionCall> bind(AppActionDescriptor descriptor, Callable&& callable,
 											 Resources&&... resources);
 
-	/** @brief Create a call referring to id without checking or creating a binding. */
+	/**
+	 * @brief Create a direct AppActionCall containing this identity without checking or creating its binding.
+	 *
+	 * @see docs/api/action_manager.md
+	 */
 	[[nodiscard]] AppActionCall select(AppActionID id) const noexcept;
-	/** @brief Return whether id currently has a live binding; zero and unavailable managers return false. */
+	/**
+	 * @brief Return whether the ID or call currently resolves to a live binding; an empty or unavailable binding is false.
+	 *
+	 * @see docs/api/action_manager.md
+	 */
 	[[nodiscard]] bool isBound(AppActionID id) const noexcept;
-	/** @brief Return whether the identity stored in call currently has a live binding. */
+	/**
+	 * @brief Return whether the ID or call currently resolves to a live binding; an empty or unavailable binding is false.
+	 *
+	 * @see docs/api/action_manager.md
+	 */
 	[[nodiscard]] bool isBound(AppActionCall call) const noexcept;
 	/**
-	 * @brief Remove a binding while allowing already active invocations to finish.
-	 * @return True when a binding was retired; false for zero, missing, or unavailable IDs.
-	 * Existing calls subsequently report Unbound until the identity is bound again.
+	 * @brief Retire a binding and return whether one was removed. Successful false is ordinary absence; already active invocations may finish.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * auto result = actions.unbind(id);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const bool removed = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/action_manager.md
 	 */
-	bool unbind(AppActionID id);
+	[[nodiscard]] Result<bool> unbind(AppActionID id) noexcept;
 
 	/**
-	 * @brief Replace an existing binding without changing its stable identity.
-	 * @param descriptor Identity to replace and copied diagnostic name.
-	 * @param callable Replacement callable; the bind() restrictions apply.
-	 * @param resources Replacement borrowed arguments, retained as non-owning references.
-	 * @return A call to the replacement, or a structured error, including
-	 * ActionNotBound when the identity has no binding. Active calls finish using
-	 * their original binding; later invocations use the replacement.
+	 * @brief Replace an existing retained binding at the same identity. Active invocations finish on their original binding; future calls resolve the replacement. A missing binding is returned as an error.
+	 *
+	 * Hybrid contract: structured binding validation/publication failures are returned; arbitrary callable construction exceptions propagate unchanged. Resources supplied as pointers/std::ref/std::cref are borrowed and must outlive binding retirement and all in-progress calls. Callable objects must meet the bind restrictions: function/member pointer, stateless concrete callable, or explicitly borrowed callable.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * int saveCount = 0;
+	 * auto result = actions.rebind(FlowUi::AppActionDescriptor{.id = FlowUi::AppAction("docs.save"), .debugName = "Save"}, [](int& saveCount) { ++saveCount; }, std::ref(saveCount));
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::AppActionCall save = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/action_manager.md
 	 */
 	template <typename Callable, typename... Resources>
 	[[nodiscard]] Result<AppActionCall> rebind(AppActionDescriptor descriptor, Callable&& callable,
 											   Resources&&... resources);
 
 	/**
-	 * @brief Invoke a retained action synchronously, discarding any result.
-	 * @return Invoked, Empty, Unbound, or Disabled without invoking an ineligible call.
-	 * @note Exceptions thrown by the user callable propagate to the caller.
+	 * @brief Invoke synchronously and directly return Invoked, Empty, Unbound or Disabled. An unavailable call does not run its callable.
+	 *
+	 * Callback and owned-result movement exceptions propagate unchanged. Side effects are not rolled back or automatically retried. invokeFor requires nonthrowing destruction of owned payloads; reference and array result types are rejected.
+	 *
+	 * @see docs/api/action_manager.md
+
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * const FlowUi::ActionInvocationStatus outcome = actions.invoke(call);
+	 * const bool invoked = outcome == FlowUi::ActionInvocationStatus::Invoked;
+	 * @endcode
 	 */
 	[[nodiscard]] ActionInvocationStatus invoke(AppActionCall call);
 
 	/**
-	 * @brief Invoke an action and move its exact result type into an ActionResult.
-	 * @tparam Result Exact declared result type, including void; references and arrays are rejected.
-	 * @param call Retained identity to resolve at invocation time.
-	 * @return The result, or Empty, Unbound, Disabled, or ResultTypeMismatch.
-	 * @note No callable runs on a type mismatch. Exceptions from the callable or
-	 * result movement propagate; borrowed resources remain caller-owned.
+	 * @brief Invoke only when the bound result type exactly matches Result. Return ActionResult<Result>, whose errors are Empty, Unbound, Disabled and ResultTypeMismatch. This is distinct from FlowUi::Result<T>.
+	 *
+	 * Callback and owned-result movement exceptions propagate unchanged. Side effects are not rolled back or automatically retried. invokeFor requires nonthrowing destruction of owned payloads; reference and array result types are rejected.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * auto result = actions.invokeFor<int>(countCall);
+	 * if (!result) {
+	 *     const FlowUi::ActionInvokeError error = result.error();
+	 *     return; // Handle the dispatch failure in the surrounding application code.
+	 * }
+	 * const int displayedCount = result.value();
+	 * @endcode
+	 *
+	 * @see docs/api/action_manager.md
 	 */
 	template <typename Result>
 	[[nodiscard]] ActionResult<Result> invokeFor(AppActionCall call);
 
-	/** @brief Observe enabled state; empty, unavailable, and unbound calls are disabled. */
+	/**
+	 * @brief Observe effective enabled state directly; empty, unavailable and unbound calls are disabled.
+	 *
+	 * @see docs/api/action_manager.md
+	 */
 	[[nodiscard]] AppActionAvailability availability(AppActionCall call) const noexcept;
-	/** @brief Set a live binding's enabled state; return false when the identity has no live binding. */
-	bool setAvailability(AppActionID id, AppActionAvailability availability);
+	/**
+	 * @brief Update the enabled flag of a live binding. Successful false means that no live binding matched the identity.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * auto result = actions.setAvailability(id, {.enabled = false});
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const bool updated = *result;
+	 * @endcode
+	 *
+	 * @see docs/api/action_manager.md
+	 */
+	[[nodiscard]] Result<bool> setAvailability(AppActionID id, AppActionAvailability availability) noexcept;
 
 private:
 	friend class ActionManager;
@@ -140,18 +222,23 @@ private:
 class UiActions {
 public:
 	/**
-	 * @brief Pack a stateless recipe and its arguments into a UI call.
-	 * @param recipe Typed recipe declared with UiAction().
-	 * @param resources Arguments matching the recipe signature. Reference
-	 * parameters require matching lvalues that outlive all copies of the call;
-	 * value parameters are copied into the fixed inline payload.
-	 * @return A callable UI action. Resource count, types, and payload capacity
-	 * are checked at compile time. Invocation discards any recipe result.
+	 * @brief Pack a stateless, trivial, concrete void-returning UiAction recipe and its arguments into a direct UiActionCall with no retained app binding.
+	 *
+	 * Arguments must match the recipe and fit UiActionCall::InlineBytes = 2 * sizeof(void*), which is 16 bytes with 64-bit pointers. Referenced lvalues must outlive every call copy; value arguments are stored inline. Argument conversion must be nothrow; perform fallible conversion before make(). Size and argument rules are compile-time checks.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * bool panelOpen = false;
+	 * constexpr auto toggle = FlowUi::UiAction("docs.toggle", [](bool& open) { open = !open; });
+	 * const FlowUi::UiActionCall call = actions.make(toggle, panelOpen);
+	 * @endcode
+	 *
+	 * @see docs/api/action_manager.md
 	 */
 	template <typename Operation, typename... Resources>
 	[[nodiscard]] UiActionCall make(
 		UiActionRecipe<Operation> recipe,
-		Resources&&... resources) const;
+		Resources&&... resources) const noexcept;
 
 private:
 	friend class ActionManager;
@@ -187,8 +274,29 @@ public:
 	[[nodiscard]] std::uint64_t devRevision() const noexcept;
 	/** @brief Return the number of currently published entries in this development catalogue. */
 	[[nodiscard]] std::size_t devActionCount() const noexcept;
-	/** @brief Visit borrowed catalogue entries synchronously; return false when a visitor stops early. */
-	bool visitDevActions(void* userData, DevActionVisitor visitor) const;
+	/**
+	 * @brief Available only with FLOW_UI_DEV_MODE. Synchronously visit borrowed catalogue entries. Successful true means the visit completed; successful false means a visitor stopped early or storage/visitor was unavailable. Thrown visitor/storage failures are converted to structured errors. Do not retain views or references to their metadata beyond the call.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE
+	 * std::size_t boundCount = 0;
+	 * auto result = actions.visitDevActions(&boundCount,
+	 *     [](void* userData, const FlowUi::ActionManager::DevActionView& view) {
+	 *         auto& count = *static_cast<std::size_t*>(userData);
+	 *         if (view.debug.bound) ++count;
+	 *         return true;
+	 *     });
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const bool completed = *result;
+	 * #endif
+	 * @endcode
+	 *
+	 * @see docs/api/action_manager.md
+	 */
+	[[nodiscard]] Result<bool> visitDevActions(void* userData, DevActionVisitor visitor) const noexcept;
 	/** Safely reconstruct a catalogue action. UI recipes with bound resources are rejected. */
 	[[nodiscard]] std::optional<ActionCall> makeDevActionCall(
 		ActionCallKind kind,
@@ -200,41 +308,99 @@ public:
 	/** @brief Append observation-only memory accounting to sink without transferring storage ownership. */
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
 #endif
-	/** @brief Construct an uninitialized dispatcher; App initializes its binding storage. */
+	/**
+	 * @brief Construct a detached manager; application code normally obtains the initialized App-owned manager.
+	 *
+	 * @see docs/api/action_manager.md
+	 */
 	ActionManager() noexcept
 		: appActions_(*this), uiActions_(*this) {}
-	/** @brief Retire owned action bindings and release their stored callable wrappers. */
+	/**
+	 * @brief Release owned service data. The App controls this manager lifetime.
+	 *
+	 * @see docs/api/action_manager.md
+	 */
 	~ActionManager();
 
+	/**
+	 * @brief Copying and moving are disabled as declared; use the App-owned instance by reference.
+	 *
+	 * @see docs/api/action_manager.md
+	 */
 	ActionManager(const ActionManager&) = delete;
+	/**
+	 * @brief Copying and moving are disabled as declared; use the App-owned instance by reference.
+	 *
+	 * @see docs/api/action_manager.md
+	 */
 	ActionManager& operator=(const ActionManager&) = delete;
+	/**
+	 * @brief Copying and moving are disabled as declared; use the App-owned instance by reference.
+	 *
+	 * @see docs/api/action_manager.md
+	 */
 	ActionManager(ActionManager&&) = delete;
+	/**
+	 * @brief Copying and moving are disabled as declared; use the App-owned instance by reference.
+	 *
+	 * @see docs/api/action_manager.md
+	 */
 	ActionManager& operator=(ActionManager&&) = delete;
 
-	/** @brief Borrow the app-action registration and invocation facade. */
+	/**
+	 * @brief Borrow the mutable or const facade for retained application actions. The manager owns this facade.
+	 *
+	 * @see docs/api/action_manager.md
+	 */
 	[[nodiscard]] AppActions& appActions() noexcept { return appActions_; }
-	/** @brief Borrow the immutable app-action observation facade. */
+	/**
+	 * @brief Borrow the mutable or const facade for retained application actions. The manager owns this facade.
+	 *
+	 * @see docs/api/action_manager.md
+	 */
 	[[nodiscard]] const AppActions& appActions() const noexcept { return appActions_; }
-	/** @brief Borrow the typed UI recipe construction facade. */
+	/**
+	 * @brief Borrow the mutable or const facade for inline UI action creation. The manager owns this facade.
+	 *
+	 * @see docs/api/action_manager.md
+	 */
 	[[nodiscard]] UiActions& uiActions() noexcept { return uiActions_; }
-	/** @brief Borrow the immutable typed UI recipe construction facade. */
+	/**
+	 * @brief Borrow the mutable or const facade for inline UI action creation. The manager owns this facade.
+	 *
+	 * @see docs/api/action_manager.md
+	 */
 	[[nodiscard]] const UiActions& uiActions() const noexcept { return uiActions_; }
 
 	/**
-	 * @brief Dispatch an app or UI call synchronously and discard its result.
-	 * @param call Action value; an empty value returns Empty.
-	 * @param source Optional window/element attribution for development diagnostics.
-	 * @return Invoked, Empty, Unbound, or Disabled. UI calls with a valid thunk
-	 * run directly; retained app calls obey their binding's enabled state.
-	 * @note Exceptions from user code propagate.
+	 * @brief Invoke synchronously and directly return Invoked, Empty, Unbound or Disabled. An unavailable call does not run its callable.
+	 *
+	 * Callback and owned-result movement exceptions propagate unchanged. Side effects are not rolled back or automatically retried. invokeFor requires nonthrowing destruction of owned payloads; reference and array result types are rejected.
+	 *
+	 * @see docs/api/action_manager.md
+
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * const FlowUi::ActionInvocationStatus outcome = actions.invoke(call);
+	 * const bool invoked = outcome == FlowUi::ActionInvocationStatus::Invoked;
+	 * @endcode
 	 */
 	[[nodiscard]] ActionInvocationStatus invoke(ActionCall call,
 												ActionInvocationSource source = {});
 
-	/** @brief Observe whether call is eligible for invocation without executing user code. */
+	/**
+	 * @brief Observe effective enabled state directly; empty, unavailable and unbound calls are disabled.
+	 *
+	 * @see docs/api/action_manager.md
+	 */
 	[[nodiscard]] ActionAvailability availability(ActionCall call) const noexcept;
 #if FLOW_UI_DEV_MODE
-	/** Return a resource-safe snapshot for developer tooling. */
+	/**
+	 * @brief Available only with FLOW_UI_DEV_MODE. Return a direct diagnostic snapshot of the call without invoking it.
+	 *
+	 * @see docs/api/action_manager.md
+	 */
 	[[nodiscard]] std::optional<ActionDebugInfo> debugInfo(ActionCall call) const noexcept;
 #endif
 
@@ -313,7 +479,7 @@ private:
 		) noexcept;
 #endif
 	template <typename Callable, typename... Resources>
-	Result<AppActionCall> bindTyped(
+	[[nodiscard]] Result<AppActionCall> bindTyped(
 		AppActionDescriptor descriptor,
 		bool replacement,
 		Callable&& callable,
@@ -345,7 +511,7 @@ private:
 template <typename Operation, typename... Resources>
 UiActionCall UiActions::make(
 	UiActionRecipe<Operation> recipe,
-	Resources&&... resources) const {
+	Resources&&... resources) const noexcept {
 	(void)owner_;
 	using Traits = detail::ui_action::CallableSignature<decltype(&Operation::operator())>;
 	using Parameters = typename Traits::Arguments;
@@ -359,6 +525,12 @@ UiActionCall UiActions::make(
 		static_assert(
 			detail::ui_action::argumentsCanBind<Parameters, Arguments>(indexes),
 			"FlowUi UiAction resources do not satisfy the recipe parameter types; references require matching lvalues.");
+		static_assert([]<std::size_t... Index>(std::index_sequence<Index...>) {
+			return ((std::is_lvalue_reference_v<std::tuple_element_t<Index, Parameters>> ||
+				std::is_nothrow_constructible_v<
+					detail::ui_action::StoredArgumentT<std::tuple_element_t<Index, Parameters>>,
+					std::tuple_element_t<Index, Arguments>>) && ...);
+		}(indexes), "FlowUi UiAction argument conversions must not throw; convert fallible values before packing the action.");
 		static_assert(
 			detail::ui_action::StoredBytes<Parameters> <= UiActionCall::InlineBytes,
 			"FlowUi UiAction arguments exceed inline storage; borrow a context object or use an element-specific callback.");
@@ -448,6 +620,8 @@ Result<AppActionCall> ActionManager::bindTyped(
 		"FlowUi app action results cannot be references or arrays; return a pointer or reference_wrapper.");
 	static_assert(std::is_void_v<PayloadResult> || std::is_move_constructible_v<PayloadResult>,
 		"FlowUi app action results must be move constructible.");
+	static_assert(std::is_void_v<PayloadResult> || std::is_nothrow_destructible_v<PayloadResult>,
+		"FlowUi owned app action results must have non-throwing destructors.");
 
 	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ActionBind));
 	auto validation = validateBindingRequest(descriptor.id, replacement);
@@ -513,6 +687,8 @@ template <typename Result>
 ActionResult<Result> AppActions::invokeFor(AppActionCall call) {
 	static_assert(!std::is_reference_v<Result> && !std::is_array_v<Result>,
 		"FlowUi invokeFor results cannot be references or arrays.");
+	static_assert(std::is_void_v<Result> || std::is_nothrow_destructible_v<Result>,
+		"FlowUi invokeFor result cleanup must not throw.");
 	ActionInvokeError error = ActionInvokeError::Empty;
 	const uint64_t resultType = std::is_void_v<Result> ? 0 : detail::typeHash<Result>();
 	auto lease = owner_->beginInvocation(
@@ -535,7 +711,7 @@ ActionResult<Result> AppActions::invokeFor(AppActionCall call) {
 			lease.header().invokeResult(lease.payload(), resultStorage);
 			result = reinterpret_cast<Result*>(resultStorage);
 			ActionResult<Result> output{std::move(*result)};
-			result->~Result();
+			std::exchange(result, nullptr)->~Result();
 			lease.noteSuccess(false);
 			return output;
 		} catch (...) {

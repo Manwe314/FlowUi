@@ -27,6 +27,8 @@ enum class ErrorCode : std::uint16_t {
 	CleanupIncomplete = 0x0109, /**< FlowUi could not complete required cleanup. */
 	ForeignExceptionObserved = 0x010a, /**< User or third-party code threw while FlowUi was active. */
 
+	ColorInvalid = 0x010b, /**< Runtime color text is not `#RRGGBB` or `#RRGGBBAA`. */
+
 	AppUnavailable = 0x0201, /**< The FlowUi application is unavailable. */
 	AppInitializationFailed = 0x0202, /**< FlowUi application initialization failed. */
 	AppTickSpaceExhausted = 0x0203, /**< The FlowUi application tick identity space was exhausted. */

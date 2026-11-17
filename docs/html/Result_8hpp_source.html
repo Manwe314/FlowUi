@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -115,85 +115,118 @@ $(function() {
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;utility&gt;</span></div>
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;variant&gt;</span></div>
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">namespace </span>FlowUi {</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi.html">FlowUi</a> {</div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#if defined(__cpp_lib_expected) &amp;&amp; __cpp_lib_expected &gt;= 202202L</span></div>
 <div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span></div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="keyword">using </span><a class="code hl_class" href="classFlowUi_1_1Result.html">Result</a> = std::expected&lt;T, FlowUiError&gt;;</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="keyword">using </span>Status = <a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;void&gt;</a>;</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>[[nodiscard]] <span class="keyword">constexpr</span> std::unexpected&lt;FlowUiError&gt; unexpectedError(<a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> error) <span class="keyword">noexcept</span> {</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    <span class="keywordflow">return</span> std::unexpected&lt;FlowUiError&gt;(error);</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>}</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span></div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="foldopen" id="foldopen00029" data-start="{" data-end="};">
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html">   29</a></span><span class="keyword">class </span>Result {</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    Result()</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>        <span class="keyword">requires</span> std::is_default_constructible_v&lt;T&gt;</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>        : storage_(T{}) {}</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    Result(<span class="keyword">const</span> T&amp; value) : storage_(value) {}</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    Result(T&amp;&amp; value) : storage_(std::move(value)) {}</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    Result(detail::UnexpectedFlowUiError failure) : storage_(failure.error) {}</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    [[nodiscard]] <span class="keywordtype">bool</span> has_value() <span class="keyword">const</span> <span class="keyword">noexcept</span> { <span class="keywordflow">return</span> storage_.index() == 0u; }</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    [[nodiscard]] <span class="keyword">explicit</span> <span class="keyword">operator</span> bool() <span class="keyword">const</span> <span class="keyword">noexcept</span> { <span class="keywordflow">return</span> has_value(); }</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    [[nodiscard]] T&amp; value() &amp; { <span class="keywordflow">return</span> std::get&lt;0&gt;(storage_); }</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    [[nodiscard]] <span class="keyword">const</span> T&amp; value() <span class="keyword">const</span>&amp; { <span class="keywordflow">return</span> std::get&lt;0&gt;(storage_); }</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    [[nodiscard]] T&amp;&amp; value() &amp;&amp; { <span class="keywordflow">return</span> std::get&lt;0&gt;(std::move(storage_)); }</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    [[nodiscard]] T&amp; operator*() &amp; { <span class="keywordflow">return</span> value(); }</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    [[nodiscard]] <span class="keyword">const</span> T&amp; operator*() <span class="keyword">const</span>&amp; { <span class="keywordflow">return</span> value(); }</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    [[nodiscard]] T* operator-&gt;() { <span class="keywordflow">return</span> &amp;value(); }</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    [[nodiscard]] <span class="keyword">const</span> T* operator-&gt;()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> &amp;value(); }</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    [[nodiscard]] <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>&amp; error() &amp; { <span class="keywordflow">return</span> std::get&lt;1&gt;(storage_); }</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>&amp; error() <span class="keyword">const</span>&amp; { <span class="keywordflow">return</span> std::get&lt;1&gt;(storage_); }</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> U&gt;</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    [[nodiscard]] T value_or(U&amp;&amp; fallback) <span class="keyword">const</span>&amp; {</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>        <span class="keywordflow">return</span> has_value() ? std::get&lt;0&gt;(storage_) : <span class="keyword">static_cast&lt;</span>T<span class="keyword">&gt;</span>(std::forward&lt;U&gt;(fallback));</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    }</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    std::variant&lt;T, FlowUiError&gt; storage_;</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>};</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="keyword">using </span><a class="code hl_class" href="classFlowUi_1_1Result.html">Result</a> = std::expected&lt;T, FlowUiError&gt;;</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span></div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="keyword">using </span><a class="code hl_typedef" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> = <a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;void&gt;</a>;</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span></div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>[[nodiscard]] <span class="keyword">constexpr</span> std::unexpected&lt;FlowUiError&gt; <a class="code hl_function" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">unexpectedError</a>(<a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> error) <span class="keyword">noexcept</span> {</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    <span class="keywordflow">return</span> std::unexpected&lt;FlowUiError&gt;(error);</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>}</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span></div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="foldopen" id="foldopen00077" data-start="{" data-end="};">
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html">   77</a></span><span class="keyword">class </span><a class="code hl_function" href="classFlowUi_1_1Result.html#a5c86b6582d06a090bdb8a4f1eae9a96e">Result</a> {</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span><span class="keyword">public</span>:</div>
+<div class="foldopen" id="foldopen00090" data-start="{" data-end="}">
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html#a5c86b6582d06a090bdb8a4f1eae9a96e">   90</a></span>    <a class="code hl_function" href="classFlowUi_1_1Result.html#a5c86b6582d06a090bdb8a4f1eae9a96e">Result</a>()</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>        <span class="keyword">requires</span> std::is_default_constructible_v&lt;T&gt;</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>        : storage_(T{}) {}</div>
 </div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span><span class="keyword">template</span> &lt;&gt;</div>
-<div class="foldopen" id="foldopen00060" data-start="{" data-end="};">
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result_3_01void_01_4.html">   60</a></span><span class="keyword">class </span>Result&lt;void&gt; {</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    Result() = <span class="keywordflow">default</span>;</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    Result(detail::UnexpectedFlowUiError failure) : error_(failure.error), hasValue_(<span class="keyword">false</span>) {}</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>    [[nodiscard]] <span class="keywordtype">bool</span> has_value() <span class="keyword">const</span> <span class="keyword">noexcept</span> { <span class="keywordflow">return</span> hasValue_; }</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    [[nodiscard]] <span class="keyword">explicit</span> <span class="keyword">operator</span> bool() <span class="keyword">const</span> <span class="keyword">noexcept</span> { <span class="keywordflow">return</span> has_value(); }</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    <span class="keywordtype">void</span> value()<span class="keyword"> const </span>{</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>        <span class="keywordflow">if</span> (!hasValue_)</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>            <span class="keywordflow">throw</span> std::bad_variant_access{};</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    }</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    [[nodiscard]] <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>&amp; error() &amp; { <span class="keywordflow">return</span> error_; }</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>&amp; error() <span class="keyword">const</span>&amp; { <span class="keywordflow">return</span> error_; }</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> error_{};</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    <span class="keywordtype">bool</span> hasValue_ = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>};</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span></div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html#adecd76b348a37419caddcda7a7e2c1fb">  104</a></span>    <a class="code hl_function" href="classFlowUi_1_1Result.html#adecd76b348a37419caddcda7a7e2c1fb">Result</a>(<span class="keyword">const</span> T&amp; <a class="code hl_function" href="classFlowUi_1_1Result.html#a81822a29a88f25088412a0b1cca43241">value</a>) : storage_(<a class="code hl_function" href="classFlowUi_1_1Result.html#a81822a29a88f25088412a0b1cca43241">value</a>) {}</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html#ab1c1da2a88b377269cb17e7e5aec5c74">  116</a></span>    <a class="code hl_function" href="classFlowUi_1_1Result.html#ab1c1da2a88b377269cb17e7e5aec5c74">Result</a>(T&amp;&amp; <a class="code hl_function" href="classFlowUi_1_1Result.html#a81822a29a88f25088412a0b1cca43241">value</a>) : storage_(std::move(<a class="code hl_function" href="classFlowUi_1_1Result.html#a81822a29a88f25088412a0b1cca43241">value</a>)) {}</div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html#afe133b7d1906f71ee990beaf1b437d94">  128</a></span>    <a class="code hl_function" href="classFlowUi_1_1Result.html#afe133b7d1906f71ee990beaf1b437d94">Result</a>(detail::UnexpectedFlowUiError failure) noexcept : storage_(failure.error) {}</div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span></div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html#a09eaccee0ea703a4abdb477f952a7596">  137</a></span>    [[nodiscard]] <span class="keywordtype">bool</span> <a class="code hl_function" href="classFlowUi_1_1Result.html#a09eaccee0ea703a4abdb477f952a7596">has_value</a>() const noexcept { <span class="keywordflow">return</span> storage_.index() == 0u; }</div>
+<div class="line"><a id="l00145" name="l00145"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html#a7e1eaa1c47c8636e9c9ef0784eab35b0">  145</a></span>    [[nodiscard]] <span class="keyword">explicit</span> <span class="keyword">operator</span> bool() const noexcept { <span class="keywordflow">return</span> <a class="code hl_function" href="classFlowUi_1_1Result.html#a09eaccee0ea703a4abdb477f952a7596">has_value</a>(); }</div>
+<div class="line"><a id="l00158" name="l00158"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html#a81822a29a88f25088412a0b1cca43241">  158</a></span>    [[nodiscard]] T&amp; <a class="code hl_function" href="classFlowUi_1_1Result.html#a81822a29a88f25088412a0b1cca43241">value</a>() &amp; { <span class="keywordflow">return</span> std::get&lt;0&gt;(storage_); }</div>
+<div class="line"><a id="l00171" name="l00171"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html#a01111f683c61ef197f60a64bea29cdde">  171</a></span>    [[nodiscard]] <span class="keyword">const</span> T&amp; <a class="code hl_function" href="classFlowUi_1_1Result.html#a01111f683c61ef197f60a64bea29cdde">value</a>() const&amp; { <span class="keywordflow">return</span> std::get&lt;0&gt;(storage_); }</div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html#a47768154ceb89e0549d8c57447a71a78">  184</a></span>    [[nodiscard]] T&amp;&amp; <a class="code hl_function" href="classFlowUi_1_1Result.html#a47768154ceb89e0549d8c57447a71a78">value</a>() &amp;&amp; { <span class="keywordflow">return</span> std::get&lt;0&gt;(std::move(storage_)); }</div>
+<div class="line"><a id="l00198" name="l00198"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html#a6259f322ded2b1c10037e6fafe8378c3">  198</a></span>    [[nodiscard]] T&amp; <a class="code hl_function" href="classFlowUi_1_1Result.html#a6259f322ded2b1c10037e6fafe8378c3">operator*</a>() &amp; { <span class="keywordflow">return</span> <a class="code hl_function" href="classFlowUi_1_1Result.html#a81822a29a88f25088412a0b1cca43241">value</a>(); }</div>
+<div class="line"><a id="l00212" name="l00212"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html#ad3976d83e0a922066dd45b3e3a635173">  212</a></span>    [[nodiscard]] <span class="keyword">const</span> T&amp; <a class="code hl_function" href="classFlowUi_1_1Result.html#ad3976d83e0a922066dd45b3e3a635173">operator*</a>() const&amp; { <span class="keywordflow">return</span> <a class="code hl_function" href="classFlowUi_1_1Result.html#a81822a29a88f25088412a0b1cca43241">value</a>(); }</div>
+<div class="line"><a id="l00226" name="l00226"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html#a577b49197e443f464728e7e9a54bdad3">  226</a></span>    [[nodiscard]] T* <a class="code hl_function" href="classFlowUi_1_1Result.html#a577b49197e443f464728e7e9a54bdad3">operator-&gt;</a>() { <span class="keywordflow">return</span> &amp;<a class="code hl_function" href="classFlowUi_1_1Result.html#a81822a29a88f25088412a0b1cca43241">value</a>(); }</div>
+<div class="line"><a id="l00240" name="l00240"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html#ad05768234f3501ca46ca7745dbf6ccc4">  240</a></span>    [[nodiscard]] <span class="keyword">const</span> T* <a class="code hl_function" href="classFlowUi_1_1Result.html#ad05768234f3501ca46ca7745dbf6ccc4">operator-&gt;</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> &amp;<a class="code hl_function" href="classFlowUi_1_1Result.html#a81822a29a88f25088412a0b1cca43241">value</a>(); }</div>
+<div class="line"><a id="l00253" name="l00253"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html#a5694ad00f39a0e2d187415ddd9b9801b">  253</a></span>    [[nodiscard]] <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>&amp; <a class="code hl_function" href="classFlowUi_1_1Result.html#a5694ad00f39a0e2d187415ddd9b9801b">error</a>() &amp; { <span class="keywordflow">return</span> std::get&lt;1&gt;(storage_); }</div>
+<div class="line"><a id="l00266" name="l00266"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html#af7f817b2a82e93e9b8281c7e403d5970">  266</a></span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>&amp; <a class="code hl_function" href="classFlowUi_1_1Result.html#af7f817b2a82e93e9b8281c7e403d5970">error</a>() const&amp; { <span class="keywordflow">return</span> std::get&lt;1&gt;(storage_); }</div>
+<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span> </div>
+<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> U&gt;</div>
+<div class="foldopen" id="foldopen00275" data-start="{" data-end="}">
+<div class="line"><a id="l00275" name="l00275"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result.html#a15fe195c7b74bf982186424ca503cb74">  275</a></span>    [[nodiscard]] T <a class="code hl_function" href="classFlowUi_1_1Result.html#a15fe195c7b74bf982186424ca503cb74">value_or</a>(U&amp;&amp; fallback) <span class="keyword">const</span>&amp; {</div>
+<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>        <span class="keywordflow">return</span> <a class="code hl_function" href="classFlowUi_1_1Result.html#a09eaccee0ea703a4abdb477f952a7596">has_value</a>() ? std::get&lt;0&gt;(storage_) : <span class="keyword">static_cast&lt;</span>T<span class="keyword">&gt;</span>(std::forward&lt;U&gt;(fallback));</div>
+<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>    }</div>
 </div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span><span class="keyword">using </span>Status = <a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;void&gt;</a>;</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span> </div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>[[nodiscard]] <span class="keyword">constexpr</span> detail::UnexpectedFlowUiError unexpectedError(<a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> error) <span class="keyword">noexcept</span> {</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    <span class="keywordflow">return</span> detail::UnexpectedFlowUiError{error};</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>}</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span> </div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span> </div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>} <span class="comment">// namespace FlowUi</span></div>
-<div class="ttc" id="aclassFlowUi_1_1Result_html"><div class="ttname"><a href="classFlowUi_1_1Result.html">FlowUi::Result</a></div><div class="ttdef"><b>Definition</b> Result.hpp:29</div></div>
+<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span> </div>
+<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>    std::variant&lt;T, FlowUiError&gt; storage_;</div>
+<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span>};</div>
+</div>
+<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span></div>
+<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span><span class="keyword">template</span> &lt;&gt;</div>
+<div class="foldopen" id="foldopen00300" data-start="{" data-end="};">
+<div class="line"><a id="l00300" name="l00300"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result_3_01void_01_4.html">  300</a></span><span class="keyword">class </span><a class="code hl_function" href="classFlowUi_1_1Result_3_01void_01_4.html#a14a39db31585443aa5078074f19bc1d1">Result</a>&lt;void&gt; {</div>
+<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00318" name="l00318"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result_3_01void_01_4.html#a14a39db31585443aa5078074f19bc1d1">  318</a></span>    <a class="code hl_function" href="classFlowUi_1_1Result_3_01void_01_4.html#a14a39db31585443aa5078074f19bc1d1">Result</a>() noexcept = default;</div>
+<div class="line"><a id="l00335" name="l00335"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result_3_01void_01_4.html#a08954e78301f2606e8930b5f0f84472f">  335</a></span>    <a class="code hl_function" href="classFlowUi_1_1Result_3_01void_01_4.html#a14a39db31585443aa5078074f19bc1d1">Result</a>(detail::UnexpectedFlowUiError failure) noexcept : error_(failure.<a class="code hl_function" href="classFlowUi_1_1Result_3_01void_01_4.html#a5744e8ba6143b4cb7544c0bc8a52d201">error</a>), hasValue_(false) {}</div>
+<div class="line"><a id="l00352" name="l00352"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result_3_01void_01_4.html#a6b51c7992f047dee9684ce6ab70a91bb">  352</a></span>    [[nodiscard]] <span class="keywordtype">bool</span> <a class="code hl_function" href="classFlowUi_1_1Result_3_01void_01_4.html#a6b51c7992f047dee9684ce6ab70a91bb">has_value</a>() const noexcept { <span class="keywordflow">return</span> hasValue_; }</div>
+<div class="line"><a id="l00369" name="l00369"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result_3_01void_01_4.html#a2f35ebd521376da0bca4d0a8c5559e12">  369</a></span>    [[nodiscard]] <span class="keyword">explicit</span> <span class="keyword">operator</span> bool() const noexcept { <span class="keywordflow">return</span> <a class="code hl_function" href="classFlowUi_1_1Result.html#a09eaccee0ea703a4abdb477f952a7596">has_value</a>(); }</div>
+<div class="foldopen" id="foldopen00386" data-start="{" data-end="}">
+<div class="line"><a id="l00386" name="l00386"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result_3_01void_01_4.html#a67b915ea87d982eb034bcc8dcd846e4d">  386</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classFlowUi_1_1Result_3_01void_01_4.html#a67b915ea87d982eb034bcc8dcd846e4d">value</a>()<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>        <span class="keywordflow">if</span> (!hasValue_)</div>
+<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span>            <span class="keywordflow">throw</span> std::bad_variant_access{};</div>
+<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>    }</div>
+</div>
+<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span></div>
+<div class="line"><a id="l00406" name="l00406"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result_3_01void_01_4.html#a5744e8ba6143b4cb7544c0bc8a52d201">  406</a></span>    [[nodiscard]] <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>&amp; <a class="code hl_function" href="classFlowUi_1_1Result_3_01void_01_4.html#a5744e8ba6143b4cb7544c0bc8a52d201">error</a>() &amp; <span class="keyword">noexcept</span> { <span class="keywordflow">return</span> error_; }</div>
+<div class="line"><a id="l00423" name="l00423"></a><span class="lineno"><a class="line" href="classFlowUi_1_1Result_3_01void_01_4.html#aa4597bfd657cadcef5b32888ca5d1adb">  423</a></span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>&amp; <a class="code hl_function" href="classFlowUi_1_1Result_3_01void_01_4.html#aa4597bfd657cadcef5b32888ca5d1adb">error</a>() const&amp; noexcept { <span class="keywordflow">return</span> error_; }</div>
+<div class="line"><a id="l00424" name="l00424"></a><span class="lineno">  424</span> </div>
+<div class="line"><a id="l00425" name="l00425"></a><span class="lineno">  425</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00426" name="l00426"></a><span class="lineno">  426</span>    <a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> error_{};</div>
+<div class="line"><a id="l00427" name="l00427"></a><span class="lineno">  427</span>    <span class="keywordtype">bool</span> hasValue_ = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00428" name="l00428"></a><span class="lineno">  428</span>};</div>
+</div>
+<div class="line"><a id="l00429" name="l00429"></a><span class="lineno">  429</span></div>
+<div class="line"><a id="l00446" name="l00446"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">  446</a></span><span class="keyword">using </span><a class="code hl_typedef" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> = <a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;void&gt;</a>;</div>
+<div class="line"><a id="l00447" name="l00447"></a><span class="lineno">  447</span></div>
+<div class="foldopen" id="foldopen00459" data-start="{" data-end="}">
+<div class="line"><a id="l00459" name="l00459"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">  459</a></span>[[nodiscard]] <span class="keyword">constexpr</span> detail::UnexpectedFlowUiError <a class="code hl_function" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">unexpectedError</a>(<a class="code hl_struct" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> error) <span class="keyword">noexcept</span> {</div>
+<div class="line"><a id="l00460" name="l00460"></a><span class="lineno">  460</span>    <span class="keywordflow">return</span> detail::UnexpectedFlowUiError{error};</div>
+<div class="line"><a id="l00461" name="l00461"></a><span class="lineno">  461</span>}</div>
+</div>
+<div class="line"><a id="l00462" name="l00462"></a><span class="lineno">  462</span> </div>
+<div class="line"><a id="l00463" name="l00463"></a><span class="lineno">  463</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00464" name="l00464"></a><span class="lineno">  464</span> </div>
+<div class="line"><a id="l00465" name="l00465"></a><span class="lineno">  465</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_3_01void_01_4_html_a14a39db31585443aa5078074f19bc1d1"><div class="ttname"><a href="classFlowUi_1_1Result_3_01void_01_4.html#a14a39db31585443aa5078074f19bc1d1">FlowUi::Result&lt; void &gt;::Result</a></div><div class="ttdeci">Result() noexcept=default</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_3_01void_01_4_html_a5744e8ba6143b4cb7544c0bc8a52d201"><div class="ttname"><a href="classFlowUi_1_1Result_3_01void_01_4.html#a5744e8ba6143b4cb7544c0bc8a52d201">FlowUi::Result&lt; void &gt;::error</a></div><div class="ttdeci">FlowUiError &amp; error() &amp;noexcept</div><div class="ttdef"><b>Definition</b> Result.hpp:406</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_3_01void_01_4_html_a67b915ea87d982eb034bcc8dcd846e4d"><div class="ttname"><a href="classFlowUi_1_1Result_3_01void_01_4.html#a67b915ea87d982eb034bcc8dcd846e4d">FlowUi::Result&lt; void &gt;::value</a></div><div class="ttdeci">void value() const</div><div class="ttdef"><b>Definition</b> Result.hpp:386</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_3_01void_01_4_html_a6b51c7992f047dee9684ce6ab70a91bb"><div class="ttname"><a href="classFlowUi_1_1Result_3_01void_01_4.html#a6b51c7992f047dee9684ce6ab70a91bb">FlowUi::Result&lt; void &gt;::has_value</a></div><div class="ttdeci">bool has_value() const noexcept</div><div class="ttdef"><b>Definition</b> Result.hpp:352</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_3_01void_01_4_html_aa4597bfd657cadcef5b32888ca5d1adb"><div class="ttname"><a href="classFlowUi_1_1Result_3_01void_01_4.html#aa4597bfd657cadcef5b32888ca5d1adb">FlowUi::Result&lt; void &gt;::error</a></div><div class="ttdeci">const FlowUiError &amp; error() const &amp;noexcept</div><div class="ttdef"><b>Definition</b> Result.hpp:423</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html"><div class="ttname"><a href="classFlowUi_1_1Result.html">FlowUi::Result</a></div><div class="ttdef"><b>Definition</b> Result.hpp:77</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_a01111f683c61ef197f60a64bea29cdde"><div class="ttname"><a href="classFlowUi_1_1Result.html#a01111f683c61ef197f60a64bea29cdde">FlowUi::Result::value</a></div><div class="ttdeci">const T &amp; value() const &amp;</div><div class="ttdef"><b>Definition</b> Result.hpp:171</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_a09eaccee0ea703a4abdb477f952a7596"><div class="ttname"><a href="classFlowUi_1_1Result.html#a09eaccee0ea703a4abdb477f952a7596">FlowUi::Result::has_value</a></div><div class="ttdeci">bool has_value() const noexcept</div><div class="ttdef"><b>Definition</b> Result.hpp:137</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_a15fe195c7b74bf982186424ca503cb74"><div class="ttname"><a href="classFlowUi_1_1Result.html#a15fe195c7b74bf982186424ca503cb74">FlowUi::Result::value_or</a></div><div class="ttdeci">T value_or(U &amp;&amp;fallback) const &amp;</div><div class="ttdef"><b>Definition</b> Result.hpp:275</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_a47768154ceb89e0549d8c57447a71a78"><div class="ttname"><a href="classFlowUi_1_1Result.html#a47768154ceb89e0549d8c57447a71a78">FlowUi::Result::value</a></div><div class="ttdeci">T &amp;&amp; value() &amp;&amp;</div><div class="ttdef"><b>Definition</b> Result.hpp:184</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_a5694ad00f39a0e2d187415ddd9b9801b"><div class="ttname"><a href="classFlowUi_1_1Result.html#a5694ad00f39a0e2d187415ddd9b9801b">FlowUi::Result::error</a></div><div class="ttdeci">FlowUiError &amp; error() &amp;</div><div class="ttdef"><b>Definition</b> Result.hpp:253</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_a577b49197e443f464728e7e9a54bdad3"><div class="ttname"><a href="classFlowUi_1_1Result.html#a577b49197e443f464728e7e9a54bdad3">FlowUi::Result::operator-&gt;</a></div><div class="ttdeci">T * operator-&gt;()</div><div class="ttdef"><b>Definition</b> Result.hpp:226</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_a5c86b6582d06a090bdb8a4f1eae9a96e"><div class="ttname"><a href="classFlowUi_1_1Result.html#a5c86b6582d06a090bdb8a4f1eae9a96e">FlowUi::Result::Result</a></div><div class="ttdeci">Result()</div><div class="ttdef"><b>Definition</b> Result.hpp:90</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_a6259f322ded2b1c10037e6fafe8378c3"><div class="ttname"><a href="classFlowUi_1_1Result.html#a6259f322ded2b1c10037e6fafe8378c3">FlowUi::Result::operator*</a></div><div class="ttdeci">T &amp; operator*() &amp;</div><div class="ttdef"><b>Definition</b> Result.hpp:198</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_a81822a29a88f25088412a0b1cca43241"><div class="ttname"><a href="classFlowUi_1_1Result.html#a81822a29a88f25088412a0b1cca43241">FlowUi::Result::value</a></div><div class="ttdeci">T &amp; value() &amp;</div><div class="ttdef"><b>Definition</b> Result.hpp:158</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_ab1c1da2a88b377269cb17e7e5aec5c74"><div class="ttname"><a href="classFlowUi_1_1Result.html#ab1c1da2a88b377269cb17e7e5aec5c74">FlowUi::Result::Result</a></div><div class="ttdeci">Result(T &amp;&amp;value)</div><div class="ttdef"><b>Definition</b> Result.hpp:116</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_ad05768234f3501ca46ca7745dbf6ccc4"><div class="ttname"><a href="classFlowUi_1_1Result.html#ad05768234f3501ca46ca7745dbf6ccc4">FlowUi::Result::operator-&gt;</a></div><div class="ttdeci">const T * operator-&gt;() const</div><div class="ttdef"><b>Definition</b> Result.hpp:240</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_ad3976d83e0a922066dd45b3e3a635173"><div class="ttname"><a href="classFlowUi_1_1Result.html#ad3976d83e0a922066dd45b3e3a635173">FlowUi::Result::operator*</a></div><div class="ttdeci">const T &amp; operator*() const &amp;</div><div class="ttdef"><b>Definition</b> Result.hpp:212</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_adecd76b348a37419caddcda7a7e2c1fb"><div class="ttname"><a href="classFlowUi_1_1Result.html#adecd76b348a37419caddcda7a7e2c1fb">FlowUi::Result::Result</a></div><div class="ttdeci">Result(const T &amp;value)</div><div class="ttdef"><b>Definition</b> Result.hpp:104</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_af7f817b2a82e93e9b8281c7e403d5970"><div class="ttname"><a href="classFlowUi_1_1Result.html#af7f817b2a82e93e9b8281c7e403d5970">FlowUi::Result::error</a></div><div class="ttdeci">const FlowUiError &amp; error() const &amp;</div><div class="ttdef"><b>Definition</b> Result.hpp:266</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_afe133b7d1906f71ee990beaf1b437d94"><div class="ttname"><a href="classFlowUi_1_1Result.html#afe133b7d1906f71ee990beaf1b437d94">FlowUi::Result::Result</a></div><div class="ttdeci">Result(detail::UnexpectedFlowUiError failure) noexcept</div><div class="ttdef"><b>Definition</b> Result.hpp:128</div></div>
+<div class="ttc" id="anamespaceFlowUi_html"><div class="ttname"><a href="namespaceFlowUi.html">FlowUi</a></div><div class="ttdef"><b>Definition</b> App.hpp:29</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a5af3d554790b4adcde01b5b90a54fb4d"><div class="ttname"><a href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">FlowUi::Status</a></div><div class="ttdeci">Result&lt; void &gt; Status</div><div class="ttdef"><b>Definition</b> Result.hpp:446</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a6c0cc7e54c56965df307ef7660db14ea"><div class="ttname"><a href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">FlowUi::unexpectedError</a></div><div class="ttdeci">constexpr detail::UnexpectedFlowUiError unexpectedError(FlowUiError error) noexcept</div><div class="ttdef"><b>Definition</b> Result.hpp:459</div></div>
 <div class="ttc" id="astructFlowUi_1_1FlowUiError_html"><div class="ttname"><a href="structFlowUi_1_1FlowUiError.html">FlowUi::FlowUiError</a></div><div class="ttdef"><b>Definition</b> ErrorValue.hpp:16</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->

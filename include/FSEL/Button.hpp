@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include <algorithm>
 #include <cstdint>
 #include <optional>
@@ -151,7 +153,7 @@ struct Button {
 			return;
 		}
 
-		const auto& theme = context.uiManager.theme<FSELTheme>().buttonTheme;
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().buttonTheme;
 		context.uiManager.requestCursor(
 			context.params.cursor.value_or(theme.cursor),
 			context.params.cursorPriority.value_or(theme.cursorPriority));
@@ -234,7 +236,7 @@ struct Button {
 	 * context Borrowed context valid for this callback only.
 	 */
 	static void buildElement(BuildContext& context) {
-		const auto& theme = context.uiManager.theme<FSELTheme>().buttonTheme;
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().buttonTheme;
 		const FSELButtonStateTheme appearance = resolveAppearance(context);
 		const Clay_ElementDeclaration root = makeRootDeclaration(context, appearance);
 		const bool needsText =
@@ -278,14 +280,14 @@ struct Button {
 		}
 
 		auto drawText = [&]() {
-			CLAY(context.clayID("label"), {}) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("label")), {}) {
 				CLAY_TEXT(
 					context.uiManager.toClayString(context.params.text),
 					CLAY_TEXT_CONFIG(labelConfig));
 			}
 		};
 		auto drawIcon = [&]() {
-			CLAY(context.clayID("icon"), iconDeclaration);
+			CLAY(FlowUi::ValueOrThrow(context.clayID("icon")), iconDeclaration);
 		};
 
 		CLAY(context.clayID(), root) {
@@ -320,7 +322,7 @@ private:
 
 	static bool isEnabled(const InteractionContext& context) {
 		return context.params.enabled &&
-			context.actionAvailability(context.params.onActivate).enabled;
+			FlowUi::ValueOrThrow(context.actionAvailability(context.params.onActivate)).enabled;
 	}
 
 	static bool isEnabled(const BuildContext& context) {
@@ -365,7 +367,7 @@ private:
 	}
 
 	static FSELButtonStateTheme resolveAppearance(BuildContext& context) {
-		const auto& theme = context.uiManager.theme<FSELTheme>().buttonTheme;
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().buttonTheme;
 		switch (resolveVisualState(context)) {
 		case VisualState::Idle:
 			return applyOverrides(theme.idle, context.params.idleOverrides);
@@ -382,7 +384,7 @@ private:
 	static Clay_ElementDeclaration makeRootDeclaration(
 		BuildContext& context,
 		const FSELButtonStateTheme& appearance) {
-		const auto& theme = context.uiManager.theme<FSELTheme>().buttonTheme;
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().buttonTheme;
 
 		Clay_ElementDeclaration root{};
 		root.layout.sizing = context.params.sizing;

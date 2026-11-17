@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.16.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Flow UI: Public API Index</title>
+<title>Flow UI: Public API index</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript">var page_layout=1;</script>
 <script type="text/javascript" src="jquery.js"></script>
@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -103,90 +103,67 @@ $(function() {
 </div>
 
 <div><div class="header">
-  <div class="headertitle"><div class="title">Public API Index </div></div>
+  <div class="headertitle"><div class="title">Public API index </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>This page maps the supported public surfaces to their maintained references and owning headers. The individual references describe signatures, result handling, and lifetimes; source Doxygen comments remain the authority for exact overloads.</p>
-<h1>Application and managers</h1>
+<div class="textblock"><p>These references describe the current application-facing API, including overloads, constness, build gates, error contracts and lifetimes. Result-returning operations include concrete checked examples in their references and public Doxygen comments. Start with <a class="el" href="md_docs_2api_2result__handling.html" title="Results and borrowed references">result handling</a> for extracting <span class="tt">Result&lt;std::reference_wrapper&lt;T&gt;&gt;</span> into <span class="tt">T&amp;</span> or <span class="tt">const T&amp;</span>.</p>
 <table class="markdownTable">
 <tr class="markdownTableHead">
-<th class="markdownTableHeadNone">Surface  </th><th class="markdownTableHeadNone">Common operations  </th><th class="markdownTableHeadNone">Reference  </th><th class="markdownTableHeadNone">Owning header  </th></tr>
+<th class="markdownTableHeadNone">Surface  </th><th class="markdownTableHeadNone">Reference  </th><th class="markdownTableHeadNone">Owning public header  </th></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><span class="tt">App</span>  </td><td class="markdownTableBodyNone"><span class="tt">makeApplication</span>, window creation/destruction, <span class="tt">beginFrame</span>, <span class="tt">endFrame</span>, <span class="tt">drawFrame</span>, <span class="tt">pollEvents</span>, manager access  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2app.html" title="App API">Application</a>  </td><td class="markdownTableBodyNone"><a href="../../include/FlowUi/Public/App.hpp">App.hpp</a>  </td></tr>
+<td class="markdownTableBodyNone">App ownership, windows, frames, manager access and optional developer facades  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2app.html" title="App API">App</a>  </td><td class="markdownTableBodyNone"><a href="include/FlowUi/Public/App.hpp">App.hpp</a>, <a href="include/FlowUi/Public/AppElementWindows.hpp">element windows</a>  </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone">Configuration  </td><td class="markdownTableBodyNone"><span class="tt">AppConfig</span>, <span class="tt">WindowConfig</span>, <span class="tt">VulkanConfig</span>, <span class="tt">UiConfig</span>, <span class="tt">DevToolsConfig</span>  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2config.html" title="Configuration API">Configuration</a>  </td><td class="markdownTableBodyNone"><a href="../../include/FlowUi/Public/configurationStructs/AppConfig.hpp">AppConfig.hpp</a>, <a href="../../include/FlowUi/Public/configurationStructs/">configuration leaves</a>  </td></tr>
+<td class="markdownTableBodyNone">Startup and operation configuration, capacities and build settings  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2config.html" title="Configuration API">Configuration</a>, <a class="el" href="flowui_configuration_glossary.html#md_docs_2api_2configuration-glossary" title="docs/api/configuration-glossary.md">field glossary</a>  </td><td class="markdownTableBodyNone"><a href="include/FlowUi/Public/configurationStructs/">configurationStructs</a>  </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone">Identities and handles  </td><td class="markdownTableBodyNone">element/window/action IDs, resource keys, texture handles, capacity target IDs  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2elements.html" title="Element API">Elements</a>, <a class="el" href="md_docs_2api_2config.html" title="Configuration API">Configuration</a>  </td><td class="markdownTableBodyNone"><a href="../../include/FlowUi/Public/identificationTypes/">identificationTypes</a>  </td></tr>
+<td class="markdownTableBodyNone">Results, errors, identities, hashing and texture references  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2values.html" title="Identities, errors, and results">Values and errors</a>, <a class="el" href="md_docs_2api_2result__handling.html" title="Results and borrowed references">handling results</a>  </td><td class="markdownTableBodyNone"><a href="include/FlowUi/Public/errorManagement/">errorManagement</a>, <a href="include/FlowUi/Public/identificationTypes/">identificationTypes</a>, <a href="include/FlowUi/Public/TextureRef.hpp">TextureRef.hpp</a>  </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone">Shared values  </td><td class="markdownTableBodyNone"><span class="tt">TextureRef</span>, <span class="tt">TextureFitMode</span>, <span class="tt">FlowUiTheme</span>  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2config.html" title="Configuration API">Configuration</a>  </td><td class="markdownTableBodyNone"><a href="../../include/FlowUi/Public/TextureRef.hpp">TextureRef.hpp</a>, <a href="../../include/FlowUi/Public/FlowUiTheme.hpp">FlowUiTheme.hpp</a>  </td></tr>
+<td class="markdownTableBodyNone">Filesystem resources and default helpers  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2resources.html" title="Resource and default helpers">Resources</a>  </td><td class="markdownTableBodyNone"><a href="include/FlowUi/Public/Resources.hpp">Resources.hpp</a>, <a href="include/FlowUi/Public/defaults/">defaults</a>  </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><span class="tt">UiManager</span>  </td><td class="markdownTableBodyNone">Clay strings/IDs, <span class="tt">imageData</span>, builders, themes, input, popups, frame state  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2ui__manager.html" title="UI Manager API">UI Manager</a>  </td><td class="markdownTableBodyNone"><a href="../../include/FlowUi/Public/managers/UiManager.hpp">UiManager.hpp</a>  </td></tr>
+<td class="markdownTableBodyNone">Color parsing, ValueOrThrow and shared configuration values  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2config.html" title="Configuration API">Configuration</a>, <a href="docs/api/result_handling.md#propagate-a-checked-result-with-valueorthrow">result propagation</a>  </td><td class="markdownTableBodyNone"><a href="include/FlowUi/Public/Color.hpp">Color.hpp</a>, <a href="include/FlowUi/Public/FlowUiTheme.hpp">FlowUiTheme.hpp</a>  </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><span class="tt">ElementManager</span> and builders  </td><td class="markdownTableBodyNone">typed definitions, invocation, window-scoped state, app-wide resources, semantic parts  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2elements.html" title="Element API">Elements</a>  </td><td class="markdownTableBodyNone"><a href="../../include/FlowUi/Public/managers/ElementManager.hpp">ElementManager.hpp</a>, <a href="../../include/FlowUi/Public/elementAuthoring/ElementBuilder.hpp">builder</a>  </td></tr>
+<td class="markdownTableBodyNone">InputSink, translators, semantic events and key conversions  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2input.html" title="Input translation API">Input translation</a>  </td><td class="markdownTableBodyNone"><a href="include/FlowUi/Public/input/InputTranslation.hpp">InputTranslation.hpp</a>  </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><span class="tt">ActionManager</span>  </td><td class="markdownTableBodyNone">app action binding, local UI recipes, invocation and availability  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2action__manager.html" title="Action Manager API">Actions</a>  </td><td class="markdownTableBodyNone"><a href="../../include/FlowUi/Public/managers/ActionManager.hpp">ActionManager.hpp</a>  </td></tr>
+<td class="markdownTableBodyNone">Clay data, IDs, frame data and interaction snapshots  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2ui__manager.html" title="UI Manager API">UI manager</a>  </td><td class="markdownTableBodyNone"><a href="include/FlowUi/Public/managers/UiManager.hpp">UiManager.hpp</a>  </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><span class="tt">ThemeManager</span>  </td><td class="markdownTableBodyNone">registration, named variants, staged frame-boundary updates  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2theme__manager.html" title="Theme Manager API">Themes</a>  </td><td class="markdownTableBodyNone"><a href="../../include/FlowUi/Public/managers/ThemeManager.hpp">ThemeManager.hpp</a>  </td></tr>
+<td class="markdownTableBodyNone">ElementManager, typed definitions, builders, contexts, state/resources and semantic parts  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2elements.html" title="Element API">Elements</a>  </td><td class="markdownTableBodyNone"><a href="include/FlowUi/Public/managers/ElementManager.hpp">ElementManager.hpp</a>, <a href="include/FlowUi/Public/elementAuthoring/">elementAuthoring</a>  </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><span class="tt">FontManager</span>  </td><td class="markdownTableBodyNone">families, faces, font and atlas resolution  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2font__manager.html" title="Font Manager API">Fonts</a>  </td><td class="markdownTableBodyNone"><a href="../../include/FlowUi/Public/managers/FontManager.hpp">FontManager.hpp</a>  </td></tr>
+<td class="markdownTableBodyNone">Actions, bindings, UI recipes, invocation, availability and typed results  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2action__manager.html" title="Action Manager API">Actions</a>  </td><td class="markdownTableBodyNone"><a href="include/FlowUi/Public/managers/ActionManager.hpp">ActionManager.hpp</a>, <a href="include/FlowUi/Public/managerStructs/ActionTypes.hpp">ActionTypes.hpp</a>  </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><span class="tt">ImageManager</span>  </td><td class="markdownTableBodyNone">stable image registration and texture lookup  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2image__manager.html" title="Image Manager API">Images</a>  </td><td class="markdownTableBodyNone"><a href="../../include/FlowUi/Public/managers/ImageManager.hpp">ImageManager.hpp</a>  </td></tr>
+<td class="markdownTableBodyNone">Theme registration, variants, staged changes and FlowUiTheme factories  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2theme__manager.html" title="Theme Manager API">Themes</a>  </td><td class="markdownTableBodyNone"><a href="include/FlowUi/Public/managers/ThemeManager.hpp">ThemeManager.hpp</a>  </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><span class="tt">IconManager</span>  </td><td class="markdownTableBodyNone">SVG registration, raster/atlas variants, texture lookup  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2icon__manager.html" title="Icon Manager API">Icons</a>  </td><td class="markdownTableBodyNone"><a href="../../include/FlowUi/Public/managers/IconManager.hpp">IconManager.hpp</a>  </td></tr>
+<td class="markdownTableBodyNone">Standard element resource constructors and slider visibility helpers  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2standard__elements.html" title="Standard element helpers">Standard elements</a>  </td><td class="markdownTableBodyNone"><a href="include/FSEL.hpp">FSEL.hpp</a>  </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><span class="tt">InputFieldManager</span>  </td><td class="markdownTableBodyNone">typed field requests, transactions, text views, focus/carets/selection  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2input__field__manager.html" title="Input Field Manager API">Input fields</a>  </td><td class="markdownTableBodyNone"><a href="../../include/FlowUi/Public/managers/InputFieldManager.hpp">InputFieldManager.hpp</a>  </td></tr>
+<td class="markdownTableBodyNone">Fonts, faces and Vulkan atlas views  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2font__manager.html" title="Font Manager API">Fonts</a>  </td><td class="markdownTableBodyNone"><a href="include/FlowUi/Public/managers/FontManager.hpp">FontManager.hpp</a>  </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><span class="tt">ShortcutManager</span>  </td><td class="markdownTableBodyNone">chord registration, scoped dispatch, retained app actions  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2shortcut__manager.html" title="Shortcut Manager API">Shortcuts</a>  </td><td class="markdownTableBodyNone"><a href="../../include/FlowUi/Public/managers/ShortcutManager.hpp">ShortcutManager.hpp</a>  </td></tr>
+<td class="markdownTableBodyNone">Images and texture lookup  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2image__manager.html" title="Image Manager API">Images</a>  </td><td class="markdownTableBodyNone"><a href="include/FlowUi/Public/managers/ImageManager.hpp">ImageManager.hpp</a>  </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><span class="tt">PopupManager</span>  </td><td class="markdownTableBodyNone">placement, measurement, overflow, dismissal, stacking  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2popup__manager.html" title="Popup Manager API">Popups</a>  </td><td class="markdownTableBodyNone"><a href="../../include/FlowUi/Public/managers/PopupManager.hpp">PopupManager.hpp</a>  </td></tr>
+<td class="markdownTableBodyNone">SVG resources and icon atlas variants  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2icon__manager.html" title="Icon Manager API">Icons</a>  </td><td class="markdownTableBodyNone"><a href="include/FlowUi/Public/managers/IconManager.hpp">IconManager.hpp</a>  </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><span class="tt">ViewPortManager</span> and <span class="tt">ViewPort</span>  </td><td class="markdownTableBodyNone">offscreen targets and Vulkan callbacks  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2viewport__manager.html" title="Viewport Manager API">Viewports</a>  </td><td class="markdownTableBodyNone"><a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">ViewPortManager.hpp</a>  </td></tr>
+<td class="markdownTableBodyNone">Text fields, transactions, views, focus, carets and selection  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2input__field__manager.html" title="Input Field Manager API">Input fields</a>  </td><td class="markdownTableBodyNone"><a href="include/FlowUi/Public/managers/InputFieldManager.hpp">InputFieldManager.hpp</a>  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">Shortcuts, scopes, dispatch and retained app actions  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2shortcut__manager.html" title="Shortcut Manager API">Shortcuts</a>  </td><td class="markdownTableBodyNone"><a href="include/FlowUi/Public/managers/ShortcutManager.hpp">ShortcutManager.hpp</a>  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">Popup measurement, placement, dismissal and stacking  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2popup__manager.html" title="Popup Manager API">Popups</a>  </td><td class="markdownTableBodyNone"><a href="include/FlowUi/Public/managers/PopupManager.hpp">PopupManager.hpp</a>  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">Offscreen targets, Vulkan callbacks and capture/target values  </td><td class="markdownTableBodyNone"><a class="el" href="md_docs_2api_2viewport__manager.html" title="Viewport Manager API">Viewports</a>  </td><td class="markdownTableBodyNone"><a href="include/FlowUi/Public/managers/ViewPortManager.hpp">ViewPortManager.hpp</a>  </td></tr>
 </table>
-<h1>Strong identities and shared values</h1>
-<p><span class="tt">FlowDefinitionID</span>, <span class="tt">FlowElementID</span>, <span class="tt">GlobalFlowID</span>, and <span class="tt">FlowElementPartID</span> represent distinct element addresses. Use <span class="tt">DefinitionID</span>, local literal names, <span class="tt">RuntimeName</span>, <span class="tt">Indexed</span>, <span class="tt">Keyed</span>, <span class="tt">Global</span>, and semantic <span class="tt">Part</span> declarations according to the intended scope. See <a href="elements.md#identity">the identity reference</a> and <a href="../../include/FlowUi/Public/identificationTypes/ElementID.hpp">ElementID.hpp</a>.</p>
-<p>Resource names use <span class="tt">ResourceKey</span>; textures use generation-checked <span class="tt">TextureHandle</span>/<span class="tt">TextureRef</span>. <span class="tt">TextureRef::fromStable(domain, key, fit, tint)</span> describes a stable lookup. Fit and tint are per-reference settings; filtering belongs to the logical texture's sampler.</p>
-<p><span class="tt">Flow_Color("#RRGGBB")</span> and <span class="tt">Flow_Color("#RRGGBBAA")</span> decode literal colors at compile time. The runtime <span class="tt">std::string_view</span> overload validates its input and can throw for invalid color text.</p>
-<p><span class="tt">Result&lt;T&gt;</span> and <span class="tt">Status</span> describe recoverable failures. Check success before dereferencing a result, and inspect <span class="tt">.error()</span> on failure. Queries, factories, and result-returning operations use <span class="tt">[[nodiscard]]</span>; callers should handle the outcome or explicitly discard it when the behavior is intentional. Only operations whose implementation supports a nonthrowing contract carry <span class="tt">noexcept</span>.</p>
-<h1>Frame and resource lifetimes</h1>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (<span class="keyword">const</span> <span class="keyword">auto</span> status = application.beginFrame(); !status) {</div>
+<h1>Borrowing and frame boundaries</h1>
+<p>App manager getters return checked results and borrowed references. <span class="tt">UiManager::actions()</span> and <span class="tt">elements()</span> are direct borrowed references; <span class="tt">ActionManager::uiActions()</span> also returns a direct borrowed reference. Builders and fluent methods are direct authoring operations and can throw; <span class="tt">draw()</span> returns <span class="tt">void</span>. Use a frame boundary to contain UI build failures:</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> status = application.runFrame([](<a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; ui, <a class="code hl_typedef" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">FlowUi::WindowId</a>) {</div>
+<div class="line">    ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">createElement</a>(<a class="code hl_variable" href="namespaceFlowUi.html#afff9af94cfd508cf8eed929c4b13eeee">FlowUi::kButton</a>, <span class="stringliteral">&quot;toolbar/save&quot;</span>)</div>
+<div class="line">        .setParameters({.label = <span class="stringliteral">&quot;Save&quot;</span>})</div>
+<div class="line">        .draw();</div>
+<div class="line">});</div>
+<div class="line"><span class="keywordflow">if</span> (!status)</div>
 <div class="line">    application.reportError(status.error());</div>
-<div class="line">    <span class="keywordflow">return</span> 1;</div>
-<div class="line">}</div>
-<div class="line"><span class="keyword">auto</span>&amp; ui = application.ui();</div>
-<div class="line">ui.createElement(FlowUi::kButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>)</div>
-<div class="line">    .setParameters({.onActivate = save_action, .label = <span class="stringliteral">&quot;Save&quot;</span>})</div>
-<div class="line">    .draw();</div>
-<div class="line"><span class="keywordflow">if</span> (<span class="keyword">const</span> <span class="keyword">auto</span> status = application.endFrame(); !status) {</div>
-<div class="line">    application.reportError(status.error());</div>
-<div class="line">    <span class="keywordflow">return</span> 1;</div>
-<div class="line">}</div>
-<div class="line"><span class="keywordflow">if</span> (<span class="keyword">const</span> <span class="keyword">auto</span> status = application.drawFrame(); !status) {</div>
-<div class="line">    application.reportError(status.error());</div>
-<div class="line">    <span class="keywordflow">return</span> 1;</div>
-<div class="line">}</div>
-</div><!-- fragment --><p><span class="tt">ui.toClayString()</span> and <span class="tt">ui.imageData()</span> return frame-owned payloads. GPU texture ownership and in-flight retirement remain with storage. <span class="tt">FieldTextView</span> borrows manager text and is invalidated by field mutation: choose <span class="tt">contiguous()</span> for a confirmed contiguous view, <span class="tt">copy()</span> for owned text, or <span class="tt">forEachChunk()</span> for traversal. Use <span class="tt">FieldConfig::mode</span> with <span class="tt">TextFieldMode::SingleLine</span>/<span class="tt">MultiLine</span> for line behavior.</p>
-<p>See <a class="el" href="md_docs_2concepts_2frame__lifecycle.html" title="Frame Lifecycle">frame lifecycle</a> and <a class="el" href="md_docs_2concepts_2managers.html" title="Managers">manager ownership</a> for complete lifetime boundaries.</p>
-<h1>Modern developer systems</h1>
-<p>Compile <span class="tt">FLOW_UI_DEV_MODE</span> and activate <span class="tt">AppConfig::dev.enabled</span> to use the dedicated developer interface. <a class="el" href="md_docs_2tutorials_2developer__mode.html" title="Developer Systems">Developer Systems</a> describes the supported workflow.</p>
-<table class="markdownTable">
-<tr class="markdownTableHead">
-<th class="markdownTableHeadNone">Service  </th><th class="markdownTableHeadNone">Access  </th><th class="markdownTableHeadNone">Contract  </th></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><span class="tt">DevTooling</span>  </td><td class="markdownTableBodyNone"><span class="tt">application.devTooling()</span>  </td><td class="markdownTableBodyNone">App-owned schema, catalogue, overrides, overlays, and baking services.  </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><span class="tt">DevSchemaRegistry</span>  </td><td class="markdownTableBodyNone"><span class="tt">devTooling().schemas()</span>  </td><td class="markdownTableBodyNone">Queue roots; publish immutable schema generations at safe points.  </td></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><span class="tt">DevCatalogues</span>  </td><td class="markdownTableBodyNone"><span class="tt">devTooling().catalogues()</span>  </td><td class="markdownTableBodyNone">Typed element/theme/action/image/icon/font/atlas metadata.  </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><span class="tt">DevOverrideEngine</span>  </td><td class="markdownTableBodyNone"><span class="tt">devTooling().overrides()</span>  </td><td class="markdownTableBodyNone">Typed changes, constraint validation, safe-point commit, effective-value capture.  </td></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><span class="tt">DevBakePipeline</span>  </td><td class="markdownTableBodyNone"><span class="tt">devTooling().bakePipeline()</span>  </td><td class="markdownTableBodyNone">Revision-checked review and durable <span class="tt">.flowchanges</span> manifests.  </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone">Monitoring  </td><td class="markdownTableBodyNone"><span class="tt">application.devMonitoring()</span>  </td><td class="markdownTableBodyNone">Timing, memory, error collection and retained reporting.  </td></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone">Window tree  </td><td class="markdownTableBodyNone"><span class="tt">application.ui(window).devTreeSnapshot()</span>  </td><td class="markdownTableBodyNone">Completed Flow/Clay tree and identity correlation.  </td></tr>
-</table>
-<p>Schema descriptors, registry, catalogues, and override types live in <span class="tt">FlowUi::devSystems::tooling</span>. Current headers are under <a href="../../include/devSystems/">devSystems</a>; the obsolete developer subsystem has been removed completely. Optional agentic evidence APIs require the additional <span class="tt">AGENTIC_WORKFLOW</span> build option and explicit runtime configuration; see <a class="el" href="md_docs_2agentic-workflow.html" title="Agentic Workflow frame evidence">agentic workflow</a>. </p>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:110</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a3ef6d75f9ad2e76294c104c4b3e25803"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Element &gt; createElement(const Element &amp;, LocalElementName localName, std::source_location sourceLocation=std::source_location::current())</div><div class="ttdoc">Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve und...</div><div class="ttdef"><b>Definition</b> UiManager.hpp:349</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a2213190865e0806b881be5624c2f3ef6"><div class="ttname"><a href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">FlowUi::WindowId</a></div><div class="ttdeci">uint64_t WindowId</div><div class="ttdoc">Stable identity of a native FlowUi window.</div><div class="ttdef"><b>Definition</b> WindowId.hpp:8</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_afff9af94cfd508cf8eed929c4b13eeee"><div class="ttname"><a href="namespaceFlowUi.html#afff9af94cfd508cf8eed929c4b13eeee">FlowUi::kButton</a></div><div class="ttdeci">constexpr Button kButton</div><div class="ttdef"><b>Definition</b> Button.hpp:139</div></div>
+</div><!-- fragment --><p><span class="tt">UiManager::toClayString()</span> and <span class="tt">imageData()</span> return direct frame-owned values and throw on operational failure. Root context <span class="tt">clayID()</span> is direct; named identity helpers remain checked. Use public <span class="tt"><a class="el" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8" title="Borrow a successful result&#39;s value, or throw FlowUiException preserving its error.">FlowUi::ValueOrThrow</a></span> for retained Results when the enclosing operation deliberately propagates failure. <span class="tt">FieldTextView</span> borrows field storage and is invalidated by mutation: <span class="tt">copy()</span> creates owned text, <span class="tt">contiguous()</span> can return no contiguous view, and <span class="tt">forEachChunk()</span> propagates visitor exceptions. Copying a texture reference or UI action never acquires its GPU resource or borrowed application data.</p>
+<h1>Optional developer access</h1>
+<p>Developer App accessors are documented with their checked types in <a class="el" href="md_docs_2api_2app.html" title="App API">App</a>. They require <span class="tt">FLOW_UI_DEV_MODE</span>; runtime activation is controlled by <span class="tt">AppConfig::dev.enabled</span>. Agentic support also requires <span class="tt">AGENTIC_WORKFLOW</span>/<span class="tt">FLOW_UI_AGENTIC_WORKFLOW</span> and its explicit configuration. The extracted facade remains App-owned. Internal storage, platform providers and backend helpers are implementation APIs.</p>
+<p>See <a class="el" href="md_docs_2tutorials_2developer__mode.html" title="Developer Systems">developer workflow</a>, <a class="el" href="md_docs_2agentic-workflow.html" title="Agentic Workflow frame evidence">agentic workflow</a>, <a class="el" href="md_docs_2concepts_2frame__lifecycle.html" title="Frame Lifecycle">frame lifecycle</a> and <a class="el" href="md_docs_2concepts_2managers.html" title="Managers">manager ownership</a> for broader workflows. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

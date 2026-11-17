@@ -13,6 +13,7 @@
 
 #include "FlowUi/Public/configurationStructs/InputConfig.hpp"
 #include "FlowUi/Public/errorManagement/Result.hpp"
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "FlowUi/Public/managerStructs/FontTypes.hpp"
 
 namespace FlowUi {
@@ -53,33 +54,112 @@ using TextChunkVisitor = std::function<void(std::string_view)>;
  */
 class FieldTextView {
 public:
-	/** Construct an empty detached view. */
+	/**
+	 * @brief Construct an empty detached text view.
+	 *
+	 * The view owns no text.
+	 *
+	 * @post The view has zero bytes and no contiguous storage.
+	 *
+	 * @code{.cpp}
+	 * FlowUi::FieldTextView textView;
+	 * const auto isEmpty = textView.empty();
+	 * @endcode
+	 */
 	FieldTextView() noexcept = default;
 
-	/** Return the byte count, or zero for a detached view. */
+	/**
+	 * @brief Read the viewed document's UTF-8 byte count.
+	 *
+	 * Valid only while the underlying field view remains alive and unmodified.
+	 *
+	 * @return Returns zero when detached.
+	 *
+	 * @code{.cpp}
+	 * const auto byteCount = value.sizeBytes();
+	 * @endcode
+	 */
 	[[nodiscard]] size_t sizeBytes() const noexcept {
 		return context_ && size_ ? size_(context_) : 0u;
 	}
-	/** Return whether the viewed field has no text bytes. */
+	/**
+	 * @brief Test whether the viewed document has zero bytes.
+	 *
+	 * Valid only while the underlying field view remains alive and unmodified.
+	 *
+	 * @return A detached view is empty.
+	 *
+	 * @code{.cpp}
+	 * const auto isEmpty = value.empty();
+	 * @endcode
+	 */
 	[[nodiscard]] bool empty() const noexcept { return sizeBytes() == 0u; }
-	/** Borrow contiguous storage when available; returns nullopt for detached or noncontiguous storage. */
+	/**
+	 * @brief Borrow contiguous text storage if available.
+	 *
+	 * The borrowed bytes are invalidated by field mutation/removal or manager destruction; do not assume multiline text is contiguous.
+	 *
+	 * @return Returns nullopt for detached or noncontiguous text. A present empty string_view is valid empty contiguous storage.
+	 *
+	 * @code{.cpp}
+	 * const auto contiguousText = value.contiguous();
+	 * @endcode
+	 */
 	[[nodiscard]] std::optional<std::string_view> contiguous() const noexcept {
 		return context_ && contiguous_ ? contiguous_(context_) : std::nullopt;
 	}
-	/** Copy the full document into caller-owned contiguous storage. */
-	[[nodiscard]] std::string copy() const {
+	/**
+	 * @brief Copy a full document or byte range to caller-owned text.
+	 *
+	 * The range is half-open in UTF-8 bytes. Copy while the view is valid; the resulting string survives later field mutations.
+	 *
+	 * @return Success contains an owning std::string. Bounds are clamped to the document; a detached view successfully copies an empty string. Allocation/storage failures are errors.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * auto result = value.copy();
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * std::string text = std::move(*result);
+	 * @endcode
+	 */
+	[[nodiscard]] Result<std::string> copy() const noexcept {
 		return copy(TextRange{0, sizeBytes()});
 	}
 	/**
-	 * Copy a byte interval into caller-owned storage; bounds are clamped to the document and the
-	 * detached view yields an empty string.
+	 * @brief Copy a full document or byte range to caller-owned text.
+	 *
+	 * The range is half-open in UTF-8 bytes. Copy while the view is valid; the resulting string survives later field mutations.
+	 *
+	 * @return Success contains an owning std::string. Bounds are clamped to the document; a detached view successfully copies an empty string. Allocation/storage failures are errors.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * auto result = value.copy(FlowUi::TextRange{0, value.sizeBytes()});
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * std::string text = std::move(*result);
+	 * @endcode
 	 */
-	[[nodiscard]] std::string copy(TextRange range) const {
+	[[nodiscard]] Result<std::string> copy(TextRange range) const noexcept try {
 		return context_ && copy_ ? copy_(context_, range) : std::string{};
+	} catch (...) {
+		return unexpectedError(detail::currentExceptionError(ErrorSite::InputCopy));
 	}
 	/**
-	 * Visit the chunks overlapping range synchronously after clamping its bounds; an empty range or
-	 * detached view makes no calls.
+	 * @brief Synchronously visit text chunks overlapping a byte range.
+	 *
+	 * Bounds are clamped. Chunks are borrowed only during each call; copy to retain them and do not mutate the field while visiting. Visitor exceptions propagate unchanged; earlier visitor side effects remain visible.
+	 *
+	 * @note Makes no callbacks for a detached view or empty clamped range.
+	 * @throws Visitor exceptions propagate unchanged.
+	 *
+	 * @code{.cpp}
+	 * std::string ownedText;
+	 * value.forEachChunk(FlowUi::TextRange{0, value.sizeBytes()}, [&ownedText](std::string_view chunk) { ownedText.append(chunk); });
+	 * @endcode
 	 */
 	void forEachChunk(TextRange range, const TextChunkVisitor& visitor) const {
 		if (context_ && forEachChunk_) forEachChunk_(context_, range, visitor);
@@ -115,9 +195,29 @@ struct FieldHandle {
 	/** Frame epoch that must match the current submission frame. */
 	uint64_t frameEpoch = 0;
 
-	/** Return whether the token has a field slot; this does not validate its epoch. */
+	/**
+	 * @brief Test whether the opaque handle contains a field slot.
+	 *
+	 * Only submitTextSpan() checks whether a handle is acceptable for the current frame.
+	 *
+	 * @return Returns value != 0; it does not validate frameEpoch or current field existence.
+	 *
+	 * @code{.cpp}
+	 * const auto valid = static_cast<bool>(value);
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr explicit operator bool() const noexcept { return value != 0; }
-	/** Compare both field identity and frame epoch. */
+	/**
+	 * @brief Compare two field tokens by slot identity and frame epoch.
+	 *
+	 * Equality does not establish that either token is accepted by the current frame.
+	 *
+	 * @return Returns true only when both value and frameEpoch match.
+	 *
+	 * @code{.cpp}
+	 * const auto sameHandle = value == other;
+	 * @endcode
+	 */
 	friend constexpr bool operator==(FieldHandle, FieldHandle) noexcept = default;
 };
 

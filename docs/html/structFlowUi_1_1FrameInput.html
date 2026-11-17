@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,7 +107,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Per-frame input snapshot consumed by FlowUi managers and elements.  
+<p>Per-frame input snapshot consumed by <a class="el" href="namespaceFlowUi.html">FlowUi</a> managers and elements.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="InputTypes_8hpp_source.html">InputTypes.hpp</a>&gt;</code></p>
@@ -117,9 +117,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:aa674bc1fccd2120042ffef7e9b323e50" id="r_aa674bc1fccd2120042ffef7e9b323e50"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#aa674bc1fccd2120042ffef7e9b323e50">dt</a> = 0.0</td></tr>
 <tr class="memdesc:aa674bc1fccd2120042ffef7e9b323e50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Delta time for the frame in seconds.  <br /></td></tr>
 <tr class="memitem:a9a75539258d14d48e716e4fb5096fd9c" id="r_a9a75539258d14d48e716e4fb5096fd9c"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#a9a75539258d14d48e716e4fb5096fd9c">mouseX</a> = 0.0f</td></tr>
-<tr class="memdesc:a9a75539258d14d48e716e4fb5096fd9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mouse X position in FlowUi layout coordinates.  <br /></td></tr>
+<tr class="memdesc:a9a75539258d14d48e716e4fb5096fd9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mouse X position in <a class="el" href="namespaceFlowUi.html">FlowUi</a> layout coordinates.  <br /></td></tr>
 <tr class="memitem:af26a7a1a649fe61f64afb3bf5e346563" id="r_af26a7a1a649fe61f64afb3bf5e346563"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#af26a7a1a649fe61f64afb3bf5e346563">mouseY</a> = 0.0f</td></tr>
-<tr class="memdesc:af26a7a1a649fe61f64afb3bf5e346563"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mouse Y position in FlowUi layout coordinates.  <br /></td></tr>
+<tr class="memdesc:af26a7a1a649fe61f64afb3bf5e346563"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mouse Y position in <a class="el" href="namespaceFlowUi.html">FlowUi</a> layout coordinates.  <br /></td></tr>
 <tr class="memitem:a8a48da6f7962249c939d6a1ab0c657a4" id="r_a8a48da6f7962249c939d6a1ab0c657a4"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a8a48da6f7962249c939d6a1ab0c657a4">pointerInside</a> = false</td></tr>
 <tr class="memitem:ab8e79ecba91397b7b7a86ab483ad932c" id="r_ab8e79ecba91397b7b7a86ab483ad932c"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ab8e79ecba91397b7b7a86ab483ad932c">windowFocused</a> = true</td></tr>
 <tr class="memitem:ad452ab0c1a10ba4938ed4cc235dadc38" id="r_ad452ab0c1a10ba4938ed4cc235dadc38"><td class="memItemLeft">std::array&lt; bool, <a class="el" href="#ac10ce8d3397c4042dec7d0e4a1a6d02a">kMouseButtonCount</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ad452ab0c1a10ba4938ed4cc235dadc38">mouseDown</a> {}</td></tr>
@@ -154,9 +154,9 @@ Static Public Attributes</h2></td></tr>
 <tr class="memdesc:a729984290f7d7b3d597cd8352f842e9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of tracked keyboard key slots.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Per-frame input snapshot consumed by FlowUi managers and elements. </p>
-<p><a class="el" href="structFlowUi_1_1FrameInput.html" title="Per-frame input snapshot consumed by FlowUi managers and elements.">FrameInput</a> is the normalized input state for one FlowUi frame. <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> builds it from the active window backend, scales pointer and scroll values into FlowUi layout space, and then passes it through <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> to input fields, shortcuts, and custom element interaction callbacks.</p>
-<p>Keyboard state is stored as backend key slots. In the default backend those slots are GLFW-compatible key codes. Text input is stored separately as Unicode codepoints received during the frame. </p>
+<div class="textblock"><p>Per-frame input snapshot consumed by <a class="el" href="namespaceFlowUi.html">FlowUi</a> managers and elements. </p>
+<p><a class="el" href="structFlowUi_1_1FrameInput.html" title="Per-frame input snapshot consumed by FlowUi managers and elements.">FrameInput</a> is the normalized input state for one <a class="el" href="namespaceFlowUi.html">FlowUi</a> frame. <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> builds it from the platform provider and semantic input engine, scales pointer and scroll values into <a class="el" href="namespaceFlowUi.html">FlowUi</a> layout space, and then passes it through <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> to input fields, shortcuts, and custom element interaction callbacks.</p>
+<p>Keyboard state uses stable <a class="el" href="namespaceFlowUi.html">FlowUi</a> <a class="el" href="namespaceFlowUi.html#a118c8cb92428d18980798bcb00f97d58">Key</a> slots. Text input is stored separately as Unicode codepoints received during the frame. </p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a3523d8a4f3739473e893ebcf8d1849dc" name="a3523d8a4f3739473e893ebcf8d1849dc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3523d8a4f3739473e893ebcf8d1849dc">&#9670;&#160;</a></span>droppedTextInputCount</h2>
@@ -203,7 +203,7 @@ Static Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Keyboard key down states for the current frame. </p>
-<p>Each entry is true while the corresponding backend key slot is held. For command shortcuts, prefer <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a> unless the element needs direct low-level key state. </p>
+<p>Each entry is true while the corresponding <a class="el" href="namespaceFlowUi.html">FlowUi</a> key slot is held. For command shortcuts, prefer <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a> unless the element needs direct low-level key state. </p>
 
 </div>
 </div>
@@ -228,7 +228,7 @@ Static Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Number of tracked keyboard key slots. </p>
-<p>Key indices are backend key codes. Code that reads keyDown should bounds check against this value before indexing. </p>
+<p><a class="el" href="namespaceFlowUi.html#a118c8cb92428d18980798bcb00f97d58">Key</a> indices are <a class="el" href="namespaceFlowUi.html">FlowUi</a> <a class="el" href="namespaceFlowUi.html#aa2bcc116633a6972a31522e76cbefdd8">keyCode(Key)</a> values. Code that reads keyDown should bounds check against this value before indexing. </p>
 
 </div>
 </div>
@@ -286,7 +286,7 @@ Static Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Mouse X position in FlowUi layout coordinates. </p>
+<p>Mouse X position in <a class="el" href="namespaceFlowUi.html">FlowUi</a> layout coordinates. </p>
 <p>This value has already been adjusted from window input space into the UI coordinate space used by Clay layout and element hit testing. </p>
 
 </div>
@@ -303,7 +303,7 @@ Static Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Mouse Y position in FlowUi layout coordinates. </p>
+<p>Mouse Y position in <a class="el" href="namespaceFlowUi.html">FlowUi</a> layout coordinates. </p>
 <p>This value has already been adjusted from window input space into the UI coordinate space used by Clay layout and element hit testing. </p>
 
 </div>
@@ -405,7 +405,7 @@ Static Public Attributes</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1FrameInput.html">FrameInput</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1FrameInput.html">FrameInput</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

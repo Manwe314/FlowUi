@@ -5,11 +5,12 @@
 #include "FlowUi/Public/TextureRef.hpp"
 #include "FlowUi/Private/TypeOperations.hpp"
 #include <algorithm>
+#include <stdexcept>
 #include <utility>
 
 namespace FlowUi::devSystems::tooling {
 
-DevOwnedValue::DevOwnedValue(const DevOwnedValue& other) noexcept {
+DevOwnedValue::DevOwnedValue(const DevOwnedValue& other) {
 	if (!other)
 		return;
 	const tooling::DevTypeSchema schema{
@@ -17,25 +18,24 @@ DevOwnedValue::DevOwnedValue(const DevOwnedValue& other) noexcept {
 		.size = other.size_,
 		.alignment = other.alignment_,
 	};
-	if (initializeCopy(schema, *other.operations_, other.data()) !=
-		tooling::DevValueOperationStatus::Success)
-		return;
 	try {
+		if (initializeCopy(schema, *other.operations_, other.data()) !=
+			tooling::DevValueOperationStatus::Success)
+			throw std::runtime_error("Cannot copy the reflected payload.");
 		if (other.retained_text_)
 			for (const auto& reference : *other.retained_text_) {
-				auto& field = *reinterpret_cast<std::string_view*>(static_cast<std::byte*>(data()) +
-																   reference.offset);
-				if (!retain_text_reference(field, std::string(field))) {
-					reset();
-					return;
-				}
+				auto& field = *reinterpret_cast<std::string_view*>(
+					static_cast<std::byte*>(data()) + reference.offset);
+				if (!retain_text_reference(field, std::string(field)))
+					throw std::bad_alloc{};
 			}
 	} catch (...) {
 		reset();
+		throw;
 	}
 }
 
-DevOwnedValue& DevOwnedValue::operator=(const DevOwnedValue& other) noexcept {
+DevOwnedValue& DevOwnedValue::operator=(const DevOwnedValue& other) {
 	if (this == &other)
 		return *this;
 	DevOwnedValue replacement(other);
@@ -56,11 +56,11 @@ DevOwnedValue& DevOwnedValue::operator=(DevOwnedValue&& other) noexcept {
 }
 
 const void* DevOwnedValue::data() const noexcept {
-	return heap_ ? allocation_ : inline_.data();
+	return heap_ ? allocation_.get() : inline_.data();
 }
 
 void* DevOwnedValue::data() noexcept {
-	return heap_ ? allocation_ : inline_.data();
+	return heap_ ? allocation_.get() : inline_.data();
 }
 
 std::size_t DevOwnedValue::heapBytes() const noexcept {
@@ -83,11 +83,8 @@ std::size_t DevOwnedValue::heapBytes() const noexcept {
 void DevOwnedValue::reset() noexcept {
 	if (operations_)
 		operations_->destroy(data());
-	if (heap_ && allocation_) {
-		::operator delete(allocation_, std::align_val_t{alignment_});
-	}
+	allocation_.reset();
 	retained_text_.reset();
-	allocation_ = nullptr;
 	operations_ = nullptr;
 	size_ = 0;
 	alignment_ = 0;
@@ -165,48 +162,44 @@ tooling::DevValueOperationStatus DevOwnedValue::copyFrom(const tooling::DevSchem
 	if (!operations || operations->type != typeSchema->id) {
 		return tooling::DevValueOperationStatus::Unsupported;
 	}
-	DevOwnedValue replacement;
-	const tooling::DevValueOperationStatus status =
-		replacement.initializeCopy(*typeSchema, *operations, source);
-	if (status == tooling::DevValueOperationStatus::Success) {
-		if (!replacement.retain_schema_text_references(schema, type))
-			return tooling::DevValueOperationStatus::Failed;
-		destination = std::move(replacement);
+	try {
+		DevOwnedValue replacement;
+		const tooling::DevValueOperationStatus status =
+			replacement.initializeCopy(*typeSchema, *operations, source);
+		if (status == tooling::DevValueOperationStatus::Success) {
+			if (!replacement.retain_schema_text_references(schema, type))
+				return tooling::DevValueOperationStatus::Failed;
+			destination = std::move(replacement);
+		}
+		return status;
+	} catch (...) {
+		return tooling::DevValueOperationStatus::Failed;
 	}
-	return status;
 }
 
 tooling::DevValueOperationStatus
 DevOwnedValue::initializeCopy(const tooling::DevTypeSchema& schema,
-							  const tooling::DevTypeOps& operations, const void* source) noexcept {
+	const tooling::DevTypeOps& operations, const void* source) {
 	if (source == nullptr)
 		return tooling::DevValueOperationStatus::NullSource;
-	if (!operations.copyConstruct || !operations.destroy || schema.size == 0 ||
-		schema.alignment == 0) {
+	if ((!operations.copyConstruct && !operations.copyConstructOrThrow) ||
+		!operations.destroy || schema.size == 0 || schema.alignment == 0) {
 		return tooling::DevValueOperationStatus::Unsupported;
 	}
 
 	size_ = schema.size;
 	alignment_ = schema.alignment;
-	heap_ = size_ > InlineBytes || alignment_ > alignof(std::max_align_t);
+	heap_ = size_ > InlineBytes || alignment_ > alignof(std::max_align_t) ||
+		!operations.moveConstructNoexcept;
 	if (heap_) {
-		try {
-			allocation_ = ::operator new(size_, std::align_val_t{alignment_});
-		} catch (...) {
-			allocation_ = nullptr;
-			operations_ = nullptr;
-			return tooling::DevValueOperationStatus::Failed;
-		}
+		allocation_.get_deleter().alignment = alignment_;
+		allocation_.reset(static_cast<std::byte*>(::operator new(size_, std::align_val_t{alignment_})));
 	}
-	const tooling::DevValueOperationStatus status = operations.copyConstruct(source, data());
+	const tooling::DevValueOperationStatus status = operations.copyConstructOrThrow
+		? (operations.copyConstructOrThrow(source, data()), tooling::DevValueOperationStatus::Success)
+		: operations.copyConstruct(source, data());
 	if (status != tooling::DevValueOperationStatus::Success) {
-		if (heap_ && allocation_) {
-			::operator delete(allocation_, std::align_val_t{alignment_});
-		}
-		allocation_ = nullptr;
-		size_ = 0;
-		alignment_ = 0;
-		heap_ = false;
+		reset();
 		return status;
 	}
 	operations_ = &operations;
@@ -217,12 +210,11 @@ void DevOwnedValue::moveFrom(DevOwnedValue&& other) noexcept {
 	if (!other)
 		return;
 	if (other.heap_) {
-		allocation_ = other.allocation_;
+		allocation_ = std::move(other.allocation_);
 		operations_ = other.operations_;
 		size_ = other.size_;
 		alignment_ = other.alignment_;
 		heap_ = true;
-		other.allocation_ = nullptr;
 		other.operations_ = nullptr;
 		other.size_ = 0;
 		other.alignment_ = 0;
@@ -231,35 +223,13 @@ void DevOwnedValue::moveFrom(DevOwnedValue&& other) noexcept {
 		return;
 	}
 
-	const tooling::DevTypeSchema schema{
-		.id = other.type(),
-		.size = other.size_,
-		.alignment = other.alignment_,
-	};
-	if (initializeMove(schema, *other.operations_, other.data()) ==
-		tooling::DevValueOperationStatus::Success) {
-		retained_text_ = std::move(other.retained_text_);
-		other.reset();
-	}
-}
-
-tooling::DevValueOperationStatus
-DevOwnedValue::initializeMove(const tooling::DevTypeSchema& schema,
-							  const tooling::DevTypeOps& operations, void* source) noexcept {
-	if (!operations.moveConstruct)
-		return initializeCopy(schema, operations, source);
-	size_ = schema.size;
-	alignment_ = schema.alignment;
+	other.operations_->moveConstructNoexcept(other.data(), inline_.data());
+	size_ = other.size_;
+	alignment_ = other.alignment_;
+	operations_ = other.operations_;
 	heap_ = false;
-	const tooling::DevValueOperationStatus status =
-		operations.moveConstruct(source, inline_.data());
-	if (status != tooling::DevValueOperationStatus::Success) {
-		size_ = 0;
-		alignment_ = 0;
-		return status;
-	}
-	operations_ = &operations;
-	return tooling::DevValueOperationStatus::Success;
+	retained_text_ = std::move(other.retained_text_);
+	other.reset();
 }
 
 } // namespace FlowUi::devSystems::tooling

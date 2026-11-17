@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
@@ -20,7 +21,7 @@ int main() {
 	config.window.width = 1200;
 	config.dev.excludeInternalDevElementsFromCapture = false;
 	config.vk.enableValidation = true;
-	auto app = makeApplication(config);
+	auto app = ::FlowUi::test::requireValue(makeApplication(config));
 	DevInterfaceState session;
 	session.activeTab = static_cast<uint64_t>(DevInterfaceTab::Performance);
 	constexpr auto header_id = Global<kDevContentHeader>("export.test.header");
@@ -30,15 +31,15 @@ int main() {
 	const auto draw = [&](int pointer_event = 0) {
 		assert(app.beginFrame());
 		auto& interaction =
-			const_cast<InteractionSnapshot&>(app.ui().getPreviousFramesInteraction());
+			const_cast<InteractionSnapshot&>(::FlowUi::test::requireValue(app.ui()).get().getPreviousFramesInteraction());
 		interaction = {};
-		auto& input = const_cast<FrameInput&>(app.ui().getCurrentFrameInput());
+		auto& input = const_cast<FrameInput&>(::FlowUi::test::requireValue(app.ui()).get().getCurrentFrameInput());
 		input.windowFocused = true;
 		input.mouseDown = {};
 		input.mouseX = -10;
 		input.mouseY = -10;
 		if (pointer_event) {
-			const auto clay_id = app.ui().toClayEID(export_id).id;
+			const auto clay_id = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(export_id).id;
 			interaction.hoveredElementIds.emplace_back(clay_id);
 			if (pointer_event == 1) {
 				interaction.pressedElementIds.emplace_back(clay_id);
@@ -49,7 +50,7 @@ int main() {
 		Clay_ElementDeclaration root{};
 		root.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
 		CLAY(CLAY_ID("export-verification"), root) {
-			app.ui()
+			::FlowUi::test::requireValue(app.ui()).get()
 				.createElement(kDevContentHeader, header_id)
 				.setParameters({&app, &session})
 				.draw();
@@ -58,8 +59,8 @@ int main() {
 		assert(app.drawFrame());
 	};
 	const auto has_export_content = [&](std::string_view label) {
-		const auto& tree = app.ui().devTreeSnapshot();
-		const auto control = std::ranges::find(tree.clay.nodes, app.ui().toClayEID(export_id).id,
+		const auto& tree = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot();
+		const auto control = std::ranges::find(tree.clay.nodes, ::FlowUi::test::requireValue(app.ui()).get().toClayEID(export_id).id,
 											   &tooling::DevClayNode::clayId);
 		if (control == tree.clay.nodes.end() || control->bounds.width <= 0 ||
 			control->bounds.height <= 0)
@@ -88,7 +89,7 @@ int main() {
 	assert(has_export_content("Export"));
 	click();
 	assert(session.performance_export_generation == 0 && session.performance_export_path.empty());
-	auto& reporting = app.devMonitoring().timingReporting();
+	auto& reporting = ::FlowUi::test::requireValue(app.devMonitoring()).get().timingReporting();
 	assert(reporting.begin_capture(1) == 1);
 	reporting.admit_tick(1, 100);
 	reporting.note_tick_boundary(2, 200);
@@ -99,7 +100,7 @@ int main() {
 	assert(has_export_content("Export"));
 	click();
 	assert(session.performance_export_generation == 1 && has_export_content("Exported"));
-	const auto path = path_from_utf8(session.performance_export_path);
+	const auto path = ::FlowUi::test::requireValue(path_from_utf8(session.performance_export_path));
 	assert(path.parent_path() == ::FlowUi::detail::executable_directory());
 	assert(path.filename().string().starts_with("performance-capture-1-") &&
 		   path.extension() == ".csv");
@@ -129,5 +130,5 @@ int main() {
 	assert(session.performance_export_path != saved_path);
 	exported.close();
 	std::filesystem::remove(path);
-	std::filesystem::remove(path_from_utf8(session.performance_export_path));
+	std::filesystem::remove(::FlowUi::test::requireValue(path_from_utf8(session.performance_export_path)));
 }

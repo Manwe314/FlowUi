@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,37 +106,305 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevErrorRecorder Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevErrorRecorder_8hpp_source.html">DevErrorRecorder.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a50a62d275a3dfe394050d9ae42c5502d" id="r_a50a62d275a3dfe394050d9ae42c5502d"><td class="memItemLeft"><a id="a50a62d275a3dfe394050d9ae42c5502d" name="a50a62d275a3dfe394050d9ae42c5502d"></a>
-&#160;</td><td class="memItemRight"><b>DevErrorRecorder</b> (const DevErrorRecorder &amp;)=delete</td></tr>
-<tr class="memitem:aec95f0742dbb3e3bebb582340176fc04" id="r_aec95f0742dbb3e3bebb582340176fc04"><td class="memItemLeft"><a id="aec95f0742dbb3e3bebb582340176fc04" name="aec95f0742dbb3e3bebb582340176fc04"></a>
-DevErrorRecorder &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const DevErrorRecorder &amp;)=delete</td></tr>
-<tr class="memitem:ad1fade3f66807b0cf64a1098223d658b" id="r_ad1fade3f66807b0cf64a1098223d658b"><td class="memItemLeft"><a id="ad1fade3f66807b0cf64a1098223d658b" name="ad1fade3f66807b0cf64a1098223d658b"></a>
-void&#160;</td><td class="memItemRight"><b>setContext</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorContext.html">DevErrorContext</a> &amp;context) noexcept</td></tr>
-<tr class="memitem:a825cb5590ce1a2c9c6825d67226fd911" id="r_a825cb5590ce1a2c9c6825d67226fd911"><td class="memItemLeft"><a id="a825cb5590ce1a2c9c6825d67226fd911" name="a825cb5590ce1a2c9c6825d67226fd911"></a>
-void&#160;</td><td class="memItemRight"><b>clearFrameContext</b> () noexcept</td></tr>
-<tr class="memitem:a21c3d3643ff1c12234e2b241f94b3f11" id="r_a21c3d3643ff1c12234e2b241f94b3f11"><td class="memItemLeft"><a id="a21c3d3643ff1c12234e2b241f94b3f11" name="a21c3d3643ff1c12234e2b241f94b3f11"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorContext.html">DevErrorContext</a>&#160;</td><td class="memItemRight"><b>context</b> () const noexcept</td></tr>
-<tr class="memitem:af0685f9bb2357ba409872e9a9fe65bee" id="r_af0685f9bb2357ba409872e9a9fe65bee"><td class="memItemLeft"><a id="af0685f9bb2357ba409872e9a9fe65bee" name="af0685f9bb2357ba409872e9a9fe65bee"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>trackId</b> () const noexcept</td></tr>
-<tr class="memitem:a0d5c6c48e20dc93c110a7b6589f492cf" id="r_a0d5c6c48e20dc93c110a7b6589f492cf"><td class="memItemLeft"><a id="a0d5c6c48e20dc93c110a7b6589f492cf" name="a0d5c6c48e20dc93c110a7b6589f492cf"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>trackName</b> () const noexcept</td></tr>
-<tr class="memitem:afff2939396308ade083a32f118b9118a" id="r_afff2939396308ade083a32f118b9118a"><td class="memItemLeft"><a id="afff2939396308ade083a32f118b9118a" name="afff2939396308ade083a32f118b9118a"></a>
-void&#160;</td><td class="memItemRight"><b>noteSuppressed</b> () noexcept</td></tr>
-<tr class="memitem:a1098a4a7a7322d22b77254c256297ed3" id="r_a1098a4a7a7322d22b77254c256297ed3"><td class="memItemLeft"><a id="a1098a4a7a7322d22b77254c256297ed3" name="a1098a4a7a7322d22b77254c256297ed3"></a>
-void&#160;</td><td class="memItemRight"><b>noteRecursive</b> () noexcept</td></tr>
-<tr class="memitem:a48cca44bc9c73f4c844a04bf8c2e620a" id="r_a48cca44bc9c73f4c844a04bf8c2e620a"><td class="memItemLeft"><a id="a48cca44bc9c73f4c844a04bf8c2e620a" name="a48cca44bc9c73f4c844a04bf8c2e620a"></a>
-void&#160;</td><td class="memItemRight"><b>noteNativeTextTruncation</b> () noexcept</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a689bca0e79c664f9d91f50d6aa4c18a0" id="r_a689bca0e79c664f9d91f50d6aa4c18a0"><td class="memItemLeft"><a id="a689bca0e79c664f9d91f50d6aa4c18a0" name="a689bca0e79c664f9d91f50d6aa4c18a0"></a>
-class&#160;</td><td class="memItemRight"><b>DevErrorMonitoring</b></td></tr>
-<tr class="memitem:a0a3295dd778f02df17705fde1c0e62da" id="r_a0a3295dd778f02df17705fde1c0e62da"><td class="memItemLeft"><a id="a0a3295dd778f02df17705fde1c0e62da" name="a0a3295dd778f02df17705fde1c0e62da"></a>
-class&#160;</td><td class="memItemRight"><b>DevErrorThreadAttachment</b></td></tr>
+<tr class="memitem:ab56fef5ee301cf53deea9c579553f975" id="r_ab56fef5ee301cf53deea9c579553f975"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ab56fef5ee301cf53deea9c579553f975">~DevErrorRecorder</a> ()</td></tr>
+<tr class="memitem:a50a62d275a3dfe394050d9ae42c5502d" id="r_a50a62d275a3dfe394050d9ae42c5502d"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a50a62d275a3dfe394050d9ae42c5502d">DevErrorRecorder</a> (const DevErrorRecorder &amp;)=delete</td></tr>
+<tr class="memitem:aec95f0742dbb3e3bebb582340176fc04" id="r_aec95f0742dbb3e3bebb582340176fc04"><td class="memItemLeft"><a class="el" href="#a50a62d275a3dfe394050d9ae42c5502d">DevErrorRecorder</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#aec95f0742dbb3e3bebb582340176fc04">operator=</a> (const <a class="el" href="#a50a62d275a3dfe394050d9ae42c5502d">DevErrorRecorder</a> &amp;)=delete</td></tr>
+<tr class="memitem:ad1fade3f66807b0cf64a1098223d658b" id="r_ad1fade3f66807b0cf64a1098223d658b"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ad1fade3f66807b0cf64a1098223d658b">setContext</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorContext.html">DevErrorContext</a> &amp;<a class="el" href="#a21c3d3643ff1c12234e2b241f94b3f11">context</a>) noexcept</td></tr>
+<tr class="memitem:a825cb5590ce1a2c9c6825d67226fd911" id="r_a825cb5590ce1a2c9c6825d67226fd911"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a825cb5590ce1a2c9c6825d67226fd911">clearFrameContext</a> () noexcept</td></tr>
+<tr class="memitem:a21c3d3643ff1c12234e2b241f94b3f11" id="r_a21c3d3643ff1c12234e2b241f94b3f11"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorContext.html">DevErrorContext</a>&#160;</td><td class="memItemRight"><a class="el" href="#a21c3d3643ff1c12234e2b241f94b3f11">context</a> () const noexcept</td></tr>
+<tr class="memitem:af0685f9bb2357ba409872e9a9fe65bee" id="r_af0685f9bb2357ba409872e9a9fe65bee"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#af0685f9bb2357ba409872e9a9fe65bee">trackId</a> () const noexcept</td></tr>
+<tr class="memitem:a0d5c6c48e20dc93c110a7b6589f492cf" id="r_a0d5c6c48e20dc93c110a7b6589f492cf"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a0d5c6c48e20dc93c110a7b6589f492cf">trackName</a> () const noexcept</td></tr>
+<tr class="memitem:afff2939396308ade083a32f118b9118a" id="r_afff2939396308ade083a32f118b9118a"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#afff2939396308ade083a32f118b9118a">noteSuppressed</a> () noexcept</td></tr>
+<tr class="memitem:a1098a4a7a7322d22b77254c256297ed3" id="r_a1098a4a7a7322d22b77254c256297ed3"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a1098a4a7a7322d22b77254c256297ed3">noteRecursive</a> () noexcept</td></tr>
+<tr class="memitem:a48cca44bc9c73f4c844a04bf8c2e620a" id="r_a48cca44bc9c73f4c844a04bf8c2e620a"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a48cca44bc9c73f4c844a04bf8c2e620a">noteNativeTextTruncation</a> () noexcept</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Thread-local error context and producer counters managed by <a class="el" href="classFlowUi_1_1devSystems_1_1DevErrorMonitoring.html">DevErrorMonitoring</a>. Use the attached recorder on its producer thread. </p>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="ab56fef5ee301cf53deea9c579553f975" name="ab56fef5ee301cf53deea9c579553f975"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab56fef5ee301cf53deea9c579553f975">&#9670;&#160;</a></span>~DevErrorRecorder()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevErrorRecorder::~DevErrorRecorder </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Release owned monitoring state after dependent recorders, attachments and scopes are finished. </p>
+
+</div>
+</div>
+<a id="a50a62d275a3dfe394050d9ae42c5502d" name="a50a62d275a3dfe394050d9ae42c5502d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a50a62d275a3dfe394050d9ae42c5502d">&#9670;&#160;</a></span>DevErrorRecorder()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevErrorRecorder::DevErrorRecorder </td>
+          <td>(</td>
+          <td class="paramtype">const DevErrorRecorder &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copying is disabled to preserve ownership and producer identity. </p>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a825cb5590ce1a2c9c6825d67226fd911" name="a825cb5590ce1a2c9c6825d67226fd911"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a825cb5590ce1a2c9c6825d67226fd911">&#9670;&#160;</a></span>clearFrameContext()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevErrorRecorder::clearFrameContext </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Clear window-frame attribution for subsequent producer records. </p>
+
+</div>
+</div>
+<a id="a21c3d3643ff1c12234e2b241f94b3f11" name="a21c3d3643ff1c12234e2b241f94b3f11"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a21c3d3643ff1c12234e2b241f94b3f11">&#9670;&#160;</a></span>context()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorContext.html">DevErrorContext</a> FlowUi::devSystems::DevErrorRecorder::context </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return a copy of this producer's current diagnostic attribution. </p>
+
+</div>
+</div>
+<a id="a48cca44bc9c73f4c844a04bf8c2e620a" name="a48cca44bc9c73f4c844a04bf8c2e620a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a48cca44bc9c73f4c844a04bf8c2e620a">&#9670;&#160;</a></span>noteNativeTextTruncation()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevErrorRecorder::noteNativeTextTruncation </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Increment the producer counter for bounded native text truncation. </p>
+
+</div>
+</div>
+<a id="a1098a4a7a7322d22b77254c256297ed3" name="a1098a4a7a7322d22b77254c256297ed3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1098a4a7a7322d22b77254c256297ed3">&#9670;&#160;</a></span>noteRecursive()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevErrorRecorder::noteRecursive </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Increment the producer counter for a recursive diagnostic call. </p>
+
+</div>
+</div>
+<a id="afff2939396308ade083a32f118b9118a" name="afff2939396308ade083a32f118b9118a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afff2939396308ade083a32f118b9118a">&#9670;&#160;</a></span>noteSuppressed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevErrorRecorder::noteSuppressed </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Increment the producer counter for a diagnostic suppressed by capture policy. </p>
+
+</div>
+</div>
+<a id="aec95f0742dbb3e3bebb582340176fc04" name="aec95f0742dbb3e3bebb582340176fc04"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aec95f0742dbb3e3bebb582340176fc04">&#9670;&#160;</a></span>operator=()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="#a50a62d275a3dfe394050d9ae42c5502d">DevErrorRecorder</a> &amp; FlowUi::devSystems::DevErrorRecorder::operator= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="#a50a62d275a3dfe394050d9ae42c5502d">DevErrorRecorder</a> &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copying is disabled to preserve ownership and producer identity. </p>
+
+</div>
+</div>
+<a id="ad1fade3f66807b0cf64a1098223d658b" name="ad1fade3f66807b0cf64a1098223d658b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad1fade3f66807b0cf64a1098223d658b">&#9670;&#160;</a></span>setContext()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevErrorRecorder::setContext </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorContext.html">DevErrorContext</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>context</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy application, frame and entity attribution used by subsequent diagnostic records on this producer. </p>
+
+</div>
+</div>
+<a id="af0685f9bb2357ba409872e9a9fe65bee" name="af0685f9bb2357ba409872e9a9fe65bee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af0685f9bb2357ba409872e9a9fe65bee">&#9670;&#160;</a></span>trackId()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::DevErrorRecorder::trackId </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return this producer track identity. </p>
+
+</div>
+</div>
+<a id="a0d5c6c48e20dc93c110a7b6589f492cf" name="a0d5c6c48e20dc93c110a7b6589f492cf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d5c6c48e20dc93c110a7b6589f492cf">&#9670;&#160;</a></span>trackName()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::devSystems::DevErrorRecorder::trackName </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Borrow this producer track name; the owner retains its storage. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/errors/<a class="el" href="DevErrorRecorder_8hpp_source.html">DevErrorRecorder.hpp</a></li>
 </ul>
@@ -153,7 +421,7 @@ class&#160;</td><td class="memItemRight"><b>DevErrorThreadAttachment</b></td></t
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1DevErrorRecorder.html">DevErrorRecorder</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1DevErrorRecorder.html">DevErrorRecorder</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

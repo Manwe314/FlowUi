@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Inspect/DevThemeEditorModel.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Inspect/DevInspectContentParameters.hpp"
@@ -273,8 +274,10 @@ void refresh_code(ThemePresentation& presentation) {
 								 presentation.type_name.find('(') == std::string::npos;
 	if (!presentation.source_usable)
 		return;
-	presentation.code = "{\n  auto theme = app.themes().getTheme<" + presentation.type_name + ">(" +
-						cpp_string(presentation.variant) + ");\n";
+	presentation.code = "{\n  auto themes = app.themes();\n  if (!themes) return;\n"
+						"  auto themeResult = themes->get().getTheme<" + presentation.type_name + ">(" +
+						cpp_string(presentation.variant) + ");\n  if (!themeResult) return;\n"
+						"  auto theme = themeResult->get();\n";
 	for (const auto leaf_index : presentation.changed_indices) {
 		const auto& leaf = presentation.fields[leaf_index];
 		const auto& value = presentation.values[leaf_index];
@@ -286,11 +289,11 @@ void refresh_code(ThemePresentation& presentation) {
 			presentation.code += "  // Runtime-only value omitted: " + leaf.path + "\n";
 		}
 	}
-	presentation.code += "  if (const auto registration_status = app.themes().registerTheme(" +
+	presentation.code += "  if (const auto registration_status = themes->get().registerTheme(" +
 						 cpp_string(presentation.variant) + ", theme, " +
 						 (presentation.source.active ? "true" : "false") +
 						 "); !registration_status) {\n"
-						 "    throw FlowUi::FlowUiException(registration_status.error());\n"
+						 "    app.reportError(registration_status.error());\n"
 						 "  }\n}\n";
 }
 } // namespace
@@ -312,10 +315,10 @@ bool ThemeEditorModel::mixed(tooling::DevTypeId type, tooling::DevFieldId group)
 }
 Status ThemeEditorModel::refresh(App& app) noexcept {
 	try {
-		const auto schema = app.devTooling().schemas().view();
+		const auto schema = FlowUi::ValueOrThrow(app.devTooling()).get().schemas().view();
 		auto& catalogue = pending_catalogue_;
 		catalogue.clear();
-		catalogue.reserve(app.themes().devThemeCount());
+		catalogue.reserve(FlowUi::ValueOrThrow(app.themes()).get().devThemeCount());
 		const auto visitor = [](void* destination, const ThemeView& theme) noexcept {
 			try {
 				static_cast<std::vector<ThemeView>*>(destination)->emplace_back(theme);
@@ -324,7 +327,7 @@ Status ThemeEditorModel::refresh(App& app) noexcept {
 				return false;
 			}
 		};
-		if (!app.themes().visitDevCatalogueThemes(&catalogue, visitor)) {
+		if (!FlowUi::ValueOrThrow(app.themes()).get().visitDevCatalogueThemes(&catalogue, visitor)) {
 			presentations_.clear();
 			catalogue_.clear();
 			mixed_groups_.clear();

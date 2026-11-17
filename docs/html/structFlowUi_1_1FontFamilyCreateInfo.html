@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,14 +106,17 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::FontFamilyCreateInfo Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="FontTypes_8hpp_source.html">FontTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a979e043a307b07b831fd831f7dca6000" id="r_a979e043a307b07b831fd831f7dca6000"><td class="memItemLeft"><a id="a979e043a307b07b831fd831f7dca6000" name="a979e043a307b07b831fd831f7dca6000"></a>
-std::string&#160;</td><td class="memItemRight"><b>name</b> = &quot;Default&quot;</td></tr>
+<tr class="memitem:a979e043a307b07b831fd831f7dca6000" id="r_a979e043a307b07b831fd831f7dca6000"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a979e043a307b07b831fd831f7dca6000">name</a> = &quot;Default&quot;</td></tr>
 <tr class="memitem:a2673be27c5d6a61470667b25fbeb590e" id="r_a2673be27c5d6a61470667b25fbeb590e"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1FontFaceCreateInfo.html">FontFaceCreateInfo</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a2673be27c5d6a61470667b25fbeb590e">faces</a></td></tr>
 </table>
-<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Owned family registration request containing named faces selected by weight/style. <a class="el" href="structFlowUi_1_1UiConfig.html#ac6c148d1a2a3937d92c121aff6de3ea3">UiConfig::defaultFontFamily</a> supplies the startup fallback; other families use <a class="el" href="structFlowUi_1_1FontManager.html" title="App-shared font-family registration and face resolution.">FontManager</a> APIs. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a2673be27c5d6a61470667b25fbeb590e" name="a2673be27c5d6a61470667b25fbeb590e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2673be27c5d6a61470667b25fbeb590e">&#9670;&#160;</a></span>faces</h2>
 
@@ -125,7 +128,33 @@ std::string&#160;</td><td class="memItemRight"><b>name</b> = &quot;Default&quot;
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"></div><!-- fragment -->
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">        <a class="code hl_struct" href="structFlowUi_1_1FontFaceCreateInfo.html">FontFaceCreateInfo</a>{</div>
+<div class="line">            .path = <span class="stringliteral">&quot;assets/fonts/Inter.arfont&quot;</span>,</div>
+<div class="line">            .pixelSize = 18.0f,</div>
+<div class="line">            .weight = 400,</div>
+<div class="line">            .style = <a class="code hl_enumvalue" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FontStyle::Normal</a>,</div>
+<div class="line">        },</div>
+<div class="line">    }</div>
+<div class="ttc" id="anamespaceFlowUi_html_af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0"><div class="ttname"><a href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FlowUi::FontStyle::Normal</a></div><div class="ttdeci">@ Normal</div><div class="ttdef"><b>Definition</b> FontTypes.hpp:21</div></div>
+<div class="ttc" id="astructFlowUi_1_1FontFaceCreateInfo_html"><div class="ttname"><a href="structFlowUi_1_1FontFaceCreateInfo.html">FlowUi::FontFaceCreateInfo</a></div><div class="ttdef"><b>Definition</b> FontTypes.hpp:30</div></div>
+</div><!-- fragment --><p>Owned candidate faces, typically varying by weight and style. </p>
+
+</div>
+</div>
+<a id="a979e043a307b07b831fd831f7dca6000" name="a979e043a307b07b831fd831f7dca6000"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a979e043a307b07b831fd831f7dca6000">&#9670;&#160;</a></span>name</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string FlowUi::FontFamilyCreateInfo::name = &quot;Default&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Unique family registration name. </p>
+
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
@@ -144,7 +173,7 @@ std::string&#160;</td><td class="memItemRight"><b>name</b> = &quot;Default&quot;
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1FontFamilyCreateInfo.html">FontFamilyCreateInfo</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1FontFamilyCreateInfo.html">FontFamilyCreateInfo</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

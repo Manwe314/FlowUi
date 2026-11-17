@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -109,7 +109,7 @@ $(function() {
 <div class="textblock"><p>All developer support is implemented under <a href="../../include/devSystems/">include/devSystems</a> and <a href="../../src/devSystems/">src/devSystems</a>. <span class="tt">FLOW_UI_DEV_MODE</span> is the build switch for these modern systems. The obsolete developer runtime, registry, JSON exporter, debug view, and legacy widget tree have been removed completely.</p>
 <h1>Ownership and data flow</h1>
 <p><span class="tt">App</span> owns <a href="../../include/devSystems/devTooling/DevTooling.hpp">DevTooling</a>, <a href="../../include/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp">DevMonitoringAndReporting</a>, and the dedicated-window <a href="../../include/devSystems/devInterface/Permanents/Backend/DevInterface.hpp">DevInterface</a>. Window UI managers borrow the schema/override services and retain their own tree-capture state. Shared changes publish at the application safe point, outside active layout construction.</p>
-<p>The <span class="tt">FlowUi::devSystems::tooling</span> namespace contains the schema descriptors and registry, catalogues, tree snapshots, typed override engine, and baking pipeline. Descriptors discover types through ADL, intrusive <span class="tt">devSchema()</span>, or explicit adapters. The registry queues roots and publishes immutable generation-owning schema views. Effective parameter and theme captures retain their schema generation; they are not untyped field maps.</p>
+<p>The <span class="tt"><a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html" title="Reflection, live editing, catalogues and immutable UI tree extension APIs.">FlowUi::devSystems::tooling</a></span> namespace contains the schema descriptors and registry, catalogues, tree snapshots, typed override engine, and baking pipeline. Descriptors discover types through ADL, intrusive <span class="tt">devSchema()</span>, or explicit adapters. The registry queues roots and publishes immutable generation-owning schema views. Effective parameter and theme captures retain their schema generation; they are not untyped field maps.</p>
 <p>During a builder invocation, baked and live overrides modify the parameter draft before callbacks run. The effective value capture and Flow/Clay tree correlation then feed Inspect and Catalogue. <span class="tt">DevOverrideEngine</span> accepts typed transactions, validates targets/fields/constraints against the schema, and commits at a safe point. The interface reads these services and submits changes through the same command path.</p>
 <p>Monitoring has separate timing, memory, and error services under <a href="../../include/devSystems/devMonitoringAndReporting/">devMonitoringAndReporting</a>. The Performance interface reads bounded timing captures and immutable analysis snapshots. There is no parallel rolling-telemetry runtime.</p>
 <h1>Durable changes and optional evidence</h1>

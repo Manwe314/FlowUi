@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,46 +106,623 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevMemory Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevMemory_8hpp_source.html">DevMemory.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:acb0394d9dfcd75a71216cd2d4f21860c" id="r_acb0394d9dfcd75a71216cd2d4f21860c"><td class="memItemLeft"><a id="acb0394d9dfcd75a71216cd2d4f21860c" name="acb0394d9dfcd75a71216cd2d4f21860c"></a>
-&#160;</td><td class="memItemRight"><b>DevMemory</b> (<a class="el" href="structFlowUi_1_1devSystems_1_1DevMemoryConfig.html">DevMemoryConfig</a> config={})</td></tr>
+<tr class="memitem:acb0394d9dfcd75a71216cd2d4f21860c" id="r_acb0394d9dfcd75a71216cd2d4f21860c"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#acb0394d9dfcd75a71216cd2d4f21860c">DevMemory</a> (<a class="el" href="structFlowUi_1_1devSystems_1_1DevMemoryConfig.html">DevMemoryConfig</a> <a class="el" href="#a3578706a8ae7bc5179c54dfeb3d81563">config</a>={})</td></tr>
+<tr class="memitem:a7c41500592ebf21dd9b6205b50b24543" id="r_a7c41500592ebf21dd9b6205b50b24543"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a7c41500592ebf21dd9b6205b50b24543">~DevMemory</a> ()</td></tr>
 <tr class="memitem:a3e7bb6f0883efd523599b06d506b1f8c" id="r_a3e7bb6f0883efd523599b06d506b1f8c"><td class="memItemLeft"><a id="a3e7bb6f0883efd523599b06d506b1f8c" name="a3e7bb6f0883efd523599b06d506b1f8c"></a>
 &#160;</td><td class="memItemRight"><b>DevMemory</b> (const DevMemory &amp;)=delete</td></tr>
 <tr class="memitem:a282b707b2d1c468c1a8ae91943cb830d" id="r_a282b707b2d1c468c1a8ae91943cb830d"><td class="memItemLeft"><a id="a282b707b2d1c468c1a8ae91943cb830d" name="a282b707b2d1c468c1a8ae91943cb830d"></a>
-DevMemory &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const DevMemory &amp;)=delete</td></tr>
-<tr class="memitem:a3c2ce6abef5ecfd34f0b9fbe0b01fb37" id="r_a3c2ce6abef5ecfd34f0b9fbe0b01fb37"><td class="memItemLeft"><a id="a3c2ce6abef5ecfd34f0b9fbe0b01fb37" name="a3c2ce6abef5ecfd34f0b9fbe0b01fb37"></a>
-void&#160;</td><td class="memItemRight"><b>setConfig</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1DevMemoryConfig.html">DevMemoryConfig</a> &amp;config) noexcept</td></tr>
-<tr class="memitem:a3578706a8ae7bc5179c54dfeb3d81563" id="r_a3578706a8ae7bc5179c54dfeb3d81563"><td class="memItemLeft"><a id="a3578706a8ae7bc5179c54dfeb3d81563" name="a3578706a8ae7bc5179c54dfeb3d81563"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1DevMemoryConfig.html">DevMemoryConfig</a>&#160;</td><td class="memItemRight"><b>config</b> () const noexcept</td></tr>
-<tr class="memitem:a9881c293c3a27863f4e36cc8a988de0d" id="r_a9881c293c3a27863f4e36cc8a988de0d"><td class="memItemLeft"><a id="a9881c293c3a27863f4e36cc8a988de0d" name="a9881c293c3a27863f4e36cc8a988de0d"></a>
-MemoryMonitoringLevel&#160;</td><td class="memItemRight"><b>compiledLevel</b> () const noexcept</td></tr>
-<tr class="memitem:a8e345bd25f213fde678a5d9df50cd599" id="r_a8e345bd25f213fde678a5d9df50cd599"><td class="memItemLeft"><a id="a8e345bd25f213fde678a5d9df50cd599" name="a8e345bd25f213fde678a5d9df50cd599"></a>
-bool&#160;</td><td class="memItemRight"><b>registerSource</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1StaticMemorySourceDescriptor.html">StaticMemorySourceDescriptor</a> &amp;descriptor)</td></tr>
-<tr class="memitem:a12107b714da7353f09f9ccf792285b59" id="r_a12107b714da7353f09f9ccf792285b59"><td class="memItemLeft"><a id="a12107b714da7353f09f9ccf792285b59" name="a12107b714da7353f09f9ccf792285b59"></a>
-bool&#160;</td><td class="memItemRight"><b>registerTuningTarget</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryTuningTargetDescriptor.html">MemoryTuningTargetDescriptor</a> &amp;descriptor)</td></tr>
-<tr class="memitem:a546463fee9f99eed6fd6d7bb45360814" id="r_a546463fee9f99eed6fd6d7bb45360814"><td class="memItemLeft"><a id="a546463fee9f99eed6fd6d7bb45360814" name="a546463fee9f99eed6fd6d7bb45360814"></a>
-bool&#160;</td><td class="memItemRight"><b>registerProbe</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1RegisteredMemoryProbe.html">RegisteredMemoryProbe</a> &amp;probe)</td></tr>
-<tr class="memitem:add030f53f58bfc11390eebc2fd346d43" id="r_add030f53f58bfc11390eebc2fd346d43"><td class="memItemLeft"><a id="add030f53f58bfc11390eebc2fd346d43" name="add030f53f58bfc11390eebc2fd346d43"></a>
-void&#160;</td><td class="memItemRight"><b>unregisterProbe</b> (MemorySourceId source, const void *owner) noexcept</td></tr>
-<tr class="memitem:a02fbb3aba9370eff706355d0d093b3c2" id="r_a02fbb3aba9370eff706355d0d093b3c2"><td class="memItemLeft"><a id="a02fbb3aba9370eff706355d0d093b3c2" name="a02fbb3aba9370eff706355d0d093b3c2"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemorySourceDescriptor.html">MemorySourceDescriptor</a> &gt;&#160;</td><td class="memItemRight"><b>descriptorSnapshot</b> () const</td></tr>
-<tr class="memitem:a80e3383729ee23e800fce5d01d484edd" id="r_a80e3383729ee23e800fce5d01d484edd"><td class="memItemLeft"><a id="a80e3383729ee23e800fce5d01d484edd" name="a80e3383729ee23e800fce5d01d484edd"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryTuningTargetDescriptor.html">MemoryTuningTargetDescriptor</a> &gt;&#160;</td><td class="memItemRight"><b>tuningTargetSnapshot</b> () const</td></tr>
-<tr class="memitem:a9fea450d7bd3d3f21cc4e5bff9a91e6e" id="r_a9fea450d7bd3d3f21cc4e5bff9a91e6e"><td class="memItemLeft"><a id="a9fea450d7bd3d3f21cc4e5bff9a91e6e" name="a9fea450d7bd3d3f21cc4e5bff9a91e6e"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1RegisteredMemoryProbe.html">RegisteredMemoryProbe</a> &gt;&#160;</td><td class="memItemRight"><b>probeSnapshot</b> () const</td></tr>
-<tr class="memitem:a0a9fa4cc30832405fdaccf01f423181c" id="r_a0a9fa4cc30832405fdaccf01f423181c"><td class="memItemLeft"><a id="a0a9fa4cc30832405fdaccf01f423181c" name="a0a9fa4cc30832405fdaccf01f423181c"></a>
-<a class="el" href="classFlowUi_1_1devSystems_1_1DevMemoryRecorder.html">DevMemoryRecorder</a> &amp;&#160;</td><td class="memItemRight"><b>recorder</b> () noexcept</td></tr>
-<tr class="memitem:af148ca0f5b7ebcf618a4259a76324658" id="r_af148ca0f5b7ebcf618a4259a76324658"><td class="memItemLeft"><a id="af148ca0f5b7ebcf618a4259a76324658" name="af148ca0f5b7ebcf618a4259a76324658"></a>
-const <a class="el" href="classFlowUi_1_1devSystems_1_1DevMemoryRecorder.html">DevMemoryRecorder</a> &amp;&#160;</td><td class="memItemRight"><b>recorder</b> () const noexcept</td></tr>
-<tr class="memitem:a7f0fecae4c82e5b89b95f47de71e6ad3" id="r_a7f0fecae4c82e5b89b95f47de71e6ad3"><td class="memItemLeft"><a id="a7f0fecae4c82e5b89b95f47de71e6ad3" name="a7f0fecae4c82e5b89b95f47de71e6ad3"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1MemoryQualitySnapshot.html">MemoryQualitySnapshot</a>&#160;</td><td class="memItemRight"><b>qualitySnapshot</b> () const noexcept</td></tr>
-<tr class="memitem:a0aa0050c1ab6d18d1d6e26cb3d49baf8" id="r_a0aa0050c1ab6d18d1d6e26cb3d49baf8"><td class="memItemLeft"><a id="a0aa0050c1ab6d18d1d6e26cb3d49baf8" name="a0aa0050c1ab6d18d1d6e26cb3d49baf8"></a>
-void&#160;</td><td class="memItemRight"><b>setStorageSystem</b> (::FlowUi::detail::storage::IStorageSystem *storage) noexcept</td></tr>
-<tr class="memitem:a59d44e5b5c3827f712825d59f2a6b425" id="r_a59d44e5b5c3827f712825d59f2a6b425"><td class="memItemLeft"><a id="a59d44e5b5c3827f712825d59f2a6b425" name="a59d44e5b5c3827f712825d59f2a6b425"></a>
-bool&#160;</td><td class="memItemRight"><b>appendStorageSnapshot</b> (const ::FlowUi::detail::storage::StorageMemorySnapshotRequest &amp;request, ::FlowUi::detail::storage::StorageMemorySnapshot &amp;destination) const noexcept</td></tr>
+<a class="el" href="#acb0394d9dfcd75a71216cd2d4f21860c">DevMemory</a> &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const <a class="el" href="#acb0394d9dfcd75a71216cd2d4f21860c">DevMemory</a> &amp;)=delete</td></tr>
+<tr class="memitem:a3c2ce6abef5ecfd34f0b9fbe0b01fb37" id="r_a3c2ce6abef5ecfd34f0b9fbe0b01fb37"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a3c2ce6abef5ecfd34f0b9fbe0b01fb37">setConfig</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1DevMemoryConfig.html">DevMemoryConfig</a> &amp;<a class="el" href="#a3578706a8ae7bc5179c54dfeb3d81563">config</a>) noexcept</td></tr>
+<tr class="memitem:ab7a00baf98d19328c6ee992fac35bb1b" id="r_ab7a00baf98d19328c6ee992fac35bb1b"><td class="memItemLeft">const ::FlowUi::detail::MemoryDemandControl *&#160;</td><td class="memItemRight"><a class="el" href="#ab7a00baf98d19328c6ee992fac35bb1b">demand_control</a> () const noexcept</td></tr>
+<tr class="memitem:a3578706a8ae7bc5179c54dfeb3d81563" id="r_a3578706a8ae7bc5179c54dfeb3d81563"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1DevMemoryConfig.html">DevMemoryConfig</a>&#160;</td><td class="memItemRight"><a class="el" href="#a3578706a8ae7bc5179c54dfeb3d81563">config</a> () const noexcept</td></tr>
+<tr class="memitem:a9881c293c3a27863f4e36cc8a988de0d" id="r_a9881c293c3a27863f4e36cc8a988de0d"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#af60e0aba3f190e3820e8ef9eebef04d5">MemoryMonitoringLevel</a>&#160;</td><td class="memItemRight"><a class="el" href="#a9881c293c3a27863f4e36cc8a988de0d">compiledLevel</a> () const noexcept</td></tr>
+<tr class="memitem:a8e345bd25f213fde678a5d9df50cd599" id="r_a8e345bd25f213fde678a5d9df50cd599"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a8e345bd25f213fde678a5d9df50cd599">registerSource</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1StaticMemorySourceDescriptor.html">StaticMemorySourceDescriptor</a> &amp;descriptor)</td></tr>
+<tr class="memitem:a12107b714da7353f09f9ccf792285b59" id="r_a12107b714da7353f09f9ccf792285b59"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a12107b714da7353f09f9ccf792285b59">registerTuningTarget</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryTuningTargetDescriptor.html">MemoryTuningTargetDescriptor</a> &amp;descriptor)</td></tr>
+<tr class="memitem:a546463fee9f99eed6fd6d7bb45360814" id="r_a546463fee9f99eed6fd6d7bb45360814"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a546463fee9f99eed6fd6d7bb45360814">registerProbe</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1RegisteredMemoryProbe.html">RegisteredMemoryProbe</a> &amp;probe)</td></tr>
+<tr class="memitem:add030f53f58bfc11390eebc2fd346d43" id="r_add030f53f58bfc11390eebc2fd346d43"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#add030f53f58bfc11390eebc2fd346d43">unregisterProbe</a> (<a class="el" href="namespaceFlowUi_1_1devSystems.html#ad77f8008bc1cd25d210f535c630fb739">MemorySourceId</a> source, const void *owner) noexcept</td></tr>
+<tr class="memitem:a02fbb3aba9370eff706355d0d093b3c2" id="r_a02fbb3aba9370eff706355d0d093b3c2"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemorySourceDescriptor.html">MemorySourceDescriptor</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a02fbb3aba9370eff706355d0d093b3c2">descriptorSnapshot</a> () const</td></tr>
+<tr class="memitem:a80e3383729ee23e800fce5d01d484edd" id="r_a80e3383729ee23e800fce5d01d484edd"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryTuningTargetDescriptor.html">MemoryTuningTargetDescriptor</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a80e3383729ee23e800fce5d01d484edd">tuningTargetSnapshot</a> () const</td></tr>
+<tr class="memitem:a9fea450d7bd3d3f21cc4e5bff9a91e6e" id="r_a9fea450d7bd3d3f21cc4e5bff9a91e6e"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1RegisteredMemoryProbe.html">RegisteredMemoryProbe</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a9fea450d7bd3d3f21cc4e5bff9a91e6e">probeSnapshot</a> () const</td></tr>
+<tr class="memitem:a0a9fa4cc30832405fdaccf01f423181c" id="r_a0a9fa4cc30832405fdaccf01f423181c"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1devSystems_1_1DevMemoryRecorder.html">DevMemoryRecorder</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a0a9fa4cc30832405fdaccf01f423181c">recorder</a> () noexcept</td></tr>
+<tr class="memitem:af148ca0f5b7ebcf618a4259a76324658" id="r_af148ca0f5b7ebcf618a4259a76324658"><td class="memItemLeft">const <a class="el" href="classFlowUi_1_1devSystems_1_1DevMemoryRecorder.html">DevMemoryRecorder</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#af148ca0f5b7ebcf618a4259a76324658">recorder</a> () const noexcept</td></tr>
+<tr class="memitem:a7f0fecae4c82e5b89b95f47de71e6ad3" id="r_a7f0fecae4c82e5b89b95f47de71e6ad3"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryQualitySnapshot.html">MemoryQualitySnapshot</a>&#160;</td><td class="memItemRight"><a class="el" href="#a7f0fecae4c82e5b89b95f47de71e6ad3">qualitySnapshot</a> () const noexcept</td></tr>
+<tr class="memitem:a0aa0050c1ab6d18d1d6e26cb3d49baf8" id="r_a0aa0050c1ab6d18d1d6e26cb3d49baf8"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a0aa0050c1ab6d18d1d6e26cb3d49baf8">setStorageSystem</a> (::FlowUi::detail::storage::IStorageSystem *storage) noexcept</td></tr>
+<tr class="memitem:a59d44e5b5c3827f712825d59f2a6b425" id="r_a59d44e5b5c3827f712825d59f2a6b425"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a59d44e5b5c3827f712825d59f2a6b425">appendStorageSnapshot</a> (const ::FlowUi::detail::storage::StorageMemorySnapshotRequest &amp;request, ::FlowUi::detail::storage::StorageMemorySnapshot &amp;destination) const noexcept</td></tr>
+<tr class="memitem:ae3116e7a896074d04df0ff49b191151b" id="r_ae3116e7a896074d04df0ff49b191151b"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ae3116e7a896074d04df0ff49b191151b">initializeEnvironmentProbes</a> (const ::VulkanContext &amp;context) noexcept</td></tr>
+<tr class="memitem:ab65d2ee9612d82da11f8f260f8b13add" id="r_ab65d2ee9612d82da11f8f260f8b13add"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ab65d2ee9612d82da11f8f260f8b13add">detachEnvironmentProbes</a> () noexcept</td></tr>
+<tr class="memitem:abfbf73efe72ab1a49105ea072fd704ee" id="r_abfbf73efe72ab1a49105ea072fd704ee"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#abfbf73efe72ab1a49105ea072fd704ee">advanceGpuFrameIndex</a> (uint32_t frameIndex) noexcept</td></tr>
+<tr class="memitem:a665c16dae9431b72e1354e325c00dde9" id="r_a665c16dae9431b72e1354e325c00dde9"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryEnvironmentSnapshot.html">MemoryEnvironmentSnapshot</a>&#160;</td><td class="memItemRight"><a class="el" href="#a665c16dae9431b72e1354e325c00dde9">sampleEnvironment</a> (uint64_t nowNs, uint64_t safelyAttributableFlowUiCpuBytes, bool force=false) noexcept</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Owns memory source/probe registration, the bounded operation recorder, and environment sampling. Registered probes borrow their owners and must be removed before owner destruction. </p>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="acb0394d9dfcd75a71216cd2d4f21860c" name="acb0394d9dfcd75a71216cd2d4f21860c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acb0394d9dfcd75a71216cd2d4f21860c">&#9670;&#160;</a></span>DevMemory()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevMemory::DevMemory </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1devSystems_1_1DevMemoryConfig.html">DevMemoryConfig</a></td>          <td class="paramname"><span class="paramname"><em>config</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel explicit">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create the monitoring service and its fixed-capacity producer recorder. </p>
+
+</div>
+</div>
+<a id="a7c41500592ebf21dd9b6205b50b24543" name="a7c41500592ebf21dd9b6205b50b24543"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7c41500592ebf21dd9b6205b50b24543">&#9670;&#160;</a></span>~DevMemory()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevMemory::~DevMemory </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Destroy the recorder and registrations; detach borrowed source owners before their destruction. </p>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="abfbf73efe72ab1a49105ea072fd704ee" name="abfbf73efe72ab1a49105ea072fd704ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abfbf73efe72ab1a49105ea072fd704ee">&#9670;&#160;</a></span>advanceGpuFrameIndex()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevMemory::advanceGpuFrameIndex </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>frameIndex</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Forward the active frame index to GPU allocation-budget sampling. </p>
+
+</div>
+</div>
+<a id="a59d44e5b5c3827f712825d59f2a6b425" name="a59d44e5b5c3827f712825d59f2a6b425"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59d44e5b5c3827f712825d59f2a6b425">&#9670;&#160;</a></span>appendStorageSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevMemory::appendStorageSnapshot </td>
+          <td>(</td>
+          <td class="paramtype">const ::FlowUi::detail::storage::StorageMemorySnapshotRequest &amp;</td>          <td class="paramname"><span class="paramname"><em>request</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">::FlowUi::detail::storage::StorageMemorySnapshot &amp;</td>          <td class="paramname"><span class="paramname"><em>destination</em></span>&#160;) const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Append a storage checkpoint to destination; return false when storage is detached or snapshot acquisition fails. </p>
+
+</div>
+</div>
+<a id="a9881c293c3a27863f4e36cc8a988de0d" name="a9881c293c3a27863f4e36cc8a988de0d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9881c293c3a27863f4e36cc8a988de0d">&#9670;&#160;</a></span>compiledLevel()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#af60e0aba3f190e3820e8ef9eebef04d5">MemoryMonitoringLevel</a> FlowUi::devSystems::DevMemory::compiledLevel </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return the maximum memory instrumentation level present in this build. </p>
+
+</div>
+</div>
+<a id="a3578706a8ae7bc5179c54dfeb3d81563" name="a3578706a8ae7bc5179c54dfeb3d81563"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3578706a8ae7bc5179c54dfeb3d81563">&#9670;&#160;</a></span>config()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1DevMemoryConfig.html">DevMemoryConfig</a> FlowUi::devSystems::DevMemory::config </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy normalized runtime configuration. </p>
+
+</div>
+</div>
+<a id="ab7a00baf98d19328c6ee992fac35bb1b" name="ab7a00baf98d19328c6ee992fac35bb1b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab7a00baf98d19328c6ee992fac35bb1b">&#9670;&#160;</a></span>demand_control()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const ::FlowUi::detail::MemoryDemandControl * FlowUi::devSystems::DevMemory::demand_control </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Stable gate whose lifetime matches this monitoring service. </p>
+
+</div>
+</div>
+<a id="a02fbb3aba9370eff706355d0d093b3c2" name="a02fbb3aba9370eff706355d0d093b3c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a02fbb3aba9370eff706355d0d093b3c2">&#9670;&#160;</a></span>descriptorSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemorySourceDescriptor.html">MemorySourceDescriptor</a> &gt; FlowUi::devSystems::DevMemory::descriptorSnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return an owned copy of registered source metadata. </p>
+
+</div>
+</div>
+<a id="ab65d2ee9612d82da11f8f260f8b13add" name="ab65d2ee9612d82da11f8f260f8b13add"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab65d2ee9612d82da11f8f260f8b13add">&#9670;&#160;</a></span>detachEnvironmentProbes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevMemory::detachEnvironmentProbes </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Detach GPU environment resources before Vulkan shutdown. </p>
+
+</div>
+</div>
+<a id="ae3116e7a896074d04df0ff49b191151b" name="ae3116e7a896074d04df0ff49b191151b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae3116e7a896074d04df0ff49b191151b">&#9670;&#160;</a></span>initializeEnvironmentProbes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevMemory::initializeEnvironmentProbes </td>
+          <td>(</td>
+          <td class="paramtype">const ::VulkanContext &amp;</td>          <td class="paramname"><span class="paramname"><em>context</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Attach borrowed Vulkan/VMA resources for GPU environment sampling. </p>
+
+</div>
+</div>
+<a id="a9fea450d7bd3d3f21cc4e5bff9a91e6e" name="a9fea450d7bd3d3f21cc4e5bff9a91e6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9fea450d7bd3d3f21cc4e5bff9a91e6e">&#9670;&#160;</a></span>probeSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1RegisteredMemoryProbe.html">RegisteredMemoryProbe</a> &gt; FlowUi::devSystems::DevMemory::probeSnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy probe registrations; copied owner pointers remain borrowed and do not extend owner lifetimes. </p>
+
+</div>
+</div>
+<a id="a7f0fecae4c82e5b89b95f47de71e6ad3" name="a7f0fecae4c82e5b89b95f47de71e6ad3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f0fecae4c82e5b89b95f47de71e6ad3">&#9670;&#160;</a></span>qualitySnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryQualitySnapshot.html">MemoryQualitySnapshot</a> FlowUi::devSystems::DevMemory::qualitySnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy cumulative recorder and registration quality counters. </p>
+
+</div>
+</div>
+<a id="af148ca0f5b7ebcf618a4259a76324658" name="af148ca0f5b7ebcf618a4259a76324658"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af148ca0f5b7ebcf618a4259a76324658">&#9670;&#160;</a></span>recorder() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classFlowUi_1_1devSystems_1_1DevMemoryRecorder.html">DevMemoryRecorder</a> &amp; FlowUi::devSystems::DevMemory::recorder </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Borrow the producer recorder as const for this service lifetime. </p>
+
+</div>
+</div>
+<a id="a0a9fa4cc30832405fdaccf01f423181c" name="a0a9fa4cc30832405fdaccf01f423181c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0a9fa4cc30832405fdaccf01f423181c">&#9670;&#160;</a></span>recorder() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1devSystems_1_1DevMemoryRecorder.html">DevMemoryRecorder</a> &amp; FlowUi::devSystems::DevMemory::recorder </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Borrow the producer recorder for this service lifetime. </p>
+
+</div>
+</div>
+<a id="a546463fee9f99eed6fd6d7bb45360814" name="a546463fee9f99eed6fd6d7bb45360814"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a546463fee9f99eed6fd6d7bb45360814">&#9670;&#160;</a></span>registerProbe()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevMemory::registerProbe </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1RegisteredMemoryProbe.html">RegisteredMemoryProbe</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>probe</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Register a borrowed owner/callback; return false for invalid or conflicting registration. </p>
+
+</div>
+</div>
+<a id="a8e345bd25f213fde678a5d9df50cd599" name="a8e345bd25f213fde678a5d9df50cd599"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8e345bd25f213fde678a5d9df50cd599">&#9670;&#160;</a></span>registerSource()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevMemory::registerSource </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1StaticMemorySourceDescriptor.html">StaticMemorySourceDescriptor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>descriptor</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy source metadata; return false for invalid identity/name or a conflicting registration. Identical registration is accepted. </p>
+
+</div>
+</div>
+<a id="a12107b714da7353f09f9ccf792285b59" name="a12107b714da7353f09f9ccf792285b59"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a12107b714da7353f09f9ccf792285b59">&#9670;&#160;</a></span>registerTuningTarget()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevMemory::registerTuningTarget </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryTuningTargetDescriptor.html">MemoryTuningTargetDescriptor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>descriptor</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy a capacity target; return false for invalid bounds/identity or incompatible existing metadata. </p>
+
+</div>
+</div>
+<a id="a665c16dae9431b72e1354e325c00dde9" name="a665c16dae9431b72e1354e325c00dde9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a665c16dae9431b72e1354e325c00dde9">&#9670;&#160;</a></span>sampleEnvironment()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryEnvironmentSnapshot.html">MemoryEnvironmentSnapshot</a> FlowUi::devSystems::DevMemory::sampleEnvironment </td>
+          <td>(</td>
+          <td class="paramtype">uint64_t</td>          <td class="paramname"><span class="paramname"><em>nowNs</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t</td>          <td class="paramname"><span class="paramname"><em>safelyAttributableFlowUiCpuBytes</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>force</em></span><span class="paramdefsep"> = </span><span class="paramdefval">false</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return an owned process/GPU sample using monotonic nowNs and safely attributable CPU bytes. force bypasses configured sampling intervals. </p>
+
+</div>
+</div>
+<a id="a3c2ce6abef5ecfd34f0b9fbe0b01fb37" name="a3c2ce6abef5ecfd34f0b9fbe0b01fb37"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c2ce6abef5ecfd34f0b9fbe0b01fb37">&#9670;&#160;</a></span>setConfig()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevMemory::setConfig </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1DevMemoryConfig.html">DevMemoryConfig</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>config</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Apply normalized runtime levels and sampling controls; producer event capacity remains fixed at construction. </p>
+
+</div>
+</div>
+<a id="a0aa0050c1ab6d18d1d6e26cb3d49baf8" name="a0aa0050c1ab6d18d1d6e26cb3d49baf8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0aa0050c1ab6d18d1d6e26cb3d49baf8">&#9670;&#160;</a></span>setStorageSystem()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevMemory::setStorageSystem </td>
+          <td>(</td>
+          <td class="paramtype">::FlowUi::detail::storage::IStorageSystem *</td>          <td class="paramname"><span class="paramname"><em>storage</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Attach borrowed runtime storage for sampling, or null to detach; storage must outlive attached use. </p>
+
+</div>
+</div>
+<a id="a80e3383729ee23e800fce5d01d484edd" name="a80e3383729ee23e800fce5d01d484edd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a80e3383729ee23e800fce5d01d484edd">&#9670;&#160;</a></span>tuningTargetSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryTuningTargetDescriptor.html">MemoryTuningTargetDescriptor</a> &gt; FlowUi::devSystems::DevMemory::tuningTargetSnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return an owned copy of registered capacity target metadata. </p>
+
+</div>
+</div>
+<a id="add030f53f58bfc11390eebc2fd346d43" name="add030f53f58bfc11390eebc2fd346d43"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add030f53f58bfc11390eebc2fd346d43">&#9670;&#160;</a></span>unregisterProbe()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevMemory::unregisterProbe </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad77f8008bc1cd25d210f535c630fb739">MemorySourceId</a></td>          <td class="paramname"><span class="paramname"><em>source</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const void *</td>          <td class="paramname"><span class="paramname"><em>owner</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Remove the matching source/owner probe before destroying its borrowed owner. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/memory/<a class="el" href="DevMemory_8hpp_source.html">DevMemory.hpp</a></li>
 </ul>
@@ -162,7 +739,7 @@ bool&#160;</td><td class="memItemRight"><b>appendStorageSnapshot</b> (const ::Fl
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1DevMemory.html">DevMemory</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1DevMemory.html">DevMemory</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

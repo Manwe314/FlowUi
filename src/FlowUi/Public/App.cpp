@@ -1,13 +1,14 @@
 #define FLOWUI_INTERNAL_VIEWPORT_MANAGER 1
 #include "FlowUi/Public/App.hpp"
 #include "FlowUi/Private/AppRuntime.hpp"
+#include "FlowUi/Private/ApiBoundary.hpp"
 
 namespace FlowUi {
 
 using detail::app_runtime::requireSuccess;
 using detail::app_runtime::runLocalOperation;
 
-App::App() = default;
+App::App() noexcept = default;
 
 App::App(App&& other) noexcept : impl_(std::move(other.impl_)) {
 	if (impl_) {
@@ -35,13 +36,21 @@ App& App::operator=(App&& other) noexcept {
 	return *this;
 }
 
-App::~App() = default;
+App::~App() noexcept = default;
 #if FLOW_UI_AGENTIC_WORKFLOW
-devSystems::agentic::AgenticWorkflowService& App::agentic_workflow() noexcept {
-	return *impl_->agentic_service;
+Result<std::reference_wrapper<devSystems::agentic::AgenticWorkflowService>> App::agentic_workflow() noexcept try {
+	if (!impl_ || !impl_->agentic_service)
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	return std::ref(*impl_->agentic_service);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
-const devSystems::agentic::AgenticWorkflowService& App::agentic_workflow() const noexcept {
-	return *impl_->agentic_service;
+Result<std::reference_wrapper<const devSystems::agentic::AgenticWorkflowService>> App::agentic_workflow() const noexcept try {
+	if (!impl_ || !impl_->agentic_service)
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	return std::cref(*impl_->agentic_service);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 #endif
 
@@ -58,24 +67,25 @@ void App::reportError(FlowUiError error) const noexcept {
 	});
 }
 
-Result<WindowId> App::createWindow(const WindowConfig& config) {
+Result<WindowId> App::createWindow(const WindowConfig& config) noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppCreateWindow));
 	try {
 		return impl_->createWindow(config);
 	} catch (const FlowUiException& exception) {
-		if (exception.error().descriptor().category == ErrorCategory::Fatal) {
-			detail::terminateForFatalError(exception.error());
-		}
 		return unexpectedError(exception.error());
 	}
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppCreateWindow));
 }
 
-Result<WindowId> App::createWindowLikeMain() {
+Result<WindowId> App::createWindowLikeMain() noexcept try {
 	return createWindow(WindowConfigOverrides{});
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppCreateWindow));
 }
 
-Result<WindowId> App::createWindow(const WindowConfigOverrides& overrides) {
+Result<WindowId> App::createWindow(const WindowConfigOverrides& overrides) noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppCreateWindow));
 	WindowConfig config = mergeWindowConfig(impl_->config.window, overrides);
@@ -83,9 +93,11 @@ Result<WindowId> App::createWindow(const WindowConfigOverrides& overrides) {
 		config.title += " - Window " + std::to_string(impl_->nextWindowId);
 	}
 	return createWindow(config);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppCreateWindow));
 }
 
-Result<WindowId> App::createWindow(std::string_view title, int width, int height) {
+Result<WindowId> App::createWindow(std::string_view title, int width, int height) noexcept try {
 	WindowConfigOverrides overrides{};
 	overrides.title = std::string(title);
 	if (width != 0)
@@ -93,26 +105,34 @@ Result<WindowId> App::createWindow(std::string_view title, int width, int height
 	if (height != 0)
 		overrides.height = height;
 	return createWindow(overrides);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppCreateWindow));
 }
 
-Result<WindowId> App::createWindow(const WindowConfigOverrides& overrides, UiBuildCallback buildUi,
-								   ManagedWindowFlags flags) {
+Result<WindowId> App::createWindow(const WindowConfigOverrides& overrides, const UiBuildCallback& buildUi,
+								   ManagedWindowFlags flags) noexcept try {
+	if (!impl_)
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppCreateWindow));
+	impl_->requirePlatformThread();
+	impl_->requireQuiescent();
 	if (!buildUi) {
 		return unexpectedError(
 			makeError(ErrorCode::InvalidWindowConfiguration, ErrorSite::AppCreateWindow));
 	}
+	// Prepare every allocating callback-registration step before publishing native state.
+	Impl::ManagedWindowEntry managed{.buildUi = buildUi, .flags = flags};
+	impl_->managedWindows.reserve(impl_->managedWindows.size() + 1u);
 	auto created = createWindow(overrides);
 	if (!created)
 		return created;
-	Status registered = setWindowUiCallback(*created, std::move(buildUi), flags);
-	if (!registered) {
-		(void)destroyWindow(*created);
-		return unexpectedError(registered.error());
-	}
+	managed.id = *created;
+	impl_->managedWindows.emplace_back(std::move(managed));
 	return created;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppCreateWindow));
 }
 
-Status App::setWindowUiCallback(WindowId id, UiBuildCallback buildUi, ManagedWindowFlags flags) {
+Status App::setWindowUiCallback(WindowId id, const UiBuildCallback& buildUi, ManagedWindowFlags flags) noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppFrameDispatch));
 	return runLocalOperation([&] {
@@ -126,36 +146,41 @@ Status App::setWindowUiCallback(WindowId id, UiBuildCallback buildUi, ManagedWin
 		const auto found =
 			std::find_if(impl_->managedWindows.begin(), impl_->managedWindows.end(),
 						 [id](const Impl::ManagedWindowEntry& entry) { return entry.id == id; });
+		UiBuildCallback preparedCallback = buildUi;
 		if (found != impl_->managedWindows.end()) {
-			found->buildUi = std::move(buildUi);
+			found->buildUi = std::move(preparedCallback);
 			found->flags = flags;
 			return;
 		}
 		impl_->managedWindows.push_back(Impl::ManagedWindowEntry{
 			.id = id,
-			.buildUi = std::move(buildUi),
+			.buildUi = std::move(preparedCallback),
 			.flags = flags,
 		});
-	});
+	}, ErrorSite::AppFrameDispatch);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppFrameDispatch));
 }
 
-void App::removeWindowUiCallback(WindowId id) {
+Status App::removeWindowUiCallback(WindowId id) noexcept try {
 	if (!impl_)
-		return;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	impl_->requirePlatformThread();
 	std::erase_if(impl_->managedWindows,
 				  [id](const Impl::ManagedWindowEntry& entry) { return entry.id == id; });
+	return {};
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-Status App::dispatchManagedWindows() {
+Status App::dispatchManagedWindows() noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppFrameDispatch));
 	try {
 		impl_->requirePlatformThread();
 		impl_->requireQuiescent();
+		impl_->requireGraphicsRunning();
 	} catch (const FlowUiException& exception) {
-		if (exception.error().descriptor().category == ErrorCategory::Fatal) {
-			detail::terminateForFatalError(exception.error());
-		}
 		if (exception.error().descriptor().category != ErrorCategory::Local)
 			throw;
 		return unexpectedError(exception.error());
@@ -188,9 +213,6 @@ Status App::dispatchManagedWindows() {
 	};
 	const auto rememberException = [&](const FlowUiException& exception) {
 		const FlowUiError error = exception.error();
-		if (error.descriptor().category == ErrorCategory::Fatal) {
-			detail::terminateForFatalError(error);
-		}
 		if (error.descriptor().category != ErrorCategory::Local)
 			throw exception;
 		rememberError(error);
@@ -206,9 +228,12 @@ Status App::dispatchManagedWindows() {
 		const ManagedWindowFlags flags = managed->flags;
 		const auto windowIt = impl_->windows.find(id);
 		if (windowIt == impl_->windows.end()) {
-			removeWindowUiCallback(id);
+			requireSuccess(removeWindowUiCallback(id));
 			continue;
 		}
+		if (windowIt->second->phase == AppWindow::Phase::Stopped ||
+			windowIt->second->phase == AppWindow::Phase::Closing)
+			continue;
 #if FLOW_UI_DEV_MODE
 		if (windowIt->second->dev_suspended)
 			continue;
@@ -234,11 +259,13 @@ Status App::dispatchManagedWindows() {
 		try {
 			buildUi(windowIt->second->ui, id);
 		} catch (...) {
+			FlowUiError error = detail::currentExceptionError(ErrorSite::AppFrameDispatch);
 			const auto current = impl_->windows.find(id);
-			if (current != impl_->windows.end())
+			if (current != impl_->windows.end()) {
+				if (const auto status = current->second->ui.frameStatus(); !status)
+					error = status.error();
 				impl_->cancelStorageFrame(*current->second);
-			const FlowUiError error =
-				makeError(ErrorCode::UiBuildCallbackFailed, ErrorSite::AppFrameDispatch, id);
+			}
 			reportError(error);
 			rememberError(error);
 			continue;
@@ -255,12 +282,81 @@ Status App::dispatchManagedWindows() {
 	if (firstError)
 		return unexpectedError(firstError);
 	return {};
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppFrameDispatch));
 }
 
-Status App::destroyWindow(WindowId id) {
+Status App::runFrame(const UiBuildCallback& buildUi) noexcept {
+	if (!impl_)
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppBeginFrame));
+	if (!buildUi)
+		return unexpectedError(makeError(ErrorCode::InvalidWindowConfiguration, ErrorSite::AppFrameDispatch));
+	const auto begun = beginFrame();
+	if (!begun)
+		return begun;
+	const WindowId id = impl_->mainWindowId;
+	try {
+		auto& window = impl_->requireWindow(id);
+		buildUi(window.ui, id);
+		const auto built = window.ui.frameStatus();
+		if (!built) {
+			impl_->cancelStorageFrame(window);
+			return built;
+		}
+		const auto ended = endFrame(id);
+		if (!ended)
+			return ended;
+		return drawFrame();
+	} catch (...) {
+		auto error = detail::currentExceptionError(ErrorSite::AppFrameDispatch);
+		const auto found = impl_->windows.find(id);
+		if (found != impl_->windows.end()) {
+			if (const auto status = found->second->ui.frameStatus(); !status)
+				error = status.error();
+			impl_->cancelStorageFrame(*found->second);
+		}
+		return unexpectedError(error);
+	}
+}
+
+Status App::runFrame(WindowId id, const UiBuildCallback& buildUi) noexcept {
+	if (!impl_)
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppBeginFrame));
+	if (!buildUi)
+		return unexpectedError(makeError(ErrorCode::InvalidWindowConfiguration, ErrorSite::AppFrameDispatch));
+	const auto begun = beginFrame(id);
+	if (!begun)
+		return begun;
+	try {
+		auto& window = impl_->requireWindow(id);
+		buildUi(window.ui, id);
+		const auto built = window.ui.frameStatus();
+		if (!built) {
+			impl_->cancelStorageFrame(window);
+			return built;
+		}
+		const auto ended = endFrame(id);
+		if (!ended)
+			return ended;
+		return drawFrame(id);
+	} catch (...) {
+		auto error = detail::currentExceptionError(ErrorSite::AppFrameDispatch);
+		const auto found = impl_->windows.find(id);
+		if (found != impl_->windows.end()) {
+			if (const auto status = found->second->ui.frameStatus(); !status)
+				error = status.error();
+			impl_->cancelStorageFrame(*found->second);
+		}
+		return unexpectedError(error);
+	}
+}
+
+Status App::destroyWindow(WindowId id) noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppDestroyWindow));
-	return runLocalOperation([&] { impl_->destroyWindow(id); });
+	return runLocalOperation([&] { impl_->destroyWindow(id); }, ErrorSite::AppDestroyWindow);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppDestroyWindow));
 }
 
 bool App::hasWindow(WindowId id) const noexcept {
@@ -273,7 +369,7 @@ void App::request_dev_interface_toggle() noexcept {
 		impl_->devInterface.request_toggle();
 }
 Status App::request_dev_performance_capture(
-	const devSystems::PerformanceCaptureSettings& settings) noexcept {
+	const devSystems::PerformanceCaptureSettings& settings) noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	const auto& toggle = impl_->config.dev.panelToggleChord;
@@ -289,12 +385,16 @@ Status App::request_dev_performance_capture(
 		return unexpectedError(
 			makeError(ErrorCode::InvalidWindowConfiguration, ErrorSite::AppAccessWindow));
 #if FLOW_UI_AGENTIC_WORKFLOW
-	if (impl_->agentic_service && impl_->agentic_service->capture_lease_active())
+	if (impl_->agentic_service && detail::requireApiValue(impl_->agentic_service->capture_lease_active()))
 		return unexpectedError(makeError(ErrorCode::AgenticBusy, ErrorSite::AgenticCapture));
 #endif
 	return impl_->devMonitoring.performance_capture().request_capture(settings);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
-Status App::set_dev_window_suspended(WindowId window_id, bool suspended) {
+Status App::set_dev_window_suspended(WindowId window_id, bool suspended) noexcept try {
+	if (!impl_)
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	return runLocalOperation([&] {
 		impl_->requirePlatformThread();
 		impl_->requireQuiescent();
@@ -307,9 +407,11 @@ Status App::set_dev_window_suspended(WindowId window_id, bool suspended) {
 		impl_->inputService.setTargetEnabled(window.id, !suspended);
 		if (!suspended)
 			requireSuccess(impl_->platformService.requestFocus(window.platformState));
-	});
+	}, ErrorSite::AppAccessWindow);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
-bool App::dev_shortcut_pressed(const DevShortcutChord& chord) const noexcept {
+Result<bool> App::dev_shortcut_pressed(const DevShortcutChord& chord) const noexcept try {
 	if (!impl_ || chord.key < 32 || chord.key >= 349)
 		return false;
 	const auto modifiers =
@@ -318,20 +420,22 @@ bool App::dev_shortcut_pressed(const DevShortcutChord& chord) const noexcept {
 		if (!window->dev_suspended &&
 #if FLOW_UI_AGENTIC_WORKFLOW
 			!(impl_->agentic_service &&
-			  impl_->agentic_service->interaction_controls_window(window_id)) &&
+			  detail::requireApiValue(impl_->agentic_service->interaction_controls_window(window_id))) &&
 #endif
 			(window->inputState.queue().dev_shortcut_presses[static_cast<size_t>(chord.key)] &
 			 (1u << modifiers)))
 			return true;
 	return false;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
-bool App::dev_shortcut_down(const DevShortcutChord& chord) const noexcept {
+Result<bool> App::dev_shortcut_down(const DevShortcutChord& chord) const noexcept try {
 	if (!impl_ || chord.key < 32 || chord.key >= 349)
 		return false;
 	for (const auto& [window_id, window] : impl_->windows) {
 #if FLOW_UI_AGENTIC_WORKFLOW
 		if (impl_->agentic_service &&
-			impl_->agentic_service->interaction_controls_window(window_id))
+			detail::requireApiValue(impl_->agentic_service->interaction_controls_window(window_id)))
 			continue;
 #endif
 		if (window->dev_suspended)
@@ -350,8 +454,10 @@ bool App::dev_shortcut_down(const DevShortcutChord& chord) const noexcept {
 			return true;
 	}
 	return false;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
-Status App::advance_dev_capture() {
+Status App::advance_dev_capture() noexcept try {
 	auto synchronized = impl_->devInterface.synchronize(*this);
 	if (!synchronized)
 		return synchronized;
@@ -406,10 +512,12 @@ Status App::advance_dev_capture() {
 	if (capture.status().phase == devSystems::PerformanceCapturePhase::Sealed)
 		return impl_->devInterface.synchronize(*this);
 	return {};
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 #endif
 
-Status App::pollEvents() {
+Status App::pollEvents() noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	return runLocalOperation([&] {
@@ -419,67 +527,94 @@ Status App::pollEvents() {
 		if (!capture_status)
 			throw FlowUiException(capture_status.error());
 #endif
-	});
+	}, ErrorSite::AppPollEvents);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppPollEvents));
 }
 
-bool App::shouldClose() const {
+Result<bool> App::shouldClose() const noexcept try {
 	if (!impl_)
-		return true;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	return shouldClose(impl_->mainWindowId);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-bool App::shouldClose(WindowId id) const {
+Result<bool> App::shouldClose(WindowId id) const noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	impl_->requirePlatformThread();
+	const auto found = impl_->windows.find(id);
+	if (found != impl_->windows.end() && found->second &&
+		(found->second->phase == AppWindow::Phase::Stopped ||
+		 found->second->phase == AppWindow::Phase::Closing))
+		return true;
 	const AppWindow& window = impl_->requireWindow(id);
 	return impl_->platformService.shouldClose(window.platformState);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-void App::setShouldClose(int value) {
+Status App::setShouldClose(int value) noexcept try {
 	if (!impl_)
-		return;
-	setShouldClose(impl_->mainWindowId, value);
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	return setShouldClose(impl_->mainWindowId, value);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-void App::setShouldClose(WindowId id, int value) {
+Status App::setShouldClose(WindowId id, int value) noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	impl_->requirePlatformThread();
 	AppWindow& window = impl_->requireWindow(id);
 	impl_->platformService.setShouldClose(window.platformState, value != 0);
+	return {};
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-Result<WindowOperationCapabilities>
-App::window_operation_capabilities(WindowId window_id) const noexcept {
+Result<WindowOperationCapabilities> App::window_operation_capabilities(WindowId window_id) const noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	return impl_->window_operation_capabilities(window_id);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-Status App::request_window_close(WindowId window_id) noexcept {
+Status App::request_window_close(WindowId window_id) noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	return impl_->request_window_operation(window_id, Impl::NativeWindowOperation::Close);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-Status App::minimize_window(WindowId window_id) noexcept {
+Status App::minimize_window(WindowId window_id) noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	return impl_->request_window_operation(window_id, Impl::NativeWindowOperation::Minimize);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-Status App::toggle_window_maximized(WindowId window_id) noexcept {
+Status App::toggle_window_maximized(WindowId window_id) noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	return impl_->request_window_operation(window_id, Impl::NativeWindowOperation::MaximizeRestore);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-Status App::toggle_window_fullscreen(WindowId window_id) noexcept {
+Status App::toggle_window_fullscreen(WindowId window_id) noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	return impl_->request_window_operation(window_id, Impl::NativeWindowOperation::Fullscreen);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-Status App::beginFrame() {
+Status App::beginFrame() noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppBeginFrame));
 	return runLocalOperation([&] {
@@ -490,140 +625,176 @@ Status App::beginFrame() {
 			throw FlowUiException(capture_status.error());
 #endif
 		impl_->beginFrame(impl_->mainWindowId);
-	});
+	}, ErrorSite::AppBeginFrame);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppBeginFrame));
 }
 
-Status App::beginFrame(WindowId id) {
+Status App::beginFrame(WindowId id) noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppBeginFrame));
-	return runLocalOperation([&] { impl_->beginFrame(id); });
+	return runLocalOperation([&] { impl_->beginFrame(id); }, ErrorSite::AppBeginFrame);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppBeginFrame));
 }
 
-Status App::endFrame() {
+Status App::endFrame() noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppEndFrame));
-	return runLocalOperation([&] { impl_->endFrame(impl_->mainWindowId); });
+	return runLocalOperation([&] { impl_->endFrame(impl_->mainWindowId); }, ErrorSite::AppEndFrame);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppEndFrame));
 }
 
-Status App::endFrame(WindowId id) {
+Status App::endFrame(WindowId id) noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppEndFrame));
-	return runLocalOperation([&] { impl_->endFrame(id); });
+	return runLocalOperation([&] { impl_->endFrame(id); }, ErrorSite::AppEndFrame);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppEndFrame));
 }
 
-Status App::drawFrame() {
+Status App::drawFrame() noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppDrawFrame));
 	Status mainStatus = drawFrame(impl_->mainWindowId);
 	if (!mainStatus)
 		return mainStatus;
 	return dispatchManagedWindows();
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppDrawFrame));
 }
 
-Status App::drawFrame(WindowId id) {
+Status App::drawFrame(WindowId id) noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppDrawFrame));
-	return runLocalOperation([&] { impl_->drawFrame(id); });
+	return runLocalOperation([&] { impl_->drawFrame(id); }, ErrorSite::AppDrawFrame);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppDrawFrame));
 }
 
-FontManager& App::fonts() {
+Result<std::reference_wrapper<FontManager>> App::fonts() noexcept try {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessFonts));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessFonts));
 	}
-	return impl_->fonts;
+	return std::ref(impl_->fonts);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessFonts));
 }
 
-const FontManager& App::fonts() const {
+Result<std::reference_wrapper<const FontManager>> App::fonts() const noexcept try {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessFonts));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessFonts));
 	}
-	return impl_->fonts;
+	return std::cref(impl_->fonts);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessFonts));
 }
 
-ImageManager& App::images() {
+Result<std::reference_wrapper<ImageManager>> App::images() noexcept try {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessImages));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessImages));
 	}
-	return impl_->imageManager;
+	return std::ref(impl_->imageManager);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessImages));
 }
 
-const ImageManager& App::images() const {
+Result<std::reference_wrapper<const ImageManager>> App::images() const noexcept try {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessImages));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessImages));
 	}
-	return impl_->imageManager;
+	return std::cref(impl_->imageManager);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessImages));
 }
 
-ThemeManager& App::themes() {
+Result<std::reference_wrapper<ThemeManager>> App::themes() noexcept try {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessThemes));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessThemes));
 	}
-	return impl_->themeManager;
+	return std::ref(impl_->themeManager);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessThemes));
 }
 
-const ThemeManager& App::themes() const {
+Result<std::reference_wrapper<const ThemeManager>> App::themes() const noexcept try {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessThemes));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessThemes));
 	}
-	return impl_->themeManager;
+	return std::cref(impl_->themeManager);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessThemes));
 }
 
-ElementManager& App::elements() {
+Result<std::reference_wrapper<ElementManager>> App::elements() noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessElements));
-	return impl_->elementManager;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessElements));
+	return std::ref(impl_->elementManager);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessElements));
 }
 
-const ElementManager& App::elements() const {
+Result<std::reference_wrapper<const ElementManager>> App::elements() const noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessElements));
-	return impl_->elementManager;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessElements));
+	return std::cref(impl_->elementManager);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessElements));
 }
 
-ActionManager& App::actions() {
+Result<std::reference_wrapper<ActionManager>> App::actions() noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessActions));
-	return impl_->actionManager;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessActions));
+	return std::ref(impl_->actionManager);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessActions));
 }
 
-const ActionManager& App::actions() const {
+Result<std::reference_wrapper<const ActionManager>> App::actions() const noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessActions));
-	return impl_->actionManager;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessActions));
+	return std::cref(impl_->actionManager);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessActions));
 }
 
 #if FLOW_UI_DEV_MODE
-devSystems::DevMonitoringAndReporting& App::devMonitoring() {
+Result<std::reference_wrapper<devSystems::DevMonitoringAndReporting>> App::devMonitoring() noexcept try {
 	if (!impl_)
-		throw FlowUiException(
-			makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessDevMonitoring));
-	return impl_->devMonitoring;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessDevMonitoring));
+	return std::ref(impl_->devMonitoring);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessDevMonitoring));
 }
 
-const devSystems::DevMonitoringAndReporting& App::devMonitoring() const {
+Result<std::reference_wrapper<const devSystems::DevMonitoringAndReporting>> App::devMonitoring() const noexcept try {
 	if (!impl_)
-		throw FlowUiException(
-			makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessDevMonitoring));
-	return impl_->devMonitoring;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessDevMonitoring));
+	return std::cref(impl_->devMonitoring);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessDevMonitoring));
 }
 
-devSystems::DevTooling& App::devTooling() {
+Result<std::reference_wrapper<devSystems::DevTooling>> App::devTooling() noexcept try {
 	if (!impl_)
-		throw FlowUiException(
-			makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessDevMonitoring));
-	return impl_->devTooling;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessDevMonitoring));
+	return std::ref(impl_->devTooling);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessDevMonitoring));
 }
 
-const devSystems::DevTooling& App::devTooling() const {
+Result<std::reference_wrapper<const devSystems::DevTooling>> App::devTooling() const noexcept try {
 	if (!impl_)
-		throw FlowUiException(
-			makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessDevMonitoring));
-	return impl_->devTooling;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessDevMonitoring));
+	return std::cref(impl_->devTooling);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessDevMonitoring));
 }
 
-std::vector<DevWindowInfo> App::devWindowSnapshot() const {
+Result<std::vector<DevWindowInfo>> App::devWindowSnapshot() const noexcept try {
 	if (!impl_)
-		return {};
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	std::vector<DevWindowInfo> result;
 	result.reserve(impl_->windows.size());
 	for (const auto& [id, window] : impl_->windows) {
@@ -640,15 +811,17 @@ std::vector<DevWindowInfo> App::devWindowSnapshot() const {
 	}
 	std::ranges::sort(result, {}, &DevWindowInfo::id);
 	return result;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-std::vector<DevViewportInfo> App::devViewportSnapshot(WindowId id) const {
+Result<std::vector<DevViewportInfo>> App::devViewportSnapshot(WindowId id) const noexcept try {
 	std::vector<DevViewportInfo> result;
 	if (!impl_)
-		return result;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	const auto found = impl_->windows.find(id);
 	if (found == impl_->windows.end() || !found->second)
-		return result;
+		return unexpectedError(makeError(ErrorCode::InvalidWindowId, ErrorSite::AppAccessWindow, id));
 	found->second->viewPorts.visitDevViewports(
 		&result, [](void* target, const ViewPortManager::DevViewportView& view) {
 			static_cast<std::vector<DevViewportInfo>*>(target)->emplace_back(
@@ -673,15 +846,19 @@ std::vector<DevViewportInfo> App::devViewportSnapshot(WindowId id) const {
 		});
 	std::ranges::sort(result, {}, &DevViewportInfo::key);
 	return result;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-Status App::request_dev_viewport_capture(WindowId window, std::string_view key) noexcept {
+Status App::request_dev_viewport_capture(WindowId window, std::string_view key) noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::ViewportPrepare));
 	const auto found = impl_->windows.find(window);
 	if (found == impl_->windows.end() || !found->second)
 		return unexpectedError(makeError(ErrorCode::ViewportNotFound, ErrorSite::ViewportPrepare));
 	return found->second->viewPorts.request_dev_capture(key);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
 void App::release_dev_viewport_capture(WindowId window, std::string_view key) noexcept {
@@ -693,16 +870,18 @@ void App::release_dev_viewport_capture(WindowId window, std::string_view key) no
 }
 
 Result<TextureHandle> App::retain_dev_viewport_capture(WindowId window, std::string_view key,
-													   TextureHandle expected_capture) noexcept {
+													   TextureHandle expected_capture) noexcept try {
 	if (!impl_)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::ViewportPublish));
 	const auto found = impl_->windows.find(window);
 	if (found == impl_->windows.end() || !found->second)
 		return unexpectedError(makeError(ErrorCode::ViewportNotFound, ErrorSite::ViewportPublish));
 	return found->second->viewPorts.retain_dev_capture(key, expected_capture);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-Status App::release_dev_viewport_capture_texture(TextureHandle texture) noexcept {
+Status App::release_dev_viewport_capture_texture(TextureHandle texture) noexcept try {
 	if (!impl_ || !impl_->storageSystem)
 		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::ViewportPublish));
 	try {
@@ -713,6 +892,8 @@ Status App::release_dev_viewport_capture_texture(TextureHandle texture) noexcept
 	} catch (...) {
 		return unexpectedError(makeError(ErrorCode::AllocationFailed, ErrorSite::ViewportPublish));
 	}
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
 devSystems::DevUiReplaySource App::devUiReplaySource(WindowId id) noexcept {
@@ -740,20 +921,20 @@ devSystems::DevUiReplaySource App::devUiReplaySource(WindowId id) noexcept {
 	};
 }
 
-void App::requestDevUiReplay(WindowId id, uint64_t requestKey,
+Status App::requestDevUiReplay(WindowId id, uint64_t requestKey,
 							 std::span<const uint32_t> clayCommandIds,
-							 Clay_BoundingBox sourceRootBounds) {
+							 Clay_BoundingBox sourceRootBounds) noexcept try {
 	if (!impl_)
-		return;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	const auto found = impl_->windows.find(id);
 	if (found == impl_->windows.end() || !found->second)
-		return;
+		return unexpectedError(makeError(ErrorCode::InvalidWindowId, ErrorSite::AppAccessWindow, id));
 	AppWindow& window = *found->second;
 	if (clayCommandIds.empty() || requestKey == 0u) {
 		window.devReplayRequest = {};
 		window.devReplayPacket.clearCommands();
 		window.devReplayPacket.requestKey = 0u;
-		return;
+		return {};
 	}
 	if (requestKey != window.devReplayPacket.requestKey) {
 		window.devReplayPacket.clearCommands();
@@ -767,206 +948,272 @@ void App::requestDevUiReplay(WindowId id, uint64_t requestKey,
 	window.devReplayRequest.commandIds.erase(uniqueEnd, window.devReplayRequest.commandIds.end());
 	window.devReplayRequest.sourceRootBounds = sourceRootBounds;
 	window.devReplayRequest.key = requestKey;
+	return {};
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 #endif
 
 #if FLOWUI_INCLUDE_ICON_MANAGER
-IconManager& App::icons() {
+Result<std::reference_wrapper<IconManager>> App::icons() noexcept try {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessIcons));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessIcons));
 	}
-	return impl_->icons;
+	return std::ref(impl_->icons);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessIcons));
 }
 
-const IconManager& App::icons() const {
+Result<std::reference_wrapper<const IconManager>> App::icons() const noexcept try {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessIcons));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessIcons));
 	}
-	return impl_->icons;
+	return std::cref(impl_->icons);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessIcons));
 }
 #endif
 
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
-ViewPortManager& App::viewPorts() {
+Result<std::reference_wrapper<ViewPortManager>> App::viewPorts() noexcept try {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessViewports));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessViewports));
 	}
-	return impl_->mainWindow().viewPorts;
+	return std::ref(impl_->mainWindow().viewPorts);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessViewports));
 }
 
-ViewPortManager& App::viewPorts(WindowId id) {
+Result<std::reference_wrapper<ViewPortManager>> App::viewPorts(WindowId id) noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessViewports));
-	return impl_->requireWindow(id).viewPorts;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessViewports));
+	return std::ref(impl_->requireWindow(id).viewPorts);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessViewports));
 }
 
-const ViewPortManager& App::viewPorts() const {
+Result<std::reference_wrapper<const ViewPortManager>> App::viewPorts() const noexcept try {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessViewports));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessViewports));
 	}
-	return impl_->mainWindow().viewPorts;
+	return std::cref(impl_->mainWindow().viewPorts);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessViewports));
 }
 
-const ViewPortManager& App::viewPorts(WindowId id) const {
+Result<std::reference_wrapper<const ViewPortManager>> App::viewPorts(WindowId id) const noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessViewports));
-	return impl_->requireWindow(id).viewPorts;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessViewports));
+	return std::cref(impl_->requireWindow(id).viewPorts);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessViewports));
 }
 #endif
 
-UiManager& App::ui() {
+Result<std::reference_wrapper<UiManager>> App::ui() noexcept try {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessUi));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessUi));
 	}
-	return impl_->mainWindow().ui;
+	return std::ref(impl_->mainWindow().ui);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessUi));
 }
 
-UiManager& App::ui(WindowId id) {
+Result<std::reference_wrapper<UiManager>> App::ui(WindowId id) noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessUi));
-	return impl_->requireWindow(id).ui;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessUi));
+	return std::ref(impl_->requireWindow(id).ui);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessUi));
 }
 
-const UiManager& App::ui() const {
+Result<std::reference_wrapper<const UiManager>> App::ui() const noexcept try {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessUi));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessUi));
 	}
-	return impl_->mainWindow().ui;
+	return std::cref(impl_->mainWindow().ui);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessUi));
 }
 
-const UiManager& App::ui(WindowId id) const {
+Result<std::reference_wrapper<const UiManager>> App::ui(WindowId id) const noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessUi));
-	return impl_->requireWindow(id).ui;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessUi));
+	return std::cref(impl_->requireWindow(id).ui);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessUi));
 }
 
-void App::setWindowTitle(std::string_view title) {
+Status App::setWindowTitle(std::string_view title) noexcept try {
 	if (!impl_)
-		return;
-	setWindowTitle(impl_->mainWindowId, title);
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	return setWindowTitle(impl_->mainWindowId, title);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::WindowSetTitle));
 }
 
-void App::setWindowTitle(WindowId id, std::string_view title) {
+Status App::setWindowTitle(WindowId id, std::string_view title) noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::WindowSetTitle));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::WindowSetTitle));
 	impl_->requirePlatformThread();
 	AppWindow& window = impl_->requireWindow(id);
 	std::string pendingTitle(title);
 	requireSuccess(impl_->platformService.setTitle(window.platformState, pendingTitle));
 	window.config.native.title = std::move(pendingTitle);
+	return {};
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::WindowSetTitle));
 }
 
-void* App::nativeWindowHandle() const {
+Result<void*> App::nativeWindowHandle() const noexcept try {
 	if (!impl_)
-		return nullptr;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	return nativeWindowHandle(impl_->mainWindowId);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-void* App::nativeWindowHandle(WindowId id) const {
+Result<void*> App::nativeWindowHandle(WindowId id) const noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	impl_->requirePlatformThread();
 	const AppWindow& window = impl_->requireWindow(id);
 	return impl_->platformService.nativeHandle(window.platformState);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-void App::setWindowInputConfig(const WindowInputConfig& config) {
+Status App::setWindowInputConfig(const WindowInputConfig& config) noexcept try {
 	if (!impl_)
-		return;
-	setWindowInputConfig(impl_->mainWindowId, config);
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	return setWindowInputConfig(impl_->mainWindowId, config);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-void App::setWindowInputConfig(WindowId id, const WindowInputConfig& config) {
+Status App::setWindowInputConfig(WindowId id, const WindowInputConfig& config) noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	impl_->requirePlatformThread();
 	AppWindow& window = impl_->requireWindow(id);
 	requireSuccess(impl_->platformService.setInputConfig(window.platformState, config));
 	window.config.native.input = config;
+	return {};
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-WindowInputConfig App::windowInputConfig() const {
+Result<WindowInputConfig> App::windowInputConfig() const noexcept try {
 	if (!impl_)
-		return {};
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	return windowInputConfig(impl_->mainWindowId);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-WindowInputConfig App::windowInputConfig(WindowId id) const {
+Result<WindowInputConfig> App::windowInputConfig(WindowId id) const noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	impl_->requirePlatformThread();
 	const AppWindow& window = impl_->requireWindow(id);
 	return impl_->platformService.inputConfig(window.platformState);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-bool App::supportsRawMouseMotion() const {
+Result<bool> App::supportsRawMouseMotion() const noexcept try {
 	if (!impl_)
-		return false;
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	return supportsRawMouseMotion(impl_->mainWindowId);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-bool App::supportsRawMouseMotion(WindowId id) const {
+Result<bool> App::supportsRawMouseMotion(WindowId id) const noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	impl_->requirePlatformThread();
 	const AppWindow& window = impl_->requireWindow(id);
 	return impl_->platformService.supportsRawMouseMotion(window.platformState);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-void App::setClipboardText(std::string_view text) {
+Status App::setClipboardText(std::string_view text) noexcept try {
 	if (!impl_)
-		return;
-	setClipboardText(impl_->mainWindowId, text);
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	return setClipboardText(impl_->mainWindowId, text);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::WindowWriteClipboard));
 }
 
-void App::setClipboardText(WindowId id, std::string_view text) {
+Status App::setClipboardText(WindowId id, std::string_view text) noexcept try {
 	if (!impl_)
-		throw FlowUiException(
-			makeError(ErrorCode::AppUnavailable, ErrorSite::WindowWriteClipboard));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::WindowWriteClipboard));
 	impl_->requirePlatformThread();
 	AppWindow& window = impl_->requireWindow(id);
-	window.platformServices.setClipboardText(text);
+	return impl_->platformService.setClipboardText(window.platformState, text);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::WindowWriteClipboard));
 }
 
-std::string App::clipboardText() const {
+Result<std::string> App::clipboardText() const noexcept try {
 	if (!impl_)
-		return {};
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	return clipboardText(impl_->mainWindowId);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::WindowReadClipboard));
 }
 
-std::string App::clipboardText(WindowId id) const {
+Result<std::string> App::clipboardText(WindowId id) const noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::WindowReadClipboard));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::WindowReadClipboard));
+	impl_->requirePlatformThread();
 	const AppWindow& window = impl_->requireWindow(id);
-	return window.platformServices.clipboardText();
+	return impl_->platformService.clipboardText(window.platformState);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::WindowReadClipboard));
 }
 
-std::pair<int, int> App::windowSize() const {
+Result<std::pair<int, int>> App::windowSize() const noexcept try {
 	if (!impl_)
-		return {0, 0};
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	return windowSize(impl_->mainWindowId);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-std::pair<int, int> App::windowSize(WindowId id) const {
+Result<std::pair<int, int>> App::windowSize(WindowId id) const noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	impl_->requirePlatformThread();
 	const AppWindow& window = impl_->requireWindow(id);
 	const VkExtent2D extent = impl_->platformService.windowExtent(window.platformState);
-	return {static_cast<int>(extent.width), static_cast<int>(extent.height)};
+	return std::pair{static_cast<int>(extent.width), static_cast<int>(extent.height)};
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-std::pair<int, int> App::framebufferSize() const {
+Result<std::pair<int, int>> App::framebufferSize() const noexcept try {
 	if (!impl_)
-		return {0, 0};
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	return framebufferSize(impl_->mainWindowId);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-std::pair<int, int> App::framebufferSize(WindowId id) const {
+Result<std::pair<int, int>> App::framebufferSize(WindowId id) const noexcept try {
 	if (!impl_)
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	impl_->requirePlatformThread();
 	const AppWindow& window = impl_->requireWindow(id);
 	const VkExtent2D extent = impl_->platformService.framebufferExtent(window.platformState);
-	return {static_cast<int>(extent.width), static_cast<int>(extent.height)};
+	return std::pair{static_cast<int>(extent.width), static_cast<int>(extent.height)};
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
-App makeApplication(const AppConfig& cfg) {
+Result<App> makeApplication(const AppConfig& cfg) noexcept try {
 	App app;
 	AppConfig effective_config = cfg;
 	const bool use_baked = cfg.prefer_baked_capacities && baked::has_baked_memory_capacity();
@@ -1008,6 +1255,8 @@ App makeApplication(const AppConfig& cfg) {
 #endif
 	app.impl_->init(app);
 	return app;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::AppInitialize));
 }
 
 } // namespace FlowUi

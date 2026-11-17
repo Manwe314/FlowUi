@@ -60,7 +60,7 @@ void emptyFrame(FlowUi::App& app, FlowUi::WindowId window) {
 void test_popup_flag_lifecycle(FlowUi::App& application) {
 	using namespace FlowUi;
 	const WindowId window_id = application.mainWindowId();
-	auto* native_window = static_cast<GLFWwindow*>(application.nativeWindowHandle(window_id));
+	auto* native_window = static_cast<GLFWwindow*>(::FlowUi::test::requireValue(application.nativeWindowHandle(window_id)));
 	const auto finish_frame = [&] {
 		FLOWUI_CHECK(application.endFrame(window_id));
 		FLOWUI_CHECK(application.drawFrame(window_id));
@@ -89,20 +89,20 @@ void test_popup_flag_lifecycle(FlowUi::App& application) {
 	const FlowElementID measured_popup{.value = 0x48514f8a1001u};
 	PopupRequest request{.anchor = PopupAnchor::position({20, 20})};
 	FLOWUI_CHECK(application.beginFrame(window_id));
-	auto frame = application.ui(window_id).popups().request(measured_popup, request);
+	auto frame = ::FlowUi::test::requireValue(application.ui(window_id)).get().popups().request(measured_popup, request);
 	FLOWUI_CHECK(frame && !frame->visible && frame->measureOnly);
 	emit_popup_root(measured_popup, *frame);
 	finish_frame();
 
 	FLOWUI_CHECK(application.beginFrame(window_id));
-	frame = application.ui(window_id).popups().request(measured_popup, request);
+	frame = ::FlowUi::test::requireValue(application.ui(window_id)).get().popups().request(measured_popup, request);
 	FLOWUI_CHECK(frame && frame->visible && !frame->measureOnly);
 	emit_popup_root(measured_popup, *frame);
 	finish_frame();
 
 	inject_key(GLFW_PRESS);
 	FLOWUI_CHECK(application.beginFrame(window_id));
-	auto& popups = application.ui(window_id).popups();
+	auto& popups = ::FlowUi::test::requireValue(application.ui(window_id)).get().popups();
 	FLOWUI_CHECK(popups.consumeDismissed(measured_popup));
 	FLOWUI_CHECK(!popups.consumeDismissed(measured_popup));
 	frame = popups.request(measured_popup, request);
@@ -139,8 +139,8 @@ void test_popup_flag_lifecycle(FlowUi::App& application) {
 	frame = popups.request(snapshot_popup, request);
 	FLOWUI_CHECK(frame && frame->visible);
 	const Clay_Vector2 snapshot_position = frame->floating.offset;
-	FLOWUI_CHECK(application.ui(window_id).getCurrentFrameInput().mouseX == 40.0f);
-	FLOWUI_CHECK(application.ui(window_id).getCurrentFrameInput().mouseY == 45.0f);
+	FLOWUI_CHECK(::FlowUi::test::requireValue(application.ui(window_id)).get().getCurrentFrameInput().mouseX == 40.0f);
+	FLOWUI_CHECK(::FlowUi::test::requireValue(application.ui(window_id)).get().getCurrentFrameInput().mouseY == 45.0f);
 	FLOWUI_CHECK(snapshot_position.x == 40.0f && snapshot_position.y == 45.0f);
 	emit_popup_root(snapshot_popup, *frame);
 	finish_frame();
@@ -148,8 +148,8 @@ void test_popup_flag_lifecycle(FlowUi::App& application) {
 	FLOWUI_CHECK(application.beginFrame(window_id));
 	frame = popups.request(snapshot_popup, request);
 	FLOWUI_CHECK(frame && frame->visible);
-	FLOWUI_CHECK(application.ui(window_id).getCurrentFrameInput().mouseX == 60.0f);
-	FLOWUI_CHECK(application.ui(window_id).getCurrentFrameInput().mouseY == 65.0f);
+	FLOWUI_CHECK(::FlowUi::test::requireValue(application.ui(window_id)).get().getCurrentFrameInput().mouseX == 60.0f);
+	FLOWUI_CHECK(::FlowUi::test::requireValue(application.ui(window_id)).get().getCurrentFrameInput().mouseY == 65.0f);
 	FLOWUI_CHECK(frame->floating.offset.x == snapshot_position.x);
 	FLOWUI_CHECK(frame->floating.offset.y == snapshot_position.y);
 	emit_popup_root(snapshot_popup, *frame);
@@ -173,7 +173,7 @@ void test_deferred_error_observer_destroys_window(FlowUi::App& application,
 	const auto surviving_window = *surviving_result;
 	FLOWUI_CHECK(application.toggle_window_fullscreen(victim_window));
 	FLOWUI_CHECK(glfwGetWindowMonitor(
-		static_cast<GLFWwindow*>(application.nativeWindowHandle(victim_window))));
+		static_cast<GLFWwindow*>(::FlowUi::test::requireValue(application.nativeWindowHandle(victim_window)))));
 
 	error_capture = {};
 	error_capture.application = &application;
@@ -194,8 +194,8 @@ void test_deferred_error_observer_destroys_window(FlowUi::App& application,
 	FLOWUI_CHECK(!application.hasWindow(victim_window));
 	FLOWUI_CHECK(application.hasWindow(surviving_window));
 	FLOWUI_CHECK(glfwGetWindowMonitor(
-		static_cast<GLFWwindow*>(application.nativeWindowHandle(surviving_window))));
-	FLOWUI_CHECK(!glfwGetWindowMonitor(static_cast<GLFWwindow*>(application.nativeWindowHandle())));
+		static_cast<GLFWwindow*>(::FlowUi::test::requireValue(application.nativeWindowHandle(surviving_window)))));
+	FLOWUI_CHECK(!glfwGetWindowMonitor(static_cast<GLFWwindow*>(::FlowUi::test::requireValue(application.nativeWindowHandle()))));
 	error_capture = {};
 	FLOWUI_CHECK(application.toggle_window_fullscreen(surviving_window));
 	FLOWUI_CHECK(application.destroyWindow(surviving_window));
@@ -213,7 +213,7 @@ void test_default_text_shortcuts(FlowUi::App& application) {
 			registration);
 		return true;
 	};
-	auto& shortcuts = application.ui().shortcuts();
+	auto& shortcuts = ::FlowUi::test::requireValue(application.ui()).get().shortcuts();
 	FLOWUI_CHECK(shortcuts.visitDevShortcuts(&registrations, collect));
 	FLOWUI_CHECK(registrations.size() == 14);
 	for (const auto& registration : registrations) {
@@ -246,13 +246,13 @@ void test_default_text_shortcuts(FlowUi::App& application) {
 	registrations.clear();
 	FLOWUI_CHECK(shortcuts.visitDevShortcuts(&registrations, collect));
 	FLOWUI_CHECK(registrations.size() == 15);
-	FLOWUI_CHECK(shortcuts.unregisterShortcut(*manual_history));
+	FLOWUI_CHECK(::FlowUi::test::requireValue(shortcuts.unregisterShortcut(*manual_history)));
 }
 #endif
 
 void test_text_command_pipeline(FlowUi::App& application) {
 	using namespace FlowUi;
-	auto& manager = application.ui().inputFields();
+	auto& manager = ::FlowUi::test::requireValue(application.ui()).get().inputFields();
 	const ResourceKey first_key{.name = "default-shortcuts/first"};
 	const ResourceKey second_key{.name = "default-shortcuts/second"};
 	FieldRequest first_request{.initialText = "first value"};
@@ -262,8 +262,8 @@ void test_text_command_pipeline(FlowUi::App& application) {
 		FLOWUI_CHECK(application.drawFrame());
 	};
 	FLOWUI_CHECK(application.beginFrame());
-	FLOWUI_CHECK(manager.requestField(first_key, first_request).text.copy() == "first value");
-	FLOWUI_CHECK(manager.requestField(second_key, second_request).text.copy() == "other");
+	FLOWUI_CHECK(::FlowUi::test::requireValue(manager.requestField(first_key, first_request).text.copy()) == "first value");
+	FLOWUI_CHECK(::FlowUi::test::requireValue(manager.requestField(second_key, second_request).text.copy()) == "other");
 	manager.requestCaret(first_key, CaretRequestKind::SetPrimary);
 	finish_frame();
 
@@ -274,21 +274,21 @@ void test_text_command_pipeline(FlowUi::App& application) {
 	FLOWUI_CHECK(selected.hasSelection);
 	FLOWUI_CHECK(selected.commandRequests.empty());
 	FLOWUI_CHECK(manager.getSelectedText() == "first value");
-	FLOWUI_CHECK(application.ui().clipboardText() == "first value");
+	FLOWUI_CHECK(::FlowUi::test::requireValue(::FlowUi::test::requireValue(application.ui()).get().clipboardText()) == "first value");
 	finish_frame();
 
 	FLOWUI_CHECK(application.beginFrame());
 	FLOWUI_CHECK(manager.enqueueCommand(TextCommand::Cut));
 	const auto cut = manager.requestField(first_key, first_request);
-	FLOWUI_CHECK(cut.text.copy().empty());
+	FLOWUI_CHECK(::FlowUi::test::requireValue(cut.text.copy()).empty());
 	FLOWUI_CHECK(cut.transactions.size() == 1);
 	FLOWUI_CHECK(cut.transactions.front().origin == EditOrigin::Cut);
-	FLOWUI_CHECK(application.ui().clipboardText() == "first value");
+	FLOWUI_CHECK(::FlowUi::test::requireValue(::FlowUi::test::requireValue(application.ui()).get().clipboardText()) == "first value");
 	finish_frame();
 
 	FLOWUI_CHECK(application.beginFrame());
 	FLOWUI_CHECK(manager.enqueueCommand(TextCommand::Paste));
-	FLOWUI_CHECK(manager.requestField(first_key, first_request).text.copy() == "first value");
+	FLOWUI_CHECK(::FlowUi::test::requireValue(manager.requestField(first_key, first_request).text.copy()) == "first value");
 	finish_frame();
 
 	FLOWUI_CHECK(application.beginFrame());
@@ -298,7 +298,7 @@ void test_text_command_pipeline(FlowUi::App& application) {
 		FLOWUI_CHECK(manager.enqueueCommand(command));
 	}
 	const auto read_only = manager.requestField(first_key, first_request);
-	FLOWUI_CHECK(read_only.text.copy() == "first value");
+	FLOWUI_CHECK(::FlowUi::test::requireValue(read_only.text.copy()) == "first value");
 	FLOWUI_CHECK(read_only.hasSelection);
 	FLOWUI_CHECK(read_only.transactions.empty());
 	FLOWUI_CHECK(read_only.commandRequests.empty());
@@ -309,19 +309,19 @@ void test_text_command_pipeline(FlowUi::App& application) {
 	FLOWUI_CHECK(manager.enqueueCommand(TextCommand::MoveDocumentStart));
 	FLOWUI_CHECK(manager.enqueueCommand(TextCommand::MoveWordRight));
 	FLOWUI_CHECK(!manager.requestField(first_key, first_request).hasSelection);
-	FLOWUI_CHECK(application.ui().clipboardText() == "first value");
+	FLOWUI_CHECK(::FlowUi::test::requireValue(::FlowUi::test::requireValue(application.ui()).get().clipboardText()) == "first value");
 	finish_frame();
 
 	FLOWUI_CHECK(application.beginFrame());
 	first_request.config.readOnly = false;
-	FLOWUI_CHECK(manager.requestField(first_key, first_request).text.copy() == "first value");
+	FLOWUI_CHECK(::FlowUi::test::requireValue(manager.requestField(first_key, first_request).text.copy()) == "first value");
 	FLOWUI_CHECK(manager.enqueueCommand(TextCommand::SelectAll));
 	FLOWUI_CHECK(manager.enqueueCommand(TextCommand::Paste, "captured"));
 	manager.requestCaret(second_key, CaretRequestKind::SetPrimary);
-	FLOWUI_CHECK(manager.requestField(first_key, first_request).text.copy() == "captured");
-	FLOWUI_CHECK(manager.requestField(second_key, second_request).text.copy() == "other");
+	FLOWUI_CHECK(::FlowUi::test::requireValue(manager.requestField(first_key, first_request).text.copy()) == "captured");
+	FLOWUI_CHECK(::FlowUi::test::requireValue(manager.requestField(second_key, second_request).text.copy()) == "other");
 	manager.requestCaret(first_key, CaretRequestKind::SetPrimary);
-	FLOWUI_CHECK(manager.requestField(first_key, first_request).text.copy() == "captured");
+	FLOWUI_CHECK(::FlowUi::test::requireValue(manager.requestField(first_key, first_request).text.copy()) == "captured");
 	finish_frame();
 
 	FLOWUI_CHECK(application.beginFrame());
@@ -337,7 +337,7 @@ void test_text_command_pipeline(FlowUi::App& application) {
 void test_text_field_modes(FlowUi::App& application) {
 	using namespace FlowUi;
 	FLOWUI_CHECK(application.beginFrame());
-	auto& manager = application.ui().inputFields();
+	auto& manager = ::FlowUi::test::requireValue(application.ui()).get().inputFields();
 	const ResourceKey single_key{.name = "cleanup/single-line"};
 	const ResourceKey multiline_key{.name = "cleanup/multiline"};
 	FieldRequest single_request{
@@ -354,7 +354,7 @@ void test_text_field_modes(FlowUi::App& application) {
 	const TextReplacement single_newline{.oldRange = {4, 4}, .insertedText = "\r\nnext"};
 	FLOWUI_CHECK(manager.applyEdits(single_key, std::span{&single_newline, 1}) ==
 				 EditResult::RejectedNewline);
-	FLOWUI_CHECK(manager.requestField(single_key, single_request).text.copy() == "seed");
+	FLOWUI_CHECK(::FlowUi::test::requireValue(manager.requestField(single_key, single_request).text.copy()) == "seed");
 
 	FLOWUI_CHECK(manager.requestField(multiline_key, multiline_request).mode ==
 				 TextFieldMode::MultiLine);
@@ -364,7 +364,7 @@ void test_text_field_modes(FlowUi::App& application) {
 				 EditResult::Applied);
 	const auto multiline = manager.requestField(multiline_key, multiline_request);
 	FLOWUI_CHECK(!multiline.text.contiguous());
-	FLOWUI_CHECK(multiline.text.copy() == "first\nsecond\nthird");
+	FLOWUI_CHECK(::FlowUi::test::requireValue(multiline.text.copy()) == "first\nsecond\nthird");
 	std::string visited_text;
 	visited_text.reserve(multiline.text.sizeBytes());
 	multiline.text.forEachChunk({0, multiline.text.sizeBytes()},
@@ -381,7 +381,7 @@ void test_text_field_modes(FlowUi::App& application) {
 	FLOWUI_CHECK(manager.applyEdits(multiline_key, std::span{&retained_multiline_newline, 1}) ==
 				 EditResult::Applied);
 	const auto multiline_with_last = manager.requestField(multiline_key, multiline_request);
-	FLOWUI_CHECK(multiline_with_last.text.copy() == "first\nsecond\nthird\nlast");
+	FLOWUI_CHECK(::FlowUi::test::requireValue(multiline_with_last.text.copy()) == "first\nsecond\nthird\nlast");
 
 	const TextReplacement flatten_multiline{.oldRange = {0, multiline_with_last.text.sizeBytes()},
 											.insertedText = "plain"};
@@ -401,7 +401,7 @@ void test_text_field_modes(FlowUi::App& application) {
 	FLOWUI_CHECK(!migrated_multiline.modeChangeRejected);
 	FLOWUI_CHECK(manager.applyEdits(single_key, std::span{&single_newline, 1}) ==
 				 EditResult::Applied);
-	FLOWUI_CHECK(manager.requestField(single_key, single_request).text.copy() == "seed\nnext");
+	FLOWUI_CHECK(::FlowUi::test::requireValue(manager.requestField(single_key, single_request).text.copy()) == "seed\nnext");
 	FLOWUI_CHECK(manager.removeField(single_key));
 	FLOWUI_CHECK(manager.removeField(multiline_key));
 	FLOWUI_CHECK(application.endFrame());
@@ -452,7 +452,7 @@ int main(int argument_count, char* arguments[]) {
 		config.window.height = 240;
 		config.vk.enableValidation = true;
 		config.vk.framesInFlight = 2;
-		FlowUi::App app = FlowUi::makeApplication(config);
+		FlowUi::App app = ::FlowUi::test::requireValue(FlowUi::makeApplication(config));
 		errorCapture = {};
 		const FlowUi::FlowUiError reportedError = FlowUi::makeError(
 			FlowUi::ErrorCode::InvalidWindowId,
@@ -469,7 +469,7 @@ int main(int argument_count, char* arguments[]) {
 		FLOWUI_CHECK(!app.hasWindow(FlowUi::InvalidWindowId));
 		// The default 2048 px font atlas must fit the StorageSystem GPU budget.
 		// Without a concrete face, all UI text (including input fields) is invisible.
-		FLOWUI_CHECK(app.fonts().getFontById(0) != nullptr);
+		FLOWUI_CHECK(::FlowUi::test::requireValue(app.fonts()).get().getFontById(0) != nullptr);
 
 		stage = "text field mode and explicit text views";
 #if FLOW_UI_DEV_MODE
@@ -508,24 +508,24 @@ int main(int argument_count, char* arguments[]) {
 		FLOWUI_CHECK(first > app.mainWindowId());
 		FLOWUI_CHECK(second > first);
 		FLOWUI_CHECK(app.hasWindow(first));
-		FLOWUI_CHECK(&app.ui(first) != &app.ui(second));
-		FLOWUI_CHECK(&app.ui().actions() == &app.actions());
-		FLOWUI_CHECK(&app.ui(first).actions() == &app.actions());
-		FLOWUI_CHECK(&app.ui(second).actions() == &app.actions());
-		FLOWUI_CHECK(app.nativeWindowHandle(first) != app.nativeWindowHandle(second));
+		FLOWUI_CHECK(&::FlowUi::test::requireValue(app.ui(first)).get() != &::FlowUi::test::requireValue(app.ui(second)).get());
+		FLOWUI_CHECK(&::FlowUi::test::requireValue(app.ui()).get().actions() == &::FlowUi::test::requireValue(app.actions()).get());
+		FLOWUI_CHECK(&::FlowUi::test::requireValue(app.ui(first)).get().actions() == &::FlowUi::test::requireValue(app.actions()).get());
+		FLOWUI_CHECK(&::FlowUi::test::requireValue(app.ui(second)).get().actions() == &::FlowUi::test::requireValue(app.actions()).get());
+		FLOWUI_CHECK(::FlowUi::test::requireValue(app.nativeWindowHandle(first)) != ::FlowUi::test::requireValue(app.nativeWindowHandle(second)));
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 		const FlowUi::ResourceKey automaticViewport{.name = "window-local"};
-		FLOWUI_CHECK(app.viewPorts(first).create(automaticViewport));
-		FLOWUI_CHECK(app.viewPorts(second).create(automaticViewport));
-		FLOWUI_CHECK(app.viewPorts(first).getTexture("window-local").handle !=
-			app.viewPorts(second).getTexture("window-local").handle);
-		FLOWUI_CHECK_THROWS(app.viewPorts(first).contains(FlowUi::ResourceKey{
+		FLOWUI_CHECK(::FlowUi::test::requireValue(app.viewPorts(first)).get().create(automaticViewport));
+		FLOWUI_CHECK(::FlowUi::test::requireValue(app.viewPorts(second)).get().create(automaticViewport));
+		FLOWUI_CHECK(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.viewPorts(first)).get().getTexture("window-local")).handle !=
+			::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.viewPorts(second)).get().getTexture("window-local")).handle);
+		FLOWUI_CHECK(!::FlowUi::test::requireValue(app.viewPorts(first)).get().contains(FlowUi::ResourceKey{
 			.name = "window-local", .window = second,
 		}));
 #endif
-		FLOWUI_CHECK(app.fonts().getFamilyId(FlowUi::ResourceKey{.name = "Default"}) ==
-			app.fonts().getFamilyId("Default"));
-		FLOWUI_CHECK_THROWS(app.fonts().getFamilyId(FlowUi::ResourceKey{
+		FLOWUI_CHECK(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.fonts()).get().getFamilyId(FlowUi::ResourceKey{.name = "Default"})) ==
+			::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.fonts()).get().getFamilyId("Default")));
+		FLOWUI_CHECK(!::FlowUi::test::requireValue(app.fonts()).get().getFamilyId(FlowUi::ResourceKey{
 			.name = "Default", .domain = FlowUi::ResourceDomain::Image,
 		}));
 
@@ -558,9 +558,9 @@ int main(int argument_count, char* arguments[]) {
 		FLOWUI_CHECK(app.endFrame(app.mainWindowId()));
 		const FlowUi::Status managedStatus = app.drawFrame();
 		FLOWUI_CHECK(!managedStatus);
-		FLOWUI_CHECK(managedStatus.error().code == FlowUi::ErrorCode::UiBuildCallbackFailed);
+		FLOWUI_CHECK(managedStatus.error().code == FlowUi::ErrorCode::ForeignExceptionObserved);
 		FLOWUI_CHECK(errorCapture.count == 1u);
-		FLOWUI_CHECK(errorCapture.event.error.code == FlowUi::ErrorCode::UiBuildCallbackFailed);
+		FLOWUI_CHECK(errorCapture.event.error.code == FlowUi::ErrorCode::ForeignExceptionObserved);
 		FLOWUI_CHECK(managedOrder.size() == 2u);
 		FLOWUI_CHECK(managedOrder[0] == *throwingManaged);
 		FLOWUI_CHECK(managedOrder[1] == *healthyManaged);
@@ -591,48 +591,35 @@ int main(int argument_count, char* arguments[]) {
 
 		stage = "window-local accessors";
 		app.setWindowTitle(first, "FlowUi Phase 4 renamed");
-		FlowUi::WindowInputConfig input = app.windowInputConfig(first);
+		FlowUi::WindowInputConfig input = ::FlowUi::test::requireValue(app.windowInputConfig(first));
 		input.stickyKeys = !input.stickyKeys;
 		app.setWindowInputConfig(first, input);
-		FLOWUI_CHECK(app.windowInputConfig(first).stickyKeys == input.stickyKeys);
+		FLOWUI_CHECK(::FlowUi::test::requireValue(app.windowInputConfig(first)).stickyKeys == input.stickyKeys);
 		FlowUi::WindowInputConfig rejectedInput = input;
 		rejectedInput.stickyKeys = !input.stickyKeys;
 		rejectedInput.stickyMouseButtons = !input.stickyMouseButtons;
 		FlowUi::FlowUiError titleThreadError{};
 		FlowUi::FlowUiError inputThreadError{};
-		std::exception_ptr unexpectedSetterFailure;
 		std::thread setterWorker([&] {
-			try {
-				app.setWindowTitle(first, "Rejected worker-thread title");
-			} catch (const FlowUi::FlowUiException& exception) {
-				titleThreadError = exception.error();
-			} catch (...) {
-				unexpectedSetterFailure = std::current_exception();
-			}
-			try {
-				app.setWindowInputConfig(first, rejectedInput);
-			} catch (const FlowUi::FlowUiException& exception) {
-				inputThreadError = exception.error();
-			} catch (...) {
-				unexpectedSetterFailure = std::current_exception();
-			}
+			const auto titleStatus = app.setWindowTitle(first, "Rejected worker-thread title");
+			if (!titleStatus) titleThreadError = titleStatus.error();
+			const auto inputStatus = app.setWindowInputConfig(first, rejectedInput);
+			if (!inputStatus) inputThreadError = inputStatus.error();
 		});
 		setterWorker.join();
-		if (unexpectedSetterFailure)
-			std::rethrow_exception(unexpectedSetterFailure);
 		FLOWUI_CHECK(titleThreadError.code == FlowUi::ErrorCode::WrongThread);
 		FLOWUI_CHECK(inputThreadError.code == FlowUi::ErrorCode::WrongThread);
-		const FlowUi::WindowInputConfig retainedInput = app.windowInputConfig(first);
+		const FlowUi::WindowInputConfig retainedInput = ::FlowUi::test::requireValue(app.windowInputConfig(first));
 		FLOWUI_CHECK(retainedInput.cursorMode == input.cursorMode);
 		FLOWUI_CHECK(retainedInput.stickyKeys == input.stickyKeys);
 		FLOWUI_CHECK(retainedInput.stickyMouseButtons == input.stickyMouseButtons);
 		FLOWUI_CHECK(retainedInput.lockKeyMods == input.lockKeyMods);
 		FLOWUI_CHECK(retainedInput.rawMouseMotion == input.rawMouseMotion);
-		FLOWUI_CHECK(app.windowSize(first).first > 0);
-		FLOWUI_CHECK(app.framebufferSize(first).second > 0);
+		FLOWUI_CHECK(::FlowUi::test::requireValue(app.windowSize(first)).first > 0);
+		FLOWUI_CHECK(::FlowUi::test::requireValue(app.framebufferSize(first)).second > 0);
 
 		stage = "independent resize";
-		auto* firstNative = static_cast<GLFWwindow*>(app.nativeWindowHandle(first));
+		auto* firstNative = static_cast<GLFWwindow*>(::FlowUi::test::requireValue(app.nativeWindowHandle(first)));
 		glfwSetWindowSize(firstNative, 360, 220);
 		FLOWUI_CHECK(app.pollEvents());
 		emptyFrame(app, first);
@@ -647,10 +634,12 @@ int main(int argument_count, char* arguments[]) {
 
 		stage = "secondary close";
 		app.setShouldClose(second, 1);
-		FLOWUI_CHECK(app.shouldClose(second));
+		FLOWUI_CHECK(::FlowUi::test::requireValue(app.shouldClose(second)));
 		FLOWUI_CHECK(app.destroyWindow(second));
 		FLOWUI_CHECK(!app.hasWindow(second));
-		FLOWUI_CHECK_THROWS(app.shouldClose(second));
+		const auto removedWindowClose = app.shouldClose(second);
+		FLOWUI_CHECK(!removedWindowClose);
+		FLOWUI_CHECK(removedWindowClose.error().code == FlowUi::ErrorCode::InvalidWindowId);
 		const auto mainDestroy = app.destroyWindow(app.mainWindowId());
 		FLOWUI_CHECK(!mainDestroy);
 		FLOWUI_CHECK(mainDestroy.error().code == FlowUi::ErrorCode::MainWindowDestructionForbidden);

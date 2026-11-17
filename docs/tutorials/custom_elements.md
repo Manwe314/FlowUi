@@ -140,7 +140,7 @@ static_assert(FlowUi::FlowElement<ColorPicker>);
 
 Each row inherits the picker invocation's parent scope. `Indexed("channel", channel_index)` intentionally makes state follow channel position; the channels have a fixed order. Use `Keyed()` for reorderable application objects whose identity should follow a stable key. Child Flow calls take local name tokens, and plain Clay children use `context.clayID("child")`.
 
-Resources are initialized lazily by `App::elements()` and shared across picker instances. No manual resource initialization or static state pool is required. For per-instance behavior, add a `State` alias and access it with `context.state()`; [Quick Start](quick_start.md) shows a stateful custom element.
+Resources are initialized lazily by `App::elements()` and shared across picker instances. No manual resource initialization or static state pool is required. For per-instance behavior, add a `State` alias and access it with `context.state()`; [Quick Start](docs/tutorials/quick_start.md) shows a stateful custom element.
 
 ## Construct a caller-owned container
 
@@ -176,7 +176,7 @@ After creating the application, retain a `ColorModel` outside the frame loop. Re
 
 ```cpp
 using namespace color_tutorial;
-auto& ui = application.ui();
+auto& ui = FlowUi::ValueOrThrow(application.ui()).get();
 ui.createElement(kWorkbenchPanel, "workbench").construct();
 ui.createElement(kColorPicker, "picker")
     .setParameters({.model = &color_model, .font_id = body_font})
@@ -219,4 +219,4 @@ FLOWUI_DEV_SCHEMA(PickerResources, FLOWUI_DEV_FIELD(PickerResources, colors))
 } // namespace color_tutorial
 ```
 
-Place descriptors beside their types before schema instantiation. The macros expand away when developer support is disabled. Normal builder invocation discovers element schemas; explicit `devCatalogue(...)` ingestion can populate offline definitions before first use. See [Developer Systems](developer_mode.md) for enum schemas, field constraints, catalogues, safe-point overrides, and durable baking.
+Place descriptors beside their types before schema instantiation. The macros expand away when developer support is disabled. Normal builder invocation discovers element schemas; explicit `devCatalogue(...)` ingestion can populate offline definitions before first use. See [Developer Systems](docs/tutorials/developer_mode.md) for enum schemas, field constraints, catalogues, safe-point overrides, and durable baking.

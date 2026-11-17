@@ -1,3 +1,4 @@
+#include "../../TestHarness.hpp"
 #include "FlowUi.hpp"
 #include "FlowUi/Public/managers/UiManager.hpp"
 #include "FlowUiTestRecordingProvider.hpp"
@@ -33,13 +34,13 @@ int main() {
 	configuration.vk.enableValidation = false;
 	configuration.resources.use_build_directory = false;
 	{
-		auto initialApplication = makeApplication(configuration);
-		const auto initialHandle = initialApplication.nativeWindowHandle();
+		auto initialApplication = ::FlowUi::test::requireValue(makeApplication(configuration));
+		const auto initialHandle = ::FlowUi::test::requireValue(initialApplication.nativeWindowHandle());
 		auto application = std::move(initialApplication);
-		if (application.nativeWindowHandle() != initialHandle)
+		if (::FlowUi::test::requireValue(application.nativeWindowHandle()) != initialHandle)
 			return fail(9);
-		application.ui().setClipboardText("FlowUi selected recording provider");
-		if (application.ui().clipboardText() != "FlowUi selected recording provider")
+		::FlowUi::test::requireValue(application.ui()).get().setClipboardText("FlowUi selected recording provider");
+		if (::FlowUi::test::requireValue(::FlowUi::test::requireValue(application.ui()).get().clipboardText()) != "FlowUi selected recording provider")
 			return fail(1);
 		const auto invalidWindow = application.createWindow(WindowConfigOverrides{.width = -1});
 		if (invalidWindow || invalidWindow.error().code != ErrorCode::InvalidWindowConfiguration)
@@ -56,7 +57,7 @@ int main() {
 		if (!second)
 			return fail(2);
 		auto third = application.createWindow(WindowConfigOverrides{.width = 220, .height = 160});
-		if (!third || application.nativeWindowHandle() != initialHandle)
+		if (!third || ::FlowUi::test::requireValue(application.nativeWindowHandle()) != initialHandle)
 			return fail(13);
 		if (!application.destroyWindow(*third))
 			return fail(14);
@@ -65,7 +66,7 @@ int main() {
 				return fail(8);
 			if (!application.beginFrame(application.mainWindowId()))
 				return fail(3);
-			application.ui().requestCursor(CursorType::PointingHand, 10);
+			::FlowUi::test::requireValue(application.ui()).get().requestCursor(CursorType::PointingHand, 10);
 			if (!application.endFrame(application.mainWindowId()) ||
 				!application.drawFrame(application.mainWindowId()))
 				return fail(3);

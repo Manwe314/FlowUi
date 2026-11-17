@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,71 +106,114 @@ $(function() {
   <div class="headertitle"><div class="title">AppElementWindows.hpp</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#pragma once</span></div>
-<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &lt;functional&gt;</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;memory&gt;</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &lt;utility&gt;</span></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span> </div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &quot;FlowUi/Private/windowService/ElementWindowRoot.hpp&quot;</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &quot;FlowUi/Public/App.hpp&quot;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &quot;FlowUi/Public/elementAuthoring/ElementBuilder.hpp&quot;</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &quot;FlowUi/Public/managers/UiManager.hpp&quot;</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="keyword">namespace </span>FlowUi {</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span> </div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="keyword">template</span> &lt;FlowElement Element&gt;</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;WindowId&gt;</a> <a class="code hl_function" href="classFlowUi_1_1App.html#a889cc3d99ebed212c56d563b3f1299a3">App::createWindow</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1WindowConfigOverrides.html">WindowConfigOverrides</a>&amp; overrides, <span class="keyword">const</span> Element&amp; element,</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>                                   ParametersOf&lt;Element&gt; params, <a class="code hl_struct" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> localName) {</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="classFlowUi_1_1App.html#a889cc3d99ebed212c56d563b3f1299a3">createWindow</a>(overrides, [element, params = std::move(params),</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>                                    localName](UiManager&amp; <a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>, WindowId) <span class="keyword">mutable</span> {</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>        detail::drawWindowRoot(</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>            <a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>, [&amp;] { <a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>.createElement(element, localName).setParameters(params).draw(); });</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    });</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>}</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="keyword">template</span> &lt;FlowElement Element&gt;</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;WindowId&gt;</a></div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><a class="code hl_function" href="classFlowUi_1_1App.html#a889cc3d99ebed212c56d563b3f1299a3">App::createWindow</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1WindowConfigOverrides.html">WindowConfigOverrides</a>&amp; overrides, <span class="keyword">const</span> Element&amp; element,</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>                  std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="classFlowUi_1_1ElementBuilder.html">ElementBuilder&lt;Element&gt;</a>&amp;, WindowId)&gt; configurator,</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>                  <a class="code hl_struct" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> localName) {</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keywordflow">if</span> (!configurator) {</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>        <span class="keywordflow">return</span> unexpectedError(</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>            makeError(ErrorCode::InvalidWindowConfiguration, ErrorSite::AppCreateWindow));</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    }</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="classFlowUi_1_1App.html#a889cc3d99ebed212c56d563b3f1299a3">createWindow</a>(overrides, [element, configurator = std::move(configurator),</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>                                    localName](UiManager&amp; <a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>, WindowId <span class="keywordtype">id</span>) {</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>        detail::drawWindowRoot(<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>, [&amp;] {</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>            <span class="keyword">auto</span> builder = <a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>.createElement(element, localName);</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>            configurator(builder, <span class="keywordtype">id</span>);</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>            builder.draw();</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>        });</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    });</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>}</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="keyword">template</span> &lt;FlowElement Element&gt;</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;WindowId&gt;</a> App::createWindowWithState(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1WindowConfigOverrides.html">WindowConfigOverrides</a>&amp; overrides,</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>                                            <span class="keyword">const</span> Element&amp; element,</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>                                            std::shared_ptr&lt;ParametersOf&lt;Element&gt;&gt; sharedParams,</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>                                            <a class="code hl_struct" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> localName) {</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    <span class="keywordflow">if</span> (!sharedParams) {</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>        <span class="keywordflow">return</span> unexpectedError(</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>            makeError(ErrorCode::InvalidWindowConfiguration, ErrorSite::AppCreateWindow));</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    }</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="classFlowUi_1_1App.html#a889cc3d99ebed212c56d563b3f1299a3">createWindow</a>(overrides, [element, sharedParams = std::move(sharedParams),</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>                                    localName](UiManager&amp; <a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>, WindowId) {</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>        detail::drawWindowRoot(</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>            <a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>, [&amp;] { <a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>.createElement(element, localName).setParameters(*sharedParams).draw(); });</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    });</div>
+<div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span></div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#pragma once</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;functional&gt;</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;memory&gt;</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;utility&gt;</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &quot;FlowUi/Private/windowService/ElementWindowRoot.hpp&quot;</span></div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &quot;FlowUi/Private/ApiBoundary.hpp&quot;</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &quot;FlowUi/Public/App.hpp&quot;</span></div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#include &quot;FlowUi/Public/elementAuthoring/ElementBuilder.hpp&quot;</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="preprocessor">#include &quot;FlowUi/Public/managers/UiManager.hpp&quot;</span></div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi.html">FlowUi</a> {</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">template</span> &lt;FlowElement Element&gt;</div>
+<div class="foldopen" id="foldopen00027" data-start="{" data-end="}">
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno"><a class="line" href="classFlowUi_1_1App.html#af0bcf58b26d3c7ffa86f4c2e992014f5">   27</a></span><a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;WindowId&gt;</a> <a class="code hl_function" href="classFlowUi_1_1App.html#a78e17a6746c19fcb9a8c837b020b4602">App::createWindow</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1WindowConfigOverrides.html">WindowConfigOverrides</a>&amp; overrides, <span class="keyword">const</span> <a class="code hl_enumvalue" href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818a231afe47f3f37d3808096b36c28b4ded">Element</a>&amp; element,</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>                                   <span class="keyword">const</span> <a class="code hl_typedef" href="namespaceFlowUi.html#a59018466ca1c85e41b73f6e6c11666cd">ParametersOf&lt;Element&gt;</a>&amp; params, <a class="code hl_struct" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> localName) <span class="keyword">noexcept</span> <span class="keywordflow">try</span> {</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="classFlowUi_1_1App.html#a78e17a6746c19fcb9a8c837b020b4602">createWindow</a>(overrides, [element, params,</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>                                    localName](<a class="code hl_class" href="classFlowUi_1_1UiManager.html">UiManager</a>&amp; <a class="code hl_function" href="classFlowUi_1_1App.html#a572a046213b0d0460376a5cbc4b5651d">ui</a>, <a class="code hl_typedef" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a>) <span class="keyword">mutable</span> {</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>        detail::drawWindowRoot(</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>            <a class="code hl_function" href="classFlowUi_1_1App.html#a572a046213b0d0460376a5cbc4b5651d">ui</a>, [&amp;] {</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>            <span class="keyword">auto</span> builder = <a class="code hl_function" href="classFlowUi_1_1App.html#a572a046213b0d0460376a5cbc4b5651d">ui</a>.createElement(element, localName);</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>            (void)builder.setParameters(params);</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>            builder.draw();</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>        });</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    });</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>} <span class="keywordflow">catch</span> (...) {</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">unexpectedError</a>(detail::currentExceptionError(<a class="code hl_enumvalue" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2ad875973cbb690f1db9095ecbfd4132ee">ErrorSite::AppCreateWindow</a>));</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>}</div>
+</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span></div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="keyword">template</span> &lt;FlowElement Element&gt;</div>
+<div class="foldopen" id="foldopen00051" data-start="{" data-end="}">
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno"><a class="line" href="classFlowUi_1_1App.html#a53895e719ba59d385e8aa4e15b1d6281">   51</a></span><a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;WindowId&gt;</a> <a class="code hl_function" href="classFlowUi_1_1App.html#a78e17a6746c19fcb9a8c837b020b4602">App::createWindow</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1WindowConfigOverrides.html">WindowConfigOverrides</a>&amp; overrides,</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keyword">const</span> <a class="code hl_enumvalue" href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818a231afe47f3f37d3808096b36c28b4ded">Element</a>&amp; element) <span class="keyword">noexcept</span> <span class="keywordflow">try</span> {</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    <span class="keyword">const</span> <a class="code hl_typedef" href="namespaceFlowUi.html#a59018466ca1c85e41b73f6e6c11666cd">ParametersOf&lt;Element&gt;</a> parameters{};</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="classFlowUi_1_1App.html#a78e17a6746c19fcb9a8c837b020b4602">createWindow</a>(overrides, element, parameters);</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>} <span class="keywordflow">catch</span> (...) {</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">unexpectedError</a>(detail::currentExceptionError(<a class="code hl_enumvalue" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2ad875973cbb690f1db9095ecbfd4132ee">ErrorSite::AppCreateWindow</a>));</div>
 <div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>}</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>} <span class="comment">// namespace FlowUi</span></div>
-<div class="ttc" id="aclassFlowUi_1_1App_html_a788f5bbe3b0d496a41a71494a5f485bc"><div class="ttname"><a href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">FlowUi::App::ui</a></div><div class="ttdeci">UiManager &amp; ui()</div><div class="ttdoc">Access the UI manager.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1App_html_a889cc3d99ebed212c56d563b3f1299a3"><div class="ttname"><a href="classFlowUi_1_1App.html#a889cc3d99ebed212c56d563b3f1299a3">FlowUi::App::createWindow</a></div><div class="ttdeci">Result&lt; WindowId &gt; createWindow(const WindowConfig &amp;config)</div><div class="ttdoc">Create and fully initialize a secondary window.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1ElementBuilder_html"><div class="ttname"><a href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a></div><div class="ttdoc">Builder returned by UiManager::createElement().</div><div class="ttdef"><b>Definition</b> ElementBuilder.hpp:160</div></div>
-<div class="ttc" id="aclassFlowUi_1_1Result_html"><div class="ttname"><a href="classFlowUi_1_1Result.html">FlowUi::Result</a></div><div class="ttdef"><b>Definition</b> Result.hpp:29</div></div>
+</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span></div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="keyword">template</span> &lt;FlowElement Element&gt;</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>Result&lt;WindowId&gt;</div>
+<div class="foldopen" id="foldopen00069" data-start="{" data-end="}">
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno"><a class="line" href="classFlowUi_1_1App.html#a970b41d13275aae3db8804db477564d6">   69</a></span><a class="code hl_function" href="classFlowUi_1_1App.html#a78e17a6746c19fcb9a8c837b020b4602">App::createWindow</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1WindowConfigOverrides.html">WindowConfigOverrides</a>&amp; overrides, <span class="keyword">const</span> <a class="code hl_enumvalue" href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818a231afe47f3f37d3808096b36c28b4ded">Element</a>&amp; element,</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>                  <span class="keyword">const</span> std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="classFlowUi_1_1ElementBuilder.html">ElementBuilder&lt;Element&gt;</a>&amp;, <a class="code hl_typedef" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a>)&gt;&amp; configurator,</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>                  <a class="code hl_struct" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> localName) <span class="keyword">noexcept</span> <span class="keywordflow">try</span> {</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keywordflow">if</span> (!configurator) {</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>        <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">unexpectedError</a>(</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>            <a class="code hl_function" href="namespaceFlowUi.html#acc43e6e141d7713ef0ae5e7919d2a6cb">makeError</a>(<a class="code hl_enumvalue" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a11fe7d47987098a74dd27d0a3623d4c5">ErrorCode::InvalidWindowConfiguration</a>, <a class="code hl_enumvalue" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2ad875973cbb690f1db9095ecbfd4132ee">ErrorSite::AppCreateWindow</a>));</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    }</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="classFlowUi_1_1App.html#a78e17a6746c19fcb9a8c837b020b4602">createWindow</a>(overrides, [element, configurator,</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>                                    localName](<a class="code hl_class" href="classFlowUi_1_1UiManager.html">UiManager</a>&amp; <a class="code hl_function" href="classFlowUi_1_1App.html#a572a046213b0d0460376a5cbc4b5651d">ui</a>, <a class="code hl_typedef" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> <span class="keywordtype">id</span>) {</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>        detail::drawWindowRoot(<a class="code hl_function" href="classFlowUi_1_1App.html#a572a046213b0d0460376a5cbc4b5651d">ui</a>, [&amp;] {</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>            <span class="keyword">auto</span> builder = <a class="code hl_function" href="classFlowUi_1_1App.html#a572a046213b0d0460376a5cbc4b5651d">ui</a>.createElement(element, localName);</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>            configurator(builder, <span class="keywordtype">id</span>);</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>            builder.draw();</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>        });</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    });</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>} <span class="keywordflow">catch</span> (...) {</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">unexpectedError</a>(detail::currentExceptionError(<a class="code hl_enumvalue" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2ad875973cbb690f1db9095ecbfd4132ee">ErrorSite::AppCreateWindow</a>));</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>}</div>
+</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span></div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span><span class="keyword">template</span> &lt;FlowElement Element&gt;</div>
+<div class="foldopen" id="foldopen00097" data-start="{" data-end="}">
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno"><a class="line" href="classFlowUi_1_1App.html#a7d67b07f656407feef7f53f3391a81a6">   97</a></span><a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;WindowId&gt;</a> <a class="code hl_function" href="classFlowUi_1_1App.html#a7d67b07f656407feef7f53f3391a81a6">App::createWindowWithState</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1WindowConfigOverrides.html">WindowConfigOverrides</a>&amp; overrides,</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>                                            <span class="keyword">const</span> <a class="code hl_enumvalue" href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818a231afe47f3f37d3808096b36c28b4ded">Element</a>&amp; element,</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>                                            std::shared_ptr&lt;<a class="code hl_typedef" href="namespaceFlowUi.html#a59018466ca1c85e41b73f6e6c11666cd">ParametersOf&lt;Element&gt;</a>&gt; sharedParams,</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>                                            <a class="code hl_struct" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> localName) <span class="keyword">noexcept</span> <span class="keywordflow">try</span> {</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    <span class="keywordflow">if</span> (!sharedParams) {</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>        <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">unexpectedError</a>(</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>            <a class="code hl_function" href="namespaceFlowUi.html#acc43e6e141d7713ef0ae5e7919d2a6cb">makeError</a>(<a class="code hl_enumvalue" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a11fe7d47987098a74dd27d0a3623d4c5">ErrorCode::InvalidWindowConfiguration</a>, <a class="code hl_enumvalue" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2ad875973cbb690f1db9095ecbfd4132ee">ErrorSite::AppCreateWindow</a>));</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    }</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="classFlowUi_1_1App.html#a78e17a6746c19fcb9a8c837b020b4602">createWindow</a>(overrides, [element, sharedParams = std::move(sharedParams),</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>                                    localName](<a class="code hl_class" href="classFlowUi_1_1UiManager.html">UiManager</a>&amp; <a class="code hl_function" href="classFlowUi_1_1App.html#a572a046213b0d0460376a5cbc4b5651d">ui</a>, <a class="code hl_typedef" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a>) {</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>        detail::drawWindowRoot(</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>            <a class="code hl_function" href="classFlowUi_1_1App.html#a572a046213b0d0460376a5cbc4b5651d">ui</a>, [&amp;] {</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>            <span class="keyword">auto</span> builder = <a class="code hl_function" href="classFlowUi_1_1App.html#a572a046213b0d0460376a5cbc4b5651d">ui</a>.createElement(element, localName);</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>            (void)builder.setParameters(*sharedParams);</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>            builder.draw();</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>        });</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    });</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>} <span class="keywordflow">catch</span> (...) {</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">unexpectedError</a>(detail::currentExceptionError(<a class="code hl_enumvalue" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2ad875973cbb690f1db9095ecbfd4132ee">ErrorSite::AppCreateWindow</a>));</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>}</div>
+</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span> </div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html_a572a046213b0d0460376a5cbc4b5651d"><div class="ttname"><a href="classFlowUi_1_1App.html#a572a046213b0d0460376a5cbc4b5651d">FlowUi::App::ui</a></div><div class="ttdeci">Result&lt; std::reference_wrapper&lt; UiManager &gt; &gt; ui() noexcept</div><div class="ttdoc">Access the UI manager.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html_a78e17a6746c19fcb9a8c837b020b4602"><div class="ttname"><a href="classFlowUi_1_1App.html#a78e17a6746c19fcb9a8c837b020b4602">FlowUi::App::createWindow</a></div><div class="ttdeci">Result&lt; WindowId &gt; createWindow(const WindowConfig &amp;config) noexcept</div><div class="ttdoc">Create and fully initialize a secondary window.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html_a7d67b07f656407feef7f53f3391a81a6"><div class="ttname"><a href="classFlowUi_1_1App.html#a7d67b07f656407feef7f53f3391a81a6">FlowUi::App::createWindowWithState</a></div><div class="ttdeci">Result&lt; WindowId &gt; createWindowWithState(const WindowConfigOverrides &amp;overrides, const Element &amp;element, std::shared_ptr&lt; ParametersOf&lt; Element &gt; &gt; sharedParams, LocalElementName localName=LocalElementName{&quot;window/root-element&quot;}) noexcept</div><div class="ttdoc">Create a managed window that reads shared root parameters each frame.</div><div class="ttdef"><b>Definition</b> AppElementWindows.hpp:97</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ElementBuilder_html"><div class="ttname"><a href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a></div><div class="ttdoc">Builder returned by UiManager::createElement().</div><div class="ttdef"><b>Definition</b> ElementBuilder.hpp:207</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html"><div class="ttname"><a href="classFlowUi_1_1Result.html">FlowUi::Result</a></div><div class="ttdef"><b>Definition</b> Result.hpp:77</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:110</div></div>
+<div class="ttc" id="anamespaceFlowUi_html"><div class="ttname"><a href="namespaceFlowUi.html">FlowUi</a></div><div class="ttdef"><b>Definition</b> App.hpp:29</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a2213190865e0806b881be5624c2f3ef6"><div class="ttname"><a href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">FlowUi::WindowId</a></div><div class="ttdeci">uint64_t WindowId</div><div class="ttdoc">Stable identity of a native FlowUi window.</div><div class="ttdef"><b>Definition</b> WindowId.hpp:8</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a59018466ca1c85e41b73f6e6c11666cd"><div class="ttname"><a href="namespaceFlowUi.html#a59018466ca1c85e41b73f6e6c11666cd">FlowUi::ParametersOf</a></div><div class="ttdeci">typename decltype( detail::element::parametersTypeIdentity&lt; Element &gt;())::type ParametersOf</div><div class="ttdef"><b>Definition</b> ElementConcepts.hpp:19</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a6c0cc7e54c56965df307ef7660db14ea"><div class="ttname"><a href="namespaceFlowUi.html#a6c0cc7e54c56965df307ef7660db14ea">FlowUi::unexpectedError</a></div><div class="ttdeci">constexpr detail::UnexpectedFlowUiError unexpectedError(FlowUiError error) noexcept</div><div class="ttdef"><b>Definition</b> Result.hpp:459</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a7dfe1f1cc6456aa2441d007e1ddd26a2ad875973cbb690f1db9095ecbfd4132ee"><div class="ttname"><a href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2ad875973cbb690f1db9095ecbfd4132ee">FlowUi::ErrorSite::AppCreateWindow</a></div><div class="ttdeci">@ AppCreateWindow</div><div class="ttdef"><b>Definition</b> ErrorSites.hpp:24</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a84c8eba1ce3d492712d1998687e6d818a231afe47f3f37d3808096b36c28b4ded"><div class="ttname"><a href="namespaceFlowUi.html#a84c8eba1ce3d492712d1998687e6d818a231afe47f3f37d3808096b36c28b4ded">FlowUi::ErrorDomain::Element</a></div><div class="ttdeci">@ Element</div><div class="ttdef"><b>Definition</b> ErrorTypes.hpp:34</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a8b5266e6d5dd54d23806b9d4be835d76a11fe7d47987098a74dd27d0a3623d4c5"><div class="ttname"><a href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76a11fe7d47987098a74dd27d0a3623d4c5">FlowUi::ErrorCode::InvalidWindowConfiguration</a></div><div class="ttdeci">@ InvalidWindowConfiguration</div><div class="ttdef"><b>Definition</b> ErrorCodeTypes.hpp:43</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_acc43e6e141d7713ef0ae5e7919d2a6cb"><div class="ttname"><a href="namespaceFlowUi.html#acc43e6e141d7713ef0ae5e7919d2a6cb">FlowUi::makeError</a></div><div class="ttdeci">constexpr FlowUiError makeError(ErrorCode code, ErrorSite site, std::uint64_t subject=0u, std::uint64_t auxiliary=0u, std::uint32_t nativeCode=0u) noexcept</div><div class="ttdef"><b>Definition</b> ErrorValue.hpp:118</div></div>
 <div class="ttc" id="astructFlowUi_1_1LocalElementName_html"><div class="ttname"><a href="structFlowUi_1_1LocalElementName.html">FlowUi::LocalElementName</a></div><div class="ttdef"><b>Definition</b> ElementID.hpp:33</div></div>
-<div class="ttc" id="astructFlowUi_1_1WindowConfigOverrides_html"><div class="ttname"><a href="structFlowUi_1_1WindowConfigOverrides.html">FlowUi::WindowConfigOverrides</a></div><div class="ttdef"><b>Definition</b> WindowConfig.hpp:59</div></div>
+<div class="ttc" id="astructFlowUi_1_1WindowConfigOverrides_html"><div class="ttname"><a href="structFlowUi_1_1WindowConfigOverrides.html">FlowUi::WindowConfigOverrides</a></div><div class="ttdef"><b>Definition</b> WindowConfig.hpp:47</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

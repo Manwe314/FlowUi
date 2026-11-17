@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -115,52 +115,67 @@ $(function() {
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &quot;FlowUi/Private/actionService/AppActionIdentity.hpp&quot;</span></div>
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &quot;FlowUi/Public/BuildConfig.hpp&quot;</span></div>
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">namespace </span>FlowUi {</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi.html">FlowUi</a> {</div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span></div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
-<div class="foldopen" id="foldopen00016" data-start="{" data-end="};">
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="structFlowUi_1_1AppActionID.html">   16</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1AppActionID.html">AppActionID</a> {</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    uint64_t value;</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    std::string_view debugName;</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    [[nodiscard]] <span class="keyword">constexpr</span> <span class="keyword">explicit</span> <span class="keyword">operator</span> bool() <span class="keyword">const</span> <span class="keyword">noexcept</span> {</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>        <span class="keywordflow">return</span> value != 0;</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    }</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    [[nodiscard]] <span class="keyword">friend</span> <span class="keyword">constexpr</span> <span class="keywordtype">bool</span> operator==(<a class="code hl_struct" href="structFlowUi_1_1AppActionID.html">AppActionID</a> lhs, <a class="code hl_struct" href="structFlowUi_1_1AppActionID.html">AppActionID</a> rhs) <span class="keyword">noexcept</span> {</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>        <span class="keywordflow">return</span> lhs.value == rhs.value;</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    }</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>};</div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span></div>
+<div class="foldopen" id="foldopen00020" data-start="{" data-end="};">
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno"><a class="line" href="structFlowUi_1_1AppActionID.html">   20</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1AppActionID.html">AppActionID</a> {</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno"><a class="line" href="structFlowUi_1_1AppActionID.html#a66ff5823b1e41a832ff8badfe82450ed">   22</a></span>    uint64_t <a class="code hl_variable" href="structFlowUi_1_1AppActionID.html#a66ff5823b1e41a832ff8badfe82450ed">value</a>;</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno"><a class="line" href="structFlowUi_1_1AppActionID.html#a05a1eb6bb5fc28088ac510442e9c8f1e">   25</a></span>    std::string_view <a class="code hl_variable" href="structFlowUi_1_1AppActionID.html#a05a1eb6bb5fc28088ac510442e9c8f1e">debugName</a>;</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span></div>
+<div class="foldopen" id="foldopen00039" data-start="{" data-end="}">
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno"><a class="line" href="structFlowUi_1_1AppActionID.html#aa8f5834c9c2dbbcd98326fbd93d1f022">   39</a></span>    [[nodiscard]] <span class="keyword">constexpr</span> <span class="keyword">explicit</span> <span class="keyword">operator</span> bool() const noexcept {</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>        <span class="keywordflow">return</span> <a class="code hl_variable" href="structFlowUi_1_1AppActionID.html#a66ff5823b1e41a832ff8badfe82450ed">value</a> != 0;</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    }</div>
 </div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1AppActionID.html">AppActionID</a> InvalidAppActionID{};</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="keyword">template</span> &lt;std::<span class="keywordtype">size_t</span> N&gt;</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>[[nodiscard]] <span class="keyword">consteval</span> AppActionID AppAction(<span class="keyword">const</span> <span class="keywordtype">char</span> (&amp;name)[N]) <span class="keyword">noexcept</span> {</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    <span class="keyword">const</span> std::string_view view = detail::identity_hash::literalView(name);</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <span class="keywordflow">return</span> AppActionID{</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>        .value = detail::app_action_id::make(view),</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>        .debugName = view,</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    };</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>}</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
-<div class="foldopen" id="foldopen00045" data-start="{" data-end="};">
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno"><a class="line" href="structFlowUi_1_1AppActionIDHash.html">   45</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1AppActionIDHash.html">AppActionIDHash</a> {</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    [[nodiscard]] <span class="keyword">constexpr</span> std::size_t operator()(<a class="code hl_struct" href="structFlowUi_1_1AppActionID.html">AppActionID</a> <span class="keywordtype">id</span>) <span class="keyword">const</span> <span class="keyword">noexcept</span> {</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>        <span class="keywordflow">return</span> <span class="keyword">static_cast&lt;</span>std::size_t<span class="keyword">&gt;</span>(<span class="keywordtype">id</span>.value ^ (<span class="keywordtype">id</span>.value &gt;&gt; 32u));</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    }</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>};</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span></div>
+<div class="foldopen" id="foldopen00054" data-start="{" data-end="}">
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno"><a class="line" href="structFlowUi_1_1AppActionID.html#ad09aada727466ba463d8c62dea8faa9f">   54</a></span>    [[nodiscard]] <span class="keyword">friend</span> <span class="keyword">constexpr</span> <span class="keywordtype">bool</span> <a class="code hl_friend" href="structFlowUi_1_1AppActionID.html#ad09aada727466ba463d8c62dea8faa9f">operator==</a>(<a class="code hl_struct" href="structFlowUi_1_1AppActionID.html">AppActionID</a> lhs, <a class="code hl_struct" href="structFlowUi_1_1AppActionID.html">AppActionID</a> rhs) <span class="keyword">noexcept</span> {</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>        <span class="keywordflow">return</span> lhs.value == rhs.value;</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    }</div>
 </div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span></div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>} <span class="comment">// namespace FlowUi</span></div>
-<div class="ttc" id="astructFlowUi_1_1AppActionIDHash_html"><div class="ttname"><a href="structFlowUi_1_1AppActionIDHash.html">FlowUi::AppActionIDHash</a></div><div class="ttdef"><b>Definition</b> AppActionID.hpp:45</div></div>
-<div class="ttc" id="astructFlowUi_1_1AppActionID_html"><div class="ttname"><a href="structFlowUi_1_1AppActionID.html">FlowUi::AppActionID</a></div><div class="ttdef"><b>Definition</b> AppActionID.hpp:16</div></div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>};</div>
+</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span></div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno"><a class="line" href="group__flowui__action__manager.html#ga6b2e429a8cc9a1e51d3af4d26496c487">   60</a></span><span class="keyword">inline</span> <span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1AppActionID.html">AppActionID</a> <a class="code hl_variable" href="group__flowui__action__manager.html#ga6b2e429a8cc9a1e51d3af4d26496c487">InvalidAppActionID</a>{};</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span></div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span><span class="keyword">template</span> &lt;std::<span class="keywordtype">size_t</span> N&gt;</div>
+<div class="foldopen" id="foldopen00072" data-start="{" data-end="}">
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno"><a class="line" href="group__flowui__action__manager.html#ga78191cadc43d03c544c284c66abbd22a">   72</a></span>[[nodiscard]] <span class="keyword">consteval</span> <a class="code hl_struct" href="structFlowUi_1_1AppActionID.html">AppActionID</a> <a class="code hl_function" href="group__flowui__action__manager.html#ga78191cadc43d03c544c284c66abbd22a">AppAction</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> (&amp;name)[N]) <span class="keyword">noexcept</span> {</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    <span class="keyword">const</span> std::string_view view = detail::identity_hash::literalView(name);</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <span class="keywordflow">return</span> <a class="code hl_struct" href="structFlowUi_1_1AppActionID.html">AppActionID</a>{</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>        .value = detail::app_action_id::make(view),</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>        .debugName = view,</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    };</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>}</div>
+</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span></div>
+<div class="foldopen" id="foldopen00083" data-start="{" data-end="};">
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno"><a class="line" href="structFlowUi_1_1AppActionIDHash.html">   83</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1AppActionIDHash.html">AppActionIDHash</a> {</div>
+<div class="foldopen" id="foldopen00095" data-start="{" data-end="}">
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno"><a class="line" href="structFlowUi_1_1AppActionIDHash.html#acfb64799de70a1ce45be29830d6b5f74">   95</a></span>    [[nodiscard]] <span class="keyword">constexpr</span> std::size_t <a class="code hl_function" href="structFlowUi_1_1AppActionIDHash.html#acfb64799de70a1ce45be29830d6b5f74">operator()</a>(<a class="code hl_struct" href="structFlowUi_1_1AppActionID.html">AppActionID</a> <span class="keywordtype">id</span>) <span class="keyword">const</span> <span class="keyword">noexcept</span> {</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>        <span class="keywordflow">return</span> <span class="keyword">static_cast&lt;</span>std::size_t<span class="keyword">&gt;</span>(<span class="keywordtype">id</span>.value ^ (<span class="keywordtype">id</span>.value &gt;&gt; 32u));</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    }</div>
+</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>};</div>
+</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span></div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span> </div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="ttc" id="agroup__flowui__action__manager_html_ga6b2e429a8cc9a1e51d3af4d26496c487"><div class="ttname"><a href="group__flowui__action__manager.html#ga6b2e429a8cc9a1e51d3af4d26496c487">FlowUi::InvalidAppActionID</a></div><div class="ttdeci">constexpr AppActionID InvalidAppActionID</div><div class="ttdef"><b>Definition</b> AppActionID.hpp:60</div></div>
+<div class="ttc" id="agroup__flowui__action__manager_html_ga78191cadc43d03c544c284c66abbd22a"><div class="ttname"><a href="group__flowui__action__manager.html#ga78191cadc43d03c544c284c66abbd22a">FlowUi::AppAction</a></div><div class="ttdeci">consteval AppActionID AppAction(const char(&amp;name)[N]) noexcept</div><div class="ttdef"><b>Definition</b> AppActionID.hpp:72</div></div>
+<div class="ttc" id="anamespaceFlowUi_html"><div class="ttname"><a href="namespaceFlowUi.html">FlowUi</a></div><div class="ttdef"><b>Definition</b> App.hpp:29</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppActionIDHash_html"><div class="ttname"><a href="structFlowUi_1_1AppActionIDHash.html">FlowUi::AppActionIDHash</a></div><div class="ttdef"><b>Definition</b> AppActionID.hpp:83</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppActionIDHash_html_acfb64799de70a1ce45be29830d6b5f74"><div class="ttname"><a href="structFlowUi_1_1AppActionIDHash.html#acfb64799de70a1ce45be29830d6b5f74">FlowUi::AppActionIDHash::operator()</a></div><div class="ttdeci">constexpr std::size_t operator()(AppActionID id) const noexcept</div><div class="ttdef"><b>Definition</b> AppActionID.hpp:95</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppActionID_html"><div class="ttname"><a href="structFlowUi_1_1AppActionID.html">FlowUi::AppActionID</a></div><div class="ttdef"><b>Definition</b> AppActionID.hpp:20</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppActionID_html_a05a1eb6bb5fc28088ac510442e9c8f1e"><div class="ttname"><a href="structFlowUi_1_1AppActionID.html#a05a1eb6bb5fc28088ac510442e9c8f1e">FlowUi::AppActionID::debugName</a></div><div class="ttdeci">std::string_view debugName</div><div class="ttdef"><b>Definition</b> AppActionID.hpp:25</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppActionID_html_a66ff5823b1e41a832ff8badfe82450ed"><div class="ttname"><a href="structFlowUi_1_1AppActionID.html#a66ff5823b1e41a832ff8badfe82450ed">FlowUi::AppActionID::value</a></div><div class="ttdeci">uint64_t value</div><div class="ttdef"><b>Definition</b> AppActionID.hpp:22</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppActionID_html_ad09aada727466ba463d8c62dea8faa9f"><div class="ttname"><a href="structFlowUi_1_1AppActionID.html#ad09aada727466ba463d8c62dea8faa9f">FlowUi::AppActionID::operator==</a></div><div class="ttdeci">friend constexpr bool operator==(AppActionID lhs, AppActionID rhs) noexcept</div><div class="ttdef"><b>Definition</b> AppActionID.hpp:54</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

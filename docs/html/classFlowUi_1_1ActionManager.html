@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,61 +106,257 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::ActionManager Class Reference<div class="ingroups"><a class="el" href="group__flowui__action__manager.html">Action Manager</a></div></div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>App-owned dispatcher for retained semantic actions and compact UI calls.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ActionManager_8hpp_source.html">ActionManager.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:DevActionView" id="r_DevActionView"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1ActionManager_1_1DevActionView.html">DevActionView</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callable-free action metadata borrowed during a developer visitor.  <a href="structFlowUi_1_1ActionManager_1_1DevActionView.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-types" class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
 <tr class="memitem:a6c4a154f38d961f9f665b8e9b2a51693" id="r_a6c4a154f38d961f9f665b8e9b2a51693"><td class="memItemLeft"><a id="a6c4a154f38d961f9f665b8e9b2a51693" name="a6c4a154f38d961f9f665b8e9b2a51693"></a>
 using&#160;</td><td class="memItemRight"><b>DevActionVisitor</b> = bool (*)(void*, const <a class="el" href="structFlowUi_1_1ActionManager_1_1DevActionView.html">DevActionView</a>&amp;)</td></tr>
+<tr class="memdesc:a6c4a154f38d961f9f665b8e9b2a51693"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronous observation callback; return false to stop visitation. Arguments are borrowed for the call. <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ae8c30000a8d97181ef05a7a2a7cfe7f1" id="r_ae8c30000a8d97181ef05a7a2a7cfe7f1"><td class="memItemLeft"><a id="ae8c30000a8d97181ef05a7a2a7cfe7f1" name="ae8c30000a8d97181ef05a7a2a7cfe7f1"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>devRevision</b> () const noexcept</td></tr>
+<tr class="memdesc:ae8c30000a8d97181ef05a7a2a7cfe7f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the current development-observation revision; zero when support is disabled. <br /></td></tr>
 <tr class="memitem:af2252571084e62694871800358cc9bae" id="r_af2252571084e62694871800358cc9bae"><td class="memItemLeft"><a id="af2252571084e62694871800358cc9bae" name="af2252571084e62694871800358cc9bae"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>devActionCount</b> () const noexcept</td></tr>
-<tr class="memitem:a4be8dcd4f2172f5cc807b75b8b551bff" id="r_a4be8dcd4f2172f5cc807b75b8b551bff"><td class="memItemLeft"><a id="a4be8dcd4f2172f5cc807b75b8b551bff" name="a4be8dcd4f2172f5cc807b75b8b551bff"></a>
-bool&#160;</td><td class="memItemRight"><b>visitDevActions</b> (void *userData, DevActionVisitor visitor) const</td></tr>
-<tr class="memitem:a4e53d527f206e33f4f9fa0a45a04c86c" id="r_a4e53d527f206e33f4f9fa0a45a04c86c"><td class="memItemLeft">std::optional&lt; <a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a4e53d527f206e33f4f9fa0a45a04c86c">makeDevActionCall</a> (ActionCallKind kind, std::uint64_t stableId, std::uint64_t expectedCallableTypeHash=0, std::uint64_t expectedResultTypeHash=0) const noexcept</td></tr>
-<tr class="memitem:a9dadb9f6dbd7f623295eb5d2f78d9852" id="r_a9dadb9f6dbd7f623295eb5d2f78d9852"><td class="memItemLeft"><a id="a9dadb9f6dbd7f623295eb5d2f78d9852" name="a9dadb9f6dbd7f623295eb5d2f78d9852"></a>
-&#160;</td><td class="memItemRight"><b>ActionManager</b> (const ActionManager &amp;)=delete</td></tr>
-<tr class="memitem:a7c1432e2cffddb0e0523dbf0173a1d06" id="r_a7c1432e2cffddb0e0523dbf0173a1d06"><td class="memItemLeft"><a id="a7c1432e2cffddb0e0523dbf0173a1d06" name="a7c1432e2cffddb0e0523dbf0173a1d06"></a>
-ActionManager &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const ActionManager &amp;)=delete</td></tr>
-<tr class="memitem:a98dcd22cd0558dea550a121091011917" id="r_a98dcd22cd0558dea550a121091011917"><td class="memItemLeft"><a id="a98dcd22cd0558dea550a121091011917" name="a98dcd22cd0558dea550a121091011917"></a>
-&#160;</td><td class="memItemRight"><b>ActionManager</b> (ActionManager &amp;&amp;)=delete</td></tr>
-<tr class="memitem:aa6b1e2c8978446325d31135e772bb8b5" id="r_aa6b1e2c8978446325d31135e772bb8b5"><td class="memItemLeft"><a id="aa6b1e2c8978446325d31135e772bb8b5" name="aa6b1e2c8978446325d31135e772bb8b5"></a>
-ActionManager &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (ActionManager &amp;&amp;)=delete</td></tr>
-<tr class="memitem:ae96f24f680a3556f03d86d0a4abdb642" id="r_ae96f24f680a3556f03d86d0a4abdb642"><td class="memItemLeft"><a id="ae96f24f680a3556f03d86d0a4abdb642" name="ae96f24f680a3556f03d86d0a4abdb642"></a>
-AppActions &amp;&#160;</td><td class="memItemRight"><b>appActions</b> () noexcept</td></tr>
-<tr class="memitem:a66ced8c5ba9be1dcf8653520fb85689c" id="r_a66ced8c5ba9be1dcf8653520fb85689c"><td class="memItemLeft"><a id="a66ced8c5ba9be1dcf8653520fb85689c" name="a66ced8c5ba9be1dcf8653520fb85689c"></a>
-const AppActions &amp;&#160;</td><td class="memItemRight"><b>appActions</b> () const noexcept</td></tr>
-<tr class="memitem:a7e5ba4114424169ad5433e216b19065d" id="r_a7e5ba4114424169ad5433e216b19065d"><td class="memItemLeft"><a id="a7e5ba4114424169ad5433e216b19065d" name="a7e5ba4114424169ad5433e216b19065d"></a>
-UiActions &amp;&#160;</td><td class="memItemRight"><b>uiActions</b> () noexcept</td></tr>
-<tr class="memitem:a8e960a9657e88a82b4c21fa9519b6aea" id="r_a8e960a9657e88a82b4c21fa9519b6aea"><td class="memItemLeft"><a id="a8e960a9657e88a82b4c21fa9519b6aea" name="a8e960a9657e88a82b4c21fa9519b6aea"></a>
-const UiActions &amp;&#160;</td><td class="memItemRight"><b>uiActions</b> () const noexcept</td></tr>
-<tr class="memitem:aa7319536e0c72c56ac52eab6ca52bd57" id="r_aa7319536e0c72c56ac52eab6ca52bd57"><td class="memItemLeft"><a id="aa7319536e0c72c56ac52eab6ca52bd57" name="aa7319536e0c72c56ac52eab6ca52bd57"></a>
-ActionInvocationStatus&#160;</td><td class="memItemRight"><b>invoke</b> (<a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a> call, <a class="el" href="structFlowUi_1_1ActionInvocationSource.html">ActionInvocationSource</a> source={})</td></tr>
-<tr class="memitem:a995b9fdfa75ad1eab3a5b6a9355c733b" id="r_a995b9fdfa75ad1eab3a5b6a9355c733b"><td class="memItemLeft"><a id="a995b9fdfa75ad1eab3a5b6a9355c733b" name="a995b9fdfa75ad1eab3a5b6a9355c733b"></a>
-<a class="el" href="structFlowUi_1_1ActionAvailability.html">ActionAvailability</a>&#160;</td><td class="memItemRight"><b>availability</b> (<a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a> call) const noexcept</td></tr>
+<tr class="memdesc:af2252571084e62694871800358cc9bae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of currently published entries in this development catalogue. <br /></td></tr>
+<tr class="memitem:a127e485eecafe5a3a05dd8f4c9ceac0d" id="r_a127e485eecafe5a3a05dd8f4c9ceac0d"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a127e485eecafe5a3a05dd8f4c9ceac0d">visitDevActions</a> (void *userData, <a class="el" href="#a6c4a154f38d961f9f665b8e9b2a51693">DevActionVisitor</a> visitor) const noexcept</td></tr>
+<tr class="memdesc:a127e485eecafe5a3a05dd8f4c9ceac0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Available only with FLOW_UI_DEV_MODE. Synchronously visit borrowed catalogue entries. Successful true means the visit completed; successful false means a visitor stopped early or storage/visitor was unavailable. Thrown visitor/storage failures are converted to structured errors. Do not retain views or references to their metadata beyond the call.  <br /></td></tr>
+<tr class="memitem:a4e53d527f206e33f4f9fa0a45a04c86c" id="r_a4e53d527f206e33f4f9fa0a45a04c86c"><td class="memItemLeft">std::optional&lt; <a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a4e53d527f206e33f4f9fa0a45a04c86c">makeDevActionCall</a> (<a class="el" href="group__flowui__action__manager.html#ga60a85a4c4368cb76aff45496b33b19cd">ActionCallKind</a> kind, std::uint64_t stableId, std::uint64_t expectedCallableTypeHash=0, std::uint64_t expectedResultTypeHash=0) const noexcept</td></tr>
+<tr class="memitem:aa1c3f5543c4a2ea862f217af44c9e2ef" id="r_aa1c3f5543c4a2ea862f217af44c9e2ef"><td class="memItemLeft"><a id="aa1c3f5543c4a2ea862f217af44c9e2ef" name="aa1c3f5543c4a2ea862f217af44c9e2ef"></a>
+void&#160;</td><td class="memItemRight"><b>appendDevMemorySamples</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1MemorySampleSink.html">devSystems::MemorySampleSink</a> &amp;sink) const noexcept</td></tr>
+<tr class="memdesc:aa1c3f5543c4a2ea862f217af44c9e2ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append observation-only memory accounting to sink without transferring storage ownership. <br /></td></tr>
+<tr class="memitem:a4645ba5f9bbc62747d47f1a1293958c4" id="r_a4645ba5f9bbc62747d47f1a1293958c4"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a4645ba5f9bbc62747d47f1a1293958c4">ActionManager</a> () noexcept</td></tr>
+<tr class="memdesc:a4645ba5f9bbc62747d47f1a1293958c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a detached manager; application code normally obtains the initialized App-owned manager.  <br /></td></tr>
+<tr class="memitem:acac6372b2c3c5a99fdc244c892588345" id="r_acac6372b2c3c5a99fdc244c892588345"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#acac6372b2c3c5a99fdc244c892588345">~ActionManager</a> ()</td></tr>
+<tr class="memdesc:acac6372b2c3c5a99fdc244c892588345"><td class="mdescLeft">&#160;</td><td class="mdescRight">Release owned service data. The <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> controls this manager lifetime.  <br /></td></tr>
+<tr class="memitem:a9dadb9f6dbd7f623295eb5d2f78d9852" id="r_a9dadb9f6dbd7f623295eb5d2f78d9852"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a9dadb9f6dbd7f623295eb5d2f78d9852">ActionManager</a> (const ActionManager &amp;)=delete</td></tr>
+<tr class="memdesc:a9dadb9f6dbd7f623295eb5d2f78d9852"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copying and moving are disabled as declared; use the App-owned instance by reference.  <br /></td></tr>
+<tr class="memitem:a7c1432e2cffddb0e0523dbf0173a1d06" id="r_a7c1432e2cffddb0e0523dbf0173a1d06"><td class="memItemLeft"><a class="el" href="#a4645ba5f9bbc62747d47f1a1293958c4">ActionManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a7c1432e2cffddb0e0523dbf0173a1d06">operator=</a> (const <a class="el" href="#a4645ba5f9bbc62747d47f1a1293958c4">ActionManager</a> &amp;)=delete</td></tr>
+<tr class="memdesc:a7c1432e2cffddb0e0523dbf0173a1d06"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copying and moving are disabled as declared; use the App-owned instance by reference.  <br /></td></tr>
+<tr class="memitem:a98dcd22cd0558dea550a121091011917" id="r_a98dcd22cd0558dea550a121091011917"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a98dcd22cd0558dea550a121091011917">ActionManager</a> (ActionManager &amp;&amp;)=delete</td></tr>
+<tr class="memdesc:a98dcd22cd0558dea550a121091011917"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copying and moving are disabled as declared; use the App-owned instance by reference.  <br /></td></tr>
+<tr class="memitem:aa6b1e2c8978446325d31135e772bb8b5" id="r_aa6b1e2c8978446325d31135e772bb8b5"><td class="memItemLeft"><a class="el" href="#a4645ba5f9bbc62747d47f1a1293958c4">ActionManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#aa6b1e2c8978446325d31135e772bb8b5">operator=</a> (<a class="el" href="#a4645ba5f9bbc62747d47f1a1293958c4">ActionManager</a> &amp;&amp;)=delete</td></tr>
+<tr class="memdesc:aa6b1e2c8978446325d31135e772bb8b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copying and moving are disabled as declared; use the App-owned instance by reference.  <br /></td></tr>
+<tr class="memitem:ae96f24f680a3556f03d86d0a4abdb642" id="r_ae96f24f680a3556f03d86d0a4abdb642"><td class="memItemLeft">AppActions &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ae96f24f680a3556f03d86d0a4abdb642">appActions</a> () noexcept</td></tr>
+<tr class="memdesc:ae96f24f680a3556f03d86d0a4abdb642"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the mutable or const facade for retained application actions. The manager owns this facade.  <br /></td></tr>
+<tr class="memitem:a66ced8c5ba9be1dcf8653520fb85689c" id="r_a66ced8c5ba9be1dcf8653520fb85689c"><td class="memItemLeft">const AppActions &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a66ced8c5ba9be1dcf8653520fb85689c">appActions</a> () const noexcept</td></tr>
+<tr class="memdesc:a66ced8c5ba9be1dcf8653520fb85689c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the mutable or const facade for retained application actions. The manager owns this facade.  <br /></td></tr>
+<tr class="memitem:a7e5ba4114424169ad5433e216b19065d" id="r_a7e5ba4114424169ad5433e216b19065d"><td class="memItemLeft">UiActions &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a7e5ba4114424169ad5433e216b19065d">uiActions</a> () noexcept</td></tr>
+<tr class="memdesc:a7e5ba4114424169ad5433e216b19065d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the mutable or const facade for inline UI action creation. The manager owns this facade.  <br /></td></tr>
+<tr class="memitem:a8e960a9657e88a82b4c21fa9519b6aea" id="r_a8e960a9657e88a82b4c21fa9519b6aea"><td class="memItemLeft">const UiActions &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a8e960a9657e88a82b4c21fa9519b6aea">uiActions</a> () const noexcept</td></tr>
+<tr class="memdesc:a8e960a9657e88a82b4c21fa9519b6aea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the mutable or const facade for inline UI action creation. The manager owns this facade.  <br /></td></tr>
+<tr class="memitem:aa7319536e0c72c56ac52eab6ca52bd57" id="r_aa7319536e0c72c56ac52eab6ca52bd57"><td class="memItemLeft"><a class="el" href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">ActionInvocationStatus</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa7319536e0c72c56ac52eab6ca52bd57">invoke</a> (<a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a> call, <a class="el" href="structFlowUi_1_1ActionInvocationSource.html">ActionInvocationSource</a> source={})</td></tr>
+<tr class="memdesc:aa7319536e0c72c56ac52eab6ca52bd57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke synchronously and directly return Invoked, Empty, Unbound or Disabled. An unavailable call does not run its callable.  <br /></td></tr>
+<tr class="memitem:a995b9fdfa75ad1eab3a5b6a9355c733b" id="r_a995b9fdfa75ad1eab3a5b6a9355c733b"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1ActionAvailability.html">ActionAvailability</a>&#160;</td><td class="memItemRight"><a class="el" href="#a995b9fdfa75ad1eab3a5b6a9355c733b">availability</a> (<a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a> call) const noexcept</td></tr>
+<tr class="memdesc:a995b9fdfa75ad1eab3a5b6a9355c733b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Observe effective enabled state directly; empty, unavailable and unbound calls are disabled.  <br /></td></tr>
 <tr class="memitem:aa401a953d02f841ee3f04d31d615c0f5" id="r_aa401a953d02f841ee3f04d31d615c0f5"><td class="memItemLeft">std::optional&lt; <a class="el" href="structFlowUi_1_1ActionDebugInfo.html">ActionDebugInfo</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aa401a953d02f841ee3f04d31d615c0f5">debugInfo</a> (<a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a> call) const noexcept</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a4097b3e04a4f8ece21f5abe1b10e6323" id="r_a4097b3e04a4f8ece21f5abe1b10e6323"><td class="memItemLeft"><a id="a4097b3e04a4f8ece21f5abe1b10e6323" name="a4097b3e04a4f8ece21f5abe1b10e6323"></a>
-class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
-<tr class="memitem:aedcadf9ffa4a2a8a0069d732c7c3374c" id="r_aedcadf9ffa4a2a8a0069d732c7c3374c"><td class="memItemLeft"><a id="aedcadf9ffa4a2a8a0069d732c7c3374c" name="aedcadf9ffa4a2a8a0069d732c7c3374c"></a>
-class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
-<tr class="memitem:a92387cf0fe0c9b5087da0bf720839309" id="r_a92387cf0fe0c9b5087da0bf720839309"><td class="memItemLeft"><a id="a92387cf0fe0c9b5087da0bf720839309" name="a92387cf0fe0c9b5087da0bf720839309"></a>
-class&#160;</td><td class="memItemRight"><b>AppActions</b></td></tr>
-<tr class="memitem:a6373ccafdba6839d74f6de6d833093b6" id="r_a6373ccafdba6839d74f6de6d833093b6"><td class="memItemLeft"><a id="a6373ccafdba6839d74f6de6d833093b6" name="a6373ccafdba6839d74f6de6d833093b6"></a>
-class&#160;</td><td class="memItemRight"><b>UiActions</b></td></tr>
-<tr class="memitem:a80df93056c46f630ace2bac94f9d0fd4" id="r_a80df93056c46f630ace2bac94f9d0fd4"><td class="memItemLeft"><a id="a80df93056c46f630ace2bac94f9d0fd4" name="a80df93056c46f630ace2bac94f9d0fd4"></a>
-struct&#160;</td><td class="memItemRight"><b>detail::action::ActionManagerAccess</b></td></tr>
+<tr class="memdesc:aa401a953d02f841ee3f04d31d615c0f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Available only with FLOW_UI_DEV_MODE. Return a direct diagnostic snapshot of the call without invoking it.  <br /></td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>App-owned dispatcher for retained semantic actions and compact UI calls. </p>
+<p>Obtain the initialized manager through <a class="el" href="classFlowUi_1_1App.html#a7f1acce6a4990ee31d8abc732191f5ac" title="Access the app-wide action manager.">App::actions()</a> or <a class="el" href="classFlowUi_1_1UiManager.html#a24bd77317966a4c812ecbf8d17ec7427" title="Borrow the attached app-wide action manager directly. A detached UiManager throws FlowUiException.">UiManager::actions()</a>. Calls run synchronously on the caller's thread. The manager owns retained binding records, while callables and resource references follow the borrowing contracts of <a class="el" href="group__flowui__action__manager.html#gab2d7dad2e88c776b251fdfcf2b2a88c0" title="Create a retained application binding and return its AppActionCall. The ID must be nonzero and unboun...">AppActions::bind()</a> and <a class="el" href="group__flowui__action__manager.html#gaed2e7828505874abd12a93b22aa7ad79" title="Pack a stateless, trivial, concrete void-returning UiAction recipe and its arguments into a direct Ui...">UiActions::make()</a>. </p>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a4645ba5f9bbc62747d47f1a1293958c4" name="a4645ba5f9bbc62747d47f1a1293958c4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4645ba5f9bbc62747d47f1a1293958c4">&#9670;&#160;</a></span>ActionManager() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::ActionManager::ActionManager </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Construct a detached manager; application code normally obtains the initialized App-owned manager. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="acac6372b2c3c5a99fdc244c892588345" name="acac6372b2c3c5a99fdc244c892588345"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acac6372b2c3c5a99fdc244c892588345">&#9670;&#160;</a></span>~ActionManager()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::ActionManager::~ActionManager </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Release owned service data. The <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> controls this manager lifetime. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a9dadb9f6dbd7f623295eb5d2f78d9852" name="a9dadb9f6dbd7f623295eb5d2f78d9852"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9dadb9f6dbd7f623295eb5d2f78d9852">&#9670;&#160;</a></span>ActionManager() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::ActionManager::ActionManager </td>
+          <td>(</td>
+          <td class="paramtype">const ActionManager &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Copying and moving are disabled as declared; use the App-owned instance by reference. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a98dcd22cd0558dea550a121091011917" name="a98dcd22cd0558dea550a121091011917"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a98dcd22cd0558dea550a121091011917">&#9670;&#160;</a></span>ActionManager() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::ActionManager::ActionManager </td>
+          <td>(</td>
+          <td class="paramtype">ActionManager &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Copying and moving are disabled as declared; use the App-owned instance by reference. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a66ced8c5ba9be1dcf8653520fb85689c" name="a66ced8c5ba9be1dcf8653520fb85689c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66ced8c5ba9be1dcf8653520fb85689c">&#9670;&#160;</a></span>appActions() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const AppActions &amp; FlowUi::ActionManager::appActions </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Borrow the mutable or const facade for retained application actions. The manager owns this facade. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="ae96f24f680a3556f03d86d0a4abdb642" name="ae96f24f680a3556f03d86d0a4abdb642"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae96f24f680a3556f03d86d0a4abdb642">&#9670;&#160;</a></span>appActions() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">AppActions &amp; FlowUi::ActionManager::appActions </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Borrow the mutable or const facade for retained application actions. The manager owns this facade. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a995b9fdfa75ad1eab3a5b6a9355c733b" name="a995b9fdfa75ad1eab3a5b6a9355c733b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a995b9fdfa75ad1eab3a5b6a9355c733b">&#9670;&#160;</a></span>availability()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1ActionAvailability.html">ActionAvailability</a> FlowUi::ActionManager::availability </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a></td>          <td class="paramname"><span class="paramname"><em>call</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Observe effective enabled state directly; empty, unavailable and unbound calls are disabled. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
 <a id="aa401a953d02f841ee3f04d31d615c0f5" name="aa401a953d02f841ee3f04d31d615c0f5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa401a953d02f841ee3f04d31d615c0f5">&#9670;&#160;</a></span>debugInfo()</h2>
 
@@ -183,7 +379,47 @@ struct&#160;</td><td class="memItemRight"><b>detail::action::ActionManagerAccess
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Return a resource-safe snapshot for developer tooling. </p>
+
+<p>Available only with FLOW_UI_DEV_MODE. Return a direct diagnostic snapshot of the call without invoking it. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="aa7319536e0c72c56ac52eab6ca52bd57" name="aa7319536e0c72c56ac52eab6ca52bd57"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7319536e0c72c56ac52eab6ca52bd57">&#9670;&#160;</a></span>invoke()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">ActionInvocationStatus</a> FlowUi::ActionManager::invoke </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a></td>          <td class="paramname"><span class="paramname"><em>call</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ActionInvocationSource.html">ActionInvocationSource</a></td>          <td class="paramname"><span class="paramname"><em>source</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Invoke synchronously and directly return Invoked, Empty, Unbound or Disabled. An unavailable call does not run its callable. </p>
+<p>Callback and owned-result movement exceptions propagate unchanged. Side effects are not rolled back or automatically retried. invokeFor requires nonthrowing destruction of owned payloads; reference and array result types are rejected.</p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md</dd></dl>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_enumeration" href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">FlowUi::ActionInvocationStatus</a> outcome = actions.invoke(call);</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> invoked = outcome == <a class="code hl_enumvalue" href="group__flowui__action__manager.html#gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1">FlowUi::ActionInvocationStatus::Invoked</a>;</div>
+<div class="ttc" id="agroup__flowui__action__manager_html_ga9d1bf355b9b6efbdfd521544535423dc"><div class="ttname"><a href="group__flowui__action__manager.html#ga9d1bf355b9b6efbdfd521544535423dc">FlowUi::ActionInvocationStatus</a></div><div class="ttdeci">ActionInvocationStatus</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:240</div></div>
+<div class="ttc" id="agroup__flowui__action__manager_html_gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1"><div class="ttname"><a href="group__flowui__action__manager.html#gga9d1bf355b9b6efbdfd521544535423dca78ebb05ef299168efe905bfffed49fc1">FlowUi::ActionInvocationStatus::Invoked</a></div><div class="ttdeci">@ Invoked</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:242</div></div>
+</div><!-- fragment --> </dd></dl>
 
 </div>
 </div>
@@ -199,7 +435,7 @@ struct&#160;</td><td class="memItemRight"><b>detail::action::ActionManagerAccess
         <tr>
           <td class="memname">std::optional&lt; <a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a> &gt; FlowUi::ActionManager::makeDevActionCall </td>
           <td>(</td>
-          <td class="paramtype">ActionCallKind</td>          <td class="paramname"><span class="paramname"><em>kind</em></span>, </td>
+          <td class="paramtype"><a class="el" href="group__flowui__action__manager.html#ga60a85a4c4368cb76aff45496b33b19cd">ActionCallKind</a></td>          <td class="paramname"><span class="paramname"><em>kind</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -227,6 +463,168 @@ struct&#160;</td><td class="memItemRight"><b>detail::action::ActionManagerAccess
 
 </div>
 </div>
+<a id="aa6b1e2c8978446325d31135e772bb8b5" name="aa6b1e2c8978446325d31135e772bb8b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa6b1e2c8978446325d31135e772bb8b5">&#9670;&#160;</a></span>operator=() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="#a4645ba5f9bbc62747d47f1a1293958c4">ActionManager</a> &amp; FlowUi::ActionManager::operator= </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#a4645ba5f9bbc62747d47f1a1293958c4">ActionManager</a> &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Copying and moving are disabled as declared; use the App-owned instance by reference. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a7c1432e2cffddb0e0523dbf0173a1d06" name="a7c1432e2cffddb0e0523dbf0173a1d06"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7c1432e2cffddb0e0523dbf0173a1d06">&#9670;&#160;</a></span>operator=() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="#a4645ba5f9bbc62747d47f1a1293958c4">ActionManager</a> &amp; FlowUi::ActionManager::operator= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="#a4645ba5f9bbc62747d47f1a1293958c4">ActionManager</a> &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Copying and moving are disabled as declared; use the App-owned instance by reference. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a8e960a9657e88a82b4c21fa9519b6aea" name="a8e960a9657e88a82b4c21fa9519b6aea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8e960a9657e88a82b4c21fa9519b6aea">&#9670;&#160;</a></span>uiActions() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const UiActions &amp; FlowUi::ActionManager::uiActions </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Borrow the mutable or const facade for inline UI action creation. The manager owns this facade. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a7e5ba4114424169ad5433e216b19065d" name="a7e5ba4114424169ad5433e216b19065d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7e5ba4114424169ad5433e216b19065d">&#9670;&#160;</a></span>uiActions() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">UiActions &amp; FlowUi::ActionManager::uiActions </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Borrow the mutable or const facade for inline UI action creation. The manager owns this facade. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a127e485eecafe5a3a05dd8f4c9ceac0d" name="a127e485eecafe5a3a05dd8f4c9ceac0d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a127e485eecafe5a3a05dd8f4c9ceac0d">&#9670;&#160;</a></span>visitDevActions()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::ActionManager::visitDevActions </td>
+          <td>(</td>
+          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>userData</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#a6c4a154f38d961f9f665b8e9b2a51693">DevActionVisitor</a></td>          <td class="paramname"><span class="paramname"><em>visitor</em></span>&#160;) const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Available only with FLOW_UI_DEV_MODE. Synchronously visit borrowed catalogue entries. Successful true means the visit completed; successful false means a visitor stopped early or storage/visitor was unavailable. Thrown visitor/storage failures are converted to structured errors. Do not retain views or references to their metadata beyond the call. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line">std::size_t boundCount = 0;</div>
+<div class="line"><span class="keyword">auto</span> result = actions.visitDevActions(&amp;boundCount,</div>
+<div class="line">    [](<span class="keywordtype">void</span>* userData, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ActionManager_1_1DevActionView.html">FlowUi::ActionManager::DevActionView</a>&amp; view) {</div>
+<div class="line">        <span class="keyword">auto</span>&amp; count = *<span class="keyword">static_cast&lt;</span>std::size_t*<span class="keyword">&gt;</span>(userData);</div>
+<div class="line">        <span class="keywordflow">if</span> (view.<a class="code hl_variable" href="structFlowUi_1_1ActionManager_1_1DevActionView.html#a9c3d73cd6e93b214603fe72391fcbe3c">debug</a>.<a class="code hl_variable" href="structFlowUi_1_1ActionDebugInfo.html#a566e008134b881a7a6f498066becc78b">bound</a>) ++count;</div>
+<div class="line">        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">    });</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> completed = *result;</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+<div class="ttc" id="astructFlowUi_1_1ActionDebugInfo_html_a566e008134b881a7a6f498066becc78b"><div class="ttname"><a href="structFlowUi_1_1ActionDebugInfo.html#a566e008134b881a7a6f498066becc78b">FlowUi::ActionDebugInfo::bound</a></div><div class="ttdeci">bool bound</div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:414</div></div>
+<div class="ttc" id="astructFlowUi_1_1ActionManager_1_1DevActionView_html"><div class="ttname"><a href="structFlowUi_1_1ActionManager_1_1DevActionView.html">FlowUi::ActionManager::DevActionView</a></div><div class="ttdoc">Callable-free action metadata borrowed during a developer visitor.</div><div class="ttdef"><b>Definition</b> ActionManager.hpp:261</div></div>
+<div class="ttc" id="astructFlowUi_1_1ActionManager_1_1DevActionView_html_a9c3d73cd6e93b214603fe72391fcbe3c"><div class="ttname"><a href="structFlowUi_1_1ActionManager_1_1DevActionView.html#a9c3d73cd6e93b214603fe72391fcbe3c">FlowUi::ActionManager::DevActionView::debug</a></div><div class="ttdeci">ActionDebugInfo debug</div><div class="ttdoc">Identity, availability, counters, and diagnostic source snapshot.</div><div class="ttdef"><b>Definition</b> ActionManager.hpp:263</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/action_manager.md </dd></dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/FlowUi/Public/managers/<a class="el" href="ActionManager_8hpp_source.html">ActionManager.hpp</a></li>
 </ul>
@@ -243,7 +641,7 @@ struct&#160;</td><td class="memItemRight"><b>detail::action::ActionManagerAccess
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1ActionManager.html">ActionManager</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1ActionManager.html">ActionManager</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

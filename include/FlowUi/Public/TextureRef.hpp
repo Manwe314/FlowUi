@@ -40,7 +40,15 @@ struct TextureRef {
 	 * @param key Borrowed logical lookup key.
 	 * @param fit Texture sizing policy.
 	 * @param tint Whether to multiply by the image command color.
-	 * @return Reference with no resolved texture handle. */
+	 * @return Reference with no resolved texture handle.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * const FlowUi::TextureRef texture = FlowUi::TextureRef::fromStable(
+	 *     FlowUi::ResourceDomain::Icon, "icons/save",
+	 *     FlowUi::TextureFitMode::Contain, true);
+	 * @endcode
+	 */
 	[[nodiscard]] static constexpr TextureRef
 	fromStable(ResourceDomain domain, std::string_view key,
 			   TextureFitMode fit = TextureFitMode::Contain, bool tint = false) noexcept {

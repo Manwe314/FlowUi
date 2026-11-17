@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,29 +106,45 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevImageCatalogEntry Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Borrowed image metadata; retain an inspection lease for textures actually displayed.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevCatalogTypes_8hpp_source.html">DevCatalogTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:ac08905eb7c9426b1c189d83f59f77570" id="r_ac08905eb7c9426b1c189d83f59f77570"><td class="memItemLeft"><a id="ac08905eb7c9426b1c189d83f59f77570" name="ac08905eb7c9426b1c189d83f59f77570"></a>
 <a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a>&#160;</td><td class="memItemRight"><b>key</b> {}</td></tr>
+<tr class="memdesc:ac08905eb7c9426b1c189d83f59f77570"><td class="mdescLeft">&#160;</td><td class="mdescRight">Image resource key; its name borrows catalogue/storage string memory. <br /></td></tr>
 <tr class="memitem:a21e3a036eb0d5b48c63874e046667138" id="r_a21e3a036eb0d5b48c63874e046667138"><td class="memItemLeft"><a id="a21e3a036eb0d5b48c63874e046667138" name="a21e3a036eb0d5b48c63874e046667138"></a>
 std::string_view&#160;</td><td class="memItemRight"><b>sourcePathOrDebugName</b> {}</td></tr>
+<tr class="memdesc:a21e3a036eb0d5b48c63874e046667138"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed source path or diagnostic image label. <br /></td></tr>
 <tr class="memitem:af030ab6f36fb431bddc99b227b73d8df" id="r_af030ab6f36fb431bddc99b227b73d8df"><td class="memItemLeft"><a id="af030ab6f36fb431bddc99b227b73d8df" name="af030ab6f36fb431bddc99b227b73d8df"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>width</b> = 0</td></tr>
+<tr class="memdesc:af030ab6f36fb431bddc99b227b73d8df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Source image width in pixels. <br /></td></tr>
 <tr class="memitem:a5f19f8a9abdbe0587a18027f596ed638" id="r_a5f19f8a9abdbe0587a18027f596ed638"><td class="memItemLeft"><a id="a5f19f8a9abdbe0587a18027f596ed638" name="a5f19f8a9abdbe0587a18027f596ed638"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>height</b> = 0</td></tr>
+<tr class="memdesc:a5f19f8a9abdbe0587a18027f596ed638"><td class="mdescLeft">&#160;</td><td class="mdescRight">Source image height in pixels. <br /></td></tr>
 <tr class="memitem:a40dc5bb23013a3eb003509f7af18ecd4" id="r_a40dc5bb23013a3eb003509f7af18ecd4"><td class="memItemLeft"><a id="a40dc5bb23013a3eb003509f7af18ecd4" name="a40dc5bb23013a3eb003509f7af18ecd4"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>formatVulkan</b> = 0</td></tr>
+<tr class="memdesc:a40dc5bb23013a3eb003509f7af18ecd4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Numeric Vulkan image format. <br /></td></tr>
 <tr class="memitem:ae4e0609a25fe84ff1a71710e89519947" id="r_ae4e0609a25fe84ff1a71710e89519947"><td class="memItemLeft"><a id="ae4e0609a25fe84ff1a71710e89519947" name="ae4e0609a25fe84ff1a71710e89519947"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>gpuMemoryBytes</b> = 0</td></tr>
+<tr class="memdesc:ae4e0609a25fe84ff1a71710e89519947"><td class="mdescLeft">&#160;</td><td class="mdescRight">Observed backing GPU allocation in bytes. <br /></td></tr>
 <tr class="memitem:af66ede772abbb56201082ad17f6e37ce" id="r_af66ede772abbb56201082ad17f6e37ce"><td class="memItemLeft"><a id="af66ede772abbb56201082ad17f6e37ce" name="af66ede772abbb56201082ad17f6e37ce"></a>
 <a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a>&#160;</td><td class="memItemRight"><b>textureHandle</b> {}</td></tr>
+<tr class="memdesc:af66ede772abbb56201082ad17f6e37ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generation-checked logical texture binding. <br /></td></tr>
 <tr class="memitem:a518a25ad8eb6ac6979031d9b48765819" id="r_a518a25ad8eb6ac6979031d9b48765819"><td class="memItemLeft"><a id="a518a25ad8eb6ac6979031d9b48765819" name="a518a25ad8eb6ac6979031d9b48765819"></a>
-DevResourceStatus&#160;</td><td class="memItemRight"><b>status</b> = DevResourceStatus::Ready</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a6e41165a8a9b42f8f52779d5d563a78d">DevResourceStatus</a>&#160;</td><td class="memItemRight"><b>status</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a6e41165a8a9b42f8f52779d5d563a78dae7d31fc0602fb2ede144d18cdffd816b">DevResourceStatus::Ready</a></td></tr>
+<tr class="memdesc:a518a25ad8eb6ac6979031d9b48765819"><td class="mdescLeft">&#160;</td><td class="mdescRight">Observed resource lifecycle state. <br /></td></tr>
 <tr class="memitem:a702b3ac99b556bfc3cf6ec31dac63c7c" id="r_a702b3ac99b556bfc3cf6ec31dac63c7c"><td class="memItemLeft"><a id="a702b3ac99b556bfc3cf6ec31dac63c7c" name="a702b3ac99b556bfc3cf6ec31dac63c7c"></a>
 bool&#160;</td><td class="memItemRight"><b>isAnonymous</b> = false</td></tr>
+<tr class="memdesc:a702b3ac99b556bfc3cf6ec31dac63c7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the image lacks an application registration name. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Borrowed image metadata; retain an inspection lease for textures actually displayed. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/catalogue/<a class="el" href="DevCatalogTypes_8hpp_source.html">DevCatalogTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -144,7 +160,7 @@ bool&#160;</td><td class="memItemRight"><b>isAnonymous</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevImageCatalogEntry.html">DevImageCatalogEntry</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevImageCatalogEntry.html">DevImageCatalogEntry</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

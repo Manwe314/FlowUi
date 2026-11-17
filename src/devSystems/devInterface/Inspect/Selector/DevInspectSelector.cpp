@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Inspect/Selector/DevInspectSelector.hpp"
 
 #if FLOW_UI_DEV_MODE
@@ -34,7 +35,7 @@ void refreshDefinitionOptions(
 	App* app,
 	DevInspectSelectorState& cache) {
 	const tooling::DevSchemaView schema = app
-		? app->devTooling().schemas().view() : tooling::DevSchemaView{};
+		? FlowUi::ValueOrThrow(app->devTooling()).get().schemas().view() : tooling::DevSchemaView{};
 	const uint64_t generation = schema ? schema->generation : 0u;
 	if (cache.definitionSchemaGeneration == generation) return;
 
@@ -81,7 +82,7 @@ SelectorBuildData selectorBuildData(
 
 	const tooling::DevTreeSnapshot* snapshot = nullptr;
 	if (app && app->hasWindow(state.selectedWindowId)) {
-		snapshot = &app->ui(state.selectedWindowId).devTreeSnapshot();
+		snapshot = &FlowUi::ValueOrThrow(app->ui(state.selectedWindowId)).get().devTreeSnapshot();
 		data.generation = snapshot->generation;
 		data.flowNodeCount = static_cast<uint32_t>(snapshot->flow.nodes.size());
 #if FLOW_UI_DEV_CAPTURE_CLAY

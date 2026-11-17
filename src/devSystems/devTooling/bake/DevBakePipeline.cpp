@@ -14,6 +14,7 @@
 #include <locale>
 #include <optional>
 #include <sstream>
+#include <stdexcept>
 #include <string_view>
 #include <system_error>
 #include <tuple>
@@ -600,6 +601,12 @@ std::optional<DevBakeEntry> makeThemeEntry(
 	const tooling::DevSchemaGeneration& schema,
 	const DevOverrideEngine::ThemeBakeRecord& record,
 	DevBakeDiagnostic& diagnostic) {
+	if (record.assignmentFailed) {
+		diagnostic = {DevBakeDiagnosticCode::AssignmentFailed,
+			"The live assignment failed; inspect partial effects before submitting another edit.",
+			{}, {}, record.field.field};
+		return std::nullopt;
+	}
 	if (!record.schemaValid || !record.value) return std::nullopt;
 	const auto* theme = schema.findTheme(record.target.themeType);
 	if (!theme) return std::nullopt;
@@ -826,11 +833,23 @@ std::string encodeManifest(const DevBakeManifest& manifest) {
 }
 
 bool writeAtomically(const std::filesystem::path& destination, std::string_view contents) {
+	if (contents.size() > static_cast<std::size_t>(std::numeric_limits<std::streamsize>::max()))
+		return false;
 	std::error_code error;
 	if (!destination.parent_path().empty()) std::filesystem::create_directories(destination.parent_path(), error);
 	if (error) return false;
 	std::filesystem::path temporary = destination;
 	temporary += ".tmp";
+	struct TemporaryCleanup {
+		const std::filesystem::path& path;
+		bool published = false;
+		~TemporaryCleanup() noexcept {
+			if (!published) {
+				std::error_code cleanupError;
+				std::filesystem::remove(path, cleanupError);
+			}
+		}
+	} cleanup{temporary};
 	{
 		std::ofstream output(temporary, std::ios::binary | std::ios::trunc);
 		if (!output) return false;
@@ -842,10 +861,8 @@ bool writeAtomically(const std::filesystem::path& destination, std::string_view 
 			return false;
 	}
 	std::filesystem::rename(temporary, destination, error);
-	if (!error) return true;
-	std::error_code cleanup_error;
-	std::filesystem::remove(temporary, cleanup_error);
-	return false;
+	cleanup.published = !error;
+	return cleanup.published;
 }
 
 } // namespace
@@ -1386,7 +1403,7 @@ DevValueCaptureStatus query_authored_element_value(
 
 DevBakePipeline::DevBakePipeline(
 	tooling::DevSchemaRegistry& schemas,
-	DevOverrideEngine& overrides) noexcept
+	DevOverrideEngine& overrides)
 	: schemas_(schemas), overrides_(overrides) {
 	try {
 		bool existed = false;
@@ -1503,162 +1520,160 @@ DevCommandResult DevBakePipeline::bake() noexcept {
 	return commit_review(plan);
 }
 
-DevBakeStatusSnapshot DevBakePipeline::queryStatus() const noexcept {
-	try {
-		DevBakeStatusSnapshot result{};
-		const tooling::DevSchemaView schema = schemas_.view();
-		if (!schema) {
-			result.bakeDiagnostics.push_back({DevBakeDiagnosticCode::SchemaUnavailable,
-				"Publish the developer schema before baking."});
-			return result;
-		}
-		for (const auto& record : overrides_.appliedOverrides().records()) {
-			if (!isLive(record.layer)) continue;
-			++result.activeLiveOverrideCount;
-			DevBakeDiagnostic diagnostic;
-			if (makeElementEntry(*schema, record, diagnostic)) ++result.bakeableOverrideCount;
-			else {
-				++result.unbakeableOverrideCount;
-				if (diagnostic.code != DevBakeDiagnosticCode::None)
-					result.bakeDiagnostics.push_back(std::move(diagnostic));
-			}
-		}
-		for (const auto& record : overrides_.themeBakeRecords()) {
-			if (record.preview_only || record.remove_baked)
-				continue;
-			++result.activeLiveOverrideCount;
-			DevBakeDiagnostic diagnostic;
-			if (makeThemeEntry(*schema, record, diagnostic)) ++result.bakeableOverrideCount;
-			else {
-				++result.unbakeableOverrideCount;
-				if (diagnostic.code != DevBakeDiagnosticCode::None)
-					result.bakeDiagnostics.push_back(std::move(diagnostic));
-			}
-		}
-		for (const auto& diagnostic : status_.bakeDiagnostics) {
-			if (diagnostic.code == DevBakeDiagnosticCode::ManifestReadFailed ||
-				diagnostic.code == DevBakeDiagnosticCode::ManifestInvalid ||
-				diagnostic.code == DevBakeDiagnosticCode::ManifestWriteFailed) {
-				result.bakeDiagnostics.push_back(diagnostic);
-			}
-		}
+DevBakeStatusSnapshot DevBakePipeline::queryStatus() const {
+	DevBakeStatusSnapshot result{};
+	const tooling::DevSchemaView schema = schemas_.view();
+	if (!schema) {
+		result.bakeDiagnostics.push_back({DevBakeDiagnosticCode::SchemaUnavailable,
+			"Publish the developer schema before baking."});
 		return result;
-	} catch (...) {
-		return {};
 	}
+	for (const auto& record : overrides_.appliedOverrides().records()) {
+		if (!isLive(record.layer)) continue;
+		++result.activeLiveOverrideCount;
+		DevBakeDiagnostic diagnostic;
+		if (makeElementEntry(*schema, record, diagnostic)) ++result.bakeableOverrideCount;
+		else {
+			++result.unbakeableOverrideCount;
+			if (diagnostic.code != DevBakeDiagnosticCode::None)
+				result.bakeDiagnostics.push_back(std::move(diagnostic));
+		}
+	}
+	for (const auto& record : overrides_.themeBakeRecords()) {
+		if (record.preview_only || record.remove_baked)
+			continue;
+		++result.activeLiveOverrideCount;
+		DevBakeDiagnostic diagnostic;
+		if (makeThemeEntry(*schema, record, diagnostic)) ++result.bakeableOverrideCount;
+		else {
+			++result.unbakeableOverrideCount;
+			if (diagnostic.code != DevBakeDiagnosticCode::None)
+				result.bakeDiagnostics.push_back(std::move(diagnostic));
+		}
+	}
+	for (const auto& diagnostic : status_.bakeDiagnostics) {
+		if (diagnostic.code == DevBakeDiagnosticCode::ManifestReadFailed ||
+			diagnostic.code == DevBakeDiagnosticCode::ManifestInvalid ||
+			diagnostic.code == DevBakeDiagnosticCode::ManifestWriteFailed) {
+			result.bakeDiagnostics.push_back(diagnostic);
+		}
+	}
+	return result;
 }
 
-std::vector<DevBakeDiffEntry> DevBakePipeline::queryDiff() const noexcept {
-	try {
-		std::vector<DevBakeDiffEntry> result;
-		result.reserve(manifest_.entries.size() +
-			overrides_.appliedOverrides().records().size() + overrides_.themeBakeRecords().size());
-		for (const auto& entry : manifest_.entries) {
-			result.push_back({
-				.themeVariant = entry.themeVariant,
-				.fieldPath = entry.fieldPath,
-				.bakedValueString = entry.valueJson,
-				.definition = entry.definition,
-				.themeType = entry.themeType,
-				.instance = entry.instanceKey,
-				.fieldId = entry.fieldId,
-				.targetKind = entry.targetKind,
-				.isBaked = true,});
-		}
-		const tooling::DevSchemaView schema = schemas_.view();
-		if (!schema) return result;
-		for (std::size_t index = 0; index < manifest_.entries.size(); ++index) {
-			const auto& entry = manifest_.entries[index];
-			DevOwnedValue authored;
-			if (query_authored_element_value(overrides_, *schema, entry, InvalidWindowId, authored) !=
-				DevValueCaptureStatus::Available)
-				continue;
-			const auto* type = schema->findType(authored.type());
-			const auto original = type ? serializeValue(*schema,
-				tooling::DevTypeIndex{static_cast<std::uint32_t>(type - schema->types.data())},
-				authored.data()) : std::nullopt;
-			if (original)
-				result[index].authoredValueString = original->json;
-		}
-		const auto mergeLive = [&](const DevBakeEntry& live) {
-			const auto baked = std::find_if(manifest_.entries.begin(), manifest_.entries.end(),
-				[&](const DevBakeEntry& entry) { return sameIdentity(entry, live); });
-			const auto diff = std::find_if(result.begin(), result.end(), [&](const DevBakeDiffEntry& entry) {
-				return entry.targetKind == live.targetKind && entry.definition == live.definition &&
-					entry.themeType == live.themeType && entry.themeVariant == live.themeVariant &&
-					entry.instance == live.instanceKey && entry.fieldId == live.fieldId &&
-					entry.fieldPath == live.fieldPath;
-			});
-			if (diff != result.end()) {
-				diff->activeValueString = live.valueJson;
-				diff->isOverridden = true;
-				return;
-			}
-			result.push_back({
-				.themeVariant = live.themeVariant,
-				.fieldPath = live.fieldPath,
-				.activeValueString = live.valueJson,
-				.bakedValueString = baked == manifest_.entries.end() ? std::string{} : baked->valueJson,
-				.definition = live.definition,
-				.themeType = live.themeType,
-				.instance = live.instanceKey,
-				.fieldId = live.fieldId,
-				.targetKind = live.targetKind,
-				.isOverridden = true,
-				.isBaked = baked != manifest_.entries.end(),
-			});
-		};
-		for (const auto& record : overrides_.appliedOverrides().records()) {
-			if (!isLive(record.layer)) continue;
-			DevBakeDiagnostic ignored;
-			if (auto entry = makeElementEntry(*schema, record, ignored)) {
-				mergeLive(*entry);
-				DevOwnedValue authored;
-				auto target = record.target;
-				if (target.scope == DevOverrideScope::Definition)
-					target.window = InvalidWindowId;
-				if (query_authored_element_value(overrides_, *schema, target, record.field, authored) ==
-					DevValueCaptureStatus::Available) {
-					const auto* type = schema->findType(authored.type());
-					const auto original = type ? serializeValue(*schema,
-						tooling::DevTypeIndex{static_cast<std::uint32_t>(type - schema->types.data())},
-						authored.data()) : std::nullopt;
-					if (original)
-						for (auto& diff : result)
-							if (diff.targetKind == DevBakeTargetKind::Element &&
-								diff.definition == entry->definition && diff.instance == entry->instanceKey &&
-								diff.fieldPath == entry->fieldPath)
-								diff.authoredValueString = original->json;
-				}
-			}
-		}
-		for (const auto& record : overrides_.themeBakeRecords()) {
-			if (record.preview_only || record.remove_baked)
-				continue;
-			DevBakeDiagnostic ignored;
-			if (auto entry = makeThemeEntry(*schema, record, ignored)) {
-				mergeLive(*entry);
-				const auto* field =
-					(record.fieldIndex && record.fieldIndex.value <= schema->fields.size()
-						 ? &schema->fields[record.fieldIndex.value - 1]
-						 : nullptr);
-				const auto original = field
-										  ? serializeValue(*schema, field->valueType,
-														   record.authored ? record.authored.data()
-																		   : record.original.data())
-										  : std::nullopt;
-				for (auto& diff : result)
-					if (diff.targetKind == DevBakeTargetKind::Theme &&
-						diff.themeType == entry->themeType &&
-						diff.themeVariant == entry->themeVariant &&
-						diff.fieldPath == entry->fieldPath && original)
-						diff.authoredValueString = original->json;
-			}
-		}
-		return result;
-	} catch (...) {
-		return {};
+std::vector<DevBakeDiffEntry> DevBakePipeline::queryDiff() const {
+	std::vector<DevBakeDiffEntry> result;
+	result.reserve(manifest_.entries.size() +
+		overrides_.appliedOverrides().records().size() + overrides_.themeBakeRecords().size());
+	for (const auto& entry : manifest_.entries) {
+		result.push_back({
+			.themeVariant = entry.themeVariant,
+			.fieldPath = entry.fieldPath,
+			.bakedValueString = entry.valueJson,
+			.definition = entry.definition,
+			.themeType = entry.themeType,
+			.instance = entry.instanceKey,
+			.fieldId = entry.fieldId,
+			.targetKind = entry.targetKind,
+			.isBaked = true,});
 	}
+	const tooling::DevSchemaView schema = schemas_.view();
+	if (!schema) return result;
+	for (std::size_t index = 0; index < manifest_.entries.size(); ++index) {
+		const auto& entry = manifest_.entries[index];
+		DevOwnedValue authored;
+		const auto authoredStatus =
+			query_authored_element_value(overrides_, *schema, entry, InvalidWindowId, authored);
+		if (authoredStatus == DevValueCaptureStatus::CopyFailed)
+			throw std::runtime_error("Cannot collect the authored bake comparison.");
+		if (authoredStatus != DevValueCaptureStatus::Available)
+			continue;
+		const auto* type = schema->findType(authored.type());
+		const auto original = type ? serializeValue(*schema,
+			tooling::DevTypeIndex{static_cast<std::uint32_t>(type - schema->types.data())},
+			authored.data()) : std::nullopt;
+		if (original)
+			result[index].authoredValueString = original->json;
+	}
+	const auto mergeLive = [&](const DevBakeEntry& live) {
+		const auto baked = std::find_if(manifest_.entries.begin(), manifest_.entries.end(),
+			[&](const DevBakeEntry& entry) { return sameIdentity(entry, live); });
+		const auto diff = std::find_if(result.begin(), result.end(), [&](const DevBakeDiffEntry& entry) {
+			return entry.targetKind == live.targetKind && entry.definition == live.definition &&
+				entry.themeType == live.themeType && entry.themeVariant == live.themeVariant &&
+				entry.instance == live.instanceKey && entry.fieldId == live.fieldId &&
+				entry.fieldPath == live.fieldPath;
+		});
+		if (diff != result.end()) {
+			diff->activeValueString = live.valueJson;
+			diff->isOverridden = true;
+			return;
+		}
+		result.push_back({
+			.themeVariant = live.themeVariant,
+			.fieldPath = live.fieldPath,
+			.activeValueString = live.valueJson,
+			.bakedValueString = baked == manifest_.entries.end() ? std::string{} : baked->valueJson,
+			.definition = live.definition,
+			.themeType = live.themeType,
+			.instance = live.instanceKey,
+			.fieldId = live.fieldId,
+			.targetKind = live.targetKind,
+			.isOverridden = true,
+			.isBaked = baked != manifest_.entries.end(),
+		});
+	};
+	for (const auto& record : overrides_.appliedOverrides().records()) {
+		if (!isLive(record.layer)) continue;
+		DevBakeDiagnostic ignored;
+		if (auto entry = makeElementEntry(*schema, record, ignored)) {
+			mergeLive(*entry);
+			DevOwnedValue authored;
+			auto target = record.target;
+			if (target.scope == DevOverrideScope::Definition)
+				target.window = InvalidWindowId;
+			const auto authoredStatus =
+				query_authored_element_value(overrides_, *schema, target, record.field, authored);
+			if (authoredStatus == DevValueCaptureStatus::CopyFailed)
+				throw std::runtime_error("Cannot collect the authored live comparison.");
+			if (authoredStatus == DevValueCaptureStatus::Available) {
+				const auto* type = schema->findType(authored.type());
+				const auto original = type ? serializeValue(*schema,
+					tooling::DevTypeIndex{static_cast<std::uint32_t>(type - schema->types.data())},
+					authored.data()) : std::nullopt;
+				if (original)
+					for (auto& diff : result)
+						if (diff.targetKind == DevBakeTargetKind::Element &&
+							diff.definition == entry->definition && diff.instance == entry->instanceKey &&
+							diff.fieldPath == entry->fieldPath)
+							diff.authoredValueString = original->json;
+			}
+		}
+	}
+	for (const auto& record : overrides_.themeBakeRecords()) {
+		if (record.preview_only || record.remove_baked)
+			continue;
+		DevBakeDiagnostic ignored;
+		if (auto entry = makeThemeEntry(*schema, record, ignored)) {
+			mergeLive(*entry);
+			const auto* field =
+				(record.fieldIndex && record.fieldIndex.value <= schema->fields.size()
+					 ? &schema->fields[record.fieldIndex.value - 1]
+					 : nullptr);
+			const auto original = field
+									  ? serializeValue(*schema, field->valueType,
+													   record.authored ? record.authored.data()
+																	   : record.original.data())
+									  : std::nullopt;
+			for (auto& diff : result)
+				if (diff.targetKind == DevBakeTargetKind::Theme &&
+					diff.themeType == entry->themeType &&
+					diff.themeVariant == entry->themeVariant &&
+					diff.fieldPath == entry->fieldPath && original)
+					diff.authoredValueString = original->json;
+		}
+	}
+	return result;
 }
 
 } // namespace FlowUi::devSystems::tooling

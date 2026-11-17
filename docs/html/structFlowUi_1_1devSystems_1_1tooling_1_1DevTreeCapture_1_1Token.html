@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,22 +106,33 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevTreeCapture::Token Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Frame-qualified scope token returned by <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture.html#add82ec865bd1bb992300b8456cb3f076" title="Copy invocation metadata and open a balanced capture scope; pass the returned frame-qualified token t...">beginFlow()</a>; valid only for its matching <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture.html#a8c5caabfffcad22d4c7cfa959a5849ce" title="Close the matching token&#39;s scope; autoClosed records that lifecycle recovery closed an unbalanced con...">endFlow()</a>.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevTreeCapture_8hpp_source.html">DevTreeCapture.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a14974a6fa85cb0d35611a70dc06bf6a1" id="r_a14974a6fa85cb0d35611a70dc06bf6a1"><td class="memItemLeft"><a id="a14974a6fa85cb0d35611a70dc06bf6a1" name="a14974a6fa85cb0d35611a70dc06bf6a1"></a>
 &#160;</td><td class="memItemRight"><b>operator bool</b> () const noexcept</td></tr>
+<tr class="memdesc:a14974a6fa85cb0d35611a70dc06bf6a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether this token identifies a nonzero balanced capture scope. <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a41c02799ff1624a71fce0e8c8f434957" id="r_a41c02799ff1624a71fce0e8c8f434957"><td class="memItemLeft"><a id="a41c02799ff1624a71fce0e8c8f434957" name="a41c02799ff1624a71fce0e8c8f434957"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>frameGeneration</b> = 0</td></tr>
+<tr class="memdesc:a41c02799ff1624a71fce0e8c8f434957"><td class="mdescLeft">&#160;</td><td class="mdescRight">Capture generation that issued this token. <br /></td></tr>
 <tr class="memitem:a2224e639533c70a14fd873902b39d723" id="r_a2224e639533c70a14fd873902b39d723"><td class="memItemLeft"><a id="a2224e639533c70a14fd873902b39d723" name="a2224e639533c70a14fd873902b39d723"></a>
-DevFlowNodeIndex&#160;</td><td class="memItemRight"><b>node</b> = InvalidFlowNode</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#abb7cf1ac228b98e4820b58c51b6e7802">DevFlowNodeIndex</a>&#160;</td><td class="memItemRight"><b>node</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#aaacca7b3acfa78ccd87e067c0b4c31d3">InvalidFlowNode</a></td></tr>
+<tr class="memdesc:a2224e639533c70a14fd873902b39d723"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copied Flow node index, or InvalidFlowNode for a suppressed scope. <br /></td></tr>
 <tr class="memitem:a650c1b223353f305846a9b07581bd8b7" id="r_a650c1b223353f305846a9b07581bd8b7"><td class="memItemLeft"><a id="a650c1b223353f305846a9b07581bd8b7" name="a650c1b223353f305846a9b07581bd8b7"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>scopeId</b> = 0</td></tr>
+<tr class="memdesc:a650c1b223353f305846a9b07581bd8b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Nonzero balanced-scope identity; zero denotes an inactive token. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Frame-qualified scope token returned by <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture.html#add82ec865bd1bb992300b8456cb3f076" title="Copy invocation metadata and open a balanced capture scope; pass the returned frame-qualified token t...">beginFlow()</a>; valid only for its matching <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture.html#a8c5caabfffcad22d4c7cfa959a5849ce" title="Close the matching token&#39;s scope; autoClosed records that lifecycle recovery closed an unbalanced con...">endFlow()</a>. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/tree/<a class="el" href="DevTreeCapture_8hpp_source.html">DevTreeCapture.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -137,7 +148,7 @@ uint32_t&#160;</td><td class="memItemRight"><b>scopeId</b> = 0</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture.html">DevTreeCapture</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture_1_1Token.html">Token</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture.html">DevTreeCapture</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture_1_1Token.html">Token</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

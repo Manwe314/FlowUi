@@ -9,6 +9,7 @@
 #include <sstream>
 #include <system_error>
 #include <tuple>
+#include <type_traits>
 
 #include "devSystems/devTooling/bake/DevBakeInternals.hpp"
 #include "devSystems/devTooling/bake/DevBakeValidation.hpp"
@@ -1039,7 +1040,15 @@ DevBakePipeline::query_review(const DevChangesReviewRequest& request) const noex
 		return plan;
 	} catch (...) {
 		plan.can_commit = false;
-		plan.error = "Could not construct the Changes review; pending work has been retained.";
+		plan.valid_disk = false;
+		if (plan.counts.errors == 0)
+			plan.counts.errors = 1;
+		try {
+			plan.error = "Could not construct the Changes review; pending work has been retained.";
+		} catch (...) {
+			// The validity/error count remains authoritative even when diagnostics cannot allocate.
+			plan.error.clear();
+		}
 		return plan;
 	}
 }
@@ -1088,6 +1097,9 @@ DevCommandResult DevBakePipeline::commit_review(const DevChangesReviewPlan& plan
 								  "refresh before baking."});
 			return {.status = DevCommandStatus::SchemaMismatch};
 		}
+		// Finish fallible preparation before the disk commit. Publication afterwards only moves owners.
+		DevBakeManifest preparedManifest = plan.candidate;
+		static_assert(std::is_nothrow_move_assignable_v<DevBakeManifest>);
 		if (!bake_detail::write_manifest_atomically(manifestPath_, plan.candidate_json)) {
 			status_.bakeDiagnostics.emplace_back(
 				DevBakeDiagnostic{DevBakeDiagnosticCode::ManifestWriteFailed,
@@ -1095,7 +1107,7 @@ DevCommandResult DevBakePipeline::commit_review(const DevChangesReviewPlan& plan
 									  "; reviewed decisions and live proposals remain available."});
 			return {.status = DevCommandStatus::BakeWriteFailed};
 		}
-		manifest_ = plan.candidate;
+		manifest_ = std::move(preparedManifest);
 		return {.status = DevCommandStatus::Applied, .applied = true};
 	} catch (...) {
 		return {.status = DevCommandStatus::BakeWriteFailed};

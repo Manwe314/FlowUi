@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/SplitterHandle.hpp"
@@ -14,7 +15,7 @@ void DevPerformanceWorkbench::buildElement(BuildContext& context) {
 		return;
 	auto& state = context.params.interfaceState->performance_timeline;
 	auto& selection = context.params.interfaceState->performance_selection;
-	auto& reporting = context.params.app->devMonitoring().timingReporting();
+	auto& reporting = FlowUi::ValueOrThrow(context.params.app->devMonitoring()).get().timingReporting();
 	const auto status = reporting.status();
 	auto capture = reporting.read_capture();
 	if (capture.generation != state.capture_generation)
@@ -32,9 +33,9 @@ void DevPerformanceWorkbench::buildElement(BuildContext& context) {
 		state.snapshot = extract_timeline(capture, selection);
 		state.capture_generation = capture.generation;
 		state.capture_event_ns =
-			context.params.app->devMonitoring().performance_capture().status().event_end_ns;
+			FlowUi::ValueOrThrow(context.params.app->devMonitoring()).get().performance_capture().status().event_end_ns;
 		if (generation_changed) {
-			const auto live_windows = context.params.app->devWindowSnapshot();
+			const auto live_windows = FlowUi::ValueOrThrow(context.params.app->devWindowSnapshot());
 			auto& captured_windows = context.params.interfaceState->capture_windows;
 			for (const auto segment : {capture.first, capture.second})
 				for (const auto& tick : segment)
@@ -74,7 +75,7 @@ void DevPerformanceWorkbench::buildElement(BuildContext& context) {
 	root.backgroundColor = interface_theme::kDepth0Keel;
 	root.clip.horizontal = true;
 	root.clip.scrollInputDisabled = true;
-	const DevTimelineParameters parameters{&state, &selection, 0, context.clayID("canvas"),
+	const DevTimelineParameters parameters{&state, &selection, 0, FlowUi::ValueOrThrow(context.clayID("canvas")),
 										   context.params.column_clip};
 	if (!capture.generation) {
 		root.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
@@ -90,12 +91,12 @@ void DevPerformanceWorkbench::buildElement(BuildContext& context) {
 		return;
 	}
 	CLAY(context.clayID(), root) {
-		const auto& progress = context.params.app->devMonitoring().performance_capture().status();
+		const auto& progress = FlowUi::ValueOrThrow(context.params.app->devMonitoring()).get().performance_capture().status();
 		auto snapshot_header = timeline_ui::row(0);
 		snapshot_header.layout.sizing.height = CLAY_SIZING_FIT(0);
 		snapshot_header.layout.sizing.width = CLAY_SIZING_PERCENT(1);
 		snapshot_header.layout.childAlignment.x = CLAY_ALIGN_X_CENTER;
-		CLAY(context.clayID("snapshot-header"), snapshot_header) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("snapshot-header")), snapshot_header) {
 			timeline_ui::text(
 				context, "Snapshot #" + std::to_string(capture.generation) + " · " +
 							 std::to_string(status.retainedTickCount) + " ticks · " +
@@ -138,10 +139,10 @@ void DevPerformanceWorkbench::buildElement(BuildContext& context) {
 			auto track_panel = root;
 			track_panel.layout.sizing.height = CLAY_SIZING_FIXED(160);
 			track_panel.clip = {.horizontal = true, .vertical = true};
-			const auto track_scroll = Clay_GetScrollContainerData(context.clayID("track-settings"));
+			const auto track_scroll = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("track-settings")));
 			if (track_scroll.found && track_scroll.scrollPosition)
 				track_panel.clip.childOffset = *track_scroll.scrollPosition;
-			CLAY(context.clayID("track-settings"), track_panel) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("track-settings")), track_panel) {
 				auto preferences = state.track_preferences;
 				for (auto& preference : preferences)
 					preference.hidden = false;
@@ -210,20 +211,20 @@ void DevPerformanceWorkbench::buildElement(BuildContext& context) {
 		Clay_ElementDeclaration canvas{};
 		canvas.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
 		canvas.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
-		const auto canvas_bounds = Clay_GetElementData(context.clayID("canvas"));
+		const auto canvas_bounds = Clay_GetElementData(FlowUi::ValueOrThrow(context.clayID("canvas")));
 		const float available_height = canvas_bounds.found ? canvas_bounds.boundingBox.height : 600;
 		state.major_height =
 			std::clamp(state.major_height, 80.0f, std::max(80.0f, available_height - 84));
 
-		CLAY(context.clayID("canvas"), canvas) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("canvas")), canvas) {
 			auto major = canvas;
 			major.layout.sizing.height = CLAY_SIZING_FIXED(state.major_height);
 
-			CLAY(context.clayID("major-pane"), major) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("major-pane")), major) {
 				context.uiManager
 					.createElement(kDevContiguousTimelineStrip, LocalElementName{"macro"})
 					.setParameters(DevTimelineParameters{&state, &selection, 0,
-														 context.clayID("major-pane"),
+														 FlowUi::ValueOrThrow(context.clayID("major-pane")),
 														 context.params.column_clip})
 					.setDevInternalCapture(true)
 					.draw();
@@ -241,12 +242,12 @@ void DevPerformanceWorkbench::buildElement(BuildContext& context) {
 				.draw();
 			auto minor = canvas;
 
-			CLAY(context.clayID("minor-pane"), minor) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("minor-pane")), minor) {
 				context.uiManager
 					.createElement(kDevDrillDownTimelineCard, LocalElementName{"minor"})
 					.setParameters(DevTimelineParameters{
 						&state, &selection, state.cards.empty() ? 0 : state.cards.size() - 1,
-						context.clayID("minor-pane"), context.params.column_clip})
+						FlowUi::ValueOrThrow(context.clayID("minor-pane")), context.params.column_clip})
 					.setDevInternalCapture(true)
 					.draw();
 			}

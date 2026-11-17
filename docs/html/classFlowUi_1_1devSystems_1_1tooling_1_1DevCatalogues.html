@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,49 +106,78 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevCatalogues Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Lazy, observation-only catalogues over borrowed app managers. Query spans and entry strings expire when their cache or source manager changes; retain texture leases only for displayed resources.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevCatalogues_8hpp_source.html">DevCatalogues.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a25e1ba994636748637b50aa1945bfa06" id="r_a25e1ba994636748637b50aa1945bfa06"><td class="memItemLeft"><a id="a25e1ba994636748637b50aa1945bfa06" name="a25e1ba994636748637b50aa1945bfa06"></a>
+&#160;</td><td class="memItemRight"><b>DevCatalogues</b> ()=default</td></tr>
+<tr class="memdesc:a25e1ba994636748637b50aa1945bfa06"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct empty caches with no connected managers. <br /></td></tr>
+<tr class="memitem:a61cd8fc9fa2f0883eb76c728d4f9d20a" id="r_a61cd8fc9fa2f0883eb76c728d4f9d20a"><td class="memItemLeft"><a id="a61cd8fc9fa2f0883eb76c728d4f9d20a" name="a61cd8fc9fa2f0883eb76c728d4f9d20a"></a>
+&#160;</td><td class="memItemRight"><b>~DevCatalogues</b> ()=default</td></tr>
+<tr class="memdesc:a61cd8fc9fa2f0883eb76c728d4f9d20a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Release catalogue caches; connected managers remain caller-owned. <br /></td></tr>
 <tr class="memitem:ad5bc9938db95298b871f3631928cb527" id="r_ad5bc9938db95298b871f3631928cb527"><td class="memItemLeft"><a id="ad5bc9938db95298b871f3631928cb527" name="ad5bc9938db95298b871f3631928cb527"></a>
 &#160;</td><td class="memItemRight"><b>DevCatalogues</b> (const DevCatalogues &amp;)=delete</td></tr>
 <tr class="memitem:a5734f5fd0beff98e73c12988190678e4" id="r_a5734f5fd0beff98e73c12988190678e4"><td class="memItemLeft"><a id="a5734f5fd0beff98e73c12988190678e4" name="a5734f5fd0beff98e73c12988190678e4"></a>
-DevCatalogues &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const DevCatalogues &amp;)=delete</td></tr>
+<a class="el" href="#a25e1ba994636748637b50aa1945bfa06">DevCatalogues</a> &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const <a class="el" href="#a25e1ba994636748637b50aa1945bfa06">DevCatalogues</a> &amp;)=delete</td></tr>
 <tr class="memitem:abf2c6583790ca2ef3176767a1676debc" id="r_abf2c6583790ca2ef3176767a1676debc"><td class="memItemLeft"><a id="abf2c6583790ca2ef3176767a1676debc" name="abf2c6583790ca2ef3176767a1676debc"></a>
-void&#160;</td><td class="memItemRight"><b>bindManagers</b> (::FlowUi::detail::storage::IStorageSystem *storage, <a class="el" href="classFlowUi_1_1ThemeManager.html">ThemeManager</a> *themes, <a class="el" href="classFlowUi_1_1ActionManager.html">ActionManager</a> *actions, <a class="el" href="structFlowUi_1_1FontManager.html">FontManager</a> *fonts, <a class="el" href="structFlowUi_1_1IconManager.html">IconManager</a> *icons, <a class="el" href="classFlowUi_1_1ImageManager.html">ImageManager</a> *images, <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">DevSchemaRegistry</a> *schemaRegistry) noexcept</td></tr>
+void&#160;</td><td class="memItemRight"><b>bindManagers</b> (::FlowUi::detail::storage::IStorageSystem *storage, <a class="el" href="classFlowUi_1_1ThemeManager.html">ThemeManager</a> *<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a54fd04fae46ae99c7211414f0dd739d2">themes</a>, <a class="el" href="classFlowUi_1_1ActionManager.html">ActionManager</a> *actions, <a class="el" href="structFlowUi_1_1FontManager.html">FontManager</a> *fonts, <a class="el" href="structFlowUi_1_1IconManager.html">IconManager</a> *icons, <a class="el" href="classFlowUi_1_1ImageManager.html">ImageManager</a> *images, <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">DevSchemaRegistry</a> *schemaRegistry) noexcept</td></tr>
+<tr class="memdesc:abf2c6583790ca2ef3176767a1676debc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attach borrowed manager/registry pointers and invalidate dependent caches; dependencies must outlive subsequent queries. <br /></td></tr>
 <tr class="memitem:ac7abfd7562133b020d95c1b0dfbe911c" id="r_ac7abfd7562133b020d95c1b0dfbe911c"><td class="memItemLeft"><a id="ac7abfd7562133b020d95c1b0dfbe911c" name="ac7abfd7562133b020d95c1b0dfbe911c"></a>
 void&#160;</td><td class="memItemRight"><b>setDevTimingRecorder</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">devSystems::DevTimingRecorder</a> *recorder) noexcept</td></tr>
+<tr class="memdesc:ac7abfd7562133b020d95c1b0dfbe911c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attach a borrowed timing recorder; null disables optional query attribution. <br /></td></tr>
 <tr class="memitem:abbfd7e7a73ab3cd82239562926dd63c5" id="r_abbfd7e7a73ab3cd82239562926dd63c5"><td class="memItemLeft"><a id="abbfd7e7a73ab3cd82239562926dd63c5" name="abbfd7e7a73ab3cd82239562926dd63c5"></a>
 std::span&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevImageCatalogEntry.html">DevImageCatalogEntry</a> &gt;&#160;</td><td class="memItemRight"><b>queryImages</b> () noexcept</td></tr>
+<tr class="memdesc:abbfd7e7a73ab3cd82239562926dd63c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the lazily refreshed image catalogue; queryFailed(Images) distinguishes failure from an empty result. <br /></td></tr>
 <tr class="memitem:a13e1383f9c0cb357cc3b4fa9386f8095" id="r_a13e1383f9c0cb357cc3b4fa9386f8095"><td class="memItemLeft"><a id="a13e1383f9c0cb357cc3b4fa9386f8095" name="a13e1383f9c0cb357cc3b4fa9386f8095"></a>
 std::span&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevIconCatalogEntry.html">DevIconCatalogEntry</a> &gt;&#160;</td><td class="memItemRight"><b>queryIcons</b> () noexcept</td></tr>
+<tr class="memdesc:a13e1383f9c0cb357cc3b4fa9386f8095"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the lazily refreshed icon catalogue; queryFailed(Icons) distinguishes failure from an empty result. <br /></td></tr>
 <tr class="memitem:a40228337a7e77936a05354ce4b8dadef" id="r_a40228337a7e77936a05354ce4b8dadef"><td class="memItemLeft"><a id="a40228337a7e77936a05354ce4b8dadef" name="a40228337a7e77936a05354ce4b8dadef"></a>
 std::span&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevAtlasCatalogEntry.html">DevAtlasCatalogEntry</a> &gt;&#160;</td><td class="memItemRight"><b>queryAtlases</b> () noexcept</td></tr>
+<tr class="memdesc:a40228337a7e77936a05354ce4b8dadef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the lazily refreshed atlas catalogue; texture previews require an inspection lease while displayed. <br /></td></tr>
 <tr class="memitem:a2e632fd849a8f97ba2692d1bf27f070d" id="r_a2e632fd849a8f97ba2692d1bf27f070d"><td class="memItemLeft"><a id="a2e632fd849a8f97ba2692d1bf27f070d" name="a2e632fd849a8f97ba2692d1bf27f070d"></a>
 std::span&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFontCatalogEntry.html">DevFontCatalogEntry</a> &gt;&#160;</td><td class="memItemRight"><b>queryFonts</b> () noexcept</td></tr>
+<tr class="memdesc:a2e632fd849a8f97ba2692d1bf27f070d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the lazily refreshed font catalogue; source strings remain owned by their managers. <br /></td></tr>
 <tr class="memitem:a160b58a4a4c08102966981239ee0f21d" id="r_a160b58a4a4c08102966981239ee0f21d"><td class="memItemLeft"><a id="a160b58a4a4c08102966981239ee0f21d" name="a160b58a4a4c08102966981239ee0f21d"></a>
 std::span&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevActionCatalogEntry.html">DevActionCatalogEntry</a> &gt;&#160;</td><td class="memItemRight"><b>queryActions</b> () noexcept</td></tr>
+<tr class="memdesc:a160b58a4a4c08102966981239ee0f21d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow callable-free action metadata; querying never invokes actions or captures their resources. <br /></td></tr>
 <tr class="memitem:a85d65e72bb75e44ed5130f51cfc14bc6" id="r_a85d65e72bb75e44ed5130f51cfc14bc6"><td class="memItemLeft"><a id="a85d65e72bb75e44ed5130f51cfc14bc6" name="a85d65e72bb75e44ed5130f51cfc14bc6"></a>
 std::span&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevThemeCatalogEntry.html">DevThemeCatalogEntry</a> &gt;&#160;</td><td class="memItemRight"><b>queryThemes</b> () noexcept</td></tr>
+<tr class="memdesc:a85d65e72bb75e44ed5130f51cfc14bc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow reflected variant metadata; payload pointers expire on source theme mutation. <br /></td></tr>
 <tr class="memitem:a5ed5c9b181b62ca58b961040f78a1a78" id="r_a5ed5c9b181b62ca58b961040f78a1a78"><td class="memItemLeft"><a id="a5ed5c9b181b62ca58b961040f78a1a78" name="a5ed5c9b181b62ca58b961040f78a1a78"></a>
 std::span&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevElementCatalogEntry.html">DevElementCatalogEntry</a> &gt;&#160;</td><td class="memItemRight"><b>queryElements</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeSnapshot.html">tooling::DevTreeSnapshot</a> *currentTree) noexcept</td></tr>
+<tr class="memdesc:a5ed5c9b181b62ca58b961040f78a1a78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow definition metadata and optional completed-tree instance counts; currentTree is borrowed for the cache lifetime. <br /></td></tr>
 <tr class="memitem:a8a3cd1b69e0229d09f81997c8dd7b57f" id="r_a8a3cd1b69e0229d09f81997c8dd7b57f"><td class="memItemLeft"><a id="a8a3cd1b69e0229d09f81997c8dd7b57f" name="a8a3cd1b69e0229d09f81997c8dd7b57f"></a>
 const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCatalogueRevisions.html">DevCatalogueRevisions</a> &amp;&#160;</td><td class="memItemRight"><b>revisions</b> () const noexcept</td></tr>
+<tr class="memdesc:a8a3cd1b69e0229d09f81997c8dd7b57f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow cached source revision counters until the next refresh. <br /></td></tr>
 <tr class="memitem:ae32aedbb052b692e1519d1acb67a8a6c" id="r_ae32aedbb052b692e1519d1acb67a8a6c"><td class="memItemLeft"><a id="ae32aedbb052b692e1519d1acb67a8a6c" name="ae32aedbb052b692e1519d1acb67a8a6c"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>imageRevision</b> () const noexcept</td></tr>
+<tr class="memdesc:ae32aedbb052b692e1519d1acb67a8a6c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the source revision used by the current image cache. <br /></td></tr>
 <tr class="memitem:a87571c4c4d63153135a2a09c8fd2324e" id="r_a87571c4c4d63153135a2a09c8fd2324e"><td class="memItemLeft"><a id="a87571c4c4d63153135a2a09c8fd2324e" name="a87571c4c4d63153135a2a09c8fd2324e"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>iconRevision</b> () const noexcept</td></tr>
+<tr class="memdesc:a87571c4c4d63153135a2a09c8fd2324e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the source revision used by the current icon cache. <br /></td></tr>
 <tr class="memitem:a45f817e8979a6a72159a9ea6b9ab71d3" id="r_a45f817e8979a6a72159a9ea6b9ab71d3"><td class="memItemLeft"><a id="a45f817e8979a6a72159a9ea6b9ab71d3" name="a45f817e8979a6a72159a9ea6b9ab71d3"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>actionRevision</b> () const noexcept</td></tr>
-<tr class="memitem:a178a8d38103e5ba659c5bb204034419f" id="r_a178a8d38103e5ba659c5bb204034419f"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a178a8d38103e5ba659c5bb204034419f">queryFailed</a> (DevCatalogueQuery query) const noexcept</td></tr>
+<tr class="memdesc:a45f817e8979a6a72159a9ea6b9ab71d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the source revision used by the current action cache. <br /></td></tr>
+<tr class="memitem:a178a8d38103e5ba659c5bb204034419f" id="r_a178a8d38103e5ba659c5bb204034419f"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a178a8d38103e5ba659c5bb204034419f">queryFailed</a> (<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a4e932fccc9aadd76ed9a6253a9a8106c">DevCatalogueQuery</a> query) const noexcept</td></tr>
 <tr class="memitem:ada5fe1def0f3519b4ac3b8686bb54eec" id="r_ada5fe1def0f3519b4ac3b8686bb54eec"><td class="memItemLeft"><a id="ada5fe1def0f3519b4ac3b8686bb54eec" name="ada5fe1def0f3519b4ac3b8686bb54eec"></a>
 <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevCatalogLease.html">DevCatalogLease</a>&#160;</td><td class="memItemRight"><b>acquireInspectionLease</b> () noexcept</td></tr>
+<tr class="memdesc:ada5fe1def0f3519b4ac3b8686bb54eec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retain the catalogue's current inspection texture bindings; an unavailable/empty texture set yields an empty lease. <br /></td></tr>
 <tr class="memitem:a93a77955b3115fafdb8b68a108f9d445" id="r_a93a77955b3115fafdb8b68a108f9d445"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevCatalogLease.html">DevCatalogLease</a>&#160;</td><td class="memItemRight"><a class="el" href="#a93a77955b3115fafdb8b68a108f9d445">acquireInspectionLease</a> (std::span&lt; const <a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a> &gt; textures) noexcept</td></tr>
 <tr class="memitem:acd91f3b1fc7827244b462abc0b1717a8" id="r_acd91f3b1fc7827244b462abc0b1717a8"><td class="memItemLeft"><a id="acd91f3b1fc7827244b462abc0b1717a8" name="acd91f3b1fc7827244b462abc0b1717a8"></a>
 void&#160;</td><td class="memItemRight"><b>invalidateAllCaches</b> () noexcept</td></tr>
+<tr class="memdesc:acd91f3b1fc7827244b462abc0b1717a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mark every observation cache stale; source application resources remain unchanged. <br /></td></tr>
 <tr class="memitem:a3b4dea86838dcbe1e9ab7d1a2357719a" id="r_a3b4dea86838dcbe1e9ab7d1a2357719a"><td class="memItemLeft"><a id="a3b4dea86838dcbe1e9ab7d1a2357719a" name="a3b4dea86838dcbe1e9ab7d1a2357719a"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>memoryFootprintBytes</b> () const noexcept</td></tr>
+<tr class="memdesc:a3b4dea86838dcbe1e9ab7d1a2357719a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return retained catalogue backing storage in bytes. <br /></td></tr>
 </table>
-<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Lazy, observation-only catalogues over borrowed app managers. Query spans and entry strings expire when their cache or source manager changes; retain texture leases only for displayed resources. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="a93a77955b3115fafdb8b68a108f9d445" name="a93a77955b3115fafdb8b68a108f9d445"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a93a77955b3115fafdb8b68a108f9d445">&#9670;&#160;</a></span>acquireInspectionLease()</h2>
 
@@ -187,7 +216,7 @@ std::size_t&#160;</td><td class="memItemRight"><b>memoryFootprintBytes</b> () co
         <tr>
           <td class="memname">bool FlowUi::devSystems::tooling::DevCatalogues::queryFailed </td>
           <td>(</td>
-          <td class="paramtype">DevCatalogueQuery</td>          <td class="paramname"><span class="paramname"><em>query</em></span></td><td>)</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a4e932fccc9aadd76ed9a6253a9a8106c">DevCatalogueQuery</a></td>          <td class="paramname"><span class="paramname"><em>query</em></span></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
@@ -217,7 +246,7 @@ std::size_t&#160;</td><td class="memItemRight"><b>memoryFootprintBytes</b> () co
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevCatalogues.html">DevCatalogues</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevCatalogues.html">DevCatalogues</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

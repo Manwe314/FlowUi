@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,28 +111,155 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a31b74f9e3c97cd3f1d2393ade214c7d4" id="r_a31b74f9e3c97cd3f1d2393ade214c7d4"><td class="memItemLeft"><a id="a31b74f9e3c97cd3f1d2393ade214c7d4" name="a31b74f9e3c97cd3f1d2393ade214c7d4"></a>
-std::optional&lt; int &gt;&#160;</td><td class="memItemRight"><b>width</b></td></tr>
-<tr class="memitem:a1da7b23c8af36125dd53bbda4b5486a4" id="r_a1da7b23c8af36125dd53bbda4b5486a4"><td class="memItemLeft"><a id="a1da7b23c8af36125dd53bbda4b5486a4" name="a1da7b23c8af36125dd53bbda4b5486a4"></a>
-std::optional&lt; int &gt;&#160;</td><td class="memItemRight"><b>height</b></td></tr>
-<tr class="memitem:a043183647dab65462e5c1d7cad5ebd0b" id="r_a043183647dab65462e5c1d7cad5ebd0b"><td class="memItemLeft"><a id="a043183647dab65462e5c1d7cad5ebd0b" name="a043183647dab65462e5c1d7cad5ebd0b"></a>
-std::optional&lt; std::string &gt;&#160;</td><td class="memItemRight"><b>title</b></td></tr>
-<tr class="memitem:ab254d18833d34e08f5e48c2b52ad5f16" id="r_ab254d18833d34e08f5e48c2b52ad5f16"><td class="memItemLeft"><a id="ab254d18833d34e08f5e48c2b52ad5f16" name="ab254d18833d34e08f5e48c2b52ad5f16"></a>
-std::optional&lt; bool &gt;&#160;</td><td class="memItemRight"><b>resizable</b></td></tr>
-<tr class="memitem:a4718be029c6939a7ed40587807bc7858" id="r_a4718be029c6939a7ed40587807bc7858"><td class="memItemLeft"><a id="a4718be029c6939a7ed40587807bc7858" name="a4718be029c6939a7ed40587807bc7858"></a>
-std::optional&lt; bool &gt;&#160;</td><td class="memItemRight"><b>decorated</b></td></tr>
-<tr class="memitem:a24c92a7619263acd84d9cbfc1f2057f5" id="r_a24c92a7619263acd84d9cbfc1f2057f5"><td class="memItemLeft"><a id="a24c92a7619263acd84d9cbfc1f2057f5" name="a24c92a7619263acd84d9cbfc1f2057f5"></a>
-std::optional&lt; bool &gt;&#160;</td><td class="memItemRight"><b>maximized</b></td></tr>
-<tr class="memitem:aebad295951b80a791e07cdb9d1a8e30d" id="r_aebad295951b80a791e07cdb9d1a8e30d"><td class="memItemLeft"><a id="aebad295951b80a791e07cdb9d1a8e30d" name="aebad295951b80a791e07cdb9d1a8e30d"></a>
-std::optional&lt; bool &gt;&#160;</td><td class="memItemRight"><b>fullscreen</b></td></tr>
-<tr class="memitem:a2b9ca8e8255148470f5fb884a38aceec" id="r_a2b9ca8e8255148470f5fb884a38aceec"><td class="memItemLeft"><a id="a2b9ca8e8255148470f5fb884a38aceec" name="a2b9ca8e8255148470f5fb884a38aceec"></a>
-std::optional&lt; bool &gt;&#160;</td><td class="memItemRight"><b>highDPI</b></td></tr>
-<tr class="memitem:afe25fdf154dd796223b14bb977b0dc01" id="r_afe25fdf154dd796223b14bb977b0dc01"><td class="memItemLeft"><a id="afe25fdf154dd796223b14bb977b0dc01" name="afe25fdf154dd796223b14bb977b0dc01"></a>
-std::optional&lt; <a class="el" href="structFlowUi_1_1WindowInputConfig.html">WindowInputConfig</a> &gt;&#160;</td><td class="memItemRight"><b>input</b></td></tr>
+<tr class="memitem:a31b74f9e3c97cd3f1d2393ade214c7d4" id="r_a31b74f9e3c97cd3f1d2393ade214c7d4"><td class="memItemLeft">std::optional&lt; int &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a31b74f9e3c97cd3f1d2393ade214c7d4">width</a></td></tr>
+<tr class="memitem:a1da7b23c8af36125dd53bbda4b5486a4" id="r_a1da7b23c8af36125dd53bbda4b5486a4"><td class="memItemLeft">std::optional&lt; int &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a1da7b23c8af36125dd53bbda4b5486a4">height</a></td></tr>
+<tr class="memitem:a043183647dab65462e5c1d7cad5ebd0b" id="r_a043183647dab65462e5c1d7cad5ebd0b"><td class="memItemLeft">std::optional&lt; std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a043183647dab65462e5c1d7cad5ebd0b">title</a></td></tr>
+<tr class="memitem:ab254d18833d34e08f5e48c2b52ad5f16" id="r_ab254d18833d34e08f5e48c2b52ad5f16"><td class="memItemLeft">std::optional&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ab254d18833d34e08f5e48c2b52ad5f16">resizable</a></td></tr>
+<tr class="memitem:a4718be029c6939a7ed40587807bc7858" id="r_a4718be029c6939a7ed40587807bc7858"><td class="memItemLeft">std::optional&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a4718be029c6939a7ed40587807bc7858">decorated</a></td></tr>
+<tr class="memitem:a24c92a7619263acd84d9cbfc1f2057f5" id="r_a24c92a7619263acd84d9cbfc1f2057f5"><td class="memItemLeft">std::optional&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a24c92a7619263acd84d9cbfc1f2057f5">maximized</a></td></tr>
+<tr class="memitem:aebad295951b80a791e07cdb9d1a8e30d" id="r_aebad295951b80a791e07cdb9d1a8e30d"><td class="memItemLeft">std::optional&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aebad295951b80a791e07cdb9d1a8e30d">fullscreen</a></td></tr>
+<tr class="memitem:a2b9ca8e8255148470f5fb884a38aceec" id="r_a2b9ca8e8255148470f5fb884a38aceec"><td class="memItemLeft">std::optional&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a2b9ca8e8255148470f5fb884a38aceec">highDPI</a></td></tr>
+<tr class="memitem:afe25fdf154dd796223b14bb977b0dc01" id="r_afe25fdf154dd796223b14bb977b0dc01"><td class="memItemLeft">std::optional&lt; <a class="el" href="structFlowUi_1_1WindowInputConfig.html">WindowInputConfig</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#afe25fdf154dd796223b14bb977b0dc01">input</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Partial overrides for a secondary window cloned from <a class="el" href="structFlowUi_1_1AppConfig.html#a172fe9b539d98ff43a4d23a0b737a000" title="Initial native-window configuration for the semantic main window.">AppConfig::window</a>. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<div class="textblock"><p>Partial overrides for a secondary window cloned from <a class="el" href="structFlowUi_1_1AppConfig.html#a172fe9b539d98ff43a4d23a0b737a000" title="Initial native-window configuration for the semantic main window.">AppConfig::window</a>. Absent values inherit; present false values override true. An absent title adds a window suffix. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a4718be029c6939a7ed40587807bc7858" name="a4718be029c6939a7ed40587807bc7858"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4718be029c6939a7ed40587807bc7858">&#9670;&#160;</a></span>decorated</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;bool&gt; FlowUi::WindowConfigOverrides::decorated</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Replacement native decoration policy. </p>
+
+</div>
+</div>
+<a id="aebad295951b80a791e07cdb9d1a8e30d" name="aebad295951b80a791e07cdb9d1a8e30d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aebad295951b80a791e07cdb9d1a8e30d">&#9670;&#160;</a></span>fullscreen</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;bool&gt; FlowUi::WindowConfigOverrides::fullscreen</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Replacement fullscreen policy. </p>
+
+</div>
+</div>
+<a id="a1da7b23c8af36125dd53bbda4b5486a4" name="a1da7b23c8af36125dd53bbda4b5486a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1da7b23c8af36125dd53bbda4b5486a4">&#9670;&#160;</a></span>height</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;int&gt; FlowUi::WindowConfigOverrides::height</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Replacement height in screen coordinates; absent preserves the main-window default. </p>
+
+</div>
+</div>
+<a id="a2b9ca8e8255148470f5fb884a38aceec" name="a2b9ca8e8255148470f5fb884a38aceec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2b9ca8e8255148470f5fb884a38aceec">&#9670;&#160;</a></span>highDPI</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;bool&gt; FlowUi::WindowConfigOverrides::highDPI</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Replacement high-DPI preference. </p>
+
+</div>
+</div>
+<a id="afe25fdf154dd796223b14bb977b0dc01" name="afe25fdf154dd796223b14bb977b0dc01"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe25fdf154dd796223b14bb977b0dc01">&#9670;&#160;</a></span>input</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;<a class="el" href="structFlowUi_1_1WindowInputConfig.html">WindowInputConfig</a>&gt; FlowUi::WindowConfigOverrides::input</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Replacement input configuration; replaces the entire block when present. </p>
+
+</div>
+</div>
+<a id="a24c92a7619263acd84d9cbfc1f2057f5" name="a24c92a7619263acd84d9cbfc1f2057f5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24c92a7619263acd84d9cbfc1f2057f5">&#9670;&#160;</a></span>maximized</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;bool&gt; FlowUi::WindowConfigOverrides::maximized</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Replacement initial maximized state. </p>
+
+</div>
+</div>
+<a id="ab254d18833d34e08f5e48c2b52ad5f16" name="ab254d18833d34e08f5e48c2b52ad5f16"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab254d18833d34e08f5e48c2b52ad5f16">&#9670;&#160;</a></span>resizable</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;bool&gt; FlowUi::WindowConfigOverrides::resizable</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Replacement user-resize policy. </p>
+
+</div>
+</div>
+<a id="a043183647dab65462e5c1d7cad5ebd0b" name="a043183647dab65462e5c1d7cad5ebd0b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a043183647dab65462e5c1d7cad5ebd0b">&#9670;&#160;</a></span>title</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;std::string&gt; FlowUi::WindowConfigOverrides::title</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Replacement title; absent uses the main-window title with a generated window suffix. </p>
+
+</div>
+</div>
+<a id="a31b74f9e3c97cd3f1d2393ade214c7d4" name="a31b74f9e3c97cd3f1d2393ade214c7d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a31b74f9e3c97cd3f1d2393ade214c7d4">&#9670;&#160;</a></span>width</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;int&gt; FlowUi::WindowConfigOverrides::width</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Replacement width in screen coordinates; absent preserves the main-window default. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/configurationStructs/<a class="el" href="WindowConfig_8hpp_source.html">WindowConfig.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -148,7 +275,7 @@ std::optional&lt; <a class="el" href="structFlowUi_1_1WindowInputConfig.html">Wi
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1WindowConfigOverrides.html">WindowConfigOverrides</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1WindowConfigOverrides.html">WindowConfigOverrides</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,16 +106,63 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::RegisteredMemoryProbe Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevMemoryProbe_8hpp_source.html">DevMemoryProbe.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a96c4f4f425147d64900325e1c8bb280a" id="r_a96c4f4f425147d64900325e1c8bb280a"><td class="memItemLeft"><a id="a96c4f4f425147d64900325e1c8bb280a" name="a96c4f4f425147d64900325e1c8bb280a"></a>
-MemorySourceId&#160;</td><td class="memItemRight"><b>source</b> = 0u</td></tr>
-<tr class="memitem:a664056f934411039b16ae7c002e13709" id="r_a664056f934411039b16ae7c002e13709"><td class="memItemLeft"><a id="a664056f934411039b16ae7c002e13709" name="a664056f934411039b16ae7c002e13709"></a>
-const void *&#160;</td><td class="memItemRight"><b>owner</b> = nullptr</td></tr>
-<tr class="memitem:a4a649ea132b2cc468904f320940ed449" id="r_a4a649ea132b2cc468904f320940ed449"><td class="memItemLeft"><a id="a4a649ea132b2cc468904f320940ed449" name="a4a649ea132b2cc468904f320940ed449"></a>
-MemoryProbeFunction&#160;</td><td class="memItemRight"><b>sample</b> = nullptr</td></tr>
+<tr class="memitem:a96c4f4f425147d64900325e1c8bb280a" id="r_a96c4f4f425147d64900325e1c8bb280a"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad77f8008bc1cd25d210f535c630fb739">MemorySourceId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a96c4f4f425147d64900325e1c8bb280a">source</a> = 0u</td></tr>
+<tr class="memitem:a664056f934411039b16ae7c002e13709" id="r_a664056f934411039b16ae7c002e13709"><td class="memItemLeft">const void *&#160;</td><td class="memItemRight"><a class="el" href="#a664056f934411039b16ae7c002e13709">owner</a> = nullptr</td></tr>
+<tr class="memitem:a4a649ea132b2cc468904f320940ed449" id="r_a4a649ea132b2cc468904f320940ed449"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a059d15db394d6a6cf06e469c166fe76d">MemoryProbeFunction</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4a649ea132b2cc468904f320940ed449">sample</a> = nullptr</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Borrowed probe registration. Unregister before destroying owner; source must identify the corresponding registered descriptor. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a664056f934411039b16ae7c002e13709" name="a664056f934411039b16ae7c002e13709"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a664056f934411039b16ae7c002e13709">&#9670;&#160;</a></span>owner</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const void* FlowUi::devSystems::RegisteredMemoryProbe::owner = nullptr</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed source object passed to sample. </p>
+
+</div>
+</div>
+<a id="a4a649ea132b2cc468904f320940ed449" name="a4a649ea132b2cc468904f320940ed449"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a649ea132b2cc468904f320940ed449">&#9670;&#160;</a></span>sample</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a059d15db394d6a6cf06e469c166fe76d">MemoryProbeFunction</a> FlowUi::devSystems::RegisteredMemoryProbe::sample = nullptr</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Nonthrowing synchronous sampler; null is not a valid registration. </p>
+
+</div>
+</div>
+<a id="a96c4f4f425147d64900325e1c8bb280a" name="a96c4f4f425147d64900325e1c8bb280a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a96c4f4f425147d64900325e1c8bb280a">&#9670;&#160;</a></span>source</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad77f8008bc1cd25d210f535c630fb739">MemorySourceId</a> FlowUi::devSystems::RegisteredMemoryProbe::source = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Registered source identity. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/memory/<a class="el" href="DevMemoryProbe_8hpp_source.html">DevMemoryProbe.hpp</a></li>
 </ul>
@@ -132,7 +179,7 @@ MemoryProbeFunction&#160;</td><td class="memItemRight"><b>sample</b> = nullptr</
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1RegisteredMemoryProbe.html">RegisteredMemoryProbe</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1RegisteredMemoryProbe.html">RegisteredMemoryProbe</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

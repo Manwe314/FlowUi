@@ -123,10 +123,38 @@ struct ErrorSink {
 	/** Nonthrowing callback; null disables the sink. */
 	ErrorSinkCallback callback = nullptr;
 
-	/** Return whether a callback is installed. */
+	/**
+	 * Return whether a callback is installed.
+	 * @par Example
+	 * @code{.cpp}
+	 * std::uint64_t errorCount = 0;
+	 * const FlowUi::ErrorSink sink{
+	 *     .userData = &errorCount,
+	 *     .callback = [](void* userData, const FlowUi::ErrorEventView&) noexcept {
+	 *         ++*static_cast<std::uint64_t*>(userData);
+	 *     },
+	 * };
+	 * if (sink)
+	 *     sink.notify(FlowUi::ErrorEventView{.error = error});
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr explicit operator bool() const noexcept { return callback != nullptr; }
 
-	/** Invoke the sink synchronously if installed; event and its borrowed views expire after this call. */
+	/**
+	 * Invoke the sink synchronously if installed; event and its borrowed views expire after this call.
+	 * @par Example
+	 * @code{.cpp}
+	 * std::uint64_t errorCount = 0;
+	 * const FlowUi::ErrorSink sink{
+	 *     .userData = &errorCount,
+	 *     .callback = [](void* userData, const FlowUi::ErrorEventView&) noexcept {
+	 *         ++*static_cast<std::uint64_t*>(userData);
+	 *     },
+	 * };
+	 * if (sink)
+	 *     sink.notify(FlowUi::ErrorEventView{.error = error});
+	 * @endcode
+	 */
 	void notify(const ErrorEventView& event) const noexcept {
 		if (callback)
 			callback(userData, event);

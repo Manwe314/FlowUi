@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,7 +107,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Manages registrable themes, named theme variants, and active theme dispatch.  
+<p>Manages registrable themes, named theme variants, and active theme dispatch.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="ThemeManager_8hpp_source.html">ThemeManager.hpp</a>&gt;</code></p>
@@ -116,75 +116,187 @@ $(function() {
 Classes</h2></td></tr>
 <tr class="memitem:DevThemePreview" id="r_DevThemePreview"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1ThemeManager_1_1DevThemePreview.html">DevThemePreview</a></td></tr>
 <tr class="memitem:DevThemePayloadView" id="r_DevThemePayloadView"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1ThemeManager_1_1DevThemePayloadView.html">DevThemePayloadView</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed reflected theme payloads; valid during visitation and until registry mutation.  <a href="structFlowUi_1_1ThemeManager_1_1DevThemePayloadView.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-types" class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
 <tr class="memitem:a634fbe7626d95ed4f14b54cbcea06333" id="r_a634fbe7626d95ed4f14b54cbcea06333"><td class="memItemLeft"><a id="a634fbe7626d95ed4f14b54cbcea06333" name="a634fbe7626d95ed4f14b54cbcea06333"></a>
 using&#160;</td><td class="memItemRight"><b>DevThemePayloadVisitor</b> = bool (*)(void*, const <a class="el" href="structFlowUi_1_1ThemeManager_1_1DevThemePayloadView.html">DevThemePayloadView</a>&amp;) noexcept</td></tr>
+<tr class="memdesc:a634fbe7626d95ed4f14b54cbcea06333"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronous observation callback; return false to stop visitation. Arguments are borrowed for the call. <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:af80ca4ae6a19968a09b5fa34986e047a" id="r_af80ca4ae6a19968a09b5fa34986e047a"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
-<tr class="memitem:af80ca4ae6a19968a09b5fa34986e047a template"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#af80ca4ae6a19968a09b5fa34986e047a">registerDevPreview</a> (std::string_view debug_name, std::function&lt; void(App &amp;, UiManager &amp;)&gt; draw, bool uses_local_theme=false) noexcept</td></tr>
-<tr class="memitem:a0d4ccc40ede5caf00d9d059ff3920fb0" id="r_a0d4ccc40ede5caf00d9d059ff3920fb0"><td class="memTemplParams" colspan="2">template&lt;typename Visitor&gt; </td></tr>
-<tr class="memitem:a0d4ccc40ede5caf00d9d059ff3920fb0 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a0d4ccc40ede5caf00d9d059ff3920fb0">visitDevPreviews</a> (devSystems::tooling::DevTypeId theme_type, Visitor &amp;&amp;visitor) const</td></tr>
-<tr class="memitem:a1716c43e63438247a04c2f04354eb78a" id="r_a1716c43e63438247a04c2f04354eb78a"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#a1716c43e63438247a04c2f04354eb78a">clone_dev_variant</a> (devSystems::tooling::DevTypeId type, std::string_view source, std::string_view destination) noexcept</td></tr>
-<tr class="memitem:a697399bfaaaf1d2a0c8e9e1e0997ae52" id="r_a697399bfaaaf1d2a0c8e9e1e0997ae52"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#a697399bfaaaf1d2a0c8e9e1e0997ae52">set_dev_active_variant</a> (devSystems::tooling::DevTypeId type, std::string_view variant) noexcept</td></tr>
+<tr class="memitem:a4a85203e69440f8ebc6f5ed1100891c4" id="r_a4a85203e69440f8ebc6f5ed1100891c4"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
+<tr class="memitem:a4a85203e69440f8ebc6f5ed1100891c4 template"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4a85203e69440f8ebc6f5ed1100891c4">registerDevPreview</a> (std::string_view debug_name, const std::function&lt; void(App &amp;, UiManager &amp;)&gt; &amp;draw, bool uses_local_theme=false) noexcept</td></tr>
+<tr class="memdesc:a4a85203e69440f8ebc6f5ed1100891c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Available only with FLOW_UI_DEV_MODE. Register or replace a named retained example for every variant of T. Name/callback must be nonempty. Callback/name storage failures inside this call become <a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> errors; constructing the std::function argument happens before the call and may itself throw. Captures must remain valid for the manager lifetime. Set uses_local_theme only when nested theme reads all use <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a>'s scoped resolver. Preview drawing must not register previews or trigger application operations.  <br /></td></tr>
+<tr class="memitem:a5d13c812549cf20137d84769f08dfc36" id="r_a5d13c812549cf20137d84769f08dfc36"><td class="memTemplParams" colspan="2">template&lt;typename T, typename Draw&gt; </td></tr>
+<tr class="memitem:a5d13c812549cf20137d84769f08dfc36 template"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5d13c812549cf20137d84769f08dfc36">registerDevPreview</a> (std::string_view debugName, Draw &amp;&amp;draw, bool usesLocalTheme=false) noexcept</td></tr>
+<tr class="memdesc:a5d13c812549cf20137d84769f08dfc36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Available only with FLOW_UI_DEV_MODE. Construct the retained std::function inside the recoverable error boundary, then register it using the same name/ownership/scoped-theme contract as the std::function overload. Callback construction and registration failures become <a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> errors. The drawing callback runs later; its own drawing exceptions follow that enclosing frame boundary.  <br /></td></tr>
+<tr class="memitem:a6a68af3de996f63ece2286d13a51d4b7" id="r_a6a68af3de996f63ece2286d13a51d4b7"><td class="memTemplParams" colspan="2">template&lt;typename Visitor&gt; </td></tr>
+<tr class="memitem:a6a68af3de996f63ece2286d13a51d4b7 template"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#a6a68af3de996f63ece2286d13a51d4b7">visitDevPreviews</a> (<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a22de4acaf41684da79c8c04eecfa2ed7">devSystems::tooling::DevTypeId</a> theme_type, Visitor &amp;&amp;visitor) const</td></tr>
+<tr class="memdesc:a6a68af3de996f63ece2286d13a51d4b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Available only with FLOW_UI_DEV_MODE. Synchronously visit examples of one reflected theme type in registration order. The preview and its fields are borrowed for the callback. A completed visit returns successful <a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>; arbitrary visitor exceptions propagate. This function has no noexcept contract.  <br /></td></tr>
+<tr class="memitem:a1716c43e63438247a04c2f04354eb78a" id="r_a1716c43e63438247a04c2f04354eb78a"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#a1716c43e63438247a04c2f04354eb78a">clone_dev_variant</a> (<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a22de4acaf41684da79c8c04eecfa2ed7">devSystems::tooling::DevTypeId</a> type, std::string_view source, std::string_view destination) noexcept</td></tr>
+<tr class="memdesc:a1716c43e63438247a04c2f04354eb78a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Available only with FLOW_UI_DEV_MODE. Clone the live reflected payload into a new named variant, rejecting existing destination names. Check initialization/type/source/destination failures through <a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>. Obtain the reflected identity from a real catalogue payload view; cloning does not change its source payload. Reacquire catalogue borrows after registry mutation.  <br /></td></tr>
+<tr class="memitem:a697399bfaaaf1d2a0c8e9e1e0997ae52" id="r_a697399bfaaaf1d2a0c8e9e1e0997ae52"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#a697399bfaaaf1d2a0c8e9e1e0997ae52">set_dev_active_variant</a> (<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a22de4acaf41684da79c8c04eecfa2ed7">devSystems::tooling::DevTypeId</a> type, std::string_view variant) noexcept</td></tr>
+<tr class="memdesc:a697399bfaaaf1d2a0c8e9e1e0997ae52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Available only with FLOW_UI_DEV_MODE. Select the named variant of a reflected theme type. Return initialization/missing-variant errors through <a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>. Obtain the type and variant from a real catalogue payload view and reacquire theme borrows after changing the registry selection.  <br /></td></tr>
 <tr class="memitem:abc955315b17a42f20b96027bf6c77d85" id="r_abc955315b17a42f20b96027bf6c77d85"><td class="memItemLeft"><a id="abc955315b17a42f20b96027bf6c77d85" name="abc955315b17a42f20b96027bf6c77d85"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>devRevision</b> () const noexcept</td></tr>
+<tr class="memdesc:abc955315b17a42f20b96027bf6c77d85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the current development-observation revision; zero when support is disabled. <br /></td></tr>
 <tr class="memitem:a5fa2011c40eac90f72e589c887d872e4" id="r_a5fa2011c40eac90f72e589c887d872e4"><td class="memItemLeft"><a id="a5fa2011c40eac90f72e589c887d872e4" name="a5fa2011c40eac90f72e589c887d872e4"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>devThemeCount</b> () const noexcept</td></tr>
+<tr class="memdesc:a5fa2011c40eac90f72e589c887d872e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of currently published entries in this development catalogue. <br /></td></tr>
 <tr class="memitem:aedac994c395bfb014cd96c3cd018240c" id="r_aedac994c395bfb014cd96c3cd018240c"><td class="memItemLeft"><a id="aedac994c395bfb014cd96c3cd018240c" name="aedac994c395bfb014cd96c3cd018240c"></a>
-bool&#160;</td><td class="memItemRight"><b>visitDevCatalogueThemes</b> (void *userData, DevThemePayloadVisitor visitor) const noexcept</td></tr>
-<tr class="memitem:a58372e11382ccaf0bb826dd0f71557ea" id="r_a58372e11382ccaf0bb826dd0f71557ea"><td class="memItemLeft"><a id="a58372e11382ccaf0bb826dd0f71557ea" name="a58372e11382ccaf0bb826dd0f71557ea"></a>
-&#160;</td><td class="memItemRight"><b>ThemeManager</b> (const ThemeManager &amp;)=delete</td></tr>
-<tr class="memitem:ad90d5e638365b68af457cf928bb300a4" id="r_ad90d5e638365b68af457cf928bb300a4"><td class="memItemLeft"><a id="ad90d5e638365b68af457cf928bb300a4" name="ad90d5e638365b68af457cf928bb300a4"></a>
-ThemeManager &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const ThemeManager &amp;)=delete</td></tr>
-<tr class="memitem:ae8310e4a2710eb42eb6ac3a14fa0b0de" id="r_ae8310e4a2710eb42eb6ac3a14fa0b0de"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
-<tr class="memitem:ae8310e4a2710eb42eb6ac3a14fa0b0de template"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#ae8310e4a2710eb42eb6ac3a14fa0b0de">registerTheme</a> (std::string_view variantName, T themeData, bool makeActive=true)</td></tr>
-<tr class="memdesc:ae8310e4a2710eb42eb6ac3a14fa0b0de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a named theme variant for type T.  <br /></td></tr>
-<tr class="memitem:a794fa2c338319d22e7f1e2a3103b3dfe" id="r_a794fa2c338319d22e7f1e2a3103b3dfe"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
-<tr class="memitem:a794fa2c338319d22e7f1e2a3103b3dfe template"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#a794fa2c338319d22e7f1e2a3103b3dfe">registerTheme</a> (T themeData, bool makeActive=true)</td></tr>
-<tr class="memdesc:a794fa2c338319d22e7f1e2a3103b3dfe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register the default variant for theme type T under name "default".  <br /></td></tr>
+bool&#160;</td><td class="memItemRight"><b>visitDevCatalogueThemes</b> (void *userData, <a class="el" href="#a634fbe7626d95ed4f14b54cbcea06333">DevThemePayloadVisitor</a> visitor) const noexcept</td></tr>
+<tr class="memdesc:aedac994c395bfb014cd96c3cd018240c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Visit borrowed catalogue entries synchronously; return false when a visitor stops early. <br /></td></tr>
+<tr class="memitem:a912ab1638fdf09c5f7604a01c0a76e5f" id="r_a912ab1638fdf09c5f7604a01c0a76e5f"><td class="memItemLeft"><a id="a912ab1638fdf09c5f7604a01c0a76e5f" name="a912ab1638fdf09c5f7604a01c0a76e5f"></a>
+void&#160;</td><td class="memItemRight"><b>appendDevMemorySamples</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1MemorySampleSink.html">devSystems::MemorySampleSink</a> &amp;sink) const noexcept</td></tr>
+<tr class="memdesc:a912ab1638fdf09c5f7604a01c0a76e5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append observation-only memory accounting to sink without transferring storage ownership. <br /></td></tr>
+<tr class="memitem:a006f2dd32c6c05355ed40fa97bb0dd6c" id="r_a006f2dd32c6c05355ed40fa97bb0dd6c"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a006f2dd32c6c05355ed40fa97bb0dd6c">ThemeManager</a> () noexcept</td></tr>
+<tr class="memdesc:a006f2dd32c6c05355ed40fa97bb0dd6c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a detached manager; application code normally obtains the initialized App-owned manager.  <br /></td></tr>
+<tr class="memitem:a4420ab8fb9edf8b6438a5897414a9d1f" id="r_a4420ab8fb9edf8b6438a5897414a9d1f"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a4420ab8fb9edf8b6438a5897414a9d1f">~ThemeManager</a> () noexcept</td></tr>
+<tr class="memdesc:a4420ab8fb9edf8b6438a5897414a9d1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Release owned service data. The <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> controls this manager lifetime.  <br /></td></tr>
+<tr class="memitem:a58372e11382ccaf0bb826dd0f71557ea" id="r_a58372e11382ccaf0bb826dd0f71557ea"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a58372e11382ccaf0bb826dd0f71557ea">ThemeManager</a> (const ThemeManager &amp;)=delete</td></tr>
+<tr class="memdesc:a58372e11382ccaf0bb826dd0f71557ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copying and moving are disabled as declared; use the App-owned instance by reference.  <br /></td></tr>
+<tr class="memitem:ad90d5e638365b68af457cf928bb300a4" id="r_ad90d5e638365b68af457cf928bb300a4"><td class="memItemLeft"><a class="el" href="#a006f2dd32c6c05355ed40fa97bb0dd6c">ThemeManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ad90d5e638365b68af457cf928bb300a4">operator=</a> (const <a class="el" href="#a006f2dd32c6c05355ed40fa97bb0dd6c">ThemeManager</a> &amp;)=delete</td></tr>
+<tr class="memdesc:ad90d5e638365b68af457cf928bb300a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copying and moving are disabled as declared; use the App-owned instance by reference.  <br /></td></tr>
+<tr class="memitem:a0c43a4269bbe65e8a76a7e1afa8598b4" id="r_a0c43a4269bbe65e8a76a7e1afa8598b4"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
+<tr class="memitem:a0c43a4269bbe65e8a76a7e1afa8598b4 template"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#a0c43a4269bbe65e8a76a7e1afa8598b4">registerTheme</a> (std::string_view variantName, const T &amp;themeData, bool makeActive=true)</td></tr>
+<tr class="memdesc:a0c43a4269bbe65e8a76a7e1afa8598b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register an owned copy of a named theme payload; the shorter overload uses variant "default". makeActive selects the registered variant immediately.  <br /></td></tr>
+<tr class="memitem:aa7f20ec3a3e8fe0804168a87255eb7d6" id="r_aa7f20ec3a3e8fe0804168a87255eb7d6"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
+<tr class="memitem:aa7f20ec3a3e8fe0804168a87255eb7d6 template"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa7f20ec3a3e8fe0804168a87255eb7d6">registerTheme</a> (const T &amp;themeData, bool makeActive=true)</td></tr>
+<tr class="memdesc:aa7f20ec3a3e8fe0804168a87255eb7d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register an owned copy of a named theme payload; the shorter overload uses variant "default". makeActive selects the registered variant immediately.  <br /></td></tr>
 <tr class="memitem:ae9360e3c131a5c00025d25ad9db5bb05" id="r_ae9360e3c131a5c00025d25ad9db5bb05"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
-<tr class="memitem:ae9360e3c131a5c00025d25ad9db5bb05 template"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#ae9360e3c131a5c00025d25ad9db5bb05">setActiveVariant</a> (std::string_view variantName)</td></tr>
-<tr class="memdesc:ae9360e3c131a5c00025d25ad9db5bb05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the active variant for theme type T by variant name.  <br /></td></tr>
-<tr class="memitem:a587059071d2bc0c22b42e232d7ce2c88" id="r_a587059071d2bc0c22b42e232d7ce2c88"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
-<tr class="memitem:a587059071d2bc0c22b42e232d7ce2c88 template"><td class="memItemLeft">const T &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a587059071d2bc0c22b42e232d7ce2c88">getActiveTheme</a> () const</td></tr>
-<tr class="memdesc:a587059071d2bc0c22b42e232d7ce2c88"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the active variant for theme type T.  <br /></td></tr>
-<tr class="memitem:a720d7904eef98463b04fa795c8589326" id="r_a720d7904eef98463b04fa795c8589326"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
-<tr class="memitem:a720d7904eef98463b04fa795c8589326 template"><td class="memItemLeft">const T &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a720d7904eef98463b04fa795c8589326">getTheme</a> (std::string_view variantName) const</td></tr>
-<tr class="memdesc:a720d7904eef98463b04fa795c8589326"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access a specific named variant for theme type T.  <br /></td></tr>
-<tr class="memitem:a40a1751fd1be2efa20eebcfc474ad5b7" id="r_a40a1751fd1be2efa20eebcfc474ad5b7"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
-<tr class="memitem:a40a1751fd1be2efa20eebcfc474ad5b7 template"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#a40a1751fd1be2efa20eebcfc474ad5b7">updateTheme</a> (std::string_view variantName, std::function&lt; void(T &amp;)&gt; mutator)</td></tr>
-<tr class="memdesc:a40a1751fd1be2efa20eebcfc474ad5b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Queue a mutation function to update a theme variant at the next frame boundary.  <br /></td></tr>
-<tr class="memitem:aca201e27f648b3f7497ab7ac1d880c99" id="r_aca201e27f648b3f7497ab7ac1d880c99"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
-<tr class="memitem:aca201e27f648b3f7497ab7ac1d880c99 template"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#aca201e27f648b3f7497ab7ac1d880c99">updateActiveTheme</a> (std::function&lt; void(T &amp;)&gt; mutator)</td></tr>
-<tr class="memdesc:aca201e27f648b3f7497ab7ac1d880c99"><td class="mdescLeft">&#160;</td><td class="mdescRight">Queue a mutation function for the active variant of type T.  <br /></td></tr>
+<tr class="memitem:ae9360e3c131a5c00025d25ad9db5bb05 template"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#ae9360e3c131a5c00025d25ad9db5bb05">setActiveVariant</a> (std::string_view variantName)</td></tr>
+<tr class="memdesc:ae9360e3c131a5c00025d25ad9db5bb05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Select a previously registered variant for this theme type. Missing initialization/type/variant failures are returned in <a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>.  <br /></td></tr>
+<tr class="memitem:a730400cc12f36fe72806ed53e17702f8" id="r_a730400cc12f36fe72806ed53e17702f8"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
+<tr class="memitem:a730400cc12f36fe72806ed53e17702f8 template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::reference_wrapper&lt; const T &gt; &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a730400cc12f36fe72806ed53e17702f8">getActiveTheme</a> () const noexcept</td></tr>
+<tr class="memdesc:a730400cc12f36fe72806ed53e17702f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the active registered payload through <a class="el" href="classFlowUi_1_1Result.html">Result&lt;reference_wrapper&lt;const T&gt;&gt;</a>; missing initialization or active variant is an error.  <br /></td></tr>
+<tr class="memitem:ab5aa545332073843bab194402c8a9814" id="r_ab5aa545332073843bab194402c8a9814"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
+<tr class="memitem:ab5aa545332073843bab194402c8a9814 template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::reference_wrapper&lt; const T &gt; &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ab5aa545332073843bab194402c8a9814">getTheme</a> (std::string_view variantName) const noexcept</td></tr>
+<tr class="memdesc:ab5aa545332073843bab194402c8a9814"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow one named registered payload through <a class="el" href="classFlowUi_1_1Result.html">Result&lt;reference_wrapper&lt;const T&gt;&gt;</a>; missing initialization or variant is an error.  <br /></td></tr>
+<tr class="memitem:a9f3c6513e3e87200827996bdb5bd130b" id="r_a9f3c6513e3e87200827996bdb5bd130b"><td class="memTemplParams" colspan="2">template&lt;typename T, typename Mutator&gt; </td></tr>
+<tr class="memitem:a9f3c6513e3e87200827996bdb5bd130b template"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#a9f3c6513e3e87200827996bdb5bd130b">updateTheme</a> (std::string_view variantName, Mutator &amp;&amp;mutator)</td></tr>
+<tr class="memdesc:a9f3c6513e3e87200827996bdb5bd130b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Queue a retained mutator for the named variant. Success means queued, not applied; captured references must survive application of queued work.  <br /></td></tr>
+<tr class="memitem:a52ae0b984ce02eb94c80af00cb0e91f0" id="r_a52ae0b984ce02eb94c80af00cb0e91f0"><td class="memTemplParams" colspan="2">template&lt;typename T, typename Mutator&gt; </td></tr>
+<tr class="memitem:a52ae0b984ce02eb94c80af00cb0e91f0 template"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>&#160;</td><td class="memItemRight"><a class="el" href="#a52ae0b984ce02eb94c80af00cb0e91f0">updateActiveTheme</a> (Mutator &amp;&amp;mutator)</td></tr>
+<tr class="memdesc:a52ae0b984ce02eb94c80af00cb0e91f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Queue a retained mutator for the active variant of this type. Success means queued, not applied; borrowed captures must survive application.  <br /></td></tr>
 <tr class="memitem:af9a3d6cc30c38ab4fe17f577843b3c15" id="r_af9a3d6cc30c38ab4fe17f577843b3c15"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#af9a3d6cc30c38ab4fe17f577843b3c15">init</a> (detail::storage::IStorageSystem &amp;storage)</td></tr>
-<tr class="memdesc:af9a3d6cc30c38ab4fe17f577843b3c15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize <a class="el" href="classFlowUi_1_1ThemeManager.html" title="Manages registrable themes, named theme variants, and active theme dispatch.">ThemeManager</a> with a storage system instance.  <br /></td></tr>
-<tr class="memitem:a7fc380dd7601a7060185e0426bae635e" id="r_a7fc380dd7601a7060185e0426bae635e"><td class="memItemLeft"><a id="a7fc380dd7601a7060185e0426bae635e" name="a7fc380dd7601a7060185e0426bae635e"></a>
-void&#160;</td><td class="memItemRight"><b>destroy</b> () noexcept</td></tr>
-<tr class="memdesc:a7fc380dd7601a7060185e0426bae635e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy <a class="el" href="classFlowUi_1_1ThemeManager.html" title="Manages registrable themes, named theme variants, and active theme dispatch.">ThemeManager</a> resources and unregister storage records. <br /></td></tr>
-<tr class="memitem:aab76aecb6689cb8828245ceeea03336b" id="r_aab76aecb6689cb8828245ceeea03336b"><td class="memItemLeft"><a id="aab76aecb6689cb8828245ceeea03336b" name="aab76aecb6689cb8828245ceeea03336b"></a>
-void&#160;</td><td class="memItemRight"><b>applyStagedMutations</b> ()</td></tr>
-<tr class="memdesc:aab76aecb6689cb8828245ceeea03336b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply all queued staged theme mutations. <br /></td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a4097b3e04a4f8ece21f5abe1b10e6323" id="r_a4097b3e04a4f8ece21f5abe1b10e6323"><td class="memItemLeft"><a id="a4097b3e04a4f8ece21f5abe1b10e6323" name="a4097b3e04a4f8ece21f5abe1b10e6323"></a>
-class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
-<tr class="memitem:aedcadf9ffa4a2a8a0069d732c7c3374c" id="r_aedcadf9ffa4a2a8a0069d732c7c3374c"><td class="memItemLeft"><a id="aedcadf9ffa4a2a8a0069d732c7c3374c" name="aedcadf9ffa4a2a8a0069d732c7c3374c"></a>
-class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
-<tr class="memitem:adc8a360bb9a7be1e8331c0e34ad8fb4e" id="r_adc8a360bb9a7be1e8331c0e34ad8fb4e"><td class="memItemLeft"><a id="adc8a360bb9a7be1e8331c0e34ad8fb4e" name="adc8a360bb9a7be1e8331c0e34ad8fb4e"></a>
-class&#160;</td><td class="memItemRight"><b>devSystems::tooling::DevOverrideEngine</b></td></tr>
-<tr class="memitem:a26c5de6eeacc84b99400353a0c5a9bf4" id="r_a26c5de6eeacc84b99400353a0c5a9bf4"><td class="memItemLeft"><a id="a26c5de6eeacc84b99400353a0c5a9bf4" name="a26c5de6eeacc84b99400353a0c5a9bf4"></a>
-class&#160;</td><td class="memItemRight"><b>devSystems::tooling::DevOverrideCapture</b></td></tr>
+<tr class="memdesc:af9a3d6cc30c38ab4fe17f577843b3c15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Framework lifecycle wiring to the App-owned storage system. Application code obtains this manager through <a class="el" href="classFlowUi_1_1App.html#a54943b40279e1ce34c05cf778dc0afde" title="Access the theme manager.">App::themes()</a>.  <br /></td></tr>
+<tr class="memitem:a7fc380dd7601a7060185e0426bae635e" id="r_a7fc380dd7601a7060185e0426bae635e"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a7fc380dd7601a7060185e0426bae635e">destroy</a> () noexcept</td></tr>
+<tr class="memdesc:a7fc380dd7601a7060185e0426bae635e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Release this manager storage records and pending mutations. Framework lifecycle service; application code should retain the App-owned manager.  <br /></td></tr>
+<tr class="memitem:aab76aecb6689cb8828245ceeea03336b" id="r_aab76aecb6689cb8828245ceeea03336b"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aab76aecb6689cb8828245ceeea03336b">applyStagedMutations</a> ()</td></tr>
+<tr class="memdesc:aab76aecb6689cb8828245ceeea03336b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply queued mutations at an application safe point. <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> normally calls this service; avoid changing themes while UI output is being built.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Manages registrable themes, named theme variants, and active theme dispatch. </p>
-<p><a class="el" href="classFlowUi_1_1ThemeManager.html" title="Manages registrable themes, named theme variants, and active theme dispatch.">ThemeManager</a> owns registered user and library theme structs. Applications access <a class="el" href="classFlowUi_1_1ThemeManager.html" title="Manages registrable themes, named theme variants, and active theme dispatch.">ThemeManager</a> via <a class="el" href="classFlowUi_1_1App.html#a00db43401d213994be87716679cd8f91" title="Access the theme manager.">App::themes()</a> to register theme structs, select active variants, query theme values, or queue frame-boundary theme updates. </p>
-</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<p><a class="el" href="classFlowUi_1_1ThemeManager.html" title="Manages registrable themes, named theme variants, and active theme dispatch.">ThemeManager</a> owns registered user and library theme structs. Applications access <a class="el" href="classFlowUi_1_1ThemeManager.html" title="Manages registrable themes, named theme variants, and active theme dispatch.">ThemeManager</a> via <a class="el" href="classFlowUi_1_1App.html#a54943b40279e1ce34c05cf778dc0afde" title="Access the theme manager.">App::themes()</a> to register theme structs, select active variants, query theme values, or queue frame-boundary theme updates. </p>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a006f2dd32c6c05355ed40fa97bb0dd6c" name="a006f2dd32c6c05355ed40fa97bb0dd6c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a006f2dd32c6c05355ed40fa97bb0dd6c">&#9670;&#160;</a></span>ThemeManager() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::ThemeManager::ThemeManager </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Construct a detached manager; application code normally obtains the initialized App-owned manager. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a4420ab8fb9edf8b6438a5897414a9d1f" name="a4420ab8fb9edf8b6438a5897414a9d1f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4420ab8fb9edf8b6438a5897414a9d1f">&#9670;&#160;</a></span>~ThemeManager()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::ThemeManager::~ThemeManager </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Release owned service data. The <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> controls this manager lifetime. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a58372e11382ccaf0bb826dd0f71557ea" name="a58372e11382ccaf0bb826dd0f71557ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a58372e11382ccaf0bb826dd0f71557ea">&#9670;&#160;</a></span>ThemeManager() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::ThemeManager::ThemeManager </td>
+          <td>(</td>
+          <td class="paramtype">const ThemeManager &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Copying and moving are disabled as declared; use the App-owned instance by reference. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="aab76aecb6689cb8828245ceeea03336b" name="aab76aecb6689cb8828245ceeea03336b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aab76aecb6689cb8828245ceeea03336b">&#9670;&#160;</a></span>applyStagedMutations()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::ThemeManager::applyStagedMutations </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply queued mutations at an application safe point. <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> normally calls this service; avoid changing themes while UI output is being built. </p>
+<p>Arbitrary mutator exceptions propagate; a mutator may already have changed its target. Remaining detached callbacks are abandoned after failure, with no automatic retry. Rejection before detaching retains the queued batch.</p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
+
+</div>
+</div>
 <a id="a1716c43e63438247a04c2f04354eb78a" name="a1716c43e63438247a04c2f04354eb78a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1716c43e63438247a04c2f04354eb78a">&#9670;&#160;</a></span>clone_dev_variant()</h2>
 
@@ -195,9 +307,9 @@ class&#160;</td><td class="memItemRight"><b>devSystems::tooling::DevOverrideCapt
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Status FlowUi::ThemeManager::clone_dev_variant </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ThemeManager::clone_dev_variant </td>
           <td>(</td>
-          <td class="paramtype">devSystems::tooling::DevTypeId</td>          <td class="paramname"><span class="paramname"><em>type</em></span>, </td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a22de4acaf41684da79c8c04eecfa2ed7">devSystems::tooling::DevTypeId</a></td>          <td class="paramname"><span class="paramname"><em>type</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -216,12 +328,52 @@ class&#160;</td><td class="memItemRight"><b>devSystems::tooling::DevOverrideCapt
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Clone the live payload into a new named variant; existing names are rejected. </p>
+
+<p>Available only with FLOW_UI_DEV_MODE. Clone the live reflected payload into a new named variant, rejecting existing destination names. Check initialization/type/source/destination failures through <a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>. Obtain the reflected identity from a real catalogue payload view; cloning does not change its source payload. Reacquire catalogue borrows after registry mutation. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><span class="keyword">const</span> std::string_view destination = <span class="stringliteral">&quot;custom&quot;</span>;</div>
+<div class="line"><span class="keyword">auto</span> status = themes.clone_dev_variant(</div>
+<div class="line">    inspectedTheme.type, inspectedTheme.variant, destination);</div>
+<div class="line"><span class="keywordflow">if</span> (!status) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(status.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
 
 </div>
 </div>
-<a id="a587059071d2bc0c22b42e232d7ce2c88" name="a587059071d2bc0c22b42e232d7ce2c88"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a587059071d2bc0c22b42e232d7ce2c88">&#9670;&#160;</a></span>getActiveTheme()</h2>
+<a id="a7fc380dd7601a7060185e0426bae635e" name="a7fc380dd7601a7060185e0426bae635e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7fc380dd7601a7060185e0426bae635e">&#9670;&#160;</a></span>destroy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::ThemeManager::destroy </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Release this manager storage records and pending mutations. Framework lifecycle service; application code should retain the App-owned manager. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a730400cc12f36fe72806ed53e17702f8" name="a730400cc12f36fe72806ed53e17702f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a730400cc12f36fe72806ed53e17702f8">&#9670;&#160;</a></span>getActiveTheme()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -232,7 +384,7 @@ template&lt;typename T&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const T &amp; FlowUi::ThemeManager::getActiveTheme </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::reference_wrapper&lt; const T &gt; &gt; FlowUi::ThemeManager::getActiveTheme </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
@@ -240,30 +392,28 @@ template&lt;typename T&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Access the active variant for theme type T. </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">T</td><td>Theme struct type. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Const reference to the active theme payload of type T. </dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">std::runtime_error</td><td>if no theme of type T is registered. </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Borrow the active registered payload through <a class="el" href="classFlowUi_1_1Result.html">Result&lt;reference_wrapper&lt;const T&gt;&gt;</a>; missing initialization or active variant is an error. </p>
+<p>Check the <a class="el" href="classFlowUi_1_1Result.html">Result</a>, then use const T&amp; value = result-&gt;get(). This is a borrow: reacquire after replacing variants, registry mutations or manager destruction/reinitialization.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">auto</span> result = themes.getActiveTheme&lt;<a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&gt;();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&amp; theme = result-&gt;get();</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">float</span> fontSize = theme.<a class="code hl_variable" href="structFlowUi_1_1FlowUiTheme.html#af94fb0700589cc8aaa6283cfe115d8de">fontSizeMedium</a>;</div>
+<div class="ttc" id="astructFlowUi_1_1FlowUiTheme_html"><div class="ttname"><a href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a></div><div class="ttdoc">Standard design system tokens for FlowUi built-in elements.</div><div class="ttdef"><b>Definition</b> FlowUiTheme.hpp:16</div></div>
+<div class="ttc" id="astructFlowUi_1_1FlowUiTheme_html_af94fb0700589cc8aaa6283cfe115d8de"><div class="ttname"><a href="structFlowUi_1_1FlowUiTheme.html#af94fb0700589cc8aaa6283cfe115d8de">FlowUi::FlowUiTheme::fontSizeMedium</a></div><div class="ttdeci">float fontSizeMedium</div><div class="ttdoc">Medium font size in pixels.</div><div class="ttdef"><b>Definition</b> FlowUiTheme.hpp:74</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
 
 </div>
 </div>
-<a id="a720d7904eef98463b04fa795c8589326" name="a720d7904eef98463b04fa795c8589326"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a720d7904eef98463b04fa795c8589326">&#9670;&#160;</a></span>getTheme()</h2>
+<a id="ab5aa545332073843bab194402c8a9814" name="ab5aa545332073843bab194402c8a9814"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab5aa545332073843bab194402c8a9814">&#9670;&#160;</a></span>getTheme()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -274,7 +424,7 @@ template&lt;typename T&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const T &amp; FlowUi::ThemeManager::getTheme </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::reference_wrapper&lt; const T &gt; &gt; FlowUi::ThemeManager::getTheme </td>
           <td>(</td>
           <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>variantName</em></span></td><td>)</td>
           <td> const</td>
@@ -282,31 +432,21 @@ template&lt;typename T&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Access a specific named variant for theme type T. </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">T</td><td>Theme struct type. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">variantName</td><td>Name of the registered variant. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Const reference to the named theme payload of type T. </dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">std::runtime_error</td><td>if variantName of type T is not registered. </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Borrow one named registered payload through <a class="el" href="classFlowUi_1_1Result.html">Result&lt;reference_wrapper&lt;const T&gt;&gt;</a>; missing initialization or variant is an error. </p>
+<p>Check the <a class="el" href="classFlowUi_1_1Result.html">Result</a>, then use const T&amp; value = result-&gt;get(). This is a borrow: reacquire after replacing variants, registry mutations or manager destruction/reinitialization.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">auto</span> result = themes.getTheme&lt;<a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&gt;(<span class="stringliteral">&quot;light&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&amp; theme = result-&gt;get();</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">float</span> fontSize = theme.<a class="code hl_variable" href="structFlowUi_1_1FlowUiTheme.html#af94fb0700589cc8aaa6283cfe115d8de">fontSizeMedium</a>;</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
 
 </div>
 </div>
@@ -325,18 +465,41 @@ template&lt;typename T&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Initialize <a class="el" href="classFlowUi_1_1ThemeManager.html" title="Manages registrable themes, named theme variants, and active theme dispatch.">ThemeManager</a> with a storage system instance. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">storage</td><td>Storage system instance. </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Framework lifecycle wiring to the App-owned storage system. Application code obtains this manager through <a class="el" href="classFlowUi_1_1App.html#a54943b40279e1ce34c05cf778dc0afde" title="Access the theme manager.">App::themes()</a>. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
 
 </div>
 </div>
-<a id="af80ca4ae6a19968a09b5fa34986e047a" name="af80ca4ae6a19968a09b5fa34986e047a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af80ca4ae6a19968a09b5fa34986e047a">&#9670;&#160;</a></span>registerDevPreview()</h2>
+<a id="ad90d5e638365b68af457cf928bb300a4" name="ad90d5e638365b68af457cf928bb300a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad90d5e638365b68af457cf928bb300a4">&#9670;&#160;</a></span>operator=()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="#a006f2dd32c6c05355ed40fa97bb0dd6c">ThemeManager</a> &amp; FlowUi::ThemeManager::operator= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="#a006f2dd32c6c05355ed40fa97bb0dd6c">ThemeManager</a> &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Copying and moving are disabled as declared; use the App-owned instance by reference. </p>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a4a85203e69440f8ebc6f5ed1100891c4" name="a4a85203e69440f8ebc6f5ed1100891c4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a85203e69440f8ebc6f5ed1100891c4">&#9670;&#160;</a></span>registerDevPreview() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -347,14 +510,14 @@ template&lt;typename T&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Status FlowUi::ThemeManager::registerDevPreview </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ThemeManager::registerDevPreview </td>
           <td>(</td>
           <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>debug_name</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::function&lt; void(App &amp;, UiManager &amp;)&gt;</td>          <td class="paramname"><span class="paramname"><em>draw</em></span>, </td>
+          <td class="paramtype">const std::function&lt; void(App &amp;, UiManager &amp;)&gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>draw</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -368,12 +531,86 @@ template&lt;typename T&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Register or replace the named preview for every variant of T (development only). Capture example state by value, or retain dependencies for the manager lifetime. Set uses_local_theme only when all nested scene theme reads use <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a>'s resolver; direct <a class="el" href="classFlowUi_1_1App.html#a00db43401d213994be87716679cd8f91" title="Access the theme manager.">App::themes()</a> reads bypass the local scope and restrict the scene to active variants. </p>
+
+<p>Available only with FLOW_UI_DEV_MODE. Register or replace a named retained example for every variant of T. Name/callback must be nonempty. Callback/name storage failures inside this call become <a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> errors; constructing the std::function argument happens before the call and may itself throw. Captures must remain valid for the manager lifetime. Set uses_local_theme only when nested theme reads all use <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a>'s scoped resolver. Preview drawing must not register previews or trigger application operations. </p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><span class="keyword">const</span> std::function&lt;void(<a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a>&amp;, <a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp;)&gt; draw =</div>
+<div class="line">    [](<a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a>&amp;, <a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; ui) {</div>
+<div class="line">        <span class="keyword">auto</span> themeResult = ui.flowTheme();</div>
+<div class="line">        <span class="keywordflow">if</span> (!themeResult) <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(themeResult.error());</div>
+<div class="line">        <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&amp; theme = themeResult-&gt;get();</div>
+<div class="line">        ui.createElement(counter, <span class="stringliteral">&quot;theme-preview&quot;</span>)</div>
+<div class="line">            .setParameters({.width = theme.<a class="code hl_variable" href="structFlowUi_1_1FlowUiTheme.html#af94fb0700589cc8aaa6283cfe115d8de">fontSizeMedium</a> * 8.0f})</div>
+<div class="line">            .draw();</div>
+<div class="line">    };</div>
+<div class="line"><span class="keyword">auto</span> status = themes.registerDevPreview&lt;<a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&gt;(<span class="stringliteral">&quot;Counter&quot;</span>, draw, <span class="keyword">true</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!status) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(status.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:74</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:110</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
 
 </div>
 </div>
-<a id="ae8310e4a2710eb42eb6ac3a14fa0b0de" name="ae8310e4a2710eb42eb6ac3a14fa0b0de"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae8310e4a2710eb42eb6ac3a14fa0b0de">&#9670;&#160;</a></span>registerTheme() <span class="overload">[1/2]</span></h2>
+<a id="a5d13c812549cf20137d84769f08dfc36" name="a5d13c812549cf20137d84769f08dfc36"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5d13c812549cf20137d84769f08dfc36">&#9670;&#160;</a></span>registerDevPreview() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename Draw&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ThemeManager::registerDevPreview </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>debugName</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Draw &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>draw</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>usesLocalTheme</em></span><span class="paramdefsep"> = </span><span class="paramdefval">false</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Available only with FLOW_UI_DEV_MODE. Construct the retained std::function inside the recoverable error boundary, then register it using the same name/ownership/scoped-theme contract as the std::function overload. Callback construction and registration failures become <a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> errors. The drawing callback runs later; its own drawing exceptions follow that enclosing frame boundary. </p>
+<dl class="section user"><dt>Example</dt><dd>The complete ExampleCounter definition is provided in the element API reference. <div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><span class="keyword">auto</span> status = themes.registerDevPreview&lt;<a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&gt;(<span class="stringliteral">&quot;Counter&quot;</span>,</div>
+<div class="line">    [](<a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a>&amp;, <a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; ui) {</div>
+<div class="line">        <span class="keyword">auto</span> themeResult = ui.flowTheme();</div>
+<div class="line">        <span class="keywordflow">if</span> (!themeResult) <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(themeResult.error());</div>
+<div class="line">        <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&amp; theme = themeResult-&gt;get();</div>
+<div class="line">        ui.createElement(counter, <span class="stringliteral">&quot;theme-preview&quot;</span>)</div>
+<div class="line">            .setParameters({.width = theme.<a class="code hl_variable" href="structFlowUi_1_1FlowUiTheme.html#af94fb0700589cc8aaa6283cfe115d8de">fontSizeMedium</a> * 8.0f})</div>
+<div class="line">            .draw();</div>
+<div class="line">    }, <span class="keyword">true</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!status) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(status.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="aa7f20ec3a3e8fe0804168a87255eb7d6" name="aa7f20ec3a3e8fe0804168a87255eb7d6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7f20ec3a3e8fe0804168a87255eb7d6">&#9670;&#160;</a></span>registerTheme() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -384,14 +621,55 @@ template&lt;typename T&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Status FlowUi::ThemeManager::registerTheme </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ThemeManager::registerTheme </td>
+          <td>(</td>
+          <td class="paramtype">const T &amp;</td>          <td class="paramname"><span class="paramname"><em>themeData</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>makeActive</em></span><span class="paramdefsep"> = </span><span class="paramdefval">true</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Register an owned copy of a named theme payload; the shorter overload uses variant "default". makeActive selects the registered variant immediately. </p>
+<p>Hybrid contract: known validation failures are returned; arbitrary payload copy/assignment and allocation exceptions propagate. Failed replacement can partially affect a payload; abandon it instead of assuming rollback.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">auto</span> result = themes.registerTheme&lt;<a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&gt;(<a class="code hl_function" href="structFlowUi_1_1FlowUiTheme.html#af640cfe5087c3a7bd15ccf745f538a0a">FlowUi::FlowUiTheme::dark</a>());</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="ttc" id="astructFlowUi_1_1FlowUiTheme_html_af640cfe5087c3a7bd15ccf745f538a0a"><div class="ttname"><a href="structFlowUi_1_1FlowUiTheme.html#af640cfe5087c3a7bd15ccf745f538a0a">FlowUi::FlowUiTheme::dark</a></div><div class="ttdeci">static FlowUiTheme dark() noexcept</div><div class="ttdoc">Factory returning default dark theme instance.</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
+
+</div>
+</div>
+<a id="a0c43a4269bbe65e8a76a7e1afa8598b4" name="a0c43a4269bbe65e8a76a7e1afa8598b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c43a4269bbe65e8a76a7e1afa8598b4">&#9670;&#160;</a></span>registerTheme() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ThemeManager::registerTheme </td>
           <td>(</td>
           <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>variantName</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">T</td>          <td class="paramname"><span class="paramname"><em>themeData</em></span>, </td>
+          <td class="paramtype">const T &amp;</td>          <td class="paramname"><span class="paramname"><em>themeData</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -406,67 +684,15 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Register a named theme variant for type T. </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">T</td><td>User-defined or library theme struct type. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">variantName</td><td>Name identifying this theme variant. </td></tr>
-    <tr><td class="paramname">themeData</td><td>Theme struct payload containing design tokens. </td></tr>
-    <tr><td class="paramname">makeActive</td><td>If true, sets this variant as the active theme for type T. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a794fa2c338319d22e7f1e2a3103b3dfe" name="a794fa2c338319d22e7f1e2a3103b3dfe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a794fa2c338319d22e7f1e2a3103b3dfe">&#9670;&#160;</a></span>registerTheme() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">Status FlowUi::ThemeManager::registerTheme </td>
-          <td>(</td>
-          <td class="paramtype">T</td>          <td class="paramname"><span class="paramname"><em>themeData</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>makeActive</em></span><span class="paramdefsep"> = </span><span class="paramdefval">true</span>&#160;)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Register the default variant for theme type T under name "default". </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">T</td><td>User-defined or library theme struct type. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">themeData</td><td>Theme struct payload containing design tokens. </td></tr>
-    <tr><td class="paramname">makeActive</td><td>If true, sets this variant as the active theme for type T. </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Register an owned copy of a named theme payload; the shorter overload uses variant "default". makeActive selects the registered variant immediately. </p>
+<p>Hybrid contract: known validation failures are returned; arbitrary payload copy/assignment and allocation exceptions propagate. Failed replacement can partially affect a payload; abandon it instead of assuming rollback.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">auto</span> result = themes.registerTheme&lt;<a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&gt;(<span class="stringliteral">&quot;light&quot;</span>, <a class="code hl_function" href="structFlowUi_1_1FlowUiTheme.html#a726e52ade44eca9b4299974ba45bf309">FlowUi::FlowUiTheme::light</a>(), <span class="keyword">false</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="ttc" id="astructFlowUi_1_1FlowUiTheme_html_a726e52ade44eca9b4299974ba45bf309"><div class="ttname"><a href="structFlowUi_1_1FlowUiTheme.html#a726e52ade44eca9b4299974ba45bf309">FlowUi::FlowUiTheme::light</a></div><div class="ttdeci">static FlowUiTheme light() noexcept</div><div class="ttdoc">Factory returning default light theme instance.</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
 
 </div>
 </div>
@@ -480,9 +706,9 @@ template&lt;typename T&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Status FlowUi::ThemeManager::set_dev_active_variant </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ThemeManager::set_dev_active_variant </td>
           <td>(</td>
-          <td class="paramtype">devSystems::tooling::DevTypeId</td>          <td class="paramname"><span class="paramname"><em>type</em></span>, </td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a22de4acaf41684da79c8c04eecfa2ed7">devSystems::tooling::DevTypeId</a></td>          <td class="paramname"><span class="paramname"><em>type</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -496,7 +722,17 @@ template&lt;typename T&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Switch the active variant of a reflected theme type. </p>
+
+<p>Available only with FLOW_UI_DEV_MODE. Select the named variant of a reflected theme type. Return initialization/missing-variant errors through <a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>. Obtain the type and variant from a real catalogue payload view and reacquire theme borrows after changing the registry selection. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><span class="keyword">auto</span> status = themes.set_dev_active_variant(</div>
+<div class="line">    inspectedTheme.type, inspectedTheme.variant);</div>
+<div class="line"><span class="keywordflow">if</span> (!status) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(status.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
 
 </div>
 </div>
@@ -512,7 +748,7 @@ template&lt;typename T&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Status FlowUi::ThemeManager::setActiveVariant </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ThemeManager::setActiveVariant </td>
           <td>(</td>
           <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>variantName</em></span></td><td>)</td>
           <td></td>
@@ -525,38 +761,32 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Set the active variant for theme type T by variant name. </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">T</td><td>Theme struct type. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">variantName</td><td>Name of the registered variant to set active. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Success when the variant is active, or a structured error when the manager, theme type, or variant is unavailable. </dd></dl>
+<p>Select a previously registered variant for this theme type. Missing initialization/type/variant failures are returned in <a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>. </p>
+<p>Hybrid contract: known <a class="el" href="namespaceFlowUi.html">FlowUi</a> validation failures are returned; non-FlowUi name preparation/allocation exceptions propagate.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">auto</span> result = themes.setActiveVariant&lt;<a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&gt;(<span class="stringliteral">&quot;light&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
 
 </div>
 </div>
-<a id="aca201e27f648b3f7497ab7ac1d880c99" name="aca201e27f648b3f7497ab7ac1d880c99"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aca201e27f648b3f7497ab7ac1d880c99">&#9670;&#160;</a></span>updateActiveTheme()</h2>
+<a id="a52ae0b984ce02eb94c80af00cb0e91f0" name="a52ae0b984ce02eb94c80af00cb0e91f0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a52ae0b984ce02eb94c80af00cb0e91f0">&#9670;&#160;</a></span>updateActiveTheme()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, typename Mutator&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Status FlowUi::ThemeManager::updateActiveTheme </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ThemeManager::updateActiveTheme </td>
           <td>(</td>
-          <td class="paramtype">std::function&lt; void(T &amp;)&gt;</td>          <td class="paramname"><span class="paramname"><em>mutator</em></span></td><td>)</td>
+          <td class="paramtype">Mutator &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>mutator</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -567,42 +797,37 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Queue a mutation function for the active variant of type T. </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">T</td><td>Theme struct type. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">mutator</td><td>Callback receiving reference to the active theme struct. </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Queue a retained mutator for the active variant of this type. Success means queued, not applied; borrowed captures must survive application. </p>
+<p>Hybrid contract: initialization/type/variant failures are returned; callback construction, name preparation and allocation exceptions propagate. Mutators run later and may throw when applied.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">auto</span> result = themes.updateActiveTheme&lt;<a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&gt;([](<a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&amp; theme) { theme.fontSizeMedium = 16.0f; });</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
 
 </div>
 </div>
-<a id="a40a1751fd1be2efa20eebcfc474ad5b7" name="a40a1751fd1be2efa20eebcfc474ad5b7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a40a1751fd1be2efa20eebcfc474ad5b7">&#9670;&#160;</a></span>updateTheme()</h2>
+<a id="a9f3c6513e3e87200827996bdb5bd130b" name="a9f3c6513e3e87200827996bdb5bd130b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9f3c6513e3e87200827996bdb5bd130b">&#9670;&#160;</a></span>updateTheme()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, typename Mutator&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Status FlowUi::ThemeManager::updateTheme </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ThemeManager::updateTheme </td>
           <td>(</td>
           <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>variantName</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::function&lt; void(T &amp;)&gt;</td>          <td class="paramname"><span class="paramname"><em>mutator</em></span>&#160;)</td>
+          <td class="paramtype">Mutator &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>mutator</em></span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -612,25 +837,19 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Queue a mutation function to update a theme variant at the next frame boundary. </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">T</td><td>Theme struct type. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">variantName</td><td>Name of the registered variant to mutate. </td></tr>
-    <tr><td class="paramname">mutator</td><td>Callback receiving reference to the theme struct. </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Queue a retained mutator for the named variant. Success means queued, not applied; captured references must survive application of queued work. </p>
+<p>Hybrid contract: initialization/type/variant failures are returned; callback construction, name preparation and allocation exceptions propagate. Mutators run later and may throw when applied.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">auto</span> result = themes.updateTheme&lt;<a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&gt;(<span class="stringliteral">&quot;light&quot;</span>, [](<a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a>&amp; theme) { theme.fontSizeMedium = 16.0f; });</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
 
 </div>
 </div>
-<a id="a0d4ccc40ede5caf00d9d059ff3920fb0" name="a0d4ccc40ede5caf00d9d059ff3920fb0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0d4ccc40ede5caf00d9d059ff3920fb0">&#9670;&#160;</a></span>visitDevPreviews()</h2>
+<a id="a6a68af3de996f63ece2286d13a51d4b7" name="a6a68af3de996f63ece2286d13a51d4b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6a68af3de996f63ece2286d13a51d4b7">&#9670;&#160;</a></span>visitDevPreviews()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -641,9 +860,9 @@ template&lt;typename Visitor&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FlowUi::ThemeManager::visitDevPreviews </td>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> FlowUi::ThemeManager::visitDevPreviews </td>
           <td>(</td>
-          <td class="paramtype">devSystems::tooling::DevTypeId</td>          <td class="paramname"><span class="paramname"><em>theme_type</em></span>, </td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a22de4acaf41684da79c8c04eecfa2ed7">devSystems::tooling::DevTypeId</a></td>          <td class="paramname"><span class="paramname"><em>theme_type</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -653,11 +872,25 @@ template&lt;typename Visitor&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Visit registered component examples for a theme type, in registration order. </p>
+
+<p>Available only with FLOW_UI_DEV_MODE. Synchronously visit examples of one reflected theme type in registration order. The preview and its fields are borrowed for the callback. A completed visit returns successful <a class="el" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a>; arbitrary visitor exceptions propagate. This function has no noexcept contract. </p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line">std::size_t previewCount = 0;</div>
+<div class="line"><span class="keyword">auto</span> status = themes.visitDevPreviews(inspectedTheme.type,</div>
+<div class="line">    [&amp;previewCount](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ThemeManager_1_1DevThemePreview.html">FlowUi::ThemeManager::DevThemePreview</a>&amp; preview) {</div>
+<div class="line">        if (preview.draw &amp;&amp; !preview.debug_name.empty()) ++previewCount;</div>
+<div class="line">    });</div>
+<div class="line"><span class="keywordflow">if</span> (!status) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(status.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="astructFlowUi_1_1ThemeManager_1_1DevThemePreview_html"><div class="ttname"><a href="structFlowUi_1_1ThemeManager_1_1DevThemePreview.html">FlowUi::ThemeManager::DevThemePreview</a></div><div class="ttdef"><b>Definition</b> ThemeManager.hpp:56</div></div>
+</div><!-- fragment --></dd></dl>
+<dl class="section see"><dt>See also</dt><dd>docs/api/theme_manager.md </dd></dl>
 
 </div>
 </div>
@@ -677,7 +910,7 @@ template&lt;typename Visitor&gt; </div>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1ThemeManager.html">ThemeManager</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1ThemeManager.html">ThemeManager</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

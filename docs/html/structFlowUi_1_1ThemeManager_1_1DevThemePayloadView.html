@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,29 +106,45 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::ThemeManager::DevThemePayloadView Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Borrowed reflected theme payloads; valid during visitation and until registry mutation.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ThemeManager_8hpp_source.html">ThemeManager.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a1195df2969a528a05bc7df4449ca8eb5" id="r_a1195df2969a528a05bc7df4449ca8eb5"><td class="memItemLeft"><a id="a1195df2969a528a05bc7df4449ca8eb5" name="a1195df2969a528a05bc7df4449ca8eb5"></a>
-devSystems::tooling::DevTypeId&#160;</td><td class="memItemRight"><b>type</b> = 0</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a22de4acaf41684da79c8c04eecfa2ed7">devSystems::tooling::DevTypeId</a>&#160;</td><td class="memItemRight"><b>type</b> = 0</td></tr>
+<tr class="memdesc:a1195df2969a528a05bc7df4449ca8eb5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reflected theme type identity. <br /></td></tr>
 <tr class="memitem:af64748e210cf819dc7ff6a9024bf0705" id="r_af64748e210cf819dc7ff6a9024bf0705"><td class="memItemLeft"><a id="af64748e210cf819dc7ff6a9024bf0705" name="af64748e210cf819dc7ff6a9024bf0705"></a>
 std::string_view&#160;</td><td class="memItemRight"><b>typeName</b> {}</td></tr>
+<tr class="memdesc:af64748e210cf819dc7ff6a9024bf0705"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed theme type display name. <br /></td></tr>
 <tr class="memitem:abb307269579f5b3bff9cb5486e1d3610" id="r_abb307269579f5b3bff9cb5486e1d3610"><td class="memItemLeft"><a id="abb307269579f5b3bff9cb5486e1d3610" name="abb307269579f5b3bff9cb5486e1d3610"></a>
 std::string_view&#160;</td><td class="memItemRight"><b>variant</b> {}</td></tr>
+<tr class="memdesc:abb307269579f5b3bff9cb5486e1d3610"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed registered variant name. <br /></td></tr>
 <tr class="memitem:a76d8c5451102aaea810979dcba9704fc" id="r_a76d8c5451102aaea810979dcba9704fc"><td class="memItemLeft"><a id="a76d8c5451102aaea810979dcba9704fc" name="a76d8c5451102aaea810979dcba9704fc"></a>
 const void *&#160;</td><td class="memItemRight"><b>payload</b> = nullptr</td></tr>
+<tr class="memdesc:a76d8c5451102aaea810979dcba9704fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Live payload; cast only through the matching reflected type. <br /></td></tr>
 <tr class="memitem:a09af81bf389fbaa461fcaaf15d2c209b" id="r_a09af81bf389fbaa461fcaaf15d2c209b"><td class="memItemLeft"><a id="a09af81bf389fbaa461fcaaf15d2c209b" name="a09af81bf389fbaa461fcaaf15d2c209b"></a>
 const void *&#160;</td><td class="memItemRight"><b>authored</b> = nullptr</td></tr>
+<tr class="memdesc:a09af81bf389fbaa461fcaaf15d2c209b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Authored baseline payload before baked/runtime changes, when available. <br /></td></tr>
 <tr class="memitem:a07b3727243e514f5c10476e1af43ecc2" id="r_a07b3727243e514f5c10476e1af43ecc2"><td class="memItemLeft"><a id="a07b3727243e514f5c10476e1af43ecc2" name="a07b3727243e514f5c10476e1af43ecc2"></a>
 const void *&#160;</td><td class="memItemRight"><b>startup</b> = nullptr</td></tr>
+<tr class="memdesc:a07b3727243e514f5c10476e1af43ecc2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Startup baseline payload for change comparison, when available. <br /></td></tr>
 <tr class="memitem:ab602f539de8b6870b41b91b0c473d11e" id="r_ab602f539de8b6870b41b91b0c473d11e"><td class="memItemLeft"><a id="ab602f539de8b6870b41b91b0c473d11e" name="ab602f539de8b6870b41b91b0c473d11e"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>payloadSize</b> = 0</td></tr>
+<tr class="memdesc:ab602f539de8b6870b41b91b0c473d11e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Payload size in bytes for type validation. <br /></td></tr>
 <tr class="memitem:a3eb0496021992450ee0e381134184d95" id="r_a3eb0496021992450ee0e381134184d95"><td class="memItemLeft"><a id="a3eb0496021992450ee0e381134184d95" name="a3eb0496021992450ee0e381134184d95"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>revision</b> = 0</td></tr>
+<tr class="memdesc:a3eb0496021992450ee0e381134184d95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Theme revision observed by this snapshot. <br /></td></tr>
 <tr class="memitem:afbac42be8552d0c72415f2026bbe652e" id="r_afbac42be8552d0c72415f2026bbe652e"><td class="memItemLeft"><a id="afbac42be8552d0c72415f2026bbe652e" name="afbac42be8552d0c72415f2026bbe652e"></a>
 bool&#160;</td><td class="memItemRight"><b>active</b> = false</td></tr>
+<tr class="memdesc:afbac42be8552d0c72415f2026bbe652e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether this is the active variant of its type. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Borrowed reflected theme payloads; valid during visitation and until registry mutation. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managers/<a class="el" href="ThemeManager_8hpp_source.html">ThemeManager.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -144,7 +160,7 @@ bool&#160;</td><td class="memItemRight"><b>active</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1ThemeManager.html">ThemeManager</a></li><li class="navelem"><a href="structFlowUi_1_1ThemeManager_1_1DevThemePayloadView.html">DevThemePayloadView</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1ThemeManager.html">ThemeManager</a></li><li class="navelem"><a href="structFlowUi_1_1ThemeManager_1_1DevThemePayloadView.html">DevThemePayloadView</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

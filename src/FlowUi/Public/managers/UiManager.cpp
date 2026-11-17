@@ -1,3 +1,4 @@
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "FlowUi/Public/managers/UiManager.hpp"
 #include "FlowUi/Private/platformProviderService/WindowPlatformServices.hpp"
 #include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
@@ -6,6 +7,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstdio>
+#include <limits>
 
 #if FLOW_UI_DEV_MODE
 #include <charconv>
@@ -177,12 +179,17 @@ namespace FlowUi
 
 		Clay_SetCurrentContext(state_->clayContext);
 		Clay_SetMeasureTextFunction(
-			+[](Clay_StringSlice text, Clay_TextElementConfig* config, void* userData) -> Clay_Dimensions {
+			+[](Clay_StringSlice text, Clay_TextElementConfig* config, void* userData) noexcept -> Clay_Dimensions {
 				const auto* uiManager = static_cast<const UiManager*>(userData);
 				if (!uiManager) {
 					return Clay_Dimensions{ 0.0f, 0.0f };
 				}
-				return uiManager->measureText(text, config);
+				try {
+					return uiManager->measureText(text, config);
+				} catch (...) {
+					uiManager->recordFrameError(detail::currentExceptionError(ErrorSite::UiManagerRender));
+					return {};
+				}
 			},
 			this);
 		try {
@@ -271,20 +278,23 @@ namespace FlowUi
 		});
 	}
 
-		void UiManager::setClipboardText(std::string_view text) const {
-			if (platformServices_)
-				platformServices_->setClipboardText(text);
+		Status UiManager::setClipboardText(std::string_view text) const noexcept {
+			if (!platformServices_)
+				return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::WindowWriteClipboard));
+			return platformServices_->setClipboardText(text);
 		}
 
-		std::string UiManager::clipboardText() const {
-			return platformServices_ ? platformServices_->clipboardText() : std::string{};
+		Result<std::string> UiManager::clipboardText() const noexcept {
+			if (!platformServices_)
+				return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::WindowReadClipboard));
+			return platformServices_->clipboardText();
 		}
 
-		bool UiManager::hasClipboardAccess() const {
+		bool UiManager::hasClipboardAccess() const noexcept {
 			return platformServices_ && platformServices_->hasClipboardAccess();
 		}
 
-		Clay_ElementDeclaration UiManager::inputContentElement(const Clay_TextElementConfig& textConfig) const {
+		Clay_ElementDeclaration UiManager::inputContentElement(const Clay_TextElementConfig& textConfig) const try {
 			float lineHeight = static_cast<float>(std::max<uint16_t>(1u, textConfig.fontSize)) * state_->pointsToPixelsScale;
 			const detail::text::TextLayoutResult& layout = state_->textLayoutService.layout(
 				detail::text::TextLayoutRequest{
@@ -302,7 +312,11 @@ namespace FlowUi
 				.height = CLAY_SIZING_FIXED(std::max(1.0f, lineHeight)),
 			};
 			return declaration;
-		}
+		} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::UiManagerRender);
+	recordFrameError(error);
+	throw;
+}
 
 		void UiManager::setPlatformServices(
 			detail::platform::WindowPlatformServices* services) noexcept {
@@ -311,7 +325,7 @@ namespace FlowUi
 				inputFieldManager_.setPlatformServices(services);
 		}
 
-		void UiManager::requestCursor(CursorType cursorType, uint8_t priority) {
+		void UiManager::requestCursor(CursorType cursorType, uint8_t priority) noexcept {
 			if (priority < state_->cursorPriority) {
 				return;
 			}
@@ -319,11 +333,11 @@ namespace FlowUi
 			state_->cursorPriority = priority;
 		}
 
-		FontId UiManager::resolveFont(FontFamilyId familyId, uint32_t weight, FontStyle style) const {
+		FontId UiManager::resolveFont(FontFamilyId familyId, uint32_t weight, FontStyle style) const noexcept {
 			return state_->fontView.resolve(familyId, weight, style);
 		}
 
-		FontId UiManager::resolveFont(std::string_view familyName, uint32_t weight, FontStyle style) const {
+		FontId UiManager::resolveFont(std::string_view familyName, uint32_t weight, FontStyle style) const noexcept {
 			return state_->fontView.resolve(familyName, weight, style);
 		}
 
@@ -362,6 +376,7 @@ namespace FlowUi
 	void UiManager::beginFrame(const storage::FrameToken& frame, const FrameInput& frameInput,
 							   const manager_storage::FontFrameView& fontView, float screenWidth,
 							   float screenHeight, bool primaryPointerCanceled) {
+		frameError_ = {};
 #if FLOW_UI_DEV_MODE
 		FLOWUI_DEV_TIMING_ZONE_IF(
 			devTimingRecorder_, devSystems::TimingCategory::Frame,
@@ -498,6 +513,7 @@ namespace FlowUi
 
 	Clay_RenderCommandArray UiManager::endFrame()
 	{
+		detail::requireApiSuccess(frameStatus());
 #if FLOW_UI_DEV_MODE
 		FLOWUI_DEV_TIMING_ZONE_IF(
 			devTimingRecorder_, devSystems::TimingCategory::Frame,
@@ -532,6 +548,7 @@ namespace FlowUi
 				devSystems::TimingZoneRole::Work, "flowui.layout.end");
 #endif
 			renderCommands = Clay_EndLayout(static_cast<float>(state_->frameInputForCurrentLayout.dt));
+			detail::requireApiSuccess(frameStatus());
 		}
 #if FLOW_UI_DEV_MODE
 		if (dev_tree_collection_) {
@@ -589,7 +606,7 @@ namespace FlowUi
 		storage_->noteManagerMutation(window_);
 		if (state_->cursor != state_->previousCursor) {
 			if (platformServices_) {
-				platformServices_->setCursor(state_->cursor);
+				detail::requireApiSuccess(platformServices_->setCursor(state_->cursor));
 			}
 			state_->previousCursor = state_->cursor;
 		}
@@ -624,19 +641,26 @@ namespace FlowUi
 		return static_cast<char*>(memory);
 	}
 	
-	Clay_String UiManager::toClayString(std::string_view s)
-	{
+	Clay_String UiManager::toClayString(std::string_view s) try {
 		const size_t len = s.size();
+		if (len > static_cast<size_t>(std::numeric_limits<int32_t>::max()) ||
+			len == std::numeric_limits<size_t>::max()) {
+			throw FlowUiException(makeError(ErrorCode::FrameCapacityExceeded, ErrorSite::UiManagerRender));
+		}
 		char* dst = allocBytes(len + 1, alignof(char));
-		std::memcpy(dst, s.data(), len);
+		if (len != 0) std::memcpy(dst, s.data(), len);
 		dst[len] = '\0';
 		
 		Clay_String out;
 		out.isStaticallyAllocated = false;
-		out.length = (int)len;
+		out.length = static_cast<int32_t>(len);
 		out.chars = dst;
 		return out;
-	}
+	} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::UiManagerRender);
+	recordFrameError(error);
+	throw;
+}
 
 	std::string_view UiManager::normalizeUiResourceName(ResourceKey key) const {
 		const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
@@ -645,19 +669,22 @@ namespace FlowUi
 		return storage_->string(normalized.name);
 	}
 
-	Clay_String UiManager::toClayString(ResourceKey key) {
+	Clay_String UiManager::toClayString(ResourceKey key) try {
 		return toClayString(normalizeUiResourceName(key));
-	}
+	} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::UiManagerRender);
+	recordFrameError(error);
+	throw;
+}
 
-	TextureRef* UiManager::imageData(TextureRef textureRef)
-	{
+	TextureRef* UiManager::imageData(TextureRef textureRef) try {
 		if (!textureRef.handle && !textureRef.sourceKey.empty()) {
 			const TextureFitMode fit = textureRef.fitMode;
 			const bool tint = textureRef.tintEnabled;
 			if (textureRef.sourceDomain == ResourceDomain::Image && imageManager_) {
-				textureRef = imageManager_->getTexture(textureRef.sourceKey);
+				textureRef = detail::requireApiValue(imageManager_->getTexture(textureRef.sourceKey));
 			} else if (textureRef.sourceDomain == ResourceDomain::Icon && iconManager_) {
-				textureRef = iconManager_->textureRef(textureRef.sourceKey);
+				textureRef = detail::requireApiValue(iconManager_->textureRef(textureRef.sourceKey));
 			}
 			textureRef.fitMode = fit;
 			textureRef.tintEnabled = tint;
@@ -665,17 +692,25 @@ namespace FlowUi
 		char* dst = allocBytes(sizeof(TextureRef), alignof(TextureRef));
 		std::memcpy(dst, &textureRef, sizeof(TextureRef));
 		return reinterpret_cast<TextureRef*>(dst);
-	}
+	} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::UiManagerRender);
+	recordFrameError(error);
+	throw;
+}
 
 	Clay_ElementId UiManager::toClaySID(std::string_view s) {
 		return CLAY_SID(toClayString(s));
 	}
 
-	Clay_ElementId UiManager::toClaySID(ResourceKey key) {
+	Clay_ElementId UiManager::toClaySID(ResourceKey key) try {
 		return toClaySID(normalizeUiResourceName(key));
-	}
+	} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::UiManagerRender);
+	recordFrameError(error);
+	throw;
+}
 	
-	Clay_ElementId UiManager::toClayEID(FlowElementID id) {
+	Clay_ElementId UiManager::toClayEID(FlowElementID id) try {
 		const uint32_t clayId = FlowIDToClayID(id);
 #if FLOW_UI_DEV_MODE
 		claimClayBridgeForDev(detail::element::toInstanceKey(id), id.debugName);
@@ -690,9 +725,13 @@ namespace FlowUi
 			.stringId = {},
 #endif
 		};
-	}
+	} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::UiManagerRender);
+	recordFrameError(error);
+	throw;
+}
 
-	Clay_ElementId UiManager::toClayEID(GlobalFlowID id) {
+	Clay_ElementId UiManager::toClayEID(GlobalFlowID id) try {
 		const uint32_t clayId = FlowIDToClayID(id);
 #if FLOW_UI_DEV_MODE
 		claimClayBridgeForDev(detail::element::toInstanceKey(id), id.debugName);
@@ -707,9 +746,13 @@ namespace FlowUi
 			.stringId = {},
 #endif
 		};
-	}
+	} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::UiManagerRender);
+	recordFrameError(error);
+	throw;
+}
 
-	Clay_ElementId UiManager::toClayEID(FlowElementPartID id) {
+	Clay_ElementId UiManager::toClayEID(FlowElementPartID id) try {
 		const uint32_t clayId = FlowIDToClayID(id);
 #if FLOW_UI_DEV_MODE
 		claimClayBridgeForDev(detail::element::toInstanceKey(id), id.debugName);
@@ -724,9 +767,13 @@ namespace FlowUi
 			.stringId = {},
 #endif
 		};
-	}
+	} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::UiManagerRender);
+	recordFrameError(error);
+	throw;
+}
 
-	const InteractionSnapshot& UiManager::getPreviousFramesInteraction() const {
+	const InteractionSnapshot& UiManager::getPreviousFramesInteraction() const noexcept {
 		return state_->previousInteractionSnapshot;
 	}
 #if FLOW_UI_AGENTIC_WORKFLOW
@@ -744,11 +791,11 @@ namespace FlowUi
 	}
 #endif
 
-	const FrameInput& UiManager::getCurrentFrameInput() const {
+	const FrameInput& UiManager::getCurrentFrameInput() const noexcept {
 		return state_->frameInputForCurrentLayout;
 	}
 
-	const FrameInput& UiManager::getPreviousFrameInput() const {
+	const FrameInput& UiManager::getPreviousFrameInput() const noexcept {
 		return state_->previousFrameInputForCurrentLayout;
 	}
 
@@ -762,10 +809,10 @@ namespace FlowUi
 	const devSystems::tooling::DevTreeCapture& UiManager::devTreeCapture() const noexcept {
 		return state_->devTreeCapture;
 	}
-	DevToolsConfig& UiManager::devToolsConfig() {
+	DevToolsConfig& UiManager::devToolsConfig() noexcept {
 		return state_->devToolsConfig;
 	}
-	const DevToolsConfig& UiManager::devToolsConfig() const { return state_->devToolsConfig; }
+	const DevToolsConfig& UiManager::devToolsConfig() const noexcept { return state_->devToolsConfig; }
 
 	void UiManager::claimClayBridgeForDev(
 		detail::element::ElementInstanceKey instanceId,
@@ -796,8 +843,8 @@ namespace FlowUi
 
 
 
-	void UiManager::drawConstructed() {
-		if (!state_->clayContext) {
+	void UiManager::drawConstructed() try {
+		if (!state_ || !state_->clayContext) {
 			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::UiManagerInvokeElement));
 		}
 		if (state_->constructedElementStack.empty()) {
@@ -806,6 +853,9 @@ namespace FlowUi
 
 		Clay_SetCurrentContext(state_->clayContext);
 		closeConstructedToDepth(state_->constructedElementStack.size() - 1, false);
+	} catch (...) {
+		recordFrameError(detail::currentExceptionError(ErrorSite::UiManagerRender));
+		throw;
 	}
 
 	FlowElementID UiManager::currentFlowScope() const noexcept {
@@ -1140,8 +1190,10 @@ namespace FlowUi
 		return *themeManager_;
 	}
 
-	const FlowUiTheme& UiManager::flowTheme() const {
+	Result<std::reference_wrapper<const FlowUiTheme>> UiManager::flowTheme() const noexcept try {
 		return theme<FlowUiTheme>();
-	}
+	} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::UiManagerRender));
+}
 
 } // namespace FlowUi

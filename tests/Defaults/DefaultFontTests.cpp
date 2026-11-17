@@ -1,4 +1,5 @@
 #include "TestHarness.hpp"
+#include "AppTestSupport.hpp"
 
 #include "FlowUi.hpp"
 #include "FlowUi/Private/textLayoutService/CurrentTextShaper.hpp"
@@ -33,10 +34,10 @@ namespace {
 }
 
 void test_payload() {
-	const auto face = FlowUi::defaults::missing_font();
+	const auto face = ::FlowUi::test::requireValue(FlowUi::defaults::missing_font());
 	FLOWUI_CHECK(face.path.empty());
 	FLOWUI_CHECK(!face.baked_data.empty());
-	FLOWUI_CHECK(face.baked_data.data() == FlowUi::defaults::missing_font().baked_data.data());
+	FLOWUI_CHECK(face.baked_data.data() == ::FlowUi::test::requireValue(FlowUi::defaults::missing_font()).baked_data.data());
 	auto remaining = face.baked_data;
 	artery_font::StdArteryFont<float> decoded{};
 	FLOWUI_CHECK(artery_font::decode<read_payload>(decoded, &remaining));
@@ -137,20 +138,24 @@ void test_fsel_icons(FlowUi::IconManager& icons) {
 	namespace standard_icons = FlowUi::FSEL::standard_icons;
 	for (const auto key : {standard_icons::kIncrementKey, standard_icons::kDecrementKey,
 		standard_icons::kComboBoxOpenKey, standard_icons::kComboBoxClosedKey}) {
-		FLOWUI_CHECK(icons.contains(key));
+		FLOWUI_CHECK(::FlowUi::test::requireValue(icons.contains(key)));
 	}
 	const auto removed = icons.remove(standard_icons::kIncrementKey);
 	FLOWUI_CHECK(removed && *removed);
 	const auto installed = icons.registerSvg(standard_icons::kIncrementKey,
 		R"svg(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8"><rect width="8" height="8" fill="#fff"/></svg>)svg");
 	FLOWUI_CHECK(installed && *installed);
-	const auto custom_texture = icons.textureRef(standard_icons::kIncrementKey);
+	const auto custom_texture = ::FlowUi::test::requireValue(icons.textureRef(standard_icons::kIncrementKey));
 	FLOWUI_CHECK(custom_texture.handle);
+	FLOWUI_CHECK(::FlowUi::test::requireValue(icons.remove(standard_icons::kDecrementKey)));
+	FLOWUI_CHECK(!::FlowUi::test::requireValue(icons.contains(standard_icons::kDecrementKey)));
+	standard_icons::registerStandardIcons(icons);
+	FLOWUI_CHECK(::FlowUi::test::requireValue(icons.contains(standard_icons::kDecrementKey)));
 #if FLOW_UI_DEV_MODE
 	const auto custom_revision = icons.devRevision();
 #endif
 	standard_icons::registerStandardIcons(icons);
-	FLOWUI_CHECK(icons.textureRef(standard_icons::kIncrementKey).handle == custom_texture.handle);
+	FLOWUI_CHECK(::FlowUi::test::requireValue(icons.textureRef(standard_icons::kIncrementKey)).handle == custom_texture.handle);
 #if FLOW_UI_DEV_MODE
 	FLOWUI_CHECK(icons.devRevision() == custom_revision);
 #endif
@@ -163,7 +168,7 @@ void test_startup(FlowUi::DefaultFontFailurePolicy policy, bool configured_memor
 	config.resources = resources.config();
 	FLOWUI_CHECK(!FlowUi::locate_resource("fonts/Inter.arfont", config.resources));
 	if (configured_memory) {
-		config.ui.defaultFontFamily.faces = {FlowUi::defaults::missing_font()};
+		config.ui.defaultFontFamily.faces = {::FlowUi::test::requireValue(FlowUi::defaults::missing_font())};
 	} else {
 		config.ui.defaultFontFamily.faces.front().path = "missing-user-font.arfont";
 	}
@@ -175,52 +180,47 @@ void test_startup(FlowUi::DefaultFontFailurePolicy policy, bool configured_memor
 	config.errors.observer.mode = FlowUi::ErrorReportingMode::SinkOnly;
 	config.errors.observer.sink = {.userData = &capture, .callback = &capture_recovery};
 	if (policy == FlowUi::DefaultFontFailurePolicy::FailAppImmediately && !configured_memory) {
-		bool failed_as_requested = false;
-		try {
-			auto application = FlowUi::makeApplication(config);
-			FLOWUI_CHECK(application.fonts().getFontById(0) == nullptr);
-		} catch (const FlowUi::FlowUiException& exception) {
-			failed_as_requested = exception.error().code == FlowUi::ErrorCode::DefaultFontUnavailable;
-		}
-		FLOWUI_CHECK(failed_as_requested);
+		const auto application = FlowUi::makeApplication(config);
+		FLOWUI_CHECK(!application);
+		FLOWUI_CHECK(application.error().code == FlowUi::ErrorCode::DefaultFontUnavailable);
 		FLOWUI_CHECK(capture.fallback_count == 0 && capture.skipped_count == 0);
 		return;
 	}
 
-	auto application = FlowUi::makeApplication(config);
+	auto application = ::FlowUi::test::requireValue(FlowUi::makeApplication(config));
 	FLOWUI_CHECK(capture.fallback_count == (configured_memory ? 0u : 1u));
 	FLOWUI_CHECK(capture.skipped_count == 0);
-	const auto* default_face = application.fonts().getFontById(0);
+	const auto* default_face = ::FlowUi::test::requireValue(application.fonts()).get().getFontById(0);
 	FLOWUI_CHECK(default_face);
 	test_loaded_face(*default_face);
 #if COMPILE_FSELI && FLOWUI_INCLUDE_ICON_MANAGER
-	test_fsel_icons(application.icons());
+	test_fsel_icons(::FlowUi::test::requireValue(application.icons()).get());
 #endif
 
 	FlowUi::FontFamilyCreateInfo memory_family{};
 	memory_family.name = "Borrowed font bytes";
 	memory_family.faces.clear();
-	const auto family = application.fonts().createFamily(memory_family);
+	const auto family = ::FlowUi::test::requireValue(application.fonts()).get().createFamily(memory_family);
 	FLOWUI_CHECK(family);
 	FlowUi::FontId loaded_font = std::numeric_limits<FlowUi::FontId>::max();
 	{
-		auto face = FlowUi::defaults::missing_font();
+		auto face = ::FlowUi::test::requireValue(FlowUi::defaults::missing_font());
 		std::vector<std::byte> owned_bytes(face.baked_data.begin(), face.baked_data.end());
 		face.baked_data = owned_bytes;
 		face.path = "nonexistent-path-ignored-for-memory.arfont";
-		const auto added = application.fonts().addFamilyFace(*family, face);
+		const auto added = ::FlowUi::test::requireValue(application.fonts()).get().addFamilyFace(*family, face);
 		FLOWUI_CHECK(added);
 		loaded_font = *added;
 	}
-	const auto* memory_face = application.fonts().getFontById(loaded_font);
+	const auto* memory_face = ::FlowUi::test::requireValue(application.fonts()).get().getFontById(loaded_font);
 	FLOWUI_CHECK(memory_face);
 	test_loaded_face(*memory_face);
 	const std::array<std::byte, 4> corrupt_bytes{};
-	auto corrupt_face = FlowUi::defaults::missing_font();
+	auto corrupt_face = ::FlowUi::test::requireValue(FlowUi::defaults::missing_font());
 	corrupt_face.baked_data = corrupt_bytes;
-	const auto rejected = application.fonts().addFamilyFace(*family, corrupt_face);
+	const auto rejected = ::FlowUi::test::requireValue(application.fonts()).get().addFamilyFace(*family, corrupt_face);
 	FLOWUI_CHECK(!rejected && rejected.error().code == FlowUi::ErrorCode::AssetReadFailed);
-	FLOWUI_CHECK(application.fonts().resolveFont(*family) == loaded_font);
+	FLOWUI_CHECK(::FlowUi::test::requireValue(::FlowUi::test::requireValue(application.fonts()).get().resolveFont(*family)) == loaded_font);
 	FLOWUI_CHECK(application.beginFrame());
 	CLAY_TEXT(CLAY_STRING("A missing font"), CLAY_TEXT_CONFIG({
 		.textColor = {255, 255, 255, 255}, .fontSize = 16,
@@ -234,6 +234,11 @@ void test_startup(FlowUi::DefaultFontFailurePolicy policy, bool configured_memor
 int main(int argument_count, char** arguments) {
 	FlowUi::test::Runner runner{};
 	const std::string_view mode = argument_count > 1 ? arguments[1] : "--startup";
+	if (mode != "--payload") {
+		const int environmentStatus = FlowUi::test::applicationEnvironmentStatus();
+		if (environmentStatus != 0)
+			return environmentStatus;
+	}
 	if (mode == "--payload") {
 		runner.run("embedded font payload", test_payload);
 	} else {

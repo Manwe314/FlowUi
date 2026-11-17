@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.hpp"
 #include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE
@@ -111,9 +112,9 @@ void copy_value(void* target, uint64_t identity, uint64_t column_index) {
 	const auto* review_row = action_row(local, identity);
 	if (!local.ui_manager || !review_row)
 		return;
-	local.ui_manager->setClipboardText(column_index == 0   ? review_row->on_disk
+	FlowUi::ValueOrThrow(local.ui_manager->setClipboardText(column_index == 0   ? review_row->on_disk
 									   : column_index == 1 ? review_row->proposal
-														   : review_row->next_value);
+														   : review_row->next_value));
 }
 void toggle_review(void* target, uint64_t, uint64_t identity) {
 	auto& local = *static_cast<DevChangesWorkbench::State*>(target);
@@ -137,7 +138,7 @@ void batch_decision(void* target, uint64_t, uint64_t decision) {
 	queue_changes_scope_decision(state, state.queue_scope_key, static_cast<Decision>(decision));
 	state.group_decisions_open = false;
 	if (local.ui_manager)
-		local.ui_manager->shortcuts().setFocusedElement(local.group_trigger_id);
+		FlowUi::ValueOrThrow(local.ui_manager->shortcuts().setFocusedElement(local.group_trigger_id));
 }
 void raw_page_action(void* target, uint64_t action, uint64_t) {
 	auto& local = *static_cast<DevChangesWorkbench::State*>(target);
@@ -211,7 +212,7 @@ struct QueueRow {
 				context.uiManager.toClayEID(::FlowUi::detail::element_id::resolveLocal(
 					context.id, diagnostics_ui::Control::definitionId,
 					LocalElementName{"disclosure"}.token)))) {
-			context.uiManager.shortcuts().setFocusedElement(context.clayID());
+			FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(context.clayID()));
 			toggle_review(context.params.workbench, 0, context.params.identity);
 		}
 	}
@@ -220,11 +221,11 @@ struct QueueRow {
 		const auto& current = context.uiManager.getCurrentFrameInput();
 		const auto& previous = context.uiManager.getPreviousFrameInput();
 		if ((!context.state().isArmed &&
-			 context.uiManager.shortcuts().focusedElement().id != context.clayID().id) ||
+			 FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id != context.clayID().id) ||
 			(current.keyDown[FlowUi::keyCode(FlowUi::Key::Tab)] &&
 			 !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Tab)]))
 			context.state().pointer_focused = false;
-		if (context.uiManager.shortcuts().focusedElement().id != context.clayID().id ||
+		if (FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id != context.clayID().id ||
 			context.uiManager.inputFields().hasPrimaryFieldFocus())
 			return;
 		if (current.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)] &&
@@ -263,7 +264,7 @@ struct QueueRow {
 		const auto target = context.uiManager.toClayEID(::FlowUi::detail::element_id::resolveLocal(
 			context.params.queue_parent, definitionId,
 			Keyed("review-row", target_node->identity).token));
-		context.uiManager.shortcuts().setFocusedElement(target);
+		FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(target));
 		context.params.workbench->queue_focus_target = target;
 		const auto page = static_cast<uint64_t>(destination / review_page_size);
 		if (page != changes.workbench_page) {
@@ -283,7 +284,7 @@ struct QueueRow {
 			parameters.selected ? interface_theme::kDepth3Elevated : interface_theme::kDepth1Panel;
 		const bool focused =
 			!context.state().pointer_focused &&
-			context.uiManager.shortcuts().focusedElement().id == context.clayID().id;
+			FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id == context.clayID().id;
 		row.border = {.color = parameters.selected || focused ? interface_theme::kAccentCurrent
 															  : interface_theme::kBorderPrimary,
 					  .width = parameters.selected ? Clay_BorderWidth{3, 0, 0, 0, 0}
@@ -294,8 +295,8 @@ struct QueueRow {
 			auto headline = compact ? ui::column(8) : ui::row(15);
 			headline.layout.sizing.height = CLAY_SIZING_FIT(0);
 			headline.layout.childGap = 8;
-			CLAY(context.clayID("headline"), headline) {
-				const auto title_bounds = Clay_GetElementData(context.clayID("title"));
+			CLAY(FlowUi::ValueOrThrow(context.clayID("headline")), headline) {
+				const auto title_bounds = Clay_GetElementData(FlowUi::ValueOrThrow(context.clayID("title")));
 				const float title_width =
 					title_bounds.found
 						? std::min(title_bounds.boundingBox.width, parameters.width - 24)
@@ -303,7 +304,7 @@ struct QueueRow {
 							  : parameters.width - 176;
 				auto title = ui::column(0);
 				title.clip = {.horizontal = true, .scrollInputDisabled = true};
-				CLAY(context.clayID("title"), title)
+				CLAY(FlowUi::ValueOrThrow(context.clayID("title")), title)
 				ui::text(context, ui::ellipsize(context, parameters.title, title_width, 12),
 						 interface_theme::kTextCanvas, 12);
 				const auto draw_status = [&] {
@@ -316,7 +317,7 @@ struct QueueRow {
 					if (compact) {
 						auto spacer = ui::column(0);
 						spacer.layout.sizing.height = CLAY_SIZING_FIXED(0);
-						CLAY(context.clayID("status-spacer"), spacer) {}
+						CLAY(FlowUi::ValueOrThrow(context.clayID("status-spacer")), spacer) {}
 					}
 					context.uiManager.createElement(ui::kControl, LocalElementName{"disclosure"})
 						.setParameters(
@@ -334,7 +335,7 @@ struct QueueRow {
 				if (compact) {
 					auto status = ui::row(28);
 					status.layout.sizing.height = CLAY_SIZING_FIT(0);
-					CLAY(context.clayID("status"), status)
+					CLAY(FlowUi::ValueOrThrow(context.clayID("status")), status)
 					draw_status();
 				} else
 					draw_status();
@@ -363,7 +364,7 @@ struct QueueRow {
 inline constexpr QueueRow queue_row{};
 
 void comparison(Context& context, const ReviewRow& row, uint64_t identity, float width) {
-	const auto previous_bounds = Clay_GetElementData(context.clayID(Keyed("comparison", identity)));
+	const auto previous_bounds = Clay_GetElementData(FlowUi::ValueOrThrow(context.clayID(Keyed("comparison", identity))));
 	const float comparison_width =
 		previous_bounds.found && previous_bounds.boundingBox.width > 0
 			? std::min(previous_bounds.boundingBox.width, std::max(0.0f, width - 56))
@@ -374,7 +375,7 @@ void comparison(Context& context, const ReviewRow& row, uint64_t identity, float
 	cells.layout.childAlignment.y = CLAY_ALIGN_Y_TOP;
 	if (width >= 440)
 		cells.layout.childGap = 8;
-	CLAY(context.clayID(Keyed("comparison", identity)), cells) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("comparison", identity))), cells) {
 		static constexpr std::array<std::string_view, 3> headings{"Already Baked", "Proposal",
 																  "Next bake"};
 		for (uint64_t column_index = 0; column_index < headings.size(); ++column_index) {
@@ -388,7 +389,7 @@ void comparison(Context& context, const ReviewRow& row, uint64_t identity, float
 			cell.border = {.color = column_index == 2 ? ui::operation_color(row.operation)
 													  : interface_theme::kBorderVisible,
 						   .width = {1, 1, 2, 1, 0}};
-			CLAY(context.clayID(Keyed("value", identity * 3 + column_index)), cell) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("value", identity * 3 + column_index))), cell) {
 				const bool present =
 					column_index == 0 ? row.has_disk
 					: column_index == 1
@@ -428,7 +429,7 @@ void comparison(Context& context, const ReviewRow& row, uint64_t identity, float
 					(!expandable || context.resources().texture(disclosure_icon).handle);
 				auto actions = action_icons_available ? ui::row(28) : ui::column(6);
 				actions.layout.sizing.height = CLAY_SIZING_FIT(0);
-				CLAY(context.clayID(Keyed("value-actions", column_index)), actions) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("value-actions", column_index))), actions) {
 					context.uiManager.createElement(ui::kControl, Keyed("copy-value", column_index))
 						.setParameters(
 							{.label = "Copy",
@@ -518,17 +519,17 @@ void decision_control(Context& context, DevChangesState& state, const ReviewRow&
 		return UINT64_MAX;
 	};
 	const auto focus_highlight = [&]() {
-		context.uiManager.shortcuts().setFocusedElement(
-			local.decision_highlight < 4 ? option_id(local.decision_highlight) : trigger);
+		FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(
+			local.decision_highlight < 4 ? option_id(local.decision_highlight) : trigger));
 	};
 	if (context.uiManager.getPreviousFramesInteraction().isPressed(trigger))
-		context.uiManager.shortcuts().setFocusedElement(trigger);
+		FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(trigger));
 	const bool open_before_keyboard = local.decision_open;
 	if (local.decision_open && !local.decision_was_open) {
 		local.decision_highlight = initial_highlight();
 		focus_highlight();
 	}
-	auto focused = context.uiManager.shortcuts().focusedElement().id;
+	auto focused = FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id;
 	bool owns_focus = focused == trigger.id;
 	for (uint64_t index = 0; index < 4; ++index)
 		if (focused == option_id(index).id) {
@@ -545,7 +546,7 @@ void decision_control(Context& context, DevChangesState& state, const ReviewRow&
 		} else if (local.decision_open && owns_focus &&
 				   pressed(FlowUi::keyCode(FlowUi::Key::Escape))) {
 			local.decision_open = false;
-			context.uiManager.shortcuts().setFocusedElement(trigger);
+			FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(trigger));
 		} else if (local.decision_open && owns_focus &&
 				   (pressed(FlowUi::keyCode(FlowUi::Key::Down)) ||
 					pressed(FlowUi::keyCode(FlowUi::Key::Up)))) {
@@ -568,7 +569,7 @@ void decision_control(Context& context, DevChangesState& state, const ReviewRow&
 			queue_changes_scope_decision(state, row.key,
 										 static_cast<Decision>(local.decision_highlight));
 			local.decision_open = false;
-			context.uiManager.shortcuts().setFocusedElement(trigger);
+			FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(trigger));
 		}
 	}
 	if (local.decision_open && local.decision_highlight < 4) {
@@ -578,7 +579,7 @@ void decision_control(Context& context, DevChangesState& state, const ReviewRow&
 			local.decision_labels[local.decision_highlight];
 	}
 	ui::text(context, "For next bake", interface_theme::kTextCanvas, 12);
-	CLAY(context.clayID("decision-and-edit"), action_row(width)) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("decision-and-edit")), action_row(width)) {
 		FSEL::ComboBoxParameters parameters{};
 		parameters.options = std::span<const FSEL::ComboBoxOption>(local.decision_options)
 								 .first(explicit_resolution ? 5 : 4);
@@ -591,14 +592,14 @@ void decision_control(Context& context, DevChangesState& state, const ReviewRow&
 		parameters.optionHeight = 32;
 		if (context.params.app)
 			parameters.onChanged = ActionCall{
-				context.params.app->actions().uiActions().make(change_decision, state, local)};
+				FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(change_decision, state, local)};
 		auto focus_outline = ui::column(0);
 		focus_outline.border = {.color =
-									context.uiManager.shortcuts().focusedElement().id == trigger.id
+									FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id == trigger.id
 										? interface_theme::kAccentCurrent
 										: Clay_Color{},
 								.width = {1, 1, 1, 1, 0}};
-		CLAY(context.clayID("decision-focus"), focus_outline) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("decision-focus")), focus_outline) {
 			context.uiManager.createElement(FSEL::kComboBox, LocalElementName{"next-bake-decision"})
 				.setParameters(parameters)
 				.setDevInternalCapture(true)
@@ -609,12 +610,12 @@ void decision_control(Context& context, DevChangesState& state, const ReviewRow&
 			focus_highlight();
 		}
 		if (local.decision_was_open && !local.decision_open) {
-			focused = context.uiManager.shortcuts().focusedElement().id;
+			focused = FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id;
 			bool option_focused = focused == trigger.id;
 			for (uint64_t index = 0; index < 4; ++index)
 				option_focused = option_focused || focused == option_id(index).id;
 			if (option_focused)
-				context.uiManager.shortcuts().setFocusedElement(trigger);
+				FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(trigger));
 		}
 		local.decision_was_open = local.decision_open;
 		ui::register_focus_target(context, state, trigger);
@@ -745,15 +746,15 @@ void expanded_review(Context& context, DevChangesState& state, const ReviewRow& 
 	surface.layout.padding = {14, 14, 14, 14};
 	surface.backgroundColor = interface_theme::kDepth2Ink;
 	surface.border.color = interface_theme::kBorderVisible;
-	CLAY(context.clayID(Keyed("expanded-review", identity)), surface) {
-		CLAY(context.clayID("change-context"), action_row(width)) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("expanded-review", identity))), surface) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("change-context")), action_row(width)) {
 			ui::text(context, scope_label(row), interface_theme::kTextSecondary, 12);
 			if (!dedicated) {
 				auto spacer = ui::column(0);
 				spacer.layout.sizing = {.width = CLAY_SIZING_GROW(0),
 										.height = CLAY_SIZING_FIXED(0)};
 				if (width >= 400)
-					CLAY(context.clayID("change-context-spacer"), spacer) {}
+					CLAY(FlowUi::ValueOrThrow(context.clayID("change-context-spacer")), spacer) {}
 				ui::button(context, Keyed("go-to-change", identity), "Go to change", state,
 						   ui::Select, identity, true,
 						   "Select this change in the tree and open its dedicated view.",
@@ -766,7 +767,7 @@ void expanded_review(Context& context, DevChangesState& state, const ReviewRow& 
 			issue.border = {.color = row.blocking ? interface_theme::kStatusRed
 												  : interface_theme::kStatusAmber,
 							.width = {3, 1, 1, 1, 0}};
-			CLAY(context.clayID(Keyed("change-issue", identity)), issue) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("change-issue", identity))), issue) {
 				ui::text(context,
 						 std::string(row.blocking ? "Issue · Blocks Bake · " : "Warning · ") +
 							 std::string(tooling::changes_validity_name(row.validity)),
@@ -888,7 +889,7 @@ void batch_menu(Context& context, DevChangesState& state, std::span<const std::s
 	const bool up = current.keyDown[FlowUi::keyCode(FlowUi::Key::Up)] &&
 					!previous.keyDown[FlowUi::keyCode(FlowUi::Key::Up)];
 	if ((down || up) && !context.uiManager.inputFields().hasPrimaryFieldFocus()) {
-		const auto focused = context.uiManager.shortcuts().focusedElement().id;
+		const auto focused = FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id;
 		const auto selected = std::ranges::find(menu_ids, focused, &Clay_ElementId::id);
 		if (focused == local.group_trigger_id.id || selected != menu_ids.end()) {
 			std::size_t destination = selected != menu_ids.end()
@@ -899,13 +900,13 @@ void batch_menu(Context& context, DevChangesState& state, std::span<const std::s
 				destination = down ? (destination + 1) % menu_ids.size()
 								   : (destination + menu_ids.size() - 1) % menu_ids.size();
 				if (destination == 4 || eligible[destination] > 0) {
-					context.uiManager.shortcuts().setFocusedElement(menu_ids[destination]);
+					FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(menu_ids[destination]));
 					break;
 				}
 			}
 		}
 	}
-	CLAY(context.clayID("group-decisions-menu"), ui::card(8)) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("group-decisions-menu")), ui::card(8)) {
 		ui::text(context, scope_name + " decisions", interface_theme::kTextCanvas, 14);
 		static constexpr std::array<std::string_view, 4> labels{
 			"Use eligible proposals", "Exclude proposals", "Keep already baked values",
@@ -960,11 +961,11 @@ void review_queue(Context& context, DevChangesState& state, float width) {
 	const auto selected_node = selected_changes_node(state);
 	if (selected && selected_node) {
 		if (state.selected_outside_filter) {
-			CLAY(context.clayID("pinned-selection"), section(10)) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("pinned-selection")), section(10)) {
 				context.state().submitted_pinned = true;
 				ui::text(context, "Selected change outside current filters",
 						 interface_theme::kStatusAmber, 13);
-				CLAY(context.clayID("pinned-actions"), action_row(width)) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("pinned-actions")), action_row(width)) {
 					ui::button(context, LocalElementName{"reveal-selection"}, "Reveal in list",
 							   state, ui::RevealSelection);
 					ui::button(context, LocalElementName{"clear-selection"}, "Clear selection",
@@ -977,7 +978,7 @@ void review_queue(Context& context, DevChangesState& state, float width) {
 		header.backgroundColor = interface_theme::kDepth1Panel;
 		header.border = {.color = ui::operation_color(selected->operation),
 						 .width = {3, 0, 0, 0, 0}};
-		CLAY(context.clayID("selected-change-header"), header) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("selected-change-header")), header) {
 			ui::text(context, selected->target_name + " / " + selected->field_path,
 					 interface_theme::kTextCanvas, 15);
 			ui::text(context, ui::operation_label(selected->operation),
@@ -990,7 +991,7 @@ void review_queue(Context& context, DevChangesState& state, float width) {
 	const bool scoped =
 		!state.queue_scope_key.empty() && scope != state.nodes.end() && !scope->leaf;
 	const bool scope_missing = !state.queue_scope_key.empty() && !scoped;
-	CLAY(context.clayID("queue-scope"), section()) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("queue-scope")), section()) {
 		if (scope_missing) {
 			ui::text(context, "Review scope unavailable", interface_theme::kTextCanvas, 14);
 			ui::text(context,
@@ -1003,7 +1004,7 @@ void review_queue(Context& context, DevChangesState& state, float width) {
 					 std::to_string(rows.size()) + " matching targets" +
 						 (scoped ? " in " + scope->label : " across the whole plan"),
 					 interface_theme::kTextSecondary, 12);
-			CLAY(context.clayID("queue-actions"), action_row(width)) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("queue-actions")), action_row(width)) {
 				ui::button(context, LocalElementName{"group-decisions"},
 						   scoped ? "Group decisions..." : "Whole-plan decisions...", state,
 						   ui::GroupDecisions);
@@ -1020,7 +1021,7 @@ void review_queue(Context& context, DevChangesState& state, float width) {
 	state.workbench_page = std::min<uint64_t>(state.workbench_page, page_count - 1);
 	const auto begin = std::min<std::size_t>(rows.size(), state.workbench_page * review_page_size);
 	const auto end = std::min(rows.size(), begin + review_page_size);
-	CLAY(context.clayID("review-queue"), section(12)) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("review-queue")), section(12)) {
 		for (std::size_t position = begin; position < end; ++position) {
 			const auto& row = state.review.rows[rows[position]];
 			const auto node = std::ranges::find(state.nodes, row.key, &DevChangesNode::key);
@@ -1038,7 +1039,7 @@ void review_queue(Context& context, DevChangesState& state, float width) {
 			const bool expanded = std::ranges::find(context.state().expanded_reviews, row.key) !=
 								  context.state().expanded_reviews.end();
 			auto group = section(8);
-			CLAY(context.clayID(Keyed("review-card", node->identity)), group) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("review-card", node->identity))), group) {
 				context.uiManager.createElement(queue_row, Keyed("review-row", node->identity))
 					.setParameters({.title = row.target_name + " / " + row.field_path,
 									.preview = preview,
@@ -1051,7 +1052,7 @@ void review_queue(Context& context, DevChangesState& state, float width) {
 									.workbench = &context.state(),
 									.queue_parent = context.id,
 									.operation_color = ui::operation_color(row.operation),
-									.viewport = context.clayID("scroll"),
+									.viewport = FlowUi::ValueOrThrow(context.clayID("scroll")),
 									.identity = node->identity,
 									.width = width - 32,
 									.selected = expanded,
@@ -1062,7 +1063,7 @@ void review_queue(Context& context, DevChangesState& state, float width) {
 				if (expanded) {
 					auto inset = section(0);
 					inset.layout.padding = {10, 10, 0, 0};
-					CLAY(context.clayID(Keyed("review-detail-inset", node->identity)), inset)
+					CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("review-detail-inset", node->identity))), inset)
 					expanded_review(context, state, row, node->identity, width - 20);
 				}
 			}
@@ -1073,7 +1074,7 @@ void review_queue(Context& context, DevChangesState& state, float width) {
 											   : "No targets match these filters.",
 					 interface_theme::kTextCanvas, 14);
 	}
-	CLAY(context.clayID("pages"), action_row(width)) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("pages")), action_row(width)) {
 		ui::text(context,
 				 rows.empty() ? "0 matching targets"
 							  : std::to_string(begin + 1) + " - " + std::to_string(end) + " of " +
@@ -1103,15 +1104,15 @@ void copy_text(Context& context, LocalElementName identity, std::string_view val
 					!value.empty() && context.uiManager.hasClipboardAccess());
 }
 void raw_manifest(Context& context, DevChangesState& state, float width) {
-	context.state().raw_scroll_id = context.clayID("raw-scroll");
-	CLAY(context.clayID("raw-actions"), action_row(width)) {
+	context.state().raw_scroll_id = FlowUi::ValueOrThrow(context.clayID("raw-scroll"));
+	CLAY(FlowUi::ValueOrThrow(context.clayID("raw-actions")), action_row(width)) {
 		ui::button(context, LocalElementName{"raw-manifest"},
 				   state.raw_manifest_open ? "Hide raw manifest" : "Raw manifest", state,
 				   ui::ToggleRawManifest);
 		if (width >= 400) {
 			auto spacer = ui::column(0);
 			spacer.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(0)};
-			CLAY(context.clayID("raw-actions-spacer"), spacer) {}
+			CLAY(FlowUi::ValueOrThrow(context.clayID("raw-actions-spacer")), spacer) {}
 		}
 		copy_text(context, "copy-manifest", state.review.candidate_json, "Copy full manifest");
 	}
@@ -1138,7 +1139,7 @@ void raw_manifest(Context& context, DevChangesState& state, float width) {
 	const auto pages = std::max<std::size_t>(1, offsets.size() - 1);
 	context.state().raw_page = std::min<uint64_t>(context.state().raw_page, pages - 1);
 	if (pages > 1)
-		CLAY(context.clayID("raw-pages"), action_row(width)) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("raw-pages")), action_row(width)) {
 			context.uiManager.createElement(ui::kControl, LocalElementName{"previous-candidate"})
 				.setParameters({.label = "Previous",
 								.tooltip = "Previous raw manifest page",
@@ -1185,7 +1186,7 @@ void raw_manifest(Context& context, DevChangesState& state, float width) {
 			 interface_theme::kTextSecondary, 11);
 	auto viewport = section(0);
 	viewport.layout.sizing.height = CLAY_SIZING_FIXED(360);
-	const auto scroll = Clay_GetScrollContainerData(context.clayID("raw-scroll"));
+	const auto scroll = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("raw-scroll")));
 	if (scroll.found && scroll.scrollPosition) {
 		context.state().raw_scroll_x = scroll.scrollPosition->x;
 		context.state().raw_scroll_y = scroll.scrollPosition->y;
@@ -1195,24 +1196,24 @@ void raw_manifest(Context& context, DevChangesState& state, float width) {
 					 .childOffset = {context.state().raw_scroll_x, context.state().raw_scroll_y}};
 	viewport.backgroundColor = interface_theme::kDepth0Keel;
 	viewport.border = {.color = interface_theme::kBorderVisible, .width = {1, 1, 1, 1, 0}};
-	CLAY(context.clayID("raw-scroll"), viewport) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("raw-scroll")), viewport) {
 		ui::restore_viewport_scroll(context, LocalElementName{"raw-scroll"},
 									context.state().raw_scroll_y);
 		if (!scroll.found) {
-			const auto opened = Clay_GetScrollContainerData(context.clayID("raw-scroll"));
+			const auto opened = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("raw-scroll")));
 			if (opened.found && opened.scrollPosition)
 				opened.scrollPosition->x = context.state().raw_scroll_x;
 		}
 		auto code = ui::column(0);
 		code.layout.sizing.width = CLAY_SIZING_FIT(0);
 		code.layout.padding = {8, 8, 8, 8};
-		CLAY(context.clayID("candidate"), code) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("candidate")), code) {
 			Clay_TextElementConfig configuration{};
 			configuration.fontSize = 11;
 			configuration.textColor = interface_theme::kTextCanvas;
 			configuration.wrapMode = CLAY_TEXT_WRAP_NONE;
 			if (context.params.app)
-				context.params.app->fonts().visitDevFonts(
+				FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(context.params.app->fonts()).get().visitDevFonts(
 					&configuration, [](void* target, const FontManager::DevFontView& font) {
 						if (font.familyName.find("Mono") == std::string_view::npos &&
 							font.familyName.find("mono") == std::string_view::npos)
@@ -1220,7 +1221,7 @@ void raw_manifest(Context& context, DevChangesState& state, float width) {
 						static_cast<Clay_TextElementConfig*>(target)->fontId =
 							static_cast<uint16_t>(font.fontId);
 						return false;
-					});
+					}));
 			CLAY_TEXT(context.uiManager.toClayString(
 						  std::string_view(state.review.candidate_json).substr(begin, end - begin)),
 					  CLAY_TEXT_CONFIG(configuration));
@@ -1238,10 +1239,10 @@ void output(Context& context, DevChangesState& state, float width) {
 				 " updates and " + std::to_string(counts.removals) + " removals; " +
 				 std::to_string(counts.retained) + " already baked assignments retained.",
 			 interface_theme::kTextCanvas, 13);
-	CLAY(context.clayID("output-destination"), action_row(width)) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("output-destination")), action_row(width)) {
 		auto destination_label = ui::column(4);
 		destination_label.layout.sizing.width = CLAY_SIZING_GROW(0);
-		CLAY(context.clayID("output-destination-label"), destination_label) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("output-destination-label")), destination_label) {
 			ui::text(context, "Manifest destination", interface_theme::kTextSecondary, 11);
 			ui::text(context, state.review.manifest_path.filename().generic_string(),
 					 interface_theme::kTextCanvas, 13);
@@ -1256,14 +1257,14 @@ void output(Context& context, DevChangesState& state, float width) {
 			 counts.errors + counts.conflicts == 0)
 		ui::text(context, "No output changes.", interface_theme::kTextCanvas, 12);
 	else {
-		CLAY(context.clayID("output-readiness"), action_row(width)) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("output-readiness")), action_row(width)) {
 			ui::text(context, "Resolve blocking issues or refresh before writing.",
 					 interface_theme::kStatusRed, 12);
 			if (width >= 400) {
 				auto spacer = ui::column(0);
 				spacer.layout.sizing = {.width = CLAY_SIZING_GROW(0),
 										.height = CLAY_SIZING_FIXED(0)};
-				CLAY(context.clayID("output-readiness-spacer"), spacer) {}
+				CLAY(FlowUi::ValueOrThrow(context.clayID("output-readiness-spacer")), spacer) {}
 			}
 			ui::button(context, LocalElementName{"output-next-issue"}, "Review next issue", state,
 					   ui::NextIssue);
@@ -1306,15 +1307,15 @@ void output(Context& context, DevChangesState& state, float width) {
 		group.border = {.color = interface_theme::kBorderPrimary, .width = {0, 0, 0, 1, 0}};
 		group.layout.layoutDirection = width < 720 ? CLAY_TOP_TO_BOTTOM : CLAY_LEFT_TO_RIGHT;
 		group.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
-		CLAY(context.clayID(Keyed("output-domain", domain_index)), group) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("output-domain", domain_index))), group) {
 			auto domain_label = ui::column(0);
 			domain_label.layout.sizing.width = CLAY_SIZING_GROW(0);
-			CLAY(context.clayID(Keyed("output-domain-label", domain_index)), domain_label)
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("output-domain-label", domain_index))), domain_label)
 			ui::text(context, domains[domain_index], interface_theme::kTextCanvas, 13);
 			auto counts_row = width < 400 ? ui::column(6) : ui::row(28);
 			counts_row.layout.sizing = {.width = CLAY_SIZING_FIT(0), .height = CLAY_SIZING_FIT(0)};
 			counts_row.layout.childGap = 14;
-			CLAY(context.clayID(Keyed("output-domain-counts", domain_index)), counts_row) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("output-domain-counts", domain_index))), counts_row) {
 				ui::text(context, std::to_string(operations[0]) + " New",
 						 ui::operation_color(Operation::Add), 12);
 				ui::text(context, std::to_string(operations[1]) + " Update",
@@ -1332,7 +1333,7 @@ void output(Context& context, DevChangesState& state, float width) {
 										   : "Output technical details",
 			   state, ui::ToggleOutputTechnical);
 	if (state.output_technical_open)
-		CLAY(context.clayID("output-technical-details"), section()) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("output-technical-details")), section()) {
 			ui::text(context, state.review.manifest_path.generic_string(),
 					 interface_theme::kTextSecondary, 11);
 			ui::text(context, "Reviewed disk revision: " + state.review.disk_revision,
@@ -1366,12 +1367,12 @@ void policy_editor(Context& context, DevChangesState& state) {
 		return found == state.review.rows.end() ? std::string("Absent — use startup fallback")
 												: ui::value(found->on_disk, found->has_disk);
 	};
-	CLAY(context.clayID("section-policy"), ui::card(8)) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("section-policy")), ui::card(8)) {
 		ui::text(context, "Use already baked memory capacities at future startup",
 				 interface_theme::kTextCanvas, 13);
 		ui::text(context, "Already Baked: " + baked_policy("memory:policy.enabled"),
 				 interface_theme::kTextSecondary, 12);
-		CLAY(context.clayID("policy-enabled"), selector_choice_track()) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("policy-enabled")), selector_choice_track()) {
 			ui::choice(context, Keyed("enabled-choice", 0), "No", 0, state.policy_enabled_choice);
 			ui::choice(context, Keyed("enabled-choice", 1), "Yes", 1, state.policy_enabled_choice);
 		}
@@ -1380,11 +1381,11 @@ void policy_editor(Context& context, DevChangesState& state) {
 		ui::button(context, LocalElementName{"stage-enabled"}, "Stage section state", state,
 				   ui::StagePolicy, 0);
 	}
-	CLAY(context.clayID("growth-policy"), ui::card(8)) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("growth-policy")), ui::card(8)) {
 		ui::text(context, "Storage growth factor", interface_theme::kTextCanvas, 13);
 		ui::text(context, "Already Baked: " + baked_policy("memory:policy.growth_factor"),
 				 interface_theme::kTextSecondary, 12);
-		CLAY(context.clayID("growth-intent"), selector_choice_track()) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("growth-intent")), selector_choice_track()) {
 			ui::choice(context, Keyed("growth-intent", 0), "Keep already baked", 0,
 					   context.state().growth_intent);
 			ui::choice(context, Keyed("growth-intent", 1), "Set value", 1,
@@ -1412,8 +1413,8 @@ void policy_editor(Context& context, DevChangesState& state) {
 			LocalElementName{"policy-growth-input"}.token);
 		ui::register_focus_target(context, state, context.uiManager.toClayEID(identity), true,
 								  identity);
-		const auto* input = context.uiManager.elements().getStatePointerConst(
-			growth_input, context.uiManager.windowId(), identity);
+		const auto* input = FlowUi::ValueOrThrow(context.uiManager.elements().getStatePointerConst(
+			growth_input, context.uiManager.windowId(), identity));
 		state.policy_growth_valid =
 			(!input || input->textStatus == FSEL::NumericTextStatus::Complete) &&
 			std::isfinite(state.policy_growth_draft) && state.policy_growth_draft > 1 &&
@@ -1429,11 +1430,11 @@ void policy_editor(Context& context, DevChangesState& state) {
 				   context.state().growth_intent != 0 &&
 					   (context.state().growth_intent == 2 || state.policy_growth_valid));
 	}
-	CLAY(context.clayID("runtime-growth-policy"), ui::card(8)) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("runtime-growth-policy")), ui::card(8)) {
 		ui::text(context, "Permit storage runtime growth", interface_theme::kTextCanvas, 13);
 		ui::text(context, "Already Baked: " + baked_policy("memory:policy.allow_runtime_growth"),
 				 interface_theme::kTextSecondary, 12);
-		CLAY(context.clayID("runtime-intent"), selector_choice_track()) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("runtime-intent")), selector_choice_track()) {
 			ui::choice(context, Keyed("runtime-intent", 0), "Keep already baked", 0,
 					   context.state().runtime_intent);
 			ui::choice(context, Keyed("runtime-intent", 1), "Set value", 1,
@@ -1441,7 +1442,7 @@ void policy_editor(Context& context, DevChangesState& state) {
 			ui::choice(context, Keyed("runtime-intent", 2), "Use fallback", 2,
 					   context.state().runtime_intent);
 		}
-		CLAY(context.clayID("policy-runtime"), selector_choice_track()) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("policy-runtime")), selector_choice_track()) {
 			ui::choice(context, Keyed("runtime-choice", 0), "No", 0, state.policy_runtime_choice);
 			ui::choice(context, Keyed("runtime-choice", 1), "Yes", 1, state.policy_runtime_choice);
 		}
@@ -1458,7 +1459,7 @@ void policy_editor(Context& context, DevChangesState& state) {
 	const auto policies = std::ranges::count_if(state.review.rows, [](const auto& row) {
 		return row.has_disk && row.key.starts_with("memory:policy.");
 	});
-	CLAY(context.clayID("policy-removal"), section()) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("policy-removal")), section()) {
 		ui::text(context, "Removal area", interface_theme::kStatusAmber, 13);
 		ui::text(context,
 				 "Remove all " + std::to_string(capacities) +
@@ -1479,10 +1480,10 @@ void feedback(Context& context, DevChangesState& state, float width) {
 													: interface_theme::kBorderPrimary,
 					.width = state.message_is_error ? Clay_BorderWidth{3, 0, 1, 0, 0}
 													: Clay_BorderWidth{0, 0, 1, 0, 0}};
-	CLAY(context.clayID("feedback"), panel) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("feedback")), panel) {
 		if (!state.message.empty())
 			ui::text(context, state.message, interface_theme::kTextCanvas, 12);
-		CLAY(context.clayID("decision-history"), action_row(width)) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("decision-history")), action_row(width)) {
 			ui::button(context, LocalElementName{"undo"}, "Undo decision", state, ui::Undo, 0,
 					   !state.undo.empty());
 			ui::button(context, LocalElementName{"redo"}, "Redo decision", state, ui::Redo, 0,
@@ -1527,7 +1528,7 @@ void blocking_causes(Context& context, const DevChangesState& state) {
 	auto banner = section(4);
 	banner.layout.padding.left = 8;
 	banner.border = {.color = interface_theme::kStatusRed, .width = {2, 0, 0, 0, 0}};
-	CLAY(context.clayID("blocking-causes"), banner)
+	CLAY(FlowUi::ValueOrThrow(context.clayID("blocking-causes")), banner)
 	ui::text(context, summary, interface_theme::kTextCanvas, 11);
 }
 } // namespace
@@ -1551,7 +1552,7 @@ void DevChangesWorkbench::buildElement(BuildContext& context) {
 		local.decision_open = local.decision_was_open = false;
 		local.decision_highlight = UINT64_MAX;
 	}
-	const auto scroll = Clay_GetScrollContainerData(context.clayID("scroll"));
+	const auto scroll = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("scroll")));
 	if (local.previous_view != state.view) {
 		if (local.previous_view < local.view_scroll.size())
 			local.view_scroll[local.previous_view] = scroll.found && scroll.scrollPosition
@@ -1588,7 +1589,7 @@ void DevChangesWorkbench::buildElement(BuildContext& context) {
 	}
 	if (local.queue_focus_target.id && state.view == 0 && scroll.found && scroll.scrollPosition) {
 		const auto bounds = Clay_GetElementData(local.queue_focus_target);
-		const auto viewport_bounds = Clay_GetElementData(context.clayID("scroll"));
+		const auto viewport_bounds = Clay_GetElementData(FlowUi::ValueOrThrow(context.clayID("scroll")));
 		const auto submitted_rows =
 			std::span<const uint32_t>(local.submitted_queue_ids).first(local.submitted_queue_count);
 		const bool submitted =
@@ -1615,7 +1616,7 @@ void DevChangesWorkbench::buildElement(BuildContext& context) {
 		const auto trigger = ::FlowUi::detail::element_id::resolveLocal(
 			context.id, diagnostics_ui::Control::definitionId,
 			LocalElementName{"group-decisions"}.token);
-		context.uiManager.shortcuts().setFocusedElement(context.uiManager.toClayEID(trigger));
+		FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(context.uiManager.toClayEID(trigger)));
 	}
 	const auto blocking = std::ranges::count_if(
 		state.review.rows, [](const auto& review_row) { return review_row.blocking; });
@@ -1628,13 +1629,13 @@ void DevChangesWorkbench::buildElement(BuildContext& context) {
 		heading.backgroundColor = interface_theme::kDepth1Panel;
 		if (!state.review.valid_disk || !state.memory_error.empty())
 			heading.border = {.color = interface_theme::kStatusRed, .width = {3, 0, 0, 1, 0}};
-		CLAY(context.clayID("heading"), heading) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("heading")), heading) {
 			ui::text(context,
 					 state.view == 2   ? "Startup policy drafts"
 					 : state.view == 1 ? "Review output"
 									   : "Review changes",
 					 interface_theme::kTextCanvas, 16);
-			CLAY(context.clayID("views"), selector_choice_track()) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("views")), selector_choice_track()) {
 				ui::choice(context, Keyed("view", 0), "Review", 0, state.view);
 				ui::choice(context, Keyed("view", 1), "Output", 1, state.view);
 			}
@@ -1646,13 +1647,13 @@ void DevChangesWorkbench::buildElement(BuildContext& context) {
 		}
 		auto viewport = ui::viewport(context, "scroll", state.workbench_scroll);
 		viewport.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-		CLAY(context.clayID("scroll"), viewport) {
-			ui::FocusViewportScope focus_scope{state, context.clayID("scroll")};
+		CLAY(FlowUi::ValueOrThrow(context.clayID("scroll")), viewport) {
+			ui::FocusViewportScope focus_scope{state, FlowUi::ValueOrThrow(context.clayID("scroll"))};
 			ui::restore_viewport_scroll(context, LocalElementName{"scroll"},
 										state.workbench_scroll);
 			auto body = section(12);
 			body.layout.padding = {14, 14, 12, 16};
-			CLAY(context.clayID("contents"), body) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("contents")), body) {
 				blocking_causes(context, state);
 				if (state.stale)
 					ui::text(context,
@@ -1670,7 +1671,7 @@ void DevChangesWorkbench::buildElement(BuildContext& context) {
 				if (!state.memory_error.empty())
 					ui::text(context, state.memory_error, interface_theme::kTextCanvas, 12);
 				if (blocking || !state.memory_error.empty())
-					CLAY(context.clayID("issue-navigation"), action_row(width)) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("issue-navigation")), action_row(width)) {
 						ui::button(context, LocalElementName{"next-issue"}, "Next issue", state,
 								   ui::NextIssue);
 						ui::button(context, LocalElementName{"show-issues"}, "Show issues", state,

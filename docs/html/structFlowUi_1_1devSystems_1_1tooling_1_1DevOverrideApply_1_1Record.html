@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,26 +106,40 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevOverrideApply::Record Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Owned assignment with generation-bound member operations; exposed by <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideApply.html#a30d3cc97973128147946b1462dcc22c7" title="Borrow retained assignment records until the next mutation or schema rebind.">records()</a>.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevOverrideApply_8hpp_source.html">DevOverrideApply.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:ab9eb679788ab4d9adcd982b35c75d209" id="r_ab9eb679788ab4d9adcd982b35c75d209"><td class="memItemLeft"><a id="ab9eb679788ab4d9adcd982b35c75d209" name="ab9eb679788ab4d9adcd982b35c75d209"></a>
 <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOwnedValue.html">DevOwnedValue</a>&#160;</td><td class="memItemRight"><b>value</b> {}</td></tr>
+<tr class="memdesc:ab9eb679788ab4d9adcd982b35c75d209"><td class="mdescLeft">&#160;</td><td class="mdescRight">Owned schema-typed replacement. <br /></td></tr>
 <tr class="memitem:aded0907ea881c4a52b6eabd77738bce7" id="r_aded0907ea881c4a52b6eabd77738bce7"><td class="memItemLeft"><a id="aded0907ea881c4a52b6eabd77738bce7" name="aded0907ea881c4a52b6eabd77738bce7"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevElementOverrideTarget.html">DevElementOverrideTarget</a>&#160;</td><td class="memItemRight"><b>target</b> {}</td></tr>
+<tr class="memdesc:aded0907ea881c4a52b6eabd77738bce7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scope-qualified element destination. <br /></td></tr>
 <tr class="memitem:a37d80c4cb574676c1b014ab00585d4db" id="r_a37d80c4cb574676c1b014ab00585d4db"><td class="memItemLeft"><a id="a37d80c4cb574676c1b014ab00585d4db" name="a37d80c4cb574676c1b014ab00585d4db"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideFieldKey.html">DevOverrideFieldKey</a>&#160;</td><td class="memItemRight"><b>field</b> {}</td></tr>
+<tr class="memdesc:a37d80c4cb574676c1b014ab00585d4db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Root type and nested member identity. <br /></td></tr>
 <tr class="memitem:afc2c611c33e3a284636f517975489f70" id="r_afc2c611c33e3a284636f517975489f70"><td class="memItemLeft"><a id="afc2c611c33e3a284636f517975489f70" name="afc2c611c33e3a284636f517975489f70"></a>
 std::vector&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldOps.html">tooling::DevFieldOps</a> * &gt;&#160;</td><td class="memItemRight"><b>ownerPath</b> {}</td></tr>
+<tr class="memdesc:afc2c611c33e3a284636f517975489f70"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed member-operation pointers pinned by the bound schema generation. <br /></td></tr>
 <tr class="memitem:a6c56cb7bb0eaaefaf158126f6c26e143" id="r_a6c56cb7bb0eaaefaf158126f6c26e143"><td class="memItemLeft"><a id="a6c56cb7bb0eaaefaf158126f6c26e143" name="a6c56cb7bb0eaaefaf158126f6c26e143"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>transaction</b> = 0</td></tr>
+<tr class="memdesc:a6c56cb7bb0eaaefaf158126f6c26e143"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transaction that produced the assignment. <br /></td></tr>
 <tr class="memitem:a09b33c05d9c5d9bb1d6e94702bf6d635" id="r_a09b33c05d9c5d9bb1d6e94702bf6d635"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldIndex.html">tooling::DevFieldIndex</a>&#160;</td><td class="memItemRight"><a class="el" href="#a09b33c05d9c5d9bb1d6e94702bf6d635">fieldIndex</a> {}</td></tr>
 <tr class="memitem:ac08c8883514a24853708fc47517dd170" id="r_ac08c8883514a24853708fc47517dd170"><td class="memItemLeft"><a id="ac08c8883514a24853708fc47517dd170" name="ac08c8883514a24853708fc47517dd170"></a>
-DevOverrideLayer&#160;</td><td class="memItemRight"><b>layer</b> = DevOverrideLayer::LiveDefinition</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a871f5f866ab44b836ae012fabafece58">DevOverrideLayer</a>&#160;</td><td class="memItemRight"><b>layer</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a871f5f866ab44b836ae012fabafece58ab5c02d9f13bd73b3b84285d46a7711e5">DevOverrideLayer::LiveDefinition</a></td></tr>
+<tr class="memdesc:ac08c8883514a24853708fc47517dd170"><td class="mdescLeft">&#160;</td><td class="mdescRight">Precedence layer of this retained assignment. <br /></td></tr>
 <tr class="memitem:ae97ceab01055a58371ad15b7a4f15a8c" id="r_ae97ceab01055a58371ad15b7a4f15a8c"><td class="memItemLeft"><a id="ae97ceab01055a58371ad15b7a4f15a8c" name="ae97ceab01055a58371ad15b7a4f15a8c"></a>
 bool&#160;</td><td class="memItemRight"><b>schemaValid</b> = false</td></tr>
+<tr class="memdesc:ae97ceab01055a58371ad15b7a4f15a8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the field path resolved against the bound schema. <br /></td></tr>
 </table>
-<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Owned assignment with generation-bound member operations; exposed by <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideApply.html#a30d3cc97973128147946b1462dcc22c7" title="Borrow retained assignment records until the next mutation or schema rebind.">records()</a>. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a09b33c05d9c5d9bb1d6e94702bf6d635" name="a09b33c05d9c5d9bb1d6e94702bf6d635"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a09b33c05d9c5d9bb1d6e94702bf6d635">&#9670;&#160;</a></span>fieldIndex</h2>
 
@@ -157,7 +171,7 @@ bool&#160;</td><td class="memItemRight"><b>schemaValid</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideApply.html">DevOverrideApply</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideApply_1_1Record.html">Record</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideApply.html">DevOverrideApply</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideApply_1_1Record.html">Record</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

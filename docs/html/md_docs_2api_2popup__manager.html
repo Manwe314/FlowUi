@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,89 +106,281 @@ $(function() {
   <div class="headertitle"><div class="title">Popup Manager API </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><span class="tt">PopupManager</span> is the window-scoped service for popup placement and behavior. It turns a stable popup identity plus a <span class="tt">PopupRequest</span> into the <span class="tt">Clay_FloatingElementConfig</span> needed for the current frame. It also owns first-frame measurement, viewport overflow correction, popup z-order allocation, and automatic dismissal.</p>
-<p>Access it through <span class="tt">UiManager</span>:</p>
-<div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1PopupManager.html">FlowUi::PopupManager</a>&amp; popups = app.ui().popups();</div>
-<div class="ttc" id="aclassFlowUi_1_1PopupManager_html"><div class="ttname"><a href="classFlowUi_1_1PopupManager.html">FlowUi::PopupManager</a></div><div class="ttdef"><b>Definition</b> PopupManager.hpp:22</div></div>
-</div><!-- fragment --><p>The manager does not draw a surface, dim the application, trap keyboard focus, or decide what children belong in a popup. Those remain element and application policy. This keeps the service usable by arbitrary custom Flow elements as well as <span class="tt">FlowUi::FSEL::kPopupSurface</span>.</p>
-<h1>Popup Request</h1>
-<div class="fragment"><div class="line"><span class="keyword">struct </span>PopupRequest {</div>
-<div class="line">    PopupAnchor anchor = PopupAnchor::parent();</div>
-<div class="line">    PopupPlacement placement{};</div>
-<div class="line">    PopupOverflowPolicy overflow{};</div>
-<div class="line">    PopupFirstFramePolicy firstFrame = PopupFirstFramePolicy::DeferUntilMeasured;</div>
-<div class="line">    std::optional&lt;Clay_Dimensions&gt; expectedSize = std::nullopt;</div>
-<div class="line">    PopupLayer layer = PopupLayer::CasualPopup;</div>
-<div class="line">    Clay_PointerCaptureMode pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_CAPTURE;</div>
-<div class="line">    Clay_FloatingClipToElement clipTo = CLAY_CLIP_TO_NONE;</div>
-<div class="line">    PopupOutsidePressPolicy outsidePress =</div>
-<div class="line">        PopupOutsidePressPolicy::DismissAndBlockAnchor;</div>
-<div class="line">    <span class="keywordtype">bool</span> dismissOnEscape = <span class="keyword">true</span>;</div>
-<div class="line">};</div>
-</div><!-- fragment --><p><span class="tt">PopupAnchor</span> supports the current Clay parent, a specific Flow element, a pointer snapshot, a pointer-following anchor, an absolute position, or the viewport. Element anchors resolve from completed Clay geometry, so the usual anchor is a stable element that was present on the preceding frame. Keep the anchor authored before its popup as well.</p>
-<p><span class="tt">PopupPlacement</span> names both attachment points with the same nine-point vocabulary: <span class="tt">TopLeft</span>, <span class="tt">TopMiddle</span>, <span class="tt">TopRight</span>, <span class="tt">MiddleLeft</span>, <span class="tt">Center</span>, <span class="tt">MiddleRight</span>, <span class="tt">BottomLeft</span>, <span class="tt">BottomMiddle</span>, and <span class="tt">BottomRight</span>. Pointer and absolute-position anchors have no size, so all nine anchor points resolve to the same logical coordinate.</p>
-<p>The overflow policy first keeps the requested placement when it fits. Otherwise it can try horizontal and vertical mirrors, select the candidate with the least overflow, and shift the result into the viewport.</p>
-<p><span class="tt">PopupLayer</span> provides three conventional z-index bands starting at 10000:</p>
+<div class="textblock"><p><a href="include/FlowUi/Public/managers/PopupManager.hpp">Public declarations</a> · <a href="include/FlowUi/Public/managerStructs/PopupTypes.hpp">Popup values</a></p>
+<p>Submit each open popup once during the active window UI build. <span class="tt">PopupRequest</span> defaults to parent anchoring, bottom-left to top-left placement, flip/shift overflow handling, hidden first-frame measurement, casual layer, pointer capture, anchor-blocking outside-press dismissal, and Escape dismissal. <span class="tt">expectedSize</span> supplies an optional positive finite layout-pixel estimate. Missing-anchor, duplicate, and capacity behavior follows the window error policy.</p>
+<p>A successful <span class="tt">PopupFrame</span> can be visible, hidden for measurement (<span class="tt">measureOnly</span>), or entirely hidden. Emit its floating root for either visible or measure-only frames. Placement/dismissal state commits with the window build and rolls back if the build is canceled; dismissals requested outside a build update committed state immediately.</p>
+<h1>Acquire the manager</h1>
+<p><span class="tt">App</span> getters return <span class="tt">Result&lt;std::reference_wrapper&lt;T&gt;&gt;</span>. Check the wrapper, then name the borrowed object as a normal reference:</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = app.ui();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; manager = result-&gt;get();</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:110</div></div>
+</div><!-- fragment --><p>Call <span class="tt">ui.popups()</span> on that <span class="tt">UiManager&amp;</span> to obtain the direct manager reference. The reference is borrowed; the App must outlive it, and window-owned managers must also stay within their owning window lifetime. The examples use an already acquired manager reference and existing field/window identities where needed. They choose an application policy of throwing <span class="tt">FlowUiException</span> after a failed Result; returning/reporting the error is equally possible. Include the relevant manager/value headers and <span class="tt"><a class="el" href="Exception_8hpp_source.html">FlowUi/Public/errorManagement/Exception.hpp</a></span>.</p>
+<p><span class="tt">request()</span> retains <span class="tt">Result&lt;PopupFrame&gt;</span> because configured duplicate rejection can be handled locally. <span class="tt">dismiss()</span> returns void and <span class="tt">consumeDismissed()</span> returns bool directly; their operational failures throw and latch frame failure. A false dismissal notification is an ordinary answer.</p>
+<h1>Value helpers: <a class="el" href="namespaceFlowUi.html">FlowUi</a></h1>
+<h2><b>toClayAttachment</b></h2>
+<h3><span class="tt">[[nodiscard]] constexpr Clay_FloatingAttachPointType toClayAttachment( PopupAttachmentPoint point) noexcept</span></h3>
 <ul>
-<li><span class="tt">CasualPopup</span></li>
-<li><span class="tt">WarningPopup</span></li>
-<li><span class="tt">CriticalPopup</span></li>
+<li><b>Returns:</b> <span class="tt">Clay_FloatingAttachPointType</span></li>
+<li><b>Arguments:</b> <span class="tt">point</span></li>
 </ul>
-<p>These bands order manager-authored popups but do not reserve Clay z-index values globally. Custom elements may still use overlapping values when their application deliberately wants that behavior.</p>
-<h1>First-Frame Placement</h1>
-<p>The default <span class="tt">DeferUntilMeasured</span> policy returns a measurement-only floating configuration when no prior measured size is available. The element must still construct its complete, normally styled popup tree on this frame; the manager places it offscreen with pointer passthrough. On the next frame the measured size is available for overflow correction and normal display.</p>
-<p>Supplying a correct <span class="tt">expectedSize</span> avoids that hidden measurement frame:</p>
-<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1PopupRequest.html">FlowUi::PopupRequest</a> request{</div>
-<div class="line">    .anchor = FlowUi::PopupAnchor::viewport(),</div>
-<div class="line">    .placement = {</div>
-<div class="line">        .anchorPoint = FlowUi::PopupAttachmentPoint::TopMiddle,</div>
-<div class="line">        .popupPoint = FlowUi::PopupAttachmentPoint::TopMiddle,</div>
-<div class="line">        .offset = {0.0f, 24.0f},</div>
-<div class="line">    },</div>
-<div class="line">    .expectedSize = Clay_Dimensions{340.0f, 66.0f},</div>
-<div class="line">    .layer = FlowUi::PopupLayer::WarningPopup,</div>
-<div class="line">};</div>
-<div class="ttc" id="astructFlowUi_1_1PopupRequest_html"><div class="ttname"><a href="structFlowUi_1_1PopupRequest.html">FlowUi::PopupRequest</a></div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:132</div></div>
-</div><!-- fragment --><p><span class="tt">PlaceImmediately</span> also draws on the first frame, but without a known size overflow correction cannot account for the popup extent.</p>
-<h1>Request and Dismissal API</h1>
-<p><span class="tt">request()</span> accepts <span class="tt">FlowElementID</span>, <span class="tt">GlobalFlowID</span>, and <span class="tt">FlowElementPartID</span>:</p>
-<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1PopupFrame.html">FlowUi::PopupFrame</a> frame = ui.popups().request(popupId, request);</div>
-<div class="line"> </div>
-<div class="line">Clay_ElementDeclaration root{};</div>
-<div class="line"><span class="keywordflow">if</span> (frame.visible || frame.measureOnly) {</div>
-<div class="line">    root.floating = frame.floating;</div>
-<div class="line">}</div>
-<div class="ttc" id="astructFlowUi_1_1PopupFrame_html"><div class="ttname"><a href="structFlowUi_1_1PopupFrame.html">FlowUi::PopupFrame</a></div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:145</div></div>
-</div><!-- fragment --><p>Submit each present popup exactly once per frame under a stable identity. <span class="tt">PopupFrame::visible</span> means the surface should be drawn normally. <span class="tt">measureOnly</span> means it must be constructed completely but remains offscreen for this frame. When both are false, custom construct-only elements must keep their children out of normal layout, typically by returning an inert offscreen floating declaration.</p>
-<p>Automatic outside-press and Escape dismissal is evaluated at frame start from the last committed popup bounds. Only the topmost popup owns the outside-press decision for one input transition. <span class="tt">PopupOutsidePressPolicy</span> makes the resulting input ownership explicit:</p>
+<p>Convert a popup attachment point to Clay's alignment enum. An unrecognized enum value maps to CLAY_ATTACH_POINT_CENTER_CENTER.</p>
+<p>This is a constexpr/noexcept value conversion.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> attachment = <a class="code hl_function" href="namespaceFlowUi.html#ab39631bbe1121e83cdcf8018609ca8b5">FlowUi::toClayAttachment</a>(<a class="code hl_enumvalue" href="namespaceFlowUi.html#a69b894db58c2baf3587d43a8670d833ca98e5a1c44509157ebcaf46c515c78875">FlowUi::PopupAttachmentPoint::BottomLeft</a>);</div>
+<div class="ttc" id="anamespaceFlowUi_html_a69b894db58c2baf3587d43a8670d833ca98e5a1c44509157ebcaf46c515c78875"><div class="ttname"><a href="namespaceFlowUi.html#a69b894db58c2baf3587d43a8670d833ca98e5a1c44509157ebcaf46c515c78875">FlowUi::PopupAttachmentPoint::BottomLeft</a></div><div class="ttdeci">@ BottomLeft</div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:27</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_ab39631bbe1121e83cdcf8018609ca8b5"><div class="ttname"><a href="namespaceFlowUi.html#ab39631bbe1121e83cdcf8018609ca8b5">FlowUi::toClayAttachment</a></div><div class="ttdeci">constexpr Clay_FloatingAttachPointType toClayAttachment(PopupAttachmentPoint point) noexcept</div><div class="ttdoc">Convert a popup attachment point to Clay&#39;s alignment enum.</div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:45</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/PopupTypes.hpp">Owning header</a>.</p>
+<h1>Value helpers: PopupAnchor</h1>
+<h2><b>parent</b></h2>
+<h3><span class="tt">[[nodiscard]] static constexpr PopupAnchor parent() noexcept</span></h3>
 <ul>
-<li><span class="tt">DismissAndConsume</span> dismisses the popup and hides the complete primary-pointer gesture from every other UI consumer.</li>
-<li><span class="tt">DismissAndBlockAnchor</span> dismisses the popup and removes its anchor from the press targets, preventing the common dismiss-then-reopen trigger bug while leaving unrelated controls usable.</li>
-<li><span class="tt">Ignore</span> does not dismiss and leaves the press untouched.</li>
+<li><b>Returns:</b> <span class="tt">PopupAnchor</span></li>
+<li><b>Arguments:</b> none.</li>
 </ul>
-<p>The anchor-only policy is the default. It is most appropriate for dropdowns and similar anchored surfaces. Full consumption is useful for heads-up or modal-like surfaces whose dismissing click must not activate anything underneath. Programmatic dismissal uses the same state path but does not consume input:</p>
-<div class="fragment"><div class="line">ui.popups().dismiss(popupId);</div>
-</div><!-- fragment --><p>The popup owner observes the edge once with <span class="tt">consumeDismissed()</span>:</p>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (ui.popups().consumeDismissed(popupId)) {</div>
-<div class="line">    popupOpen = <span class="keyword">false</span>;</div>
+<p>Create an anchor for the current Clay parent. Returns a value descriptor; placement is resolved during popup layout.</p>
+<p>This constexpr/noexcept factory owns no UI object.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> anchor = <a class="code hl_function" href="structFlowUi_1_1PopupAnchor.html#a836e904830612c599fe163ad0eb761ce">FlowUi::PopupAnchor::parent</a>();</div>
+<div class="ttc" id="astructFlowUi_1_1PopupAnchor_html_a836e904830612c599fe163ad0eb761ce"><div class="ttname"><a href="structFlowUi_1_1PopupAnchor.html#a836e904830612c599fe163ad0eb761ce">FlowUi::PopupAnchor::parent</a></div><div class="ttdeci">static constexpr PopupAnchor parent() noexcept</div><div class="ttdoc">Create an anchor for the current Clay parent.</div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:110</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/PopupTypes.hpp">Owning header</a>.</p>
+<h2><b>element</b></h2>
+<h3><span class="tt">[[nodiscard]] static constexpr PopupAnchor element(FlowElementID id) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">PopupAnchor</span></li>
+<li><b>Arguments:</b> <span class="tt">id</span> window-scoped identity</li>
+</ul>
+<p>Create an anchor for a Flow element or semantic part in the current window. Returns an Element descriptor containing the supplied identity value.</p>
+<p>Local, global, and semantic part IDs all resolve in the popup's current window; a global name does not select a different window.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> anchor = <a class="code hl_function" href="structFlowUi_1_1PopupAnchor.html#a9ef582ec5bec1a31ab38db0593adcd1f">FlowUi::PopupAnchor::element</a>(fieldId);</div>
+<div class="ttc" id="astructFlowUi_1_1PopupAnchor_html_a9ef582ec5bec1a31ab38db0593adcd1f"><div class="ttname"><a href="structFlowUi_1_1PopupAnchor.html#a9ef582ec5bec1a31ab38db0593adcd1f">FlowUi::PopupAnchor::element</a></div><div class="ttdeci">static constexpr PopupAnchor element(FlowElementID id) noexcept</div><div class="ttdoc">Create an anchor for a Flow element or semantic part in the current window.</div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:125</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/PopupTypes.hpp">Owning header</a>.</p>
+<h2><b>element</b></h2>
+<h3><span class="tt">[[nodiscard]] static constexpr PopupAnchor element(GlobalFlowID id) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">PopupAnchor</span></li>
+<li><b>Arguments:</b> <span class="tt">id</span> window-scoped identity</li>
+</ul>
+<p>Create an anchor for a Flow element or semantic part in the current window. Returns an Element descriptor containing the supplied identity value.</p>
+<p>Local, global, and semantic part IDs all resolve in the popup's current window; a global name does not select a different window.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> anchor = <a class="code hl_function" href="structFlowUi_1_1PopupAnchor.html#a9ef582ec5bec1a31ab38db0593adcd1f">FlowUi::PopupAnchor::element</a>(fieldId);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/PopupTypes.hpp">Owning header</a>.</p>
+<h2><b>element</b></h2>
+<h3><span class="tt">[[nodiscard]] static constexpr PopupAnchor element(FlowElementPartID id) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">PopupAnchor</span></li>
+<li><b>Arguments:</b> <span class="tt">id</span> window-scoped identity</li>
+</ul>
+<p>Create an anchor for a Flow element or semantic part in the current window. Returns an Element descriptor containing the supplied identity value.</p>
+<p>Local, global, and semantic part IDs all resolve in the popup's current window; a global name does not select a different window.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> anchor = <a class="code hl_function" href="structFlowUi_1_1PopupAnchor.html#a9ef582ec5bec1a31ab38db0593adcd1f">FlowUi::PopupAnchor::element</a>(fieldId);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/PopupTypes.hpp">Owning header</a>.</p>
+<h2><b>pointerSnapshot</b></h2>
+<h3><span class="tt">[[nodiscard]] static constexpr PopupAnchor pointerSnapshot() noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">PopupAnchor</span></li>
+<li><b>Arguments:</b> none.</li>
+</ul>
+<p>Create an anchor at the pointer position first resolved for this popup. Returns a value descriptor; the resolved coordinate is retained while the popup remains open.</p>
+<p>This constexpr/noexcept factory does not sample input immediately.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> anchor = <a class="code hl_function" href="structFlowUi_1_1PopupAnchor.html#a02a9a1bdc190105dd4bc399624694151">FlowUi::PopupAnchor::pointerSnapshot</a>();</div>
+<div class="ttc" id="astructFlowUi_1_1PopupAnchor_html_a02a9a1bdc190105dd4bc399624694151"><div class="ttname"><a href="structFlowUi_1_1PopupAnchor.html#a02a9a1bdc190105dd4bc399624694151">FlowUi::PopupAnchor::pointerSnapshot</a></div><div class="ttdeci">static constexpr PopupAnchor pointerSnapshot() noexcept</div><div class="ttdoc">Create an anchor at the pointer position first resolved for this popup.</div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:179</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/PopupTypes.hpp">Owning header</a>.</p>
+<h2><b>pointerFollow</b></h2>
+<h3><span class="tt">[[nodiscard]] static constexpr PopupAnchor pointerFollow() noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">PopupAnchor</span></li>
+<li><b>Arguments:</b> none.</li>
+</ul>
+<p>Create an anchor that follows the current frame pointer. Returns a value descriptor sampled when submitted.</p>
+<p>This constexpr/noexcept factory owns no pointer state.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> anchor = <a class="code hl_function" href="structFlowUi_1_1PopupAnchor.html#ae9f9213d6505cf90ced3578e1d39f16e">FlowUi::PopupAnchor::pointerFollow</a>();</div>
+<div class="ttc" id="astructFlowUi_1_1PopupAnchor_html_ae9f9213d6505cf90ced3578e1d39f16e"><div class="ttname"><a href="structFlowUi_1_1PopupAnchor.html#ae9f9213d6505cf90ced3578e1d39f16e">FlowUi::PopupAnchor::pointerFollow</a></div><div class="ttdeci">static constexpr PopupAnchor pointerFollow() noexcept</div><div class="ttdoc">Create an anchor that follows the current frame pointer.</div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:194</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/PopupTypes.hpp">Owning header</a>.</p>
+<h2><b>position</b></h2>
+<h3><span class="tt">[[nodiscard]] static constexpr PopupAnchor position(Clay_Vector2 value) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">PopupAnchor</span></li>
+<li><b>Arguments:</b> <span class="tt">value</span></li>
+</ul>
+<p>Create an anchor at an explicit window-layout coordinate. Returns a Position descriptor storing the coordinate.</p>
+<p>Coordinates use logical layout pixels, not framebuffer pixels.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> anchor = <a class="code hl_function" href="structFlowUi_1_1PopupAnchor.html#ac1d3a91bbcd3ded1a9f2f900d7217e46">FlowUi::PopupAnchor::position</a>(Clay_Vector2{24.0f, 48.0f});</div>
+<div class="ttc" id="astructFlowUi_1_1PopupAnchor_html_ac1d3a91bbcd3ded1a9f2f900d7217e46"><div class="ttname"><a href="structFlowUi_1_1PopupAnchor.html#ac1d3a91bbcd3ded1a9f2f900d7217e46">FlowUi::PopupAnchor::position</a></div><div class="ttdeci">static constexpr PopupAnchor position(Clay_Vector2 value) noexcept</div><div class="ttdoc">Create an anchor at an explicit window-layout coordinate.</div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:209</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/PopupTypes.hpp">Owning header</a>.</p>
+<h2><b>viewport</b></h2>
+<h3><span class="tt">[[nodiscard]] static constexpr PopupAnchor viewport() noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">PopupAnchor</span></li>
+<li><b>Arguments:</b> none.</li>
+</ul>
+<p>Create an anchor for the current window viewport rectangle. Returns a value descriptor resolved during layout.</p>
+<p>This constexpr/noexcept factory owns no viewport object.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> anchor = <a class="code hl_function" href="structFlowUi_1_1PopupAnchor.html#a5bb0706a21fe05c93f32300117dd20ef">FlowUi::PopupAnchor::viewport</a>();</div>
+<div class="ttc" id="astructFlowUi_1_1PopupAnchor_html_a5bb0706a21fe05c93f32300117dd20ef"><div class="ttname"><a href="structFlowUi_1_1PopupAnchor.html#a5bb0706a21fe05c93f32300117dd20ef">FlowUi::PopupAnchor::viewport</a></div><div class="ttdeci">static constexpr PopupAnchor viewport() noexcept</div><div class="ttdoc">Create an anchor for the current window viewport rectangle.</div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:227</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/PopupTypes.hpp">Owning header</a>.</p>
+<h1>Public API</h1>
+<h2><b>frameStatus</b></h2>
+<h3><span class="tt">[[nodiscard]] Status frameStatus() const noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Status</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> none.</li>
+</ul>
+<p>Read a caught failure requiring cancellation of the popup frame. Success means no popup frame error has been latched; an error requires cancellation of the surrounding frame.</p>
+<p>UiManager checks the latch during frame completion.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a105713a2a18e110bc4473c7d15003cb2">frameStatus</a>();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
 <div class="line">}</div>
-</div><!-- fragment --><p>A dismissed identity remains dismissed while it continues to be requested. Omit the popup after consuming dismissal; requesting the same identity again after it has been absent creates a fresh popup session.</p>
-<h1>FSEL PopupSurface</h1>
-<p>When FSEL is enabled, <span class="tt">FlowUi::FSEL::kPopupSurface</span> is the standard construct-only adapter. It requests <span class="tt">PopupManager</span>, applies the returned floating configuration, supplies a themed Box-like surface, and invokes <span class="tt">onDismissed</span> when the manager reports dismissal. The application still owns the open flag and conditionally authors the element; bind <span class="tt">onDismissed</span> to clear that flag:</p>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (menuOpen) {</div>
-<div class="line">    ui.createElement(FlowUi::FSEL::kPopupSurface, <span class="stringliteral">&quot;edit-menu&quot;</span>)</div>
-<div class="line">        .setParameters(FlowUi::FSEL::PopupSurfaceParameters{</div>
-<div class="line">            .popupRequest = {</div>
-<div class="line">                .anchor = FlowUi::PopupAnchor::element(editButtonId),</div>
-<div class="line">            },</div>
-<div class="line">            .onDismissed = closeMenuAction,</div>
-<div class="line">        })</div>
-<div class="line">        .construct();</div>
-<div class="line"> </div>
-<div class="line">    CLAY_TEXT(CLAY_STRING(<span class="stringliteral">&quot;Menu contents&quot;</span>), CLAY_TEXT_CONFIG(textConfig));</div>
-<div class="line">    ui.drawConstructed();</div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a105713a2a18e110bc4473c7d15003cb2"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a105713a2a18e110bc4473c7d15003cb2">FlowUi::UiManager::frameStatus</a></div><div class="ttdeci">Status frameStatus() const noexcept</div><div class="ttdoc">Return the first latched UI error for this frame, including input-field and popup failure state....</div><div class="ttdef"><b>Definition</b> UiManager.hpp:125</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/PopupManager.hpp">Owning header</a>.</p>
+<h2><b>request</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;PopupFrame&gt; request(FlowElementID popupId, const PopupRequest&amp; request) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;PopupFrame&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">popupId</span>, <span class="tt">request</span> operation configuration</li>
+</ul>
+<p>Submit an open popup for the active window UI build. Success contains PopupFrame, which may be hidden or measureOnly; a zero ID yields an empty frame. Inactive frame or configured duplicate/placement failures return errors.</p>
+<p>Request each popup once per active build. Emit the floating root when visible or measureOnly, using its floating configuration. Placement/dismissal participate in commit; canceling the build rolls them back. Default unknown-size policy uses a hidden measurement frame.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1PopupRequest.html">FlowUi::PopupRequest</a> request{};</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1PopupRequest.html#ae2232392e47a08307d2c926d72515ecd">anchor</a> = <a class="code hl_function" href="structFlowUi_1_1PopupAnchor.html#a836e904830612c599fe163ad0eb761ce">FlowUi::PopupAnchor::parent</a>();</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1PopupRequest.html#a5931df16cfbc018d2f76deffbea32324">expectedSize</a> = Clay_Dimensions{240.0f, 160.0f};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.request(fieldId, request);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
 <div class="line">}</div>
-</div><!-- fragment --><p>The surface exposes sizing, padding, child layout, clipping, background, border, and corner-radius overrides. It intentionally has no <span class="tt">isOpen</span> parameter, built-in content, modal scrim, focus trap, animation policy, or semantic menu/dialog behavior. </p>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> popup = *result;</div>
+<div class="ttc" id="astructFlowUi_1_1PopupRequest_html"><div class="ttname"><a href="structFlowUi_1_1PopupRequest.html">FlowUi::PopupRequest</a></div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:274</div></div>
+<div class="ttc" id="astructFlowUi_1_1PopupRequest_html_a5931df16cfbc018d2f76deffbea32324"><div class="ttname"><a href="structFlowUi_1_1PopupRequest.html#a5931df16cfbc018d2f76deffbea32324">FlowUi::PopupRequest::expectedSize</a></div><div class="ttdeci">std::optional&lt; Clay_Dimensions &gt; expectedSize</div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:284</div></div>
+<div class="ttc" id="astructFlowUi_1_1PopupRequest_html_ae2232392e47a08307d2c926d72515ecd"><div class="ttname"><a href="structFlowUi_1_1PopupRequest.html#ae2232392e47a08307d2c926d72515ecd">FlowUi::PopupRequest::anchor</a></div><div class="ttdeci">PopupAnchor anchor</div><div class="ttdef"><b>Definition</b> PopupTypes.hpp:276</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/PopupManager.hpp">Owning header</a>.</p>
+<h2><b>request</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;PopupFrame&gt; request(GlobalFlowID popupId, const PopupRequest&amp; request) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;PopupFrame&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">popupId</span>, <span class="tt">request</span> operation configuration</li>
+</ul>
+<p>Submit an open popup for the active window UI build. Success contains PopupFrame, which may be hidden or measureOnly; a zero ID yields an empty frame. Inactive frame or configured duplicate/placement failures return errors.</p>
+<p>Request each popup once per active build. Emit the floating root when visible or measureOnly, using its floating configuration. Placement/dismissal participate in commit; canceling the build rolls them back. Default unknown-size policy uses a hidden measurement frame.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1PopupRequest.html">FlowUi::PopupRequest</a> request{};</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1PopupRequest.html#ae2232392e47a08307d2c926d72515ecd">anchor</a> = <a class="code hl_function" href="structFlowUi_1_1PopupAnchor.html#a836e904830612c599fe163ad0eb761ce">FlowUi::PopupAnchor::parent</a>();</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1PopupRequest.html#a5931df16cfbc018d2f76deffbea32324">expectedSize</a> = Clay_Dimensions{240.0f, 160.0f};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.request(fieldId, request);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> popup = *result;</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/PopupManager.hpp">Owning header</a>.</p>
+<h2><b>request</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;PopupFrame&gt; request(FlowElementPartID popupId, const PopupRequest&amp; request) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;PopupFrame&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">popupId</span>, <span class="tt">request</span> operation configuration</li>
+</ul>
+<p>Submit an open popup for the active window UI build. Success contains PopupFrame, which may be hidden or measureOnly; a zero ID yields an empty frame. Inactive frame or configured duplicate/placement failures return errors.</p>
+<p>Request each popup once per active build. Emit the floating root when visible or measureOnly, using its floating configuration. Placement/dismissal participate in commit; canceling the build rolls them back. Default unknown-size policy uses a hidden measurement frame.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1PopupRequest.html">FlowUi::PopupRequest</a> request{};</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1PopupRequest.html#ae2232392e47a08307d2c926d72515ecd">anchor</a> = <a class="code hl_function" href="structFlowUi_1_1PopupAnchor.html#a836e904830612c599fe163ad0eb761ce">FlowUi::PopupAnchor::parent</a>();</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1PopupRequest.html#a5931df16cfbc018d2f76deffbea32324">expectedSize</a> = Clay_Dimensions{240.0f, 160.0f};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.request(fieldId, request);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> popup = *result;</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/PopupManager.hpp">Owning header</a>.</p>
+<h2><b>dismiss</b></h2>
+<h3><span class="tt">void dismiss(FlowElementID popupId)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">void</span> (no payload).</li>
+<li><b>Arguments:</b> <span class="tt">popupId</span></li>
+</ul>
+<p>Dismiss a popup and record a consumable notification. Success means the dismissal request completed; zero IDs are ignored.</p>
+<p>During a build the change commits with the frame and is rolled back on cancel. Outside a build it commits immediately. An already submitted popup becomes hidden.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line">manager.dismiss(fieldId);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/PopupManager.hpp">Owning header</a>.</p>
+<h2><b>dismiss</b></h2>
+<h3><span class="tt">void dismiss(GlobalFlowID popupId)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">void</span> (no payload).</li>
+<li><b>Arguments:</b> <span class="tt">popupId</span></li>
+</ul>
+<p>Dismiss a popup and record a consumable notification. Success means the dismissal request completed; zero IDs are ignored.</p>
+<p>During a build the change commits with the frame and is rolled back on cancel. Outside a build it commits immediately. An already submitted popup becomes hidden.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line">manager.dismiss(fieldId);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/PopupManager.hpp">Owning header</a>.</p>
+<h2><b>dismiss</b></h2>
+<h3><span class="tt">void dismiss(FlowElementPartID popupId)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">void</span> (no payload).</li>
+<li><b>Arguments:</b> <span class="tt">popupId</span></li>
+</ul>
+<p>Dismiss a popup and record a consumable notification. Success means the dismissal request completed; zero IDs are ignored.</p>
+<p>During a build the change commits with the frame and is rolled back on cancel. Outside a build it commits immediately. An already submitted popup becomes hidden.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line">manager.dismiss(fieldId);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/PopupManager.hpp">Owning header</a>.</p>
+<h2><b>consumeDismissed</b></h2>
+<h3><span class="tt">[[nodiscard]] bool consumeDismissed(FlowElementID popupId)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">bool</span>.</li>
+<li><b>Arguments:</b> <span class="tt">popupId</span></li>
+</ul>
+<p>Read and consume one pending popup dismissal. Success contains true once per notification, or false for zero, unknown, or already-consumed IDs.</p>
+<p>Consumption during a canceled build is rolled back.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> dismissed = manager.consumeDismissed(fieldId);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/PopupManager.hpp">Owning header</a>.</p>
+<h2><b>consumeDismissed</b></h2>
+<h3><span class="tt">[[nodiscard]] bool consumeDismissed(GlobalFlowID popupId)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">bool</span>.</li>
+<li><b>Arguments:</b> <span class="tt">popupId</span></li>
+</ul>
+<p>Read and consume one pending popup dismissal. Success contains true once per notification, or false for zero, unknown, or already-consumed IDs.</p>
+<p>Consumption during a canceled build is rolled back.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> dismissed = manager.consumeDismissed(fieldId);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/PopupManager.hpp">Owning header</a>.</p>
+<h2><b>consumeDismissed</b></h2>
+<h3><span class="tt">[[nodiscard]] bool consumeDismissed(FlowElementPartID popupId)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">bool</span>.</li>
+<li><b>Arguments:</b> <span class="tt">popupId</span></li>
+</ul>
+<p>Read and consume one pending popup dismissal. Success contains true once per notification, or false for zero, unknown, or already-consumed IDs.</p>
+<p>Consumption during a canceled build is rolled back.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> dismissed = manager.consumeDismissed(fieldId);</div>
+</div><!-- fragment --><h1>Build-gated development hooks</h1>
+<p><span class="tt">FLOW_UI_DEV_MODE</span> and the development memory-level macros expose additional inspection/recording hooks in the header. They are development infrastructure, not the application API described here. Their existing build gates and signatures are unchanged.</p>
+<p>See: <a href="include/FlowUi/Public/managers/PopupManager.hpp">Owning header</a>. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

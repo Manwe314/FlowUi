@@ -1,8 +1,10 @@
+#include "../TestHarness.hpp"
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
 #include "HeadlessVulkanFixture.hpp"
 #include "devSystems/devTooling/bake/DevChangesRuntime.hpp"
+#include "devSystems/devTooling/bake/DevBakePipeline.hpp"
 #include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
 #include "FlowUi/Public/managers/ActionManager.hpp"
 #include "FlowUi/Public/managers/ThemeManager.hpp"
@@ -101,39 +103,39 @@ void verify_theme_decisions(Fixture& fixture) {
 	auto edit = fixture.prepare(row, DevChangesRuntimeAction::ApplySaved);
 	assert(edit.available && edit.forward.front().preserve_baked_assignment);
 	fixture.commit(edit.forward);
-	assert(fixture.themes.getTheme<Theme>("dark").radius == 9);
-	assert(fixture.themes.getTheme<Theme>("light").radius == 8);
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().radius == 9);
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("light")).get().radius == 8);
 	edit = fixture.prepare(row, DevChangesRuntimeAction::DiscardLive);
 	assert(edit.available && edit.forward.front().kind == DevOverrideCommandKind::ClearThemeField);
 	fixture.commit(edit.forward);
-	assert(fixture.themes.getTheme<Theme>("dark").radius == 4);
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().radius == 4);
 	assert(fixture.engine.themeBakeRecords().empty());
 	assert(fixture.engine.themeBakeTombstones().empty());
 	fixture.commit(edit.inverse);
-	assert(fixture.themes.getTheme<Theme>("dark").radius == 9);
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().radius == 9);
 	edit = fixture.prepare(row, DevChangesRuntimeAction::ResetAuthored);
 	assert(edit.available);
 	fixture.commit(edit.forward);
-	assert(fixture.themes.getTheme<Theme>("dark").radius == 4);
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().radius == 4);
 	fixture.commit(edit.inverse);
-	assert(fixture.themes.getTheme<Theme>("dark").radius == 9);
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().radius == 9);
 	fixture.commit(fixture.prepare(row, DevChangesRuntimeAction::DiscardLive).forward);
 	const auto broad = fixture.row("radius", "12", "*");
 	edit = fixture.prepare(broad, DevChangesRuntimeAction::ApplySaved);
 	assert(edit.available);
 	fixture.commit(edit.forward);
-	assert(fixture.themes.getTheme<Theme>("dark").radius == 12);
-	assert(fixture.themes.getTheme<Theme>("light").radius == 12);
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().radius == 12);
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("light")).get().radius == 12);
 	assert(!fixture.prepare(broad, DevChangesRuntimeAction::ResetAuthored).available);
 	edit = fixture.prepare(broad, DevChangesRuntimeAction::DiscardLive);
 	assert(edit.available);
 	fixture.commit(edit.forward);
-	assert(fixture.themes.getTheme<Theme>("dark").radius == 4);
-	assert(fixture.themes.getTheme<Theme>("light").radius == 8);
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().radius == 4);
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("light")).get().radius == 8);
 	assert(fixture.engine.themeBakeTombstones().empty());
 	fixture.commit(edit.inverse);
-	assert(fixture.themes.getTheme<Theme>("dark").radius == 12);
-	assert(fixture.themes.getTheme<Theme>("light").radius == 12);
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().radius == 12);
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("light")).get().radius == 12);
 }
 
 void verify_stable_actions_and_resource_diagnostics(Fixture& fixture) {
@@ -144,7 +146,7 @@ void verify_stable_actions_and_resource_diagnostics(Fixture& fixture) {
 		const auto edit = fixture.prepare(row, DevChangesRuntimeAction::ApplySaved);
 		assert(edit.available);
 		fixture.commit(edit.forward);
-		const auto reference = fixture.themes.getTheme<Theme>("dark").action.stableReference();
+		const auto reference = ::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().action.stableReference();
 		assert(reference.kind == kind && reference.id == UINT64_MAX);
 		fixture.commit(edit.inverse);
 	}
@@ -152,7 +154,7 @@ void verify_stable_actions_and_resource_diagnostics(Fixture& fixture) {
 									   DevChangesRuntimeAction::ApplySaved);
 	assert(clear.available);
 	fixture.commit(clear.forward);
-	assert(!fixture.themes.getTheme<Theme>("dark").action);
+	assert(!::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().action);
 	for (const auto malformed :
 		 {"{\"kind\":3,\"id\":1}", "{\"kind\":1,\"id\":0}",
 		  "{\"kind\":1,\"id\":18446744073709551616}", "{\"kind\":1,\"id\":1,\"id\":2}",
@@ -175,7 +177,7 @@ void verify_stable_actions_and_resource_diagnostics(Fixture& fixture) {
 	auto copied_edit = texture_edit;
 	texture_edit = {};
 	fixture.commit(copied_edit.forward);
-	const auto applied_texture = fixture.themes.getTheme<Theme>("dark").texture;
+	const auto applied_texture = ::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().texture;
 	assert(applied_texture.sourceKey == "saved.owned.\"key" &&
 		   applied_texture.fitMode == TextureFitMode::Cover && applied_texture.tintEnabled);
 	fixture.commit(copied_edit.inverse);
@@ -222,7 +224,7 @@ void verify_stable_actions_and_resource_diagnostics(Fixture& fixture) {
 	const auto retained_edit = fixture.prepare(texture_row, DevChangesRuntimeAction::ApplyProposal);
 	assert(retained_edit.available);
 	fixture.commit(retained_edit.forward);
-	assert(fixture.themes.getTheme<Theme>("dark").texture.sourceKey == "live.fixture");
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().texture.sourceKey == "live.fixture");
 	auto invalid_texture = stable_texture;
 	invalid_texture.fitMode = static_cast<TextureFitMode>(99);
 	assert(fixture.engine.copyValue(invalid_texture, retained_texture.value) ==
@@ -315,16 +317,16 @@ void verify_resource_baseline_lifetimes(Fixture& fixture) {
 		fixture.row("texture", texture_json("named.saved.resource.key.with.owned.heap.storage"));
 	fixture.commit(fixture.prepare(named, DevChangesRuntimeAction::ApplySaved).forward);
 	fixture.commit(fixture.prepare(broad, DevChangesRuntimeAction::DiscardLive).forward);
-	assert(fixture.themes.getTheme<Theme>("cloned-resource").texture.sourceKey == broad_key);
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("cloned-resource")).get().texture.sourceKey == broad_key);
 	auto undo_named = fixture.prepare(named, DevChangesRuntimeAction::DiscardLive);
 	fixture.commit(undo_named.forward);
-	assert(fixture.themes.getTheme<Theme>("dark").texture.sourceKey == "owned.fixture");
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().texture.sourceKey == "owned.fixture");
 	fixture.commit(undo_named.inverse);
-	assert(fixture.themes.getTheme<Theme>("dark").texture.sourceKey ==
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().texture.sourceKey ==
 		   "named.saved.resource.key.with.owned.heap.storage");
 	undo_named = {};
 	fixture.commit(fixture.prepare(named, DevChangesRuntimeAction::DiscardLive).forward);
-	assert(fixture.themes.getTheme<Theme>("dark").texture.sourceKey == "owned.fixture");
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().texture.sourceKey == "owned.fixture");
 }
 
 void verify_resource_budget_failure_acknowledgement(Fixture& fixture) {
@@ -337,7 +339,7 @@ void verify_resource_budget_failure_acknowledgement(Fixture& fixture) {
 	// Metadata statistics include heap-owned registries; exceed the entire pool budget so the
 	// real string allocation must fail independently of those accounting details.
 	const std::string unavailable_key(static_cast<std::size_t>(rejection_budget + 1), 'r');
-	const auto original_key = std::string(fixture.themes.getTheme<Theme>("dark").texture.sourceKey);
+	const auto original_key = std::string(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().texture.sourceKey);
 	const auto row = fixture.row(
 		"texture", "{\"domain\":" + std::to_string(static_cast<unsigned>(ResourceDomain::Icon)) +
 					   ",\"key\":\"" + unavailable_key +
@@ -352,7 +354,7 @@ void verify_resource_budget_failure_acknowledgement(Fixture& fixture) {
 		command.kind = kind;
 		fixture.reject(std::move(command), DevCommandStatus::ValueCopyFailed);
 		assert(fixture.engine.commandResults().front().transaction == fixture.transaction);
-		assert(fixture.themes.getTheme<Theme>("dark").texture.sourceKey == original_key);
+		assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().texture.sourceKey == original_key);
 	}
 	const auto rejected_transaction = ++fixture.transaction;
 	assert(fixture.engine.submit({.transaction = rejected_transaction, .commands = draft.forward}));
@@ -367,9 +369,80 @@ void verify_resource_budget_failure_acknowledgement(Fixture& fixture) {
 		   !fixture.engine.commandResults()[0].applied);
 	assert(fixture.engine.commandResults()[1].transaction == valid_transaction &&
 		   fixture.engine.commandResults()[1].applied);
-	assert(fixture.themes.getTheme<Theme>("dark").radius == 7);
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().radius == 7);
 	fixture.storage.setBudget(statistics.cpuSoftBudgetBytes, statistics.gpuSoftBudgetBytes);
 }
+std::size_t assignmentAttemptCount = 0;
+bool rejectEveryAssignment = false;
+struct AssignmentFailure {};
+
+void verify_partial_payload_assignment(Fixture& fixture) {
+	const auto* theme = fixture.schema->findTheme(detail::typeHash<Theme>());
+	assert(theme);
+	const auto fields = fixture.schema->fieldsOf(theme->themeType);
+	const auto radius = std::ranges::find_if(fields, [&](const auto& field) {
+		return fixture.schema->string(field.name) == "radius";
+	});
+	assert(radius != fields.end());
+	auto& mutableSchema = const_cast<DevSchemaGeneration&>(*fixture.schema);
+	const auto* originalOperations = mutableSchema.fieldOperations[radius->operations];
+	auto failingOperations = *originalOperations;
+	failingOperations.assignMemberFromCopy = [](void* owner, const void* source) noexcept {
+		++assignmentAttemptCount;
+		try {
+			const float replacement = *static_cast<const float*>(source);
+			static_cast<Theme*>(owner)->radius = replacement;
+			if (rejectEveryAssignment || replacement == 11)
+				throw AssignmentFailure{};
+			return DevValueOperationStatus::Success;
+		} catch (...) {
+			return DevValueOperationStatus::Failed;
+		}
+	};
+	mutableSchema.fieldOperations[radius->operations] = &failingOperations;
+	const auto first = fixture.prepare(fixture.row("radius", "9"), DevChangesRuntimeAction::ApplySaved);
+	const auto second = fixture.prepare(fixture.row("radius", "11"), DevChangesRuntimeAction::ApplySaved);
+	assert(first.available && second.available);
+	std::vector<DevOverrideCommand> commands = first.forward;
+	commands.insert(commands.end(), second.forward.begin(), second.forward.end());
+	assert(fixture.engine.submit({.transaction = ++fixture.transaction, .commands = std::move(commands)}));
+	fixture.engine.commitAtSafePoint(fixture.themes);
+	const auto result = fixture.engine.commandResults().front();
+	assert(!result.applied && result.status == DevCommandStatus::ValueCopyFailed);
+	assert(result.command == 1 && result.completedCommandCount == 1 && result.attemptedCommandCount == 2);
+	assert(result.mayHavePartialEffects);
+	assert(::FlowUi::test::requireValue(fixture.themes.getTheme<Theme>("dark")).get().radius == 11);
+	const auto attemptsAfterFailure = assignmentAttemptCount;
+	fixture.engine.commitAtSafePoint(fixture.themes);
+	assert(assignmentAttemptCount == attemptsAfterFailure);
+	assert(std::ranges::any_of(fixture.engine.themeBakeRecords(), [](const auto& record) {
+		return record.assignmentFailed;
+	}));
+	DevBakePipeline pipeline(fixture.registry, fixture.engine);
+	const auto status = pipeline.queryStatus();
+	assert(std::ranges::any_of(status.bakeDiagnostics, [](const auto& diagnostic) {
+		return diagnostic.code == DevBakeDiagnosticCode::AssignmentFailed;
+	}));
+
+	// An explicit replacement acknowledges the uncertainty and permits another attempt.
+	fixture.commit(fixture.prepare(fixture.row("radius", "13"), DevChangesRuntimeAction::ApplySaved).forward);
+	rejectEveryAssignment = true;
+	DevOverrideCommand clear = first.forward.front();
+	clear.kind = DevOverrideCommandKind::ClearThemeField;
+	clear.value.reset();
+	assert(fixture.engine.submit({.transaction = ++fixture.transaction, .commands = {std::move(clear)}}));
+	fixture.engine.commitAtSafePoint(fixture.themes);
+	const auto clearResult = fixture.engine.commandResults().front();
+	assert(!clearResult.applied && clearResult.completedCommandCount == 0 &&
+		clearResult.attemptedCommandCount == 1 && clearResult.mayHavePartialEffects);
+	assert(std::ranges::any_of(fixture.engine.themeBakeRecords(), [](const auto& record) {
+		return record.assignmentFailed;
+	}));
+	rejectEveryAssignment = false;
+	mutableSchema.fieldOperations[radius->operations] = originalOperations;
+	fixture.commit(fixture.prepare(fixture.row("radius", "17"), DevChangesRuntimeAction::ApplySaved).forward);
+}
+
 } // namespace changes_runtime_test
 
 int main() {
@@ -381,6 +454,7 @@ int main() {
 		changes_runtime_test::verify_owned_resource_copies(fixture);
 		changes_runtime_test::verify_resource_baseline_lifetimes(fixture);
 		changes_runtime_test::verify_resource_budget_failure_acknowledgement(fixture);
+		changes_runtime_test::verify_partial_payload_assignment(fixture);
 		std::cout << "Theme discard/reset/undo, stable action decoding, and resource ownership "
 					 "diagnostics passed\n";
 		return 0;

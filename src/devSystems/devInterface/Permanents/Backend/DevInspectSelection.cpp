@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInspectSelection.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FlowUi/Public/App.hpp"
@@ -17,8 +18,8 @@ void assign_selection(DevInterfaceState& state, uint64_t node_kind, uint64_t nod
 	state.selectedElementId = node_kind == 1u ? FlowElementID{.value = node_key} : FlowElementID{};
 }
 
-void update_timing_target(App& app, const tooling::DevInspectTarget& target) noexcept {
-	auto& timing = app.devMonitoring().timing();
+void update_timing_target(App& app, const tooling::DevInspectTarget& target) {
+	auto& timing = FlowUi::ValueOrThrow(app.devMonitoring()).get().timing();
 	auto config = timing.config();
 	// Picking an occurrence requests instance retention. Definition filters are
 	// presentation state and must not increase recording for every occurrence.
@@ -35,7 +36,7 @@ void update_timing_target(App& app, const tooling::DevInspectTarget& target) noe
 }
 } // namespace
 
-void set_inspect_window(App& app, DevInterfaceState& state, WindowId window) noexcept {
+void set_inspect_window(App& app, DevInterfaceState& state, WindowId window) noexcept try {
 	const bool changed = state.validated_window_id != window;
 	state.selectedWindowId = window;
 	state.validated_window_id = window;
@@ -45,18 +46,20 @@ void set_inspect_window(App& app, DevInterfaceState& state, WindowId window) noe
 	state.inspect_reveal_frames = 0u;
 	state.searchQuery.clear();
 	assign_selection(state, 0u, 0u);
-	auto& controller = app.devTooling().inspect_interaction();
+	auto& controller = FlowUi::ValueOrThrow(app.devTooling()).get().inspect_interaction();
 	controller.cancel_pick();
 	controller.clear_selection();
 	state.inspect_selection_revision = controller.selection_revision();
 	update_timing_target(app, {});
 	state.lastActionMessage = window == InvalidWindowId ? "No application window available"
 														: "Inspect target window changed";
+} catch (...) {
+	app.reportError(FlowUi::detail::currentExceptionError(ErrorSite::AppAccessWindow));
 }
 
 void synchronize_inspect_window(App& app, DevInterfaceState& state, WindowId interface_window) {
 	state.interface_window_id = interface_window;
-	const auto windows = app.devWindowSnapshot();
+	const auto windows = FlowUi::ValueOrThrow(app.devWindowSnapshot());
 	const auto usable = [&](const DevWindowInfo& window) {
 		return window.id != interface_window && app.hasWindow(window.id);
 	};
@@ -73,16 +76,16 @@ void synchronize_inspect_window(App& app, DevInterfaceState& state, WindowId int
 }
 
 void apply_inspect_selection(App& app, DevInterfaceState& state, uint64_t node_kind,
-							 uint64_t node_key, bool toggle) noexcept {
+							 uint64_t node_key, bool toggle) noexcept try {
 	if (toggle && state.inspectSelectedNodeKind == node_kind &&
 		state.inspectSelectedNodeKey == node_key)
 		node_key = 0u;
 	assign_selection(state, node_kind, node_key);
-	auto& controller = app.devTooling().inspect_interaction();
+	auto& controller = FlowUi::ValueOrThrow(app.devTooling()).get().inspect_interaction();
 	tooling::DevInspectTarget target{};
 	if (node_kind == kDevInterfaceFlowNodeKind && node_key &&
 		app.hasWindow(state.selectedWindowId)) {
-		const auto& snapshot = app.ui(state.selectedWindowId).devTreeSnapshot();
+		const auto& snapshot = FlowUi::ValueOrThrow(app.ui(state.selectedWindowId)).get().devTreeSnapshot();
 		for (const auto& node : snapshot.flow.nodes) {
 			if (node.instance.value == node_key) {
 				target.window = state.selectedWindowId;
@@ -96,7 +99,7 @@ void apply_inspect_selection(App& app, DevInterfaceState& state, uint64_t node_k
 	} else if (node_kind == kDevInterfaceClayNodeKind && node_key &&
 			   app.hasWindow(state.selectedWindowId)) {
 #if FLOW_UI_DEV_CAPTURE_CLAY
-		const auto& snapshot = app.ui(state.selectedWindowId).devTreeSnapshot();
+		const auto& snapshot = FlowUi::ValueOrThrow(app.ui(state.selectedWindowId)).get().devTreeSnapshot();
 		for (uint32_t nodeIndex = 0; nodeIndex < snapshot.clay.nodes.size(); ++nodeIndex) {
 			const auto& node = snapshot.clay.nodes[nodeIndex];
 			const uint64_t key = stableNodeKey(
@@ -123,10 +126,12 @@ void apply_inspect_selection(App& app, DevInterfaceState& state, uint64_t node_k
 		controller.clear_selection();
 	update_timing_target(app, target);
 	state.inspect_selection_revision = controller.selection_revision();
+} catch (...) {
+	app.reportError(FlowUi::detail::currentExceptionError(ErrorSite::AppAccessUi));
 }
 
 void synchronize_inspect_selection(App& app, DevInterfaceState& state) {
-	auto& controller = app.devTooling().inspect_interaction();
+	auto& controller = FlowUi::ValueOrThrow(app.devTooling()).get().inspect_interaction();
 	if (state.activeTab != static_cast<uint64_t>(DevInterfaceTab::Inspect))
 		controller.cancel_pick();
 	if (state.inspect_selection_revision == controller.selection_revision())
@@ -154,7 +159,7 @@ void synchronize_inspect_selection(App& app, DevInterfaceState& state) {
 		if (state.inspectDefinitionFilter != target.definition.value)
 			state.inspectDefinitionFilter = 0u;
 		if (app.hasWindow(target.window)) {
-			const auto& snapshot = app.ui(target.window).devTreeSnapshot();
+			const auto& snapshot = FlowUi::ValueOrThrow(app.ui(target.window)).get().devTreeSnapshot();
 			const auto resolved = tooling::resolve_inspect_target(target, snapshot);
 			if (resolved.isValid() && resolved.flowNodeIndex < snapshot.flow.nodes.size()) {
 				const auto& node = snapshot.flow.nodes[resolved.flowNodeIndex];

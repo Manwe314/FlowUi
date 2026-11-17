@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,9 +107,6 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Configures FlowUi developer tooling and capture behavior.  
- <a href="#details">More...</a></p>
-
 <p><code>#include &lt;<a class="el" href="DevToolsConfig_8hpp_source.html">DevToolsConfig.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
@@ -119,19 +116,13 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:adfea4290f3b16a381cfdabe48bd43984" id="r_adfea4290f3b16a381cfdabe48bd43984"><td class="memItemLeft"><a id="adfea4290f3b16a381cfdabe48bd43984" name="adfea4290f3b16a381cfdabe48bd43984"></a>
 <a class="el" href="structFlowUi_1_1DevShortcutChord.html">DevShortcutChord</a>&#160;</td><td class="memItemRight"><b>panelToggleChord</b> {}</td></tr>
 <tr class="memdesc:adfea4290f3b16a381cfdabe48bd43984"><td class="mdescLeft">&#160;</td><td class="mdescRight">Keyboard chord used to toggle the developer-interface window. <br /></td></tr>
-<tr class="memitem:a1f8cc8ccd021852cf71ab170e65dbbe6" id="r_a1f8cc8ccd021852cf71ab170e65dbbe6"><td class="memItemLeft"><a id="a1f8cc8ccd021852cf71ab170e65dbbe6" name="a1f8cc8ccd021852cf71ab170e65dbbe6"></a>
-bool&#160;</td><td class="memItemRight"><b>enabled</b> = false</td></tr>
-<tr class="memdesc:a1f8cc8ccd021852cf71ab170e65dbbe6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable developer tooling at runtime. <br /></td></tr>
+<tr class="memitem:a1f8cc8ccd021852cf71ab170e65dbbe6" id="r_a1f8cc8ccd021852cf71ab170e65dbbe6"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a1f8cc8ccd021852cf71ab170e65dbbe6">enabled</a> = false</td></tr>
 <tr class="memitem:a66e26371a25c939103f8b30c648193b7" id="r_a66e26371a25c939103f8b30c648193b7"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a66e26371a25c939103f8b30c648193b7">capture_timing_on_startup</a> = false</td></tr>
-<tr class="memdesc:a66e26371a25c939103f8b30c648193b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Capture timing from the first application tick until the timing ring is full or the developer interface is opened. Requires enabled developer tooling.  <br /></td></tr>
 <tr class="memitem:a4b2b91f85e95aebce82c5aab188067b9" id="r_a4b2b91f85e95aebce82c5aab188067b9"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a4b2b91f85e95aebce82c5aab188067b9">useShortcutManagerForPanelToggle</a> = true</td></tr>
-<tr class="memdesc:a4b2b91f85e95aebce82c5aab188067b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register the developer-interface toggle chord with <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a>.  <br /></td></tr>
 <tr class="memitem:abf5116e3fd086822934666c430a56274" id="r_abf5116e3fd086822934666c430a56274"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#abf5116e3fd086822934666c430a56274">excludeInternalDevElementsFromCapture</a> = true</td></tr>
-<tr class="memdesc:abf5116e3fd086822934666c430a56274"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hide FlowUi's internal developer elements from captured UI data.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Configures FlowUi developer tooling and capture behavior. </p>
-<p>These options are only used when developer mode support is compiled in. </p>
+<div class="textblock"><p>Developer-interface startup options; require FLOW_UI_DEV_MODE. Monitoring/tooling configurations stay in <a class="el" href="namespaceFlowUi_1_1devSystems.html" title="Optional development monitoring, reporting and application extension APIs. Available when FLOW_UI_DEV...">devSystems</a>; compiled capture levels limit runtime detail. </p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a66e26371a25c939103f8b30c648193b7" name="a66e26371a25c939103f8b30c648193b7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a66e26371a25c939103f8b30c648193b7">&#9670;&#160;</a></span>capture_timing_on_startup</h2>
@@ -144,9 +135,22 @@ bool&#160;</td><td class="memItemRight"><b>enabled</b> = false</td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Capture startup timing until the ring fills or the developer interface opens; requires enabled. Preserve the snapshot for inspection without automatically opening the interface. </p>
 
-<p>Capture timing from the first application tick until the timing ring is full or the developer interface is opened. Requires enabled developer tooling. </p>
-<p>The completed startup snapshot is preserved for the first investigation; filling the ring does not automatically open the developer interface. Defaults to off. </p>
+</div>
+</div>
+<a id="a1f8cc8ccd021852cf71ab170e65dbbe6" name="a1f8cc8ccd021852cf71ab170e65dbbe6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1f8cc8ccd021852cf71ab170e65dbbe6">&#9670;&#160;</a></span>enabled</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::DevToolsConfig::enabled = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Enable the developer interface; monitoring has separate capture controls. </p>
 
 </div>
 </div>
@@ -161,9 +165,7 @@ bool&#160;</td><td class="memItemRight"><b>enabled</b> = false</td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Hide FlowUi's internal developer elements from captured UI data. </p>
-<dl class="section note"><dt>Note</dt><dd>Keeping this enabled is strongly recommended. Capturing the developer panel itself can add noisy internal elements to inspection/export data and make user-authored UI harder to reason about. </dd></dl>
+<p>Exclude internal developer elements from inspection/export captures to focus on application UI. </p>
 
 </div>
 </div>
@@ -208,9 +210,7 @@ bool&#160;</td><td class="memItemRight"><b>enabled</b> = false</td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Register the developer-interface toggle chord with <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a>. </p>
-<p>Disable this when the application wants to own panel toggling itself. </p>
+<p>Register panelToggleChord with <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a>; disable for application-controlled toggling. </p>
 
 </div>
 </div>
@@ -230,7 +230,7 @@ bool&#160;</td><td class="memItemRight"><b>enabled</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

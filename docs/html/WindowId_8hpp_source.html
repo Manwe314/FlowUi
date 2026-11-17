@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -110,15 +110,19 @@ $(function() {
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span> </div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="keyword">namespace </span>FlowUi {</div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi.html">FlowUi</a> {</div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="keyword">using </span>WindowId = uint64_t;</div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">    8</a></span><span class="keyword">using </span><a class="code hl_typedef" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> = uint64_t;</div>
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> WindowId InvalidWindowId = 0;</div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">   11</a></span><span class="keyword">inline</span> <span class="keyword">constexpr</span> <a class="code hl_typedef" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> <a class="code hl_variable" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a> = 0;</div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span></div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> WindowId MainWindowId = 1;</div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a977a82b1616e9f13b8d92e0576d9480f">   14</a></span><span class="keyword">inline</span> <span class="keyword">constexpr</span> <a class="code hl_typedef" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> <a class="code hl_variable" href="namespaceFlowUi.html#a977a82b1616e9f13b8d92e0576d9480f">MainWindowId</a> = 1;</div>
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="ttc" id="anamespaceFlowUi_html"><div class="ttname"><a href="namespaceFlowUi.html">FlowUi</a></div><div class="ttdef"><b>Definition</b> App.hpp:29</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a2213190865e0806b881be5624c2f3ef6"><div class="ttname"><a href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">FlowUi::WindowId</a></div><div class="ttdeci">uint64_t WindowId</div><div class="ttdoc">Stable identity of a native FlowUi window.</div><div class="ttdef"><b>Definition</b> WindowId.hpp:8</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a65e7297ae6a14e81eec9af6a4fa9912c"><div class="ttname"><a href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">FlowUi::InvalidWindowId</a></div><div class="ttdeci">constexpr WindowId InvalidWindowId</div><div class="ttdoc">Invalid window identity and root attribution for app-shared storage.</div><div class="ttdef"><b>Definition</b> WindowId.hpp:11</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a977a82b1616e9f13b8d92e0576d9480f"><div class="ttname"><a href="namespaceFlowUi.html#a977a82b1616e9f13b8d92e0576d9480f">FlowUi::MainWindowId</a></div><div class="ttdeci">constexpr WindowId MainWindowId</div><div class="ttdoc">Identity of the initial semantic main application window.</div><div class="ttdef"><b>Definition</b> WindowId.hpp:14</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,23 +106,36 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevSchemaLimits Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Hard limits for copied reflection metadata; registration fails when a limit is exhausted.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevConfig_8hpp_source.html">DevConfig.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a97c0f22412cfd8df0330bba8f84bc78e" id="r_a97c0f22412cfd8df0330bba8f84bc78e"><td class="memItemLeft"><a id="a97c0f22412cfd8df0330bba8f84bc78e" name="a97c0f22412cfd8df0330bba8f84bc78e"></a>
 std::uint16_t&#160;</td><td class="memItemRight"><b>maxDepth</b> = 16</td></tr>
+<tr class="memdesc:a97c0f22412cfd8df0330bba8f84bc78e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum reflected field nesting depth. <br /></td></tr>
 <tr class="memitem:a97aec692152a66a7f08b36cbb8e64994" id="r_a97aec692152a66a7f08b36cbb8e64994"><td class="memItemLeft"><a id="a97aec692152a66a7f08b36cbb8e64994" name="a97aec692152a66a7f08b36cbb8e64994"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>maxTypes</b> = 2048</td></tr>
+<tr class="memdesc:a97aec692152a66a7f08b36cbb8e64994"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum registered reflected types. <br /></td></tr>
 <tr class="memitem:afacd6861a16888e87d946dc6b3d838d2" id="r_afacd6861a16888e87d946dc6b3d838d2"><td class="memItemLeft"><a id="afacd6861a16888e87d946dc6b3d838d2" name="afacd6861a16888e87d946dc6b3d838d2"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>maxFields</b> = 16384</td></tr>
+<tr class="memdesc:afacd6861a16888e87d946dc6b3d838d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum registered fields across all types. <br /></td></tr>
 <tr class="memitem:a31d1bb74e6914447fb6b642398eaac67" id="r_a31d1bb74e6914447fb6b642398eaac67"><td class="memItemLeft"><a id="a31d1bb74e6914447fb6b642398eaac67" name="a31d1bb74e6914447fb6b642398eaac67"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>maxEnumValues</b> = 8192</td></tr>
+<tr class="memdesc:a31d1bb74e6914447fb6b642398eaac67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum copied enum choices. <br /></td></tr>
 <tr class="memitem:abf884b920e7978714949164e98a0cc73" id="r_abf884b920e7978714949164e98a0cc73"><td class="memItemLeft"><a id="abf884b920e7978714949164e98a0cc73" name="abf884b920e7978714949164e98a0cc73"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>maxConstraints</b> = 16384</td></tr>
+<tr class="memdesc:abf884b920e7978714949164e98a0cc73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum copied field constraints. <br /></td></tr>
 <tr class="memitem:af4cba93dab89b566efb4c40b8f72f373" id="r_af4cba93dab89b566efb4c40b8f72f373"><td class="memItemLeft"><a id="af4cba93dab89b566efb4c40b8f72f373" name="af4cba93dab89b566efb4c40b8f72f373"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>maxStringBytes</b> = 2u * 1024u * 1024u</td></tr>
+<tr class="memdesc:af4cba93dab89b566efb4c40b8f72f373"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum copied metadata text, in bytes. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Hard limits for copied reflection metadata; registration fails when a limit is exhausted. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/<a class="el" href="DevConfig_8hpp_source.html">DevConfig.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -138,7 +151,7 @@ std::uint32_t&#160;</td><td class="memItemRight"><b>maxStringBytes</b> = 2u * 10
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaLimits.html">DevSchemaLimits</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaLimits.html">DevSchemaLimits</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

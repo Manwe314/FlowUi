@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,16 +106,63 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::PopupFrame Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="PopupTypes_8hpp_source.html">PopupTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a042e43ae08a397d47fe4101e9a40ffa4" id="r_a042e43ae08a397d47fe4101e9a40ffa4"><td class="memItemLeft"><a id="a042e43ae08a397d47fe4101e9a40ffa4" name="a042e43ae08a397d47fe4101e9a40ffa4"></a>
-bool&#160;</td><td class="memItemRight"><b>visible</b> = false</td></tr>
-<tr class="memitem:a8c4f380e89ef353a5f40e02ecd61e8f7" id="r_a8c4f380e89ef353a5f40e02ecd61e8f7"><td class="memItemLeft"><a id="a8c4f380e89ef353a5f40e02ecd61e8f7" name="a8c4f380e89ef353a5f40e02ecd61e8f7"></a>
-bool&#160;</td><td class="memItemRight"><b>measureOnly</b> = false</td></tr>
-<tr class="memitem:a701f57c2481ceabd6c0fed48979437a8" id="r_a701f57c2481ceabd6c0fed48979437a8"><td class="memItemLeft"><a id="a701f57c2481ceabd6c0fed48979437a8" name="a701f57c2481ceabd6c0fed48979437a8"></a>
-Clay_FloatingElementConfig&#160;</td><td class="memItemRight"><b>floating</b> {}</td></tr>
+<tr class="memitem:a042e43ae08a397d47fe4101e9a40ffa4" id="r_a042e43ae08a397d47fe4101e9a40ffa4"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a042e43ae08a397d47fe4101e9a40ffa4">visible</a> = false</td></tr>
+<tr class="memitem:a8c4f380e89ef353a5f40e02ecd61e8f7" id="r_a8c4f380e89ef353a5f40e02ecd61e8f7"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a8c4f380e89ef353a5f40e02ecd61e8f7">measureOnly</a> = false</td></tr>
+<tr class="memitem:a701f57c2481ceabd6c0fed48979437a8" id="r_a701f57c2481ceabd6c0fed48979437a8"><td class="memItemLeft">Clay_FloatingElementConfig&#160;</td><td class="memItemRight"><a class="el" href="#a701f57c2481ceabd6c0fed48979437a8">floating</a> {}</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Resolved popup submission. Build content for visible or measureOnly frames using floating; otherwise emit no popup root. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a701f57c2481ceabd6c0fed48979437a8" name="a701f57c2481ceabd6c0fed48979437a8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a701f57c2481ceabd6c0fed48979437a8">&#9670;&#160;</a></span>floating</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Clay_FloatingElementConfig FlowUi::PopupFrame::floating {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Resolved Clay floating configuration for the popup root. </p>
+
+</div>
+</div>
+<a id="a8c4f380e89ef353a5f40e02ecd61e8f7" name="a8c4f380e89ef353a5f40e02ecd61e8f7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8c4f380e89ef353a5f40e02ecd61e8f7">&#9670;&#160;</a></span>measureOnly</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::PopupFrame::measureOnly = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether content must be emitted for hidden size measurement. </p>
+
+</div>
+</div>
+<a id="a042e43ae08a397d47fe4101e9a40ffa4" name="a042e43ae08a397d47fe4101e9a40ffa4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a042e43ae08a397d47fe4101e9a40ffa4">&#9670;&#160;</a></span>visible</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::PopupFrame::visible = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether the popup is visible in this submission. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="PopupTypes_8hpp_source.html">PopupTypes.hpp</a></li>
 </ul>
@@ -132,7 +179,7 @@ Clay_FloatingElementConfig&#160;</td><td class="memItemRight"><b>floating</b> {}
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1PopupFrame.html">PopupFrame</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1PopupFrame.html">PopupFrame</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

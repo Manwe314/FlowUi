@@ -21,7 +21,8 @@ static_assert(!FlowUi::keySlot(static_cast<FlowUi::Key>(0xffff)));
 static_assert(FlowUi::IsInputTranslatorPack<FlowUi::InputTranslatorPack<>>::value);
 
 int main() {
-	FlowUi::InputSink sink(1);
+	FlowUi::InputSink sink;
+	if (!sink.initialize(1)) return 1;
 	if (!sink.key({.key = FlowUi::Key::A, .pressed = true}))
 		return 1;
 	const auto overflow = sink.key({.key = FlowUi::Key::A, .pressed = false});

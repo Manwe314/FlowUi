@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,6 +106,8 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevErrorReportingStatus Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevErrorReporting_8hpp_source.html">DevErrorReporting.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
@@ -113,43 +115,223 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a18a2453421a1c43a952dbf4a4885a707" id="r_a18a2453421a1c43a952dbf4a4885a707"><td class="memItemLeft"><a id="a18a2453421a1c43a952dbf4a4885a707" name="a18a2453421a1c43a952dbf4a4885a707"></a>
-struct <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorReportingStatus_1_1Overhead.html">FlowUi::devSystems::DevErrorReportingStatus::Overhead</a>&#160;</td><td class="memItemRight"><b>overhead</b></td></tr>
-<tr class="memitem:a1e625688dc0dbc92f9d36aa525b376ca" id="r_a1e625688dc0dbc92f9d36aa525b376ca"><td class="memItemLeft"><a id="a1e625688dc0dbc92f9d36aa525b376ca" name="a1e625688dc0dbc92f9d36aa525b376ca"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>consumedRecords</b> = 0u</td></tr>
-<tr class="memitem:a2bae144365c306c8082294c8c90eda7e" id="r_a2bae144365c306c8082294c8c90eda7e"><td class="memItemLeft"><a id="a2bae144365c306c8082294c8c90eda7e" name="a2bae144365c306c8082294c8c90eda7e"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>consumedBreadcrumbs</b> = 0u</td></tr>
-<tr class="memitem:ac668bcf6d8aa40d045f011d49aeef363" id="r_ac668bcf6d8aa40d045f011d49aeef363"><td class="memItemLeft"><a id="ac668bcf6d8aa40d045f011d49aeef363" name="ac668bcf6d8aa40d045f011d49aeef363"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>consumedSnapshots</b> = 0u</td></tr>
-<tr class="memitem:ab6af9803d4ed553a9890d89e8e13f393" id="r_ab6af9803d4ed553a9890d89e8e13f393"><td class="memItemLeft"><a id="ab6af9803d4ed553a9890d89e8e13f393" name="ab6af9803d4ed553a9890d89e8e13f393"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>evictedOccurrences</b> = 0u</td></tr>
-<tr class="memitem:a0bb4663931bc50481f1f8bc350fc52e2" id="r_a0bb4663931bc50481f1f8bc350fc52e2"><td class="memItemLeft"><a id="a0bb4663931bc50481f1f8bc350fc52e2" name="a0bb4663931bc50481f1f8bc350fc52e2"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>consumeFailures</b> = 0u</td></tr>
-<tr class="memitem:af156d472ca0ffb8b8814194adda403a7" id="r_af156d472ca0ffb8b8814194adda403a7"><td class="memItemLeft"><a id="af156d472ca0ffb8b8814194adda403a7" name="af156d472ca0ffb8b8814194adda403a7"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>truncatedSteps</b> = 0u</td></tr>
-<tr class="memitem:a3ea2d4e6c749ca71676d6de8f84b743b" id="r_a3ea2d4e6c749ca71676d6de8f84b743b"><td class="memItemLeft"><a id="a3ea2d4e6c749ca71676d6de8f84b743b" name="a3ea2d4e6c749ca71676d6de8f84b743b"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>truncatedBreadcrumbRanges</b> = 0u</td></tr>
-<tr class="memitem:a27f2ce5ba7fa07895465bf762e8594dc" id="r_a27f2ce5ba7fa07895465bf762e8594dc"><td class="memItemLeft"><a id="a27f2ce5ba7fa07895465bf762e8594dc" name="a27f2ce5ba7fa07895465bf762e8594dc"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>triggeredCaptures</b> = 0u</td></tr>
-<tr class="memitem:aad2f8fe9e11fcb0fec201d36ef230c05" id="r_aad2f8fe9e11fcb0fec201d36ef230c05"><td class="memItemLeft"><a id="aad2f8fe9e11fcb0fec201d36ef230c05" name="aad2f8fe9e11fcb0fec201d36ef230c05"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>evictedCaptures</b> = 0u</td></tr>
-<tr class="memitem:aee2b3d04e6157c2d0b4c787d339e5236" id="r_aee2b3d04e6157c2d0b4c787d339e5236"><td class="memItemLeft"><a id="aee2b3d04e6157c2d0b4c787d339e5236" name="aee2b3d04e6157c2d0b4c787d339e5236"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>timingCorrelationEvictions</b> = 0u</td></tr>
-<tr class="memitem:a45da83d377eb8888cf57404aecb744e6" id="r_a45da83d377eb8888cf57404aecb744e6"><td class="memItemLeft"><a id="a45da83d377eb8888cf57404aecb744e6" name="a45da83d377eb8888cf57404aecb744e6"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>memoryCorrelationEvictions</b> = 0u</td></tr>
-<tr class="memitem:aecbac9194f74c3d6e33cb235b01f116d" id="r_aecbac9194f74c3d6e33cb235b01f116d"><td class="memItemLeft"><a id="aecbac9194f74c3d6e33cb235b01f116d" name="aecbac9194f74c3d6e33cb235b01f116d"></a>
-AppTickId&#160;</td><td class="memItemRight"><b>lastConsumedAppTick</b> = 0u</td></tr>
-<tr class="memitem:ad8945350ab15dbb6a4af3132368d2bef" id="r_ad8945350ab15dbb6a4af3132368d2bef"><td class="memItemLeft"><a id="ad8945350ab15dbb6a4af3132368d2bef" name="ad8945350ab15dbb6a4af3132368d2bef"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorQualitySnapshot.html">DevErrorQualitySnapshot</a>&#160;</td><td class="memItemRight"><b>quality</b> {}</td></tr>
-<tr class="memitem:ac3b4bb35ece2889c2accf28c7ded3721" id="r_ac3b4bb35ece2889c2accf28c7ded3721"><td class="memItemLeft"><a id="ac3b4bb35ece2889c2accf28c7ded3721" name="ac3b4bb35ece2889c2accf28c7ded3721"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>retainedOccurrences</b> = 0u</td></tr>
-<tr class="memitem:a5ab74a0b6819d4c096a0a0f0db9016d9" id="r_a5ab74a0b6819d4c096a0a0f0db9016d9"><td class="memItemLeft"><a id="a5ab74a0b6819d4c096a0a0f0db9016d9" name="a5ab74a0b6819d4c096a0a0f0db9016d9"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>pendingOccurrences</b> = 0</td></tr>
-<tr class="memitem:a5d89224d073e4dfca870701e605127a0" id="r_a5d89224d073e4dfca870701e605127a0"><td class="memItemLeft"><a id="a5d89224d073e4dfca870701e605127a0" name="a5d89224d073e4dfca870701e605127a0"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>retainedBytes</b> = 0u</td></tr>
+<tr class="memitem:a18a2453421a1c43a952dbf4a4885a707" id="r_a18a2453421a1c43a952dbf4a4885a707"><td class="memItemLeft">struct <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorReportingStatus_1_1Overhead.html">FlowUi::devSystems::DevErrorReportingStatus::Overhead</a>&#160;</td><td class="memItemRight"><a class="el" href="#a18a2453421a1c43a952dbf4a4885a707">overhead</a></td></tr>
+<tr class="memitem:a1e625688dc0dbc92f9d36aa525b376ca" id="r_a1e625688dc0dbc92f9d36aa525b376ca"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a1e625688dc0dbc92f9d36aa525b376ca">consumedRecords</a> = 0u</td></tr>
+<tr class="memitem:a2bae144365c306c8082294c8c90eda7e" id="r_a2bae144365c306c8082294c8c90eda7e"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a2bae144365c306c8082294c8c90eda7e">consumedBreadcrumbs</a> = 0u</td></tr>
+<tr class="memitem:ac668bcf6d8aa40d045f011d49aeef363" id="r_ac668bcf6d8aa40d045f011d49aeef363"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ac668bcf6d8aa40d045f011d49aeef363">consumedSnapshots</a> = 0u</td></tr>
+<tr class="memitem:ab6af9803d4ed553a9890d89e8e13f393" id="r_ab6af9803d4ed553a9890d89e8e13f393"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ab6af9803d4ed553a9890d89e8e13f393">evictedOccurrences</a> = 0u</td></tr>
+<tr class="memitem:a0bb4663931bc50481f1f8bc350fc52e2" id="r_a0bb4663931bc50481f1f8bc350fc52e2"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a0bb4663931bc50481f1f8bc350fc52e2">consumeFailures</a> = 0u</td></tr>
+<tr class="memitem:af156d472ca0ffb8b8814194adda403a7" id="r_af156d472ca0ffb8b8814194adda403a7"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#af156d472ca0ffb8b8814194adda403a7">truncatedSteps</a> = 0u</td></tr>
+<tr class="memitem:a3ea2d4e6c749ca71676d6de8f84b743b" id="r_a3ea2d4e6c749ca71676d6de8f84b743b"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a3ea2d4e6c749ca71676d6de8f84b743b">truncatedBreadcrumbRanges</a> = 0u</td></tr>
+<tr class="memitem:a27f2ce5ba7fa07895465bf762e8594dc" id="r_a27f2ce5ba7fa07895465bf762e8594dc"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a27f2ce5ba7fa07895465bf762e8594dc">triggeredCaptures</a> = 0u</td></tr>
+<tr class="memitem:aad2f8fe9e11fcb0fec201d36ef230c05" id="r_aad2f8fe9e11fcb0fec201d36ef230c05"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#aad2f8fe9e11fcb0fec201d36ef230c05">evictedCaptures</a> = 0u</td></tr>
+<tr class="memitem:aee2b3d04e6157c2d0b4c787d339e5236" id="r_aee2b3d04e6157c2d0b4c787d339e5236"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#aee2b3d04e6157c2d0b4c787d339e5236">timingCorrelationEvictions</a> = 0u</td></tr>
+<tr class="memitem:a45da83d377eb8888cf57404aecb744e6" id="r_a45da83d377eb8888cf57404aecb744e6"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a45da83d377eb8888cf57404aecb744e6">memoryCorrelationEvictions</a> = 0u</td></tr>
+<tr class="memitem:aecbac9194f74c3d6e33cb235b01f116d" id="r_aecbac9194f74c3d6e33cb235b01f116d"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a>&#160;</td><td class="memItemRight"><a class="el" href="#aecbac9194f74c3d6e33cb235b01f116d">lastConsumedAppTick</a> = 0u</td></tr>
+<tr class="memitem:ad8945350ab15dbb6a4af3132368d2bef" id="r_ad8945350ab15dbb6a4af3132368d2bef"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorQualitySnapshot.html">DevErrorQualitySnapshot</a>&#160;</td><td class="memItemRight"><a class="el" href="#ad8945350ab15dbb6a4af3132368d2bef">quality</a> {}</td></tr>
+<tr class="memitem:ac3b4bb35ece2889c2accf28c7ded3721" id="r_ac3b4bb35ece2889c2accf28c7ded3721"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#ac3b4bb35ece2889c2accf28c7ded3721">retainedOccurrences</a> = 0u</td></tr>
+<tr class="memitem:a5ab74a0b6819d4c096a0a0f0db9016d9" id="r_a5ab74a0b6819d4c096a0a0f0db9016d9"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a5ab74a0b6819d4c096a0a0f0db9016d9">pendingOccurrences</a> = 0</td></tr>
+<tr class="memitem:a5d89224d073e4dfca870701e605127a0" id="r_a5d89224d073e4dfca870701e605127a0"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a5d89224d073e4dfca870701e605127a0">retainedBytes</a> = 0u</td></tr>
 <tr class="memitem:ab2f07542905538dd9ca05dae8e4ec53a" id="r_ab2f07542905538dd9ca05dae8e4ec53a"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ab2f07542905538dd9ca05dae8e4ec53a">revision</a> = 0u</td></tr>
 </table>
-<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Retention, ingestion, correlation and instrumentation state of the diagnostic consumer. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a2bae144365c306c8082294c8c90eda7e" name="a2bae144365c306c8082294c8c90eda7e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2bae144365c306c8082294c8c90eda7e">&#9670;&#160;</a></span>consumedBreadcrumbs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorReportingStatus::consumedBreadcrumbs = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of consumed breadcrumbs. </p>
+
+</div>
+</div>
+<a id="a1e625688dc0dbc92f9d36aa525b376ca" name="a1e625688dc0dbc92f9d36aa525b376ca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1e625688dc0dbc92f9d36aa525b376ca">&#9670;&#160;</a></span>consumedRecords</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorReportingStatus::consumedRecords = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of consumed records. </p>
+
+</div>
+</div>
+<a id="ac668bcf6d8aa40d045f011d49aeef363" name="ac668bcf6d8aa40d045f011d49aeef363"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac668bcf6d8aa40d045f011d49aeef363">&#9670;&#160;</a></span>consumedSnapshots</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorReportingStatus::consumedSnapshots = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of consumed snapshots. </p>
+
+</div>
+</div>
+<a id="a0bb4663931bc50481f1f8bc350fc52e2" name="a0bb4663931bc50481f1f8bc350fc52e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0bb4663931bc50481f1f8bc350fc52e2">&#9670;&#160;</a></span>consumeFailures</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorReportingStatus::consumeFailures = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of consume failures. </p>
+
+</div>
+</div>
+<a id="aad2f8fe9e11fcb0fec201d36ef230c05" name="aad2f8fe9e11fcb0fec201d36ef230c05"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aad2f8fe9e11fcb0fec201d36ef230c05">&#9670;&#160;</a></span>evictedCaptures</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorReportingStatus::evictedCaptures = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of evicted captures. </p>
+
+</div>
+</div>
+<a id="ab6af9803d4ed553a9890d89e8e13f393" name="ab6af9803d4ed553a9890d89e8e13f393"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6af9803d4ed553a9890d89e8e13f393">&#9670;&#160;</a></span>evictedOccurrences</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorReportingStatus::evictedOccurrences = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of evicted occurrences. </p>
+
+</div>
+</div>
+<a id="aecbac9194f74c3d6e33cb235b01f116d" name="aecbac9194f74c3d6e33cb235b01f116d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aecbac9194f74c3d6e33cb235b01f116d">&#9670;&#160;</a></span>lastConsumedAppTick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> FlowUi::devSystems::DevErrorReportingStatus::lastConsumedAppTick = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Latest application tick admitted by the reporting consumer. </p>
+
+</div>
+</div>
+<a id="a45da83d377eb8888cf57404aecb744e6" name="a45da83d377eb8888cf57404aecb744e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a45da83d377eb8888cf57404aecb744e6">&#9670;&#160;</a></span>memoryCorrelationEvictions</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorReportingStatus::memoryCorrelationEvictions = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of memory correlation evictions. </p>
+
+</div>
+</div>
+<a id="a18a2453421a1c43a952dbf4a4885a707" name="a18a2453421a1c43a952dbf4a4885a707"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a18a2453421a1c43a952dbf4a4885a707">&#9670;&#160;</a></span>overhead</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorReportingStatus_1_1Overhead.html">FlowUi::devSystems::DevErrorReportingStatus::Overhead</a> FlowUi::devSystems::DevErrorReportingStatus::overhead</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Cumulative diagnostic reporting operation counts and nanosecond costs. </p>
+
+</div>
+</div>
+<a id="a5ab74a0b6819d4c096a0a0f0db9016d9" name="a5ab74a0b6819d4c096a0a0f0db9016d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ab74a0b6819d4c096a0a0f0db9016d9">&#9670;&#160;</a></span>pendingOccurrences</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::DevErrorReportingStatus::pendingOccurrences = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of occurrences still collecting evidence. </p>
+
+</div>
+</div>
+<a id="ad8945350ab15dbb6a4af3132368d2bef" name="ad8945350ab15dbb6a4af3132368d2bef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad8945350ab15dbb6a4af3132368d2bef">&#9670;&#160;</a></span>quality</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorQualitySnapshot.html">DevErrorQualitySnapshot</a> FlowUi::devSystems::DevErrorReportingStatus::quality {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Capture quality counters associated with this reporting state. </p>
+
+</div>
+</div>
+<a id="a5d89224d073e4dfca870701e605127a0" name="a5d89224d073e4dfca870701e605127a0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5d89224d073e4dfca870701e605127a0">&#9670;&#160;</a></span>retainedBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorReportingStatus::retainedBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Estimated bytes retained by reporting storage. </p>
+
+</div>
+</div>
+<a id="ac3b4bb35ece2889c2accf28c7ded3721" name="ac3b4bb35ece2889c2accf28c7ded3721"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac3b4bb35ece2889c2accf28c7ded3721">&#9670;&#160;</a></span>retainedOccurrences</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::DevErrorReportingStatus::retainedOccurrences = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of diagnostic occurrences currently retained. </p>
+
+</div>
+</div>
 <a id="ab2f07542905538dd9ca05dae8e4ec53a" name="ab2f07542905538dd9ca05dae8e4ec53a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab2f07542905538dd9ca05dae8e4ec53a">&#9670;&#160;</a></span>revision</h2>
 
@@ -162,6 +344,66 @@ uint64_t&#160;</td><td class="memItemRight"><b>retainedBytes</b> = 0u</td></tr>
       </table>
 </div><div class="memdoc">
 <p>Changes for ingestion, late evidence, reporting configuration and retention updates. </p>
+
+</div>
+</div>
+<a id="aee2b3d04e6157c2d0b4c787d339e5236" name="aee2b3d04e6157c2d0b4c787d339e5236"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aee2b3d04e6157c2d0b4c787d339e5236">&#9670;&#160;</a></span>timingCorrelationEvictions</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorReportingStatus::timingCorrelationEvictions = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of timing correlation evictions. </p>
+
+</div>
+</div>
+<a id="a27f2ce5ba7fa07895465bf762e8594dc" name="a27f2ce5ba7fa07895465bf762e8594dc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a27f2ce5ba7fa07895465bf762e8594dc">&#9670;&#160;</a></span>triggeredCaptures</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorReportingStatus::triggeredCaptures = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of triggered captures. </p>
+
+</div>
+</div>
+<a id="a3ea2d4e6c749ca71676d6de8f84b743b" name="a3ea2d4e6c749ca71676d6de8f84b743b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ea2d4e6c749ca71676d6de8f84b743b">&#9670;&#160;</a></span>truncatedBreadcrumbRanges</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorReportingStatus::truncatedBreadcrumbRanges = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of truncated breadcrumb ranges. </p>
+
+</div>
+</div>
+<a id="af156d472ca0ffb8b8814194adda403a7" name="af156d472ca0ffb8b8814194adda403a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af156d472ca0ffb8b8814194adda403a7">&#9670;&#160;</a></span>truncatedSteps</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevErrorReportingStatus::truncatedSteps = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of truncated steps. </p>
 
 </div>
 </div>
@@ -181,7 +423,7 @@ uint64_t&#160;</td><td class="memItemRight"><b>retainedBytes</b> = 0u</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorReportingStatus.html">DevErrorReportingStatus</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorReportingStatus.html">DevErrorReportingStatus</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

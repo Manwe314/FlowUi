@@ -22,7 +22,10 @@ namespace FlowUi {
  * @brief Vulkan handles exposed to viewport render callbacks.
  *
  * ViewPortVulkanInterop provides shared application Vulkan objects for custom
- * viewport render code. 
+ * viewport render code. ViewPortManager::getVulkanInterop() returns a checked
+ * `Result<std::reference_wrapper<const ViewPortVulkanInterop>>`; after checking,
+ * result->get() names the borrowed bundle as a normal const reference. The bundle
+ * must not outlive the owning App/window, and copies still contain borrowed handles.
  * @warning The handles are owned by FlowUi's App runtime and must
  * not be destroyed by viewport callbacks.
  */

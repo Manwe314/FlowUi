@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,22 +106,111 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevErrorOccurrenceQuery Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevErrorReporting_8hpp_source.html">DevErrorReporting.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a1013071e3da907bc53e71f614338ceab" id="r_a1013071e3da907bc53e71f614338ceab"><td class="memItemLeft"><a id="a1013071e3da907bc53e71f614338ceab" name="a1013071e3da907bc53e71f614338ceab"></a>
-std::optional&lt; ErrorCode &gt;&#160;</td><td class="memItemRight"><b>code</b> {}</td></tr>
-<tr class="memitem:a2c2a0e490353ddb9604e0f2262193290" id="r_a2c2a0e490353ddb9604e0f2262193290"><td class="memItemLeft"><a id="a2c2a0e490353ddb9604e0f2262193290" name="a2c2a0e490353ddb9604e0f2262193290"></a>
-std::optional&lt; ErrorSite &gt;&#160;</td><td class="memItemRight"><b>site</b> {}</td></tr>
-<tr class="memitem:aaef19c578cdbb33be4bd4e0072d6818a" id="r_aaef19c578cdbb33be4bd4e0072d6818a"><td class="memItemLeft"><a id="aaef19c578cdbb33be4bd4e0072d6818a" name="aaef19c578cdbb33be4bd4e0072d6818a"></a>
-std::optional&lt; WindowId &gt;&#160;</td><td class="memItemRight"><b>window</b> {}</td></tr>
-<tr class="memitem:a3b9f2de86c934e8d5cd5b33e82cd62dc" id="r_a3b9f2de86c934e8d5cd5b33e82cd62dc"><td class="memItemLeft"><a id="a3b9f2de86c934e8d5cd5b33e82cd62dc" name="a3b9f2de86c934e8d5cd5b33e82cd62dc"></a>
-AppTickId&#160;</td><td class="memItemRight"><b>firstAppTick</b> = 0u</td></tr>
-<tr class="memitem:a4010575ae4159168198922ac58896c40" id="r_a4010575ae4159168198922ac58896c40"><td class="memItemLeft"><a id="a4010575ae4159168198922ac58896c40" name="a4010575ae4159168198922ac58896c40"></a>
-AppTickId&#160;</td><td class="memItemRight"><b>lastAppTick</b> = 0u</td></tr>
-<tr class="memitem:ae565cc3e273aed11204aaebaec4614b7" id="r_ae565cc3e273aed11204aaebaec4614b7"><td class="memItemLeft"><a id="ae565cc3e273aed11204aaebaec4614b7" name="ae565cc3e273aed11204aaebaec4614b7"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>maximumResults</b> = 0u</td></tr>
+<tr class="memitem:a1013071e3da907bc53e71f614338ceab" id="r_a1013071e3da907bc53e71f614338ceab"><td class="memItemLeft">std::optional&lt; <a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76">ErrorCode</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a1013071e3da907bc53e71f614338ceab">code</a> {}</td></tr>
+<tr class="memitem:a2c2a0e490353ddb9604e0f2262193290" id="r_a2c2a0e490353ddb9604e0f2262193290"><td class="memItemLeft">std::optional&lt; <a class="el" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2">ErrorSite</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a2c2a0e490353ddb9604e0f2262193290">site</a> {}</td></tr>
+<tr class="memitem:aaef19c578cdbb33be4bd4e0072d6818a" id="r_aaef19c578cdbb33be4bd4e0072d6818a"><td class="memItemLeft">std::optional&lt; <a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aaef19c578cdbb33be4bd4e0072d6818a">window</a> {}</td></tr>
+<tr class="memitem:a3b9f2de86c934e8d5cd5b33e82cd62dc" id="r_a3b9f2de86c934e8d5cd5b33e82cd62dc"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a3b9f2de86c934e8d5cd5b33e82cd62dc">firstAppTick</a> = 0u</td></tr>
+<tr class="memitem:a4010575ae4159168198922ac58896c40" id="r_a4010575ae4159168198922ac58896c40"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4010575ae4159168198922ac58896c40">lastAppTick</a> = 0u</td></tr>
+<tr class="memitem:ae565cc3e273aed11204aaebaec4614b7" id="r_ae565cc3e273aed11204aaebaec4614b7"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#ae565cc3e273aed11204aaebaec4614b7">maximumResults</a> = 0u</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Filters for retained occurrences. Empty optional fields impose no filter; zero tick limits and maximumResults mean unrestricted. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a1013071e3da907bc53e71f614338ceab" name="a1013071e3da907bc53e71f614338ceab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1013071e3da907bc53e71f614338ceab">&#9670;&#160;</a></span>code</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;<a class="el" href="namespaceFlowUi.html#a8b5266e6d5dd54d23806b9d4be835d76">ErrorCode</a>&gt; FlowUi::devSystems::DevErrorOccurrenceQuery::code {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Production error code matched by this rule, query or group. </p>
+
+</div>
+</div>
+<a id="a3b9f2de86c934e8d5cd5b33e82cd62dc" name="a3b9f2de86c934e8d5cd5b33e82cd62dc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b9f2de86c934e8d5cd5b33e82cd62dc">&#9670;&#160;</a></span>firstAppTick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> FlowUi::devSystems::DevErrorOccurrenceQuery::firstAppTick = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>First application tick included in the occurrence or query range. </p>
+
+</div>
+</div>
+<a id="a4010575ae4159168198922ac58896c40" name="a4010575ae4159168198922ac58896c40"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4010575ae4159168198922ac58896c40">&#9670;&#160;</a></span>lastAppTick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> FlowUi::devSystems::DevErrorOccurrenceQuery::lastAppTick = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Last application tick included in the occurrence or query range. </p>
+
+</div>
+</div>
+<a id="ae565cc3e273aed11204aaebaec4614b7" name="ae565cc3e273aed11204aaebaec4614b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae565cc3e273aed11204aaebaec4614b7">&#9670;&#160;</a></span>maximumResults</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::DevErrorOccurrenceQuery::maximumResults = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Maximum returned occurrences; zero applies no result limit. </p>
+
+</div>
+</div>
+<a id="a2c2a0e490353ddb9604e0f2262193290" name="a2c2a0e490353ddb9604e0f2262193290"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c2a0e490353ddb9604e0f2262193290">&#9670;&#160;</a></span>site</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;<a class="el" href="namespaceFlowUi.html#a7dfe1f1cc6456aa2441d007e1ddd26a2">ErrorSite</a>&gt; FlowUi::devSystems::DevErrorOccurrenceQuery::site {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Production error site matched by this rule, query or group. </p>
+
+</div>
+</div>
+<a id="aaef19c578cdbb33be4bd4e0072d6818a" name="aaef19c578cdbb33be4bd4e0072d6818a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaef19c578cdbb33be4bd4e0072d6818a">&#9670;&#160;</a></span>window</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;<a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a>&gt; FlowUi::devSystems::DevErrorOccurrenceQuery::window {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Window identity; InvalidWindowId means no window attribution. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevErrorReporting_8hpp_source.html">DevErrorReporting.hpp</a></li>
 </ul>
@@ -138,7 +227,7 @@ uint32_t&#160;</td><td class="memItemRight"><b>maximumResults</b> = 0u</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorOccurrenceQuery.html">DevErrorOccurrenceQuery</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorOccurrenceQuery.html">DevErrorOccurrenceQuery</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

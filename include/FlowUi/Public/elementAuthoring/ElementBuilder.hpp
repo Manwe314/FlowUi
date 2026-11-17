@@ -1,4 +1,5 @@
 #pragma once
+#include "FlowUi/Private/ApiBoundary.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -42,38 +43,58 @@ devSystems::DevTimingRecorder* ElementBuildContext<Element>::devTimingRecorder()
 #endif
 
 template <typename Element>
-FlowElementID ElementBuildContext<Element>::childID(LocalElementName name) const {
+Result<FlowElementID> ElementBuildContext<Element>::childID(LocalElementName name) const noexcept try {
 	return uiManager.resolveLocalElementID(id, ElementType::definitionId, name);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
 }
 
 template <typename Element>
-FlowElementID ElementBuildContext<Element>::childID(RuntimeElementName name) const {
+Result<FlowElementID> ElementBuildContext<Element>::childID(RuntimeElementName name) const noexcept try {
 	return uiManager.resolveLocalElementID(id, ElementType::definitionId, name);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
 }
 
 template <typename Element>
-FlowElementID ElementBuildContext<Element>::childID(IndexedElementName name) const {
+Result<FlowElementID> ElementBuildContext<Element>::childID(IndexedElementName name) const noexcept try {
 	return uiManager.resolveIndexedElementID(id, ElementType::definitionId, name);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
 }
 
 template <typename Element>
-Clay_ElementId ElementBuildContext<Element>::clayID(LocalElementName name) const {
-	return uiManager.toClayEID(childID(name));
+Result<Clay_ElementId> ElementBuildContext<Element>::clayID(LocalElementName name) const noexcept try {
+	auto child = childID(name);
+	if (!child) return unexpectedError(child.error());
+	return uiManager.toClayEID(*child);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
 }
 
 template <typename Element>
-Clay_ElementId ElementBuildContext<Element>::clayID(RuntimeElementName name) const {
-	return uiManager.toClayEID(childID(name));
+Result<Clay_ElementId> ElementBuildContext<Element>::clayID(RuntimeElementName name) const noexcept try {
+	auto child = childID(name);
+	if (!child) return unexpectedError(child.error());
+	return uiManager.toClayEID(*child);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
 }
 
 template <typename Element>
-Clay_ElementId ElementBuildContext<Element>::clayID(IndexedElementName name) const {
-	return uiManager.toClayEID(childID(name));
+Result<Clay_ElementId> ElementBuildContext<Element>::clayID(IndexedElementName name) const noexcept try {
+	auto child = childID(name);
+	if (!child) return unexpectedError(child.error());
+	return uiManager.toClayEID(*child);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
 }
 
 template <typename Element>
-FlowElementPartID ElementBuildContext<Element>::part(FlowElementPart declaration) const {
+Result<FlowElementPartID> ElementBuildContext<Element>::part(FlowElementPart declaration) const noexcept try {
 	return uiManager.resolveElementPartID(ElementType::definitionId, id, declaration);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
 }
 
 template <typename Element>
@@ -81,7 +102,7 @@ template <FlowElement PartElement>
 ElementBuilder<PartElement> ElementBuildContext<Element>::createPart(
 	const PartElement& element,
 	FlowElementPart declaration) const {
-	return uiManager.createElement(element, part(declaration));
+	return uiManager.createElement(element, detail::requireApiValue(part(declaration)));
 }
 
 template <typename Element>
@@ -94,9 +115,11 @@ ActionInvocationStatus ElementInteractionContext<Element>::invoke(ActionCall cal
 }
 
 template <typename Element>
-ActionAvailability ElementInteractionContext<Element>::actionAvailability(
-	ActionCall call) const {
+Result<ActionAvailability> ElementInteractionContext<Element>::actionAvailability(
+	ActionCall call) const noexcept try {
 	return uiManager.actions().availability(call);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
 }
 
 template <typename Element>
@@ -105,38 +128,58 @@ Clay_ElementId ElementInteractionContext<Element>::clayID() const {
 }
 
 template <typename Element>
-FlowElementID ElementInteractionContext<Element>::childID(LocalElementName name) const {
+Result<FlowElementID> ElementInteractionContext<Element>::childID(LocalElementName name) const noexcept try {
 	return uiManager.resolveLocalElementID(id, ElementType::definitionId, name);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
 }
 
 template <typename Element>
-FlowElementID ElementInteractionContext<Element>::childID(RuntimeElementName name) const {
+Result<FlowElementID> ElementInteractionContext<Element>::childID(RuntimeElementName name) const noexcept try {
 	return uiManager.resolveLocalElementID(id, ElementType::definitionId, name);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
 }
 
 template <typename Element>
-FlowElementID ElementInteractionContext<Element>::childID(IndexedElementName name) const {
+Result<FlowElementID> ElementInteractionContext<Element>::childID(IndexedElementName name) const noexcept try {
 	return uiManager.resolveIndexedElementID(id, ElementType::definitionId, name);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
 }
 
 template <typename Element>
-Clay_ElementId ElementInteractionContext<Element>::clayID(LocalElementName name) const {
-	return uiManager.toClayEID(childID(name));
+Result<Clay_ElementId> ElementInteractionContext<Element>::clayID(LocalElementName name) const noexcept try {
+	auto child = childID(name);
+	if (!child) return unexpectedError(child.error());
+	return uiManager.toClayEID(*child);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
 }
 
 template <typename Element>
-Clay_ElementId ElementInteractionContext<Element>::clayID(RuntimeElementName name) const {
-	return uiManager.toClayEID(childID(name));
+Result<Clay_ElementId> ElementInteractionContext<Element>::clayID(RuntimeElementName name) const noexcept try {
+	auto child = childID(name);
+	if (!child) return unexpectedError(child.error());
+	return uiManager.toClayEID(*child);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
 }
 
 template <typename Element>
-Clay_ElementId ElementInteractionContext<Element>::clayID(IndexedElementName name) const {
-	return uiManager.toClayEID(childID(name));
+Result<Clay_ElementId> ElementInteractionContext<Element>::clayID(IndexedElementName name) const noexcept try {
+	auto child = childID(name);
+	if (!child) return unexpectedError(child.error());
+	return uiManager.toClayEID(*child);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
 }
 
 template <typename Element>
-FlowElementPartID ElementInteractionContext<Element>::part(FlowElementPart declaration) const {
+Result<FlowElementPartID> ElementInteractionContext<Element>::part(FlowElementPart declaration) const noexcept try {
 	return uiManager.resolveElementPartID(ElementType::definitionId, id, declaration);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
 }
 
 template <typename Element>
@@ -144,7 +187,7 @@ template <FlowElement PartElement>
 ElementBuilder<PartElement> ElementInteractionContext<Element>::createPart(
 	const PartElement& element,
 	FlowElementPart declaration) const {
-	return uiManager.createElement(element, part(declaration));
+	return uiManager.createElement(element, detail::requireApiValue(part(declaration)));
 }
 
 /**
@@ -187,6 +230,8 @@ public:
 	 * @note Development builds also accept sourceLocation for the creation site and
 	 * automaticIdentity to identify automatically generated identities.
 	 */
+private:
+	friend class UiManager;
 	ElementBuilder(UiManager& uiManager, ElementManager& elementManager, WindowId window,
 				   FlowElementID parentId, FlowElementID elementId
 #if FLOW_UI_DEV_MODE
@@ -204,118 +249,273 @@ public:
 #endif
 	{}
 
-	/** Copy parameters into the builder; borrowed members remain borrowed. @return This builder. */
-	ElementBuilder& setParameters(const ParametersType& parameters) {
+public:
+	/**
+	 * @brief Copy or move a complete parameter draft into the builder and return this builder by reference. Any views/pointers in the parameters remain borrowed.
+	 *
+	 * Direct throwing API: library validation raises FlowUiException; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto builder = ui.createElement(counter, "counter");
+	 * Counter::Parameters parameters{.width = 160.0f};
+	 * builder.setParameters(parameters).draw();
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] ElementBuilder& setParameters(const ParametersType& parameters) try {
 		params_ = parameters;
 		return *this;
-	}
-
-	/** Move parameters into the builder; borrowed members remain borrowed. @return This builder. */
-	ElementBuilder& setParameters(ParametersType&& parameters) {
-		params_ = std::move(parameters);
-		return *this;
+	} catch (...) {
+		uiManager_.recordFrameError(detail::currentExceptionError(ErrorSite::UiManagerInvokeElement));
+		throw;
 	}
 
 	/**
-	 * Mutate builder-owned parameters immediately using a callable.
-	 * @param mergeFn Callable invoked once with ParametersType&; exceptions propagate.
-	 * @return This builder for chaining.
+	 * @brief Copy or move a complete parameter draft into the builder and return this builder by reference. Any views/pointers in the parameters remain borrowed.
+	 *
+	 * Direct throwing API: library validation raises FlowUiException; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto builder = ui.createElement(counter, "counter");
+	 * Counter::Parameters parameters{.width = 160.0f};
+	 * builder.setParameters(std::move(parameters)).draw();
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] ElementBuilder& setParameters(ParametersType&& parameters) try {
+		params_ = std::move(parameters);
+		return *this;
+	} catch (...) {
+		uiManager_.recordFrameError(detail::currentExceptionError(ErrorSite::UiManagerInvokeElement));
+		throw;
+	}
+
+	/**
+	 * @brief Invoke the mutator immediately on the builder-owned ParametersType& and return this builder by reference. No callback is retained.
+	 *
+	 * Direct throwing API: library validation raises FlowUiException; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto builder = ui.createElement(counter, "counter");
+	 * builder.mergeParams([](Counter::Parameters& parameters) { parameters.width = 160.0f; }).draw();
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
 	 */
 	template <typename MergeFn>
-	ElementBuilder& mergeParams(MergeFn&& mergeFn) {
+	[[nodiscard]] ElementBuilder& mergeParams(MergeFn&& mergeFn) try {
 		static_assert(
 			std::is_invocable_v<MergeFn, ParametersType&>,
 			"FlowUi: mergeParams expects a callable invocable with ParametersType&.");
 		std::forward<MergeFn>(mergeFn)(params_);
 		return *this;
+	} catch (...) {
+		uiManager_.recordFrameError(detail::currentExceptionError(ErrorSite::UiManagerInvokeElement));
+		throw;
 	}
 
-	/** Resolve a replacement local name against the parent captured at creation. */
-	ElementBuilder& withID(LocalElementName name) {
+	/**
+	 * @brief Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero.
+	 *
+	 * Direct throwing API: library validation raises FlowUiException; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto builder = ui.createElement(counter, "counter");
+	 * builder.withID("renamed").draw();
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] ElementBuilder& withID(LocalElementName name) try {
 		elementId_ = uiManager_.resolveLocalElementID(
 			parentId_, ElementType::definitionId, name);
 #if FLOW_UI_DEV_MODE
 		automaticIdentity_ = false;
 #endif
 		return *this;
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::UiManagerInvokeElement);
+		uiManager_.recordFrameError(error);
+		throw;
 	}
 
-	/** Resolve a runtime-authored replacement name against the captured parent. */
-	ElementBuilder& withID(RuntimeElementName name) {
+	/**
+	 * @brief Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero.
+	 *
+	 * Direct throwing API: library validation raises FlowUiException; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto builder = ui.createElement(counter, "counter");
+	 * builder.withID(FlowUi::RuntimeName("renamed")).draw();
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] ElementBuilder& withID(RuntimeElementName name) try {
 		elementId_ = uiManager_.resolveLocalElementID(
 			parentId_, ElementType::definitionId, name);
 #if FLOW_UI_DEV_MODE
 		automaticIdentity_ = false;
 #endif
 		return *this;
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::UiManagerInvokeElement);
+		uiManager_.recordFrameError(error);
+		throw;
 	}
 
-	/** Resolve an indexed/keyed replacement against the captured parent. */
-	ElementBuilder& withID(IndexedElementName name) {
+	/**
+	 * @brief Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero.
+	 *
+	 * Direct throwing API: library validation raises FlowUiException; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto builder = ui.createElement(counter, "counter");
+	 * builder.withID(FlowUi::Indexed("row", 1)).draw();
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] ElementBuilder& withID(IndexedElementName name) try {
 		elementId_ = uiManager_.resolveIndexedElementID(
 			parentId_, ElementType::definitionId, name);
 #if FLOW_UI_DEV_MODE
 		automaticIdentity_ = false;
 #endif
 		return *this;
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::UiManagerInvokeElement);
+		uiManager_.recordFrameError(error);
+		throw;
 	}
 
-	/** Resolve an automatic replacement against the captured parent. */
-	ElementBuilder& withID(AutoElementName name) {
+	/**
+	 * @brief Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero.
+	 *
+	 * Direct throwing API: library validation raises FlowUiException; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto builder = ui.createElement(counter, "counter");
+	 * builder.withID(FlowUi::AutoID()).draw();
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
+	 */
+	[[nodiscard]] ElementBuilder& withID(AutoElementName name) try {
 		elementId_ = uiManager_.resolveAutomaticElementID(
 			parentId_, ElementType::definitionId, name);
 #if FLOW_UI_DEV_MODE
 		automaticIdentity_ = true;
 #endif
 		return *this;
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::UiManagerInvokeElement);
+		uiManager_.recordFrameError(error);
+		throw;
 	}
 
 	/**
-	 * Replace the builder identity with an already resolved local ID.
-	 * @param id Nonzero resolved identity.
-	 * @return This builder for chaining.
-	 * @throws FlowUiException If id is invalid.
+	 * @brief Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero.
+	 *
+	 * Direct throwing API: library validation raises FlowUiException; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto builder = ui.createElement(counter, "counter");
+	 * builder.withID(id).draw();
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
 	 */
-	ElementBuilder& withID(FlowElementID id) {
+	[[nodiscard]] ElementBuilder& withID(FlowElementID id) try {
 		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
 		elementId_ = id;
 #if FLOW_UI_DEV_MODE
 		automaticIdentity_ = false;
 #endif
 		return *this;
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::UiManagerInvokeElement);
+		uiManager_.recordFrameError(error);
+		throw;
 	}
 
 	/**
-	 * Replace the builder identity with an explicitly global address.
-	 * @param id Nonzero global address, normalized for this window.
-	 * @return This builder for chaining.
-	 * @throws FlowUiException If id is invalid.
+	 * @brief Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero.
+	 *
+	 * Direct throwing API: library validation raises FlowUiException; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto builder = ui.createElement(counter, "counter");
+	 * builder.withID(id).draw();
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
 	 */
-	ElementBuilder& withID(GlobalFlowID id) {
+	[[nodiscard]] ElementBuilder& withID(GlobalFlowID id) try {
 		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
 		elementId_ = uiManager_.normalizeGlobalElementID(id);
 #if FLOW_UI_DEV_MODE
 		automaticIdentity_ = false;
 #endif
 		return *this;
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::UiManagerInvokeElement);
+		uiManager_.recordFrameError(error);
+		throw;
 	}
 
 	/**
-	 * Replace the builder identity with a part address already bound to its owner.
-	 * @param id Nonzero semantic part address.
-	 * @return This builder for chaining.
-	 * @throws FlowUiException If id is invalid.
+	 * @brief Replace this builder identity and return this builder by reference. Local/runtime/indexed/automatic names resolve against the parent captured at creation; explicit resolved/global/part IDs must be nonzero.
+	 *
+	 * Direct throwing API: library validation raises FlowUiException; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto builder = ui.createElement(counter, "counter");
+	 * builder.withID(id).draw();
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
 	 */
-	ElementBuilder& withID(FlowElementPartID id) {
+	[[nodiscard]] ElementBuilder& withID(FlowElementPartID id) try {
 		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
 		elementId_ = uiManager_.normalizePartElementID(id);
 #if FLOW_UI_DEV_MODE
 		automaticIdentity_ = false;
 #endif
 		return *this;
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::UiManagerInvokeElement);
+		uiManager_.recordFrameError(error);
+		throw;
 	}
 
-	/** Override whether this invocation is captured as internal developer UI. */
+	/**
+	 * @brief Return this builder after selecting whether developer capture treats this invocation as internal UI. Without developer support this is a no-op setting.
+	 *
+	 * @see docs/api/elements.md
+	 */
 	ElementBuilder& setDevInternalCapture(bool isDevInternal = true) noexcept {
 #if FLOW_UI_DEV_MODE
 		captureAsDevInternal_ = isDevInternal;
@@ -326,25 +526,55 @@ public:
 	}
 
 	/**
-	 * Run the common callback pipeline and open this element's Clay root.
-	 * Children emitted afterward remain nested until UiManager::drawConstructed().
-	 * Enabled pointer hooks run before runLogic(), then constructElement().
-	 * @param options Callback phases to skip; SkipBuildCallback does not skip construction.
-	 * @throws FlowUiException If definition registration or managed data acquisition fails.
+	 * @brief Run enabled pointer callbacks, runLogic and constructElement synchronously, then open the declared Clay root. Requires ConstructibleFlowElement; close using UiManager::drawConstructed().
+	 *
+	 * Direct throwing API: library validation raises FlowUiException; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto builder = ui.createElement(counter, "counter");
+	 * builder.construct();
+	 * ui.createElement(counter, "child").draw();
+	 * ui.drawConstructed();
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
 	 */
 	void construct(ElementDrawOptions options = ElementDrawOptions::Default)
-		requires ConstructibleFlowElement<ElementType> {
+		requires ConstructibleFlowElement<ElementType> try {
+		detail::requireApiSuccess(uiManager_.frameStatus());
 		invoke<OutputMode::Construct>(options);
+
+		detail::requireApiSuccess(uiManager_.frameStatus());
+	} catch (...) {
+		uiManager_.recordFrameError(detail::currentExceptionError(ErrorSite::UiManagerInvokeElement));
+		throw;
 	}
 
 	/**
-	 * Execute enabled pointer hooks, runLogic(), then buildElement() synchronously.
-	 * @param options Callback phases to skip for this invocation.
-	 * @throws FlowUiException If definition registration or managed data acquisition fails.
+	 * @brief Run enabled pointer callbacks, runLogic and buildElement synchronously. Requires DrawableFlowElement. Returns void.
+	 *
+	 * Direct throwing API: library validation raises FlowUiException; user assignment/mutator/callback exceptions propagate unchanged and latch frame failure. Scope cleanup does not roll back application state; abandon this builder and cancel the failed frame. Borrowed parameter members must remain valid through rendering.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * auto builder = ui.createElement(counter, "counter");
+	 * builder.draw(FlowUi::ElementDrawOptions::SkipEventCallbacks);
+	 * @endcode
+	 *
+	 * @see docs/api/elements.md
 	 */
 	void draw(ElementDrawOptions options = ElementDrawOptions::Default)
-		requires DrawableFlowElement<ElementType> {
+		requires DrawableFlowElement<ElementType> try {
+		detail::requireApiSuccess(uiManager_.frameStatus());
 		invoke<OutputMode::Draw>(options);
+
+		detail::requireApiSuccess(uiManager_.frameStatus());
+	} catch (...) {
+		uiManager_.recordFrameError(detail::currentExceptionError(ErrorSite::UiManagerInvokeElement));
+		throw;
 	}
 
 private:
@@ -721,7 +951,7 @@ void DevSchemaRegistry::registerElementPreview(std::string_view set_name, bool a
 		+[](UiManager& ui, uint64_t specimen, bool construct) {
 			const UiManager::DevPassivePreviewScope passive(ui);
 			const auto identity = FlowElementID{specimen};
-			ElementBuilder<Element> builder(ui, ui.elements(), ui.windowId(), {}, identity);
+			auto builder = ui.createElement(Element{}, identity);
 			builder.setDevInternalCapture(true);
 			if constexpr (ConstructibleFlowElement<Element>) {
 				if (construct || !DrawableFlowElement<Element>) {

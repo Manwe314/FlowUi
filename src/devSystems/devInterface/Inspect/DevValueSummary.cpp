@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Inspect/DevValueSummary.hpp"
 
 #if FLOW_UI_DEV_MODE
@@ -249,7 +250,7 @@ DevQuickView summarize_value(const tooling::DevSchemaGeneration& schema,
 			const std::uint64_t identity = static_cast<std::uint64_t>(numeric);
 			if (app)
 				for (const tooling::DevFontCatalogEntry& font :
-					 app->devTooling().catalogues().queryFonts()) {
+					 FlowUi::ValueOrThrow(app->devTooling()).get().catalogues().queryFonts()) {
 					const std::uint64_t candidate =
 						field->choiceDomain == tooling::DevChoiceDomain::FontFamily
 							? static_cast<std::uint64_t>(font.familyHandle)
@@ -281,7 +282,7 @@ DevQuickView summarize_value(const tooling::DevSchemaGeneration& schema,
 				.primary = "None",
 			};
 		if (app) {
-			if (const std::optional<ActionDebugInfo> info = app->actions().debugInfo(call)) {
+			if (const std::optional<ActionDebugInfo> info = FlowUi::ValueOrThrow(app->actions()).get().debugInfo(call)) {
 				return DevQuickView{
 					.primary = std::string(info->kind == ActionCallKind::App ? "APP " : "UI ") +
 							   std::string(info->debugName),
@@ -310,7 +311,7 @@ DevQuickView summarize_value(const tooling::DevSchemaGeneration& schema,
 			};
 		if (app) {
 			for (const tooling::DevImageCatalogEntry& image :
-				 app->devTooling().catalogues().queryImages()) {
+				 FlowUi::ValueOrThrow(app->devTooling()).get().catalogues().queryImages()) {
 				if (image.textureHandle != texture.handle)
 					continue;
 				return DevQuickView{
@@ -321,7 +322,7 @@ DevQuickView summarize_value(const tooling::DevSchemaGeneration& schema,
 				};
 			}
 			for (const tooling::DevIconCatalogEntry& icon :
-				 app->devTooling().catalogues().queryIcons()) {
+				 FlowUi::ValueOrThrow(app->devTooling()).get().catalogues().queryIcons()) {
 				if (icon.atlasTexture != texture.handle ||
 					std::abs(icon.atlasUv.x - texture.uv0x) > 0.00001f ||
 					std::abs(icon.atlasUv.y - texture.uv0y) > 0.00001f)

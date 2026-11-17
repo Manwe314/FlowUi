@@ -1,12 +1,12 @@
 var group__flowui__config =
 [
     [ "FlowUi::VulkanConfig", "structFlowUi_1_1VulkanConfig.html", [
-      [ "enableDebugUtils", "group__flowui__config.html#ga2113a59485755cf238d536f5eedb4c76", null ],
-      [ "enableValidation", "group__flowui__config.html#gaf08c2cb657d48a6d7c3aae1e01fcc3df", null ],
-      [ "framesInFlight", "group__flowui__config.html#ga57b35b5f53ac26dc0120bffeb1f74995", null ],
-      [ "preferDiscreteGPU", "group__flowui__config.html#gae93a1d85e75f22c0615814c639b2510d", null ],
-      [ "presentMode", "group__flowui__config.html#gadaae2433c5725ae3d81b120326eb42a6", null ],
-      [ "srgbBackbuffer", "group__flowui__config.html#ga27609afa6b372beb9c1106f5bc018bd8", null ]
+      [ "enableDebugUtils", "structFlowUi_1_1VulkanConfig.html#a2113a59485755cf238d536f5eedb4c76", null ],
+      [ "enableValidation", "structFlowUi_1_1VulkanConfig.html#af08c2cb657d48a6d7c3aae1e01fcc3df", null ],
+      [ "framesInFlight", "structFlowUi_1_1VulkanConfig.html#a57b35b5f53ac26dc0120bffeb1f74995", null ],
+      [ "preferDiscreteGPU", "structFlowUi_1_1VulkanConfig.html#ae93a1d85e75f22c0615814c639b2510d", null ],
+      [ "presentMode", "structFlowUi_1_1VulkanConfig.html#adaae2433c5725ae3d81b120326eb42a6", null ],
+      [ "srgbBackbuffer", "structFlowUi_1_1VulkanConfig.html#a27609afa6b372beb9c1106f5bc018bd8", null ]
     ] ],
     [ "FlowUi::FrameInput", "structFlowUi_1_1FrameInput.html", [
       [ "alt", "structFlowUi_1_1FrameInput.html#a40d39219bb7961cdd7897153c973dea0", null ],
@@ -25,11 +25,9 @@ var group__flowui__config =
       [ "text", "structFlowUi_1_1FrameInput.html#a72e6dfc1d2fc70ed0d25ae94984fd391", null ],
       [ "windowFocused", "structFlowUi_1_1FrameInput.html#ab8e79ecba91397b7b7a86ab483ad932c", null ]
     ] ],
-    [ "FlowUi::PresentMode", "group__flowui__config.html#gad7eda856ae51a88ad99efd967439facb", null ],
-    [ "FlowUi::VulkanConfig::enableDebugUtils", "group__flowui__config.html#ga2113a59485755cf238d536f5eedb4c76", null ],
-    [ "FlowUi::VulkanConfig::enableValidation", "group__flowui__config.html#gaf08c2cb657d48a6d7c3aae1e01fcc3df", null ],
-    [ "FlowUi::VulkanConfig::framesInFlight", "group__flowui__config.html#ga57b35b5f53ac26dc0120bffeb1f74995", null ],
-    [ "FlowUi::VulkanConfig::preferDiscreteGPU", "group__flowui__config.html#gae93a1d85e75f22c0615814c639b2510d", null ],
-    [ "FlowUi::VulkanConfig::presentMode", "group__flowui__config.html#gadaae2433c5725ae3d81b120326eb42a6", null ],
-    [ "FlowUi::VulkanConfig::srgbBackbuffer", "group__flowui__config.html#ga27609afa6b372beb9c1106f5bc018bd8", null ]
+    [ "FlowUi::PresentMode", "group__flowui__config.html#gad7eda856ae51a88ad99efd967439facb", [
+      [ "FlowUi::PresentMode::Fifo", "group__flowui__config.html#ggad7eda856ae51a88ad99efd967439facbaa0476ca4d7283b340d24c53c16270958", null ],
+      [ "FlowUi::PresentMode::Mailbox", "group__flowui__config.html#ggad7eda856ae51a88ad99efd967439facba2dcff8c037093c5d3552ad532e603f9f", null ],
+      [ "FlowUi::PresentMode::Immediate", "group__flowui__config.html#ggad7eda856ae51a88ad99efd967439facba43f6615bbb2c40a5306ff804094420b1", null ]
+    ] ]
 ];

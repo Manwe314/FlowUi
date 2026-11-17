@@ -43,8 +43,11 @@ bool layerMatchesScope(DevOverrideLayer layer, DevOverrideScope scope) noexcept 
 
 DevOverrideEngine::DevOverrideEngine(
 	tooling::DevSchemaRegistry& schemas,
-	DevOverrideEngineConfig config) noexcept
-	: schemas_(schemas), config_(config) {}
+	DevOverrideEngineConfig config)
+	: schemas_(schemas), config_(config) {
+	// One acknowledgement per admitted transaction plus one outer failure.
+	results_.reserve(static_cast<std::size_t>(config_.maximumPendingTransactions) + 1);
+}
 
 DevOverrideEngine::~DevOverrideEngine() = default;
 
@@ -56,8 +59,9 @@ bool DevOverrideEngine::submit(DevChangeSet changeSet) {
 			std::min<std::size_t>(pendingCommandCount_, config_.maximumPendingCommands)) {
 		return false;
 	}
-	pendingCommandCount_ += changeSet.commands.size();
+	const std::size_t commandCount = changeSet.commands.size();
 	ingress_.push_back(std::move(changeSet));
+	pendingCommandCount_ += commandCount;
 	return true;
 }
 
@@ -65,6 +69,7 @@ void DevOverrideEngine::commitAtSafePoint(ThemeManager& themes,
 										  DevTimingRecorder* timing) noexcept {
 	FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(timing, TimingCategory::DevTool, TimingZoneRole::DevToolWork,
 									   "flowui.dev_override.commit");
+	results_.clear();
 	try {
 		(void)schemas_.publishPendingAtSafePoint();
 		syncSchema();
@@ -74,8 +79,9 @@ void DevOverrideEngine::commitAtSafePoint(ThemeManager& themes,
 			pending.swap(ingress_);
 			pendingCommandCount_ = 0;
 		}
-		results_.clear();
 		for (DevChangeSet& transaction : pending) {
+			std::uint32_t completedCommandCount = 0;
+			std::uint32_t attemptedCommandCount = 0;
 			try {
 				if (transaction.commands.empty()) {
 					results_.push_back({
@@ -149,35 +155,45 @@ void DevOverrideEngine::commitAtSafePoint(ThemeManager& themes,
 				}
 				apply_.reserveAdditional(additionalElementRecords);
 				themeRecords_.reserve(themeRecords_.size() + additionalThemeRecords);
+				DevCommandStatus executionStatus = DevCommandStatus::Applied;
 				for (std::uint32_t index = 0; index < transaction.commands.size(); ++index) {
-					applyCommand(std::move(transaction.commands[index]), std::move(resolved[index]),
-								 transaction.transaction, themes);
+					attemptedCommandCount = index + 1;
+					executionStatus = applyCommand(std::move(transaction.commands[index]),
+						std::move(resolved[index]), transaction.transaction, themes);
+					if (executionStatus != DevCommandStatus::Applied)
+						break;
+					apply_.rebuildCompiled();
+					if (!applyThemeRecords(themes)) {
+						executionStatus = DevCommandStatus::ValueCopyFailed;
+						break;
+					}
+					++completedCommandCount;
 				}
-				apply_.rebuildCompiled();
-				applyThemeRecords(themes);
-				const bool theme_assignment_pending =
-					std::ranges::any_of(themeRecords_, [&](const auto& record) {
-						return record.transaction == transaction.transaction && record.dirty;
-					});
-				if (theme_assignment_pending) {
-					++rejectedTransactions_;
-					results_.push_back({.transaction = transaction.transaction,
-										.status = DevCommandStatus::ValueCopyFailed});
-					continue;
-				}
+				const bool applied = executionStatus == DevCommandStatus::Applied;
 				results_.push_back({
 					.transaction = transaction.transaction,
-					.status = DevCommandStatus::Applied,
-					.applied = true,
+					.command = applied ? 0 : completedCommandCount,
+					.completedCommandCount = completedCommandCount,
+					.attemptedCommandCount = attemptedCommandCount,
+					.status = executionStatus,
+					.applied = applied,
+					.mayHavePartialEffects = !applied,
 				});
-				++committedTransactions_;
+				if (applied)
+					++committedTransactions_;
+				else
+					++rejectedTransactions_;
 			} catch (...) {
 				++rejectedTransactions_;
 				results_.push_back({.transaction = transaction.transaction,
-									.status = DevCommandStatus::InternalFailure});
+					.command = completedCommandCount,
+					.completedCommandCount = completedCommandCount,
+					.attemptedCommandCount = attemptedCommandCount,
+					.status = DevCommandStatus::InternalFailure,
+					.mayHavePartialEffects = attemptedCommandCount != 0});
 			}
 		}
-		applyThemeRecords(themes);
+		(void)applyThemeRecords(themes);
 		if (value_collection_enabled_)
 			capture_.captureThemes(themes, schema_, this, &themeFieldIsOverridden, timing);
 	} catch (...) {
@@ -241,6 +257,8 @@ DevOverrideStats DevOverrideEngine::stats() const noexcept {
 		.appliedElementFields = apply_.appliedFieldCount(),
 		.capturedElementFields = capture_.capturedElementFieldCount(),
 		.capturedThemeFields = capture_.capturedThemeFieldCount(),
+		.droppedElementCaptures = capture_.droppedElementCaptureCount(),
+		.failedThemeCaptures = capture_.failedThemeCaptureCount(),
 		.activeElementOverrides = static_cast<std::uint32_t>(apply_.records().size()),
 		.activeThemeOverrides = static_cast<std::uint32_t>(themeRecords_.size()),
 		.memoryFootprintBytes = memoryFootprintBytes(),
@@ -352,7 +370,8 @@ DevCommandStatus DevOverrideEngine::validate(
 				}
 				return true;
 			};
-			(void)themes.visitDevThemePayloads(&context, visitor);
+			if (!themes.visitDevThemePayloads(&context, visitor))
+				return DevCommandStatus::ValueCopyFailed;
 			try {
 				resolved.variant_originals.reserve(context.variants.size());
 				for (const auto& variant : context.variants) {
@@ -546,7 +565,7 @@ DevOverrideEngine::ResolvedField DevOverrideEngine::resolveRootField(
 	}
 }
 
-void DevOverrideEngine::applyCommand(
+DevCommandStatus DevOverrideEngine::applyCommand(
 	DevOverrideCommand command,
 	ResolvedField resolved,
 	std::uint64_t transaction,
@@ -565,7 +584,7 @@ void DevOverrideEngine::applyCommand(
 				themeBakeTombstones_.push_back(record);
 				break;
 			}
-		return;
+		return DevCommandStatus::Applied;
 	}
 	if (command.theme.themeType != 0 && command.kind != DevOverrideCommandKind::SetThemeField &&
 		command.kind != DevOverrideCommandKind::ClearThemeField) {
@@ -576,8 +595,9 @@ void DevOverrideEngine::applyCommand(
 		});
 		if (preview && found != themeRecords_.end()) {
 			found->preview_value = std::move(command.value);
+			found->assignmentFailed = false;
 			found->dirty = true;
-			return;
+			return DevCommandStatus::Applied;
 		}
 		command.kind = DevOverrideCommandKind::SetThemeField;
 		if (preview) {
@@ -594,7 +614,7 @@ void DevOverrideEngine::applyCommand(
 				found->preview_value = std::move(preview_value);
 				found->preview_only = true;
 			}
-			return;
+			return DevCommandStatus::Applied;
 		}
 	}
 	switch (command.kind) {
@@ -660,6 +680,7 @@ void DevOverrideEngine::applyCommand(
 			found->remove_baked = false;
 			found->transaction = transaction;
 			found->schemaValid = true;
+			found->assignmentFailed = false;
 			found->dirty = true;
 		}
 		break;
@@ -693,16 +714,26 @@ void DevOverrideEngine::applyCommand(
 							for (auto& [variant, original] : found->variant_originals) {
 								if (!stabilize_theme_references(themes, original, field.valueType))
 									throw std::bad_alloc{};
-								(void)themes.assignDevThemeField(found->target.themeType, variant,
+								if (themes.assignDevThemeField(found->target.themeType, variant,
 																 found->ownerPath, *operations,
-																 original.data());
+																 original.data()) != tooling::DevValueOperationStatus::Success) {
+									found->transaction = transaction;
+									found->assignmentFailed = true;
+									found->dirty = false;
+									return DevCommandStatus::ValueCopyFailed;
+								}
 							}
 						} else {
 							if (!stabilize_theme_references(themes, found->original, field.valueType))
 								throw std::bad_alloc{};
-							(void)themes.assignDevThemeField(
+							if (themes.assignDevThemeField(
 								found->target.themeType, found->target.variant, found->ownerPath,
-								*operations, found->original.data());
+								*operations, found->original.data()) != tooling::DevValueOperationStatus::Success) {
+								found->transaction = transaction;
+								found->assignmentFailed = true;
+								found->dirty = false;
+								return DevCommandStatus::ValueCopyFailed;
+							}
 						}
 					}
 				}
@@ -714,6 +745,7 @@ void DevOverrideEngine::applyCommand(
 		break;
 	}
 	}
+	return DevCommandStatus::Applied;
 }
 
 void DevOverrideEngine::bindThemeRecords() {
@@ -736,11 +768,13 @@ void DevOverrideEngine::bindThemeRecords() {
 	}
 }
 
-void DevOverrideEngine::applyThemeRecords(ThemeManager& themes) noexcept {
-	if (!schema_) return;
+bool DevOverrideEngine::applyThemeRecords(ThemeManager& themes) noexcept {
+	if (!schema_) return false;
+	bool assignmentSucceeded = true;
 	// Newly registered or cloned variants inherit retained general edits at this safe point.
 	for (auto& record : themeRecords_) {
-		if (record.target.variant != "*" || !record.schemaValid || !record.fieldIndex)
+		if (record.target.variant != "*" || !record.schemaValid || !record.fieldIndex ||
+			record.assignmentFailed)
 			continue;
 		struct Context {
 			ThemeBakeRecord* record;
@@ -776,16 +810,20 @@ void DevOverrideEngine::applyThemeRecords(ThemeManager& themes) noexcept {
 				return false;
 			}
 		};
-		(void)themes.visitDevThemePayloads(&context, visitor);
+		if (!themes.visitDevThemePayloads(&context, visitor)) {
+			assignmentSucceeded = false;
+			record.assignmentFailed = true;
+			record.dirty = false;
+		}
 	}
 	if (std::ranges::none_of(themeRecords_, [](const auto& record) { return record.dirty; }))
-		return;
+		return assignmentSucceeded;
 	// General tokens form the base; specific variants always win regardless of edit order.
 	for (bool general : {true, false})
 		for (ThemeBakeRecord& record : themeRecords_) {
 			if ((record.target.variant == "*") != general)
 				continue;
-			if (!record.schemaValid || !record.fieldIndex || !record.value)
+			if (!record.schemaValid || !record.fieldIndex || !record.value || record.assignmentFailed)
 				continue;
 			const std::uint32_t index = record.fieldIndex.value - 1u;
 			if (index >= schema_->fields.size())
@@ -797,15 +835,24 @@ void DevOverrideEngine::applyThemeRecords(ThemeManager& themes) noexcept {
 			if (!operations)
 				continue;
 			auto& assigned_value = record.preview_value ? record.preview_value : record.value;
-			if (!stabilize_theme_references(themes, assigned_value, field.valueType))
+			if (!stabilize_theme_references(themes, assigned_value, field.valueType)) {
+				assignmentSucceeded = false;
+				record.assignmentFailed = true;
+				record.dirty = false;
 				continue;
+			}
 			if (themes.assignDevThemeField(
 					record.target.themeType, record.target.variant, record.ownerPath, *operations,
 					assigned_value.data()) ==
 				tooling::DevValueOperationStatus::Success) {
 				record.dirty = false;
+			} else {
+				assignmentSucceeded = false;
+				record.assignmentFailed = true;
+				record.dirty = false;
 			}
 		}
+	return assignmentSucceeded;
 }
 
 bool DevOverrideEngine::stabilize_theme_references(ThemeManager& themes, DevOwnedValue& value,

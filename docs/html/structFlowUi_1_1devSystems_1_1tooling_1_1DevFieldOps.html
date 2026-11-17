@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -113,12 +113,16 @@ $(function() {
 Public Attributes</h2></td></tr>
 <tr class="memitem:a28e476dfdd72073d9e9de59c8b0e2010" id="r_a28e476dfdd72073d9e9de59c8b0e2010"><td class="memItemLeft"><a id="a28e476dfdd72073d9e9de59c8b0e2010" name="a28e476dfdd72073d9e9de59c8b0e2010"></a>
 const void *(*&#160;</td><td class="memItemRight"><b>constAddress</b> )(const void *owner) noexcept = nullptr</td></tr>
+<tr class="memdesc:a28e476dfdd72073d9e9de59c8b0e2010"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow a declared member from a correctly typed const owner; null owner yields null. <br /></td></tr>
 <tr class="memitem:a35e4c08356e6eff51e522b392644eef8" id="r_a35e4c08356e6eff51e522b392644eef8"><td class="memItemLeft"><a id="a35e4c08356e6eff51e522b392644eef8" name="a35e4c08356e6eff51e522b392644eef8"></a>
 void *(*&#160;</td><td class="memItemRight"><b>mutableAddress</b> )(void *owner) noexcept = nullptr</td></tr>
+<tr class="memdesc:a35e4c08356e6eff51e522b392644eef8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow a mutable declared member; absent for const members. <br /></td></tr>
 <tr class="memitem:a373aabd18d1f2a45294d6b21cd2fb37b" id="r_a373aabd18d1f2a45294d6b21cd2fb37b"><td class="memItemLeft"><a id="a373aabd18d1f2a45294d6b21cd2fb37b" name="a373aabd18d1f2a45294d6b21cd2fb37b"></a>
-DevValueOperationStatus(*&#160;</td><td class="memItemRight"><b>copyConstructMember</b> )(const void *owner, void *destination) noexcept = nullptr</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#ad013d6c5988bacb5c3b327f521b28d88">DevValueOperationStatus</a>(*&#160;</td><td class="memItemRight"><b>copyConstructMember</b> )(const void *owner, void *destination) noexcept = nullptr</td></tr>
+<tr class="memdesc:a373aabd18d1f2a45294d6b21cd2fb37b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy-construct the declared member in suitably sized/aligned uninitialized destination storage. <br /></td></tr>
 <tr class="memitem:a30ad84cf203246cc25b0e42014b3edcc" id="r_a30ad84cf203246cc25b0e42014b3edcc"><td class="memItemLeft"><a id="a30ad84cf203246cc25b0e42014b3edcc" name="a30ad84cf203246cc25b0e42014b3edcc"></a>
-DevValueOperationStatus(*&#160;</td><td class="memItemRight"><b>assignMemberFromCopy</b> )(void *draftOwner, const void *source) noexcept = nullptr</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#ad013d6c5988bacb5c3b327f521b28d88">DevValueOperationStatus</a>(*&#160;</td><td class="memItemRight"><b>assignMemberFromCopy</b> )(void *draftOwner, const void *source) noexcept = nullptr</td></tr>
+<tr class="memdesc:a30ad84cf203246cc25b0e42014b3edcc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy-assign the declared member from a correctly typed source; report unsupported or failed assignment. <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Type-safe access to a declared member. The C++ member pointer remains encoded in the template that owns these functions; it is never serialized into bytes. </p>
@@ -138,7 +142,7 @@ DevValueOperationStatus(*&#160;</td><td class="memItemRight"><b>assignMemberFrom
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldOps.html">DevFieldOps</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldOps.html">DevFieldOps</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

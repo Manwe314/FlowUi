@@ -1,3 +1,4 @@
+#include "FlowUi/Private/ApiBoundary.hpp"
 #pragma once
 #include "FSEL/ComboBox.hpp"
 #include "FSEL/NumberInput.hpp"

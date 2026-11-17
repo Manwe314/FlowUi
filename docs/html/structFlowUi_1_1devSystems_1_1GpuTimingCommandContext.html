@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,14 +106,47 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::GpuTimingCommandContext Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevGpuTiming_8hpp_source.html">DevGpuTiming.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a45eb409bc7e1cb207b93f38b6efa9f83" id="r_a45eb409bc7e1cb207b93f38b6efa9f83"><td class="memItemLeft"><a id="a45eb409bc7e1cb207b93f38b6efa9f83" name="a45eb409bc7e1cb207b93f38b6efa9f83"></a>
-class <a class="el" href="classFlowUi_1_1devSystems_1_1DevGpuTiming.html">DevGpuTiming</a> *&#160;</td><td class="memItemRight"><b>timing</b> = nullptr</td></tr>
-<tr class="memitem:adfe4e7c892547ba91e8092682a49dc22" id="r_adfe4e7c892547ba91e8092682a49dc22"><td class="memItemLeft"><a id="adfe4e7c892547ba91e8092682a49dc22" name="adfe4e7c892547ba91e8092682a49dc22"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1GpuTimingFrameSlot.html">GpuTimingFrameSlot</a> *&#160;</td><td class="memItemRight"><b>frameSlot</b> = nullptr</td></tr>
+<tr class="memitem:a45eb409bc7e1cb207b93f38b6efa9f83" id="r_a45eb409bc7e1cb207b93f38b6efa9f83"><td class="memItemLeft">class <a class="el" href="classFlowUi_1_1devSystems_1_1DevGpuTiming.html">DevGpuTiming</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a45eb409bc7e1cb207b93f38b6efa9f83">timing</a> = nullptr</td></tr>
+<tr class="memitem:adfe4e7c892547ba91e8092682a49dc22" id="r_adfe4e7c892547ba91e8092682a49dc22"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1GpuTimingFrameSlot.html">GpuTimingFrameSlot</a> *&#160;</td><td class="memItemRight"><a class="el" href="#adfe4e7c892547ba91e8092682a49dc22">frameSlot</a> = nullptr</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Borrowed GPU timing service and frame slot for recording one command buffer. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="adfe4e7c892547ba91e8092682a49dc22" name="adfe4e7c892547ba91e8092682a49dc22"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adfe4e7c892547ba91e8092682a49dc22">&#9670;&#160;</a></span>frameSlot</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1GpuTimingFrameSlot.html">GpuTimingFrameSlot</a>* FlowUi::devSystems::GpuTimingCommandContext::frameSlot = nullptr</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed renderer frame slot; it must outlive command recording and zone scopes. </p>
+
+</div>
+</div>
+<a id="a45eb409bc7e1cb207b93f38b6efa9f83" name="a45eb409bc7e1cb207b93f38b6efa9f83"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a45eb409bc7e1cb207b93f38b6efa9f83">&#9670;&#160;</a></span>timing</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">class <a class="el" href="classFlowUi_1_1devSystems_1_1DevGpuTiming.html">DevGpuTiming</a>* FlowUi::devSystems::GpuTimingCommandContext::timing = nullptr</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed GPU recorder that outlives this recording context. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/timing/<a class="el" href="DevGpuTiming_8hpp_source.html">DevGpuTiming.hpp</a></li>
 </ul>
@@ -130,7 +163,7 @@ class <a class="el" href="classFlowUi_1_1devSystems_1_1DevGpuTiming.html">DevGpu
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1GpuTimingCommandContext.html">GpuTimingCommandContext</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1GpuTimingCommandContext.html">GpuTimingCommandContext</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

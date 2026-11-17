@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,14 +106,47 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::ActionStableReference Struct Reference<div class="ingroups"><a class="el" href="group__flowui__action__manager.html">Action Manager</a></div></div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="ActionTypes_8hpp_source.html">ActionTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:ace3205f8f73824f96296426952dd8418" id="r_ace3205f8f73824f96296426952dd8418"><td class="memItemLeft"><a id="ace3205f8f73824f96296426952dd8418" name="ace3205f8f73824f96296426952dd8418"></a>
-ActionCallKind&#160;</td><td class="memItemRight"><b>kind</b> = ActionCallKind::None</td></tr>
-<tr class="memitem:aa39d135d87ccb8277e6c344ba63b888d" id="r_aa39d135d87ccb8277e6c344ba63b888d"><td class="memItemLeft"><a id="aa39d135d87ccb8277e6c344ba63b888d" name="aa39d135d87ccb8277e6c344ba63b888d"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>id</b> = 0</td></tr>
+<tr class="memitem:ace3205f8f73824f96296426952dd8418" id="r_ace3205f8f73824f96296426952dd8418"><td class="memItemLeft"><a class="el" href="group__flowui__action__manager.html#ga60a85a4c4368cb76aff45496b33b19cd">ActionCallKind</a>&#160;</td><td class="memItemRight"><a class="el" href="#ace3205f8f73824f96296426952dd8418">kind</a> = <a class="el" href="group__flowui__action__manager.html#gga60a85a4c4368cb76aff45496b33b19cda6adf97f83acf6453d4a6a4b1070f3754">ActionCallKind::None</a></td></tr>
+<tr class="memitem:aa39d135d87ccb8277e6c344ba63b888d" id="r_aa39d135d87ccb8277e6c344ba63b888d"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#aa39d135d87ccb8277e6c344ba63b888d">id</a> = 0</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Serializable action identity without resource pointers. An empty reference cannot reconstruct a call. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="aa39d135d87ccb8277e6c344ba63b888d" name="aa39d135d87ccb8277e6c344ba63b888d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa39d135d87ccb8277e6c344ba63b888d">&#9670;&#160;</a></span>id</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::ActionStableReference::id = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Stable application or recipe identity; zero marks an empty reference. </p>
+
+</div>
+</div>
+<a id="ace3205f8f73824f96296426952dd8418" name="ace3205f8f73824f96296426952dd8418"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ace3205f8f73824f96296426952dd8418">&#9670;&#160;</a></span>kind</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__flowui__action__manager.html#ga60a85a4c4368cb76aff45496b33b19cd">ActionCallKind</a> FlowUi::ActionStableReference::kind = <a class="el" href="group__flowui__action__manager.html#gga60a85a4c4368cb76aff45496b33b19cda6adf97f83acf6453d4a6a4b1070f3754">ActionCallKind::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Identity representation; None marks an empty reference or diagnostic record. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="ActionTypes_8hpp_source.html">ActionTypes.hpp</a></li>
 </ul>
@@ -130,7 +163,7 @@ uint64_t&#160;</td><td class="memItemRight"><b>id</b> = 0</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1ActionStableReference.html">ActionStableReference</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1ActionStableReference.html">ActionStableReference</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

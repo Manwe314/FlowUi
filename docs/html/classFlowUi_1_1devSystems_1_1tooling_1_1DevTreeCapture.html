@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,37 +106,59 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevTreeCapture Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Window-frame tree copier with separate building and published buffers. Borrow <a class="el" href="#abc3ab21bee78ee7f5a08f9a54dbe89ad" title="Borrow the latest successful snapshot until the next successful publication or destruction.">current()</a> only until the next successful publication or owner destruction.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevTreeCapture_8hpp_source.html">DevTreeCapture.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:FlowBegin" id="r_FlowBegin"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture_1_1FlowBegin.html">FlowBegin</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed invocation metadata copied by <a class="el" href="#add82ec865bd1bb992300b8456cb3f076" title="Copy invocation metadata and open a balanced capture scope; pass the returned frame-qualified token t...">beginFlow()</a> during an active capture.  <a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture_1_1FlowBegin.html#details">More...</a><br /></td></tr>
 <tr class="memitem:Token" id="r_Token"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture_1_1Token.html">Token</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Frame-qualified scope token returned by <a class="el" href="#add82ec865bd1bb992300b8456cb3f076" title="Copy invocation metadata and open a balanced capture scope; pass the returned frame-qualified token t...">beginFlow()</a>; valid only for its matching <a class="el" href="#a8c5caabfffcad22d4c7cfa959a5849ce" title="Close the matching token&#39;s scope; autoClosed records that lifecycle recovery closed an unbalanced con...">endFlow()</a>.  <a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture_1_1Token.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a080d383b34ca50b53f109c8635d52062" id="r_a080d383b34ca50b53f109c8635d52062"><td class="memItemLeft"><a id="a080d383b34ca50b53f109c8635d52062" name="a080d383b34ca50b53f109c8635d52062"></a>
 &#160;</td><td class="memItemRight"><b>DevTreeCapture</b> (<a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCaptureConfig.html">DevTreeCaptureConfig</a> config={}, const FlowUi::detail::InitialMemoryCapacities &amp;capacities={})</td></tr>
+<tr class="memdesc:a080d383b34ca50b53f109c8635d52062"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy capture limits and initial reserve capacities; supplied configuration values are not retained by reference. <br /></td></tr>
 <tr class="memitem:a26e4deb295aee32c3fe5fd0666f288f4" id="r_a26e4deb295aee32c3fe5fd0666f288f4"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a26e4deb295aee32c3fe5fd0666f288f4">bind_memory_demand</a> (const ::FlowUi::detail::MemoryDemandControl *control) noexcept</td></tr>
 <tr class="memitem:a5e565d81e81db0cbc2dc58945d1ec8da" id="r_a5e565d81e81db0cbc2dc58945d1ec8da"><td class="memItemLeft"><a id="a5e565d81e81db0cbc2dc58945d1ec8da" name="a5e565d81e81db0cbc2dc58945d1ec8da"></a>
-void&#160;</td><td class="memItemRight"><b>beginFrame</b> (WindowId window, uint64_t frameNumber, Clay_Context &amp;clay, <a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> *timing, uint64_t app_tick=0, uint64_t ui_runtime_frame=0) noexcept</td></tr>
+void&#160;</td><td class="memItemRight"><b>beginFrame</b> (<a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> window, uint64_t frameNumber, Clay_Context &amp;clay, <a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> *timing, uint64_t app_tick=0, uint64_t ui_runtime_frame=0) noexcept</td></tr>
+<tr class="memdesc:a5e565d81e81db0cbc2dc58945d1ec8da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Begin a capture for window/frame and borrow Clay context and optional timing until finish/cancel; app_tick and ui_runtime_frame provide source evidence identity. <br /></td></tr>
 <tr class="memitem:add82ec865bd1bb992300b8456cb3f076" id="r_add82ec865bd1bb992300b8456cb3f076"><td class="memItemLeft"><a id="add82ec865bd1bb992300b8456cb3f076" name="add82ec865bd1bb992300b8456cb3f076"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture_1_1Token.html">Token</a>&#160;</td><td class="memItemRight"><b>beginFlow</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture_1_1FlowBegin.html">FlowBegin</a> &amp;begin) noexcept</td></tr>
+<tr class="memdesc:add82ec865bd1bb992300b8456cb3f076"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy invocation metadata and open a balanced capture scope; pass the returned frame-qualified token to <a class="el" href="#a8c5caabfffcad22d4c7cfa959a5849ce" title="Close the matching token&#39;s scope; autoClosed records that lifecycle recovery closed an unbalanced con...">endFlow()</a>. <br /></td></tr>
 <tr class="memitem:a8c5caabfffcad22d4c7cfa959a5849ce" id="r_a8c5caabfffcad22d4c7cfa959a5849ce"><td class="memItemLeft"><a id="a8c5caabfffcad22d4c7cfa959a5849ce" name="a8c5caabfffcad22d4c7cfa959a5849ce"></a>
 void&#160;</td><td class="memItemRight"><b>endFlow</b> (<a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture_1_1Token.html">Token</a> token, bool autoClosed=false) noexcept</td></tr>
+<tr class="memdesc:a8c5caabfffcad22d4c7cfa959a5849ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close the matching token's scope; autoClosed records that lifecycle recovery closed an unbalanced constructed element. <br /></td></tr>
+<tr class="memitem:a0ea8c32e719415e8b2f743d022271b38" id="r_a0ea8c32e719415e8b2f743d022271b38"><td class="memItemLeft"><a id="a0ea8c32e719415e8b2f743d022271b38" name="a0ea8c32e719415e8b2f743d022271b38"></a>
+void&#160;</td><td class="memItemRight"><b>noteAuthoredClayEnd</b> () noexcept</td></tr>
+<tr class="memdesc:a0ea8c32e719415e8b2f743d022271b38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mark the boundary between application-authored Clay nodes and synthetic development emission. <br /></td></tr>
 <tr class="memitem:a317646166d026312f10d99ef38765260" id="r_a317646166d026312f10d99ef38765260"><td class="memItemLeft"><a id="a317646166d026312f10d99ef38765260" name="a317646166d026312f10d99ef38765260"></a>
 void&#160;</td><td class="memItemRight"><b>finishAfterLayout</b> () noexcept</td></tr>
+<tr class="memdesc:a317646166d026312f10d99ef38765260"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy completed layout, validate ownership, and publish the frame; inspect <a class="el" href="#a3e7a3a5d855cd23ab616b94305835807" title="Return whether the latest completion attempt failed to publish.">lastFinishFailed()</a> for a failed observation. <br /></td></tr>
 <tr class="memitem:abc95e041bedecc4f9c5f36b6d65744f0" id="r_abc95e041bedecc4f9c5f36b6d65744f0"><td class="memItemLeft"><a id="abc95e041bedecc4f9c5f36b6d65744f0" name="abc95e041bedecc4f9c5f36b6d65744f0"></a>
 void&#160;</td><td class="memItemRight"><b>cancelFrame</b> () noexcept</td></tr>
+<tr class="memdesc:abc95e041bedecc4f9c5f36b6d65744f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Discard in-progress capture without replacing the latest successful publication. <br /></td></tr>
 <tr class="memitem:abc3ab21bee78ee7f5a08f9a54dbe89ad" id="r_abc3ab21bee78ee7f5a08f9a54dbe89ad"><td class="memItemLeft"><a id="abc3ab21bee78ee7f5a08f9a54dbe89ad" name="abc3ab21bee78ee7f5a08f9a54dbe89ad"></a>
 const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeSnapshot.html">DevTreeSnapshot</a> &amp;&#160;</td><td class="memItemRight"><b>current</b> () const noexcept</td></tr>
+<tr class="memdesc:abc3ab21bee78ee7f5a08f9a54dbe89ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the latest successful snapshot until the next successful publication or destruction. <br /></td></tr>
 <tr class="memitem:a4ded77b0f3a88fbf830295d9add3cb42" id="r_a4ded77b0f3a88fbf830295d9add3cb42"><td class="memItemLeft"><a id="a4ded77b0f3a88fbf830295d9add3cb42" name="a4ded77b0f3a88fbf830295d9add3cb42"></a>
 bool&#160;</td><td class="memItemRight"><b>frameActive</b> () const noexcept</td></tr>
+<tr class="memdesc:a4ded77b0f3a88fbf830295d9add3cb42"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether a capture frame is currently open. <br /></td></tr>
 <tr class="memitem:a3e7a3a5d855cd23ab616b94305835807" id="r_a3e7a3a5d855cd23ab616b94305835807"><td class="memItemLeft"><a id="a3e7a3a5d855cd23ab616b94305835807" name="a3e7a3a5d855cd23ab616b94305835807"></a>
 bool&#160;</td><td class="memItemRight"><b>lastFinishFailed</b> () const noexcept</td></tr>
+<tr class="memdesc:a3e7a3a5d855cd23ab616b94305835807"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether the latest completion attempt failed to publish. <br /></td></tr>
 <tr class="memitem:a5e7449cf035b006fc9ba72f369d6a330" id="r_a5e7449cf035b006fc9ba72f369d6a330"><td class="memItemLeft"><a id="a5e7449cf035b006fc9ba72f369d6a330" name="a5e7449cf035b006fc9ba72f369d6a330"></a>
 void&#160;</td><td class="memItemRight"><b>appendDevMemorySamples</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1MemorySampleSink.html">MemorySampleSink</a> &amp;sink) const noexcept</td></tr>
+<tr class="memdesc:a5e7449cf035b006fc9ba72f369d6a330"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append retained capture memory observations to a borrowed sink without consuming capture data. <br /></td></tr>
 </table>
-<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Window-frame tree copier with separate building and published buffers. Borrow <a class="el" href="#abc3ab21bee78ee7f5a08f9a54dbe89ad" title="Borrow the latest successful snapshot until the next successful publication or destruction.">current()</a> only until the next successful publication or owner destruction. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="a26e4deb295aee32c3fe5fd0666f288f4" name="a26e4deb295aee32c3fe5fd0666f288f4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a26e4deb295aee32c3fe5fd0666f288f4">&#9670;&#160;</a></span>bind_memory_demand()</h2>
 
@@ -179,7 +201,7 @@ void&#160;</td><td class="memItemRight"><b>appendDevMemorySamples</b> (<a class=
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture.html">DevTreeCapture</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture.html">DevTreeCapture</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

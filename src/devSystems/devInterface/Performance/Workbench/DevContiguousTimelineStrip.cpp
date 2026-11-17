@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevContiguousTimelineStrip.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #if FLOW_UI_DEV_MODE
@@ -17,7 +18,7 @@ void DevContiguousTimelineStrip::buildElement(BuildContext& context) {
 	root.border.width.top = 1;
 	CLAY(context.clayID(), root) {
 		const auto header = timeline_ui::row(28);
-		CLAY(context.clayID("header"), header) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("header")), header) {
 			const auto& scope = context.params.selection->selected_scope;
 			timeline_ui::text(context, scope.kind == DevPerformanceScopeKind::Thread
 										   ? "Thread " + std::to_string(scope.id)
@@ -44,13 +45,13 @@ void DevContiguousTimelineStrip::buildElement(BuildContext& context) {
 		plot.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
 		plot.clip.vertical = true;
 		plot.clip.horizontal = true;
-		const auto scroll = Clay_GetScrollContainerData(context.clayID("plot-scroll"));
+		const auto scroll = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("plot-scroll")));
 		if (scroll.found && scroll.scrollPosition)
 			plot.clip.childOffset = *scroll.scrollPosition;
 		auto parameters = context.params;
-		parameters.canvas_clip = context.clayID("plot-scroll");
-		CLAY(context.clayID("plot-scroll"), plot) {
-			timeline_viewport(context.uiManager, context.clayID("body"), parameters,
+		parameters.canvas_clip = FlowUi::ValueOrThrow(context.clayID("plot-scroll"));
+		CLAY(FlowUi::ValueOrThrow(context.clayID("plot-scroll")), plot) {
+			timeline_viewport(context.uiManager, FlowUi::ValueOrThrow(context.clayID("body")), parameters,
 							  TimelineSurfaceKind::Macro);
 		}
 		if (state.snapshot.blocks.empty())
@@ -67,7 +68,7 @@ void DevContiguousTimelineStrip::buildElement(BuildContext& context) {
 			hint.layout.sizing.width = CLAY_SIZING_FIXED(column.boundingBox.width);
 		hint.layout.childAlignment.x = CLAY_ALIGN_X_CENTER;
 		hint.clip.horizontal = true;
-		CLAY(context.clayID("hint"), hint) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("hint")), hint) {
 			Clay_TextElementConfig config{};
 			config.fontSize = 9;
 			config.textColor = interface_theme::kTextSecondary;

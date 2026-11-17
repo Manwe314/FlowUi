@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Changes/Selector/DevChangesSelector.hpp"
 #include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE
@@ -34,9 +35,9 @@ void summary(Context& context, DevChangesState& state, float panel_width) {
 	auto summary = section(88);
 	summary.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 	summary.layout.childGap = 8;
-	CLAY(context.clayID("summary"), summary) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("summary")), summary) {
 		const auto& counts = state.review.counts;
-		CLAY(context.clayID("operation-counts"), ui::row(30)) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("operation-counts")), ui::row(30)) {
 			const std::array<std::size_t, 3> values{counts.additions, counts.updates,
 													counts.removals};
 			static constexpr std::array<tooling::DevChangesOperation, 3> operations{
@@ -45,20 +46,20 @@ void summary(Context& context, DevChangesState& state, float panel_width) {
 			for (std::size_t index = 0; index < values.size(); ++index) {
 				auto metric = ui::column(2);
 				metric.layout.sizing.height = CLAY_SIZING_GROW(0);
-				CLAY(context.clayID(Keyed("operation-count", index)), metric) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("operation-count", index))), metric) {
 					label(context, operation_label(operations[index]),
 						  operation_color(operations[index]), 10);
 					label(context, std::to_string(values[index]), interface_theme::kTextCanvas, 14);
 				}
 			}
 		}
-		CLAY(context.clayID("actions"), ui::row(28)) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("actions")), ui::row(28)) {
 			ui::button(context, LocalElementName{"overview"}, "Overview", state, ui::Overview, 0,
 					   true,
 					   "Review the whole manifest. Display filters do not change bake scope.");
 			auto issues = ui::row(28);
 			issues.layout.childAlignment.x = CLAY_ALIGN_X_RIGHT;
-			CLAY(context.clayID("issue-count"), issues) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("issue-count")), issues) {
 				const auto issue_count = counts.conflicts + counts.errors;
 				const bool compact = !FLOWUI_INCLUDE_ICON_MANAGER && panel_width < 250;
 				const auto description =
@@ -73,9 +74,9 @@ void summary(Context& context, DevChangesState& state, float panel_width) {
 							ui::Icon::Refresh);
 		}
 		if (context.uiManager.getPreviousFramesInteraction().isHovered(
-				context.clayID("operation-counts")) ||
+				FlowUi::ValueOrThrow(context.clayID("operation-counts"))) ||
 			context.uiManager.getPreviousFramesInteraction().isHovered(
-				context.clayID("issue-count")))
+				FlowUi::ValueOrThrow(context.clayID("issue-count"))))
 			diagnostics_ui::pointer_tooltip(
 				context, LocalElementName{"summary-tooltip"},
 				"Whole manifest: " + std::to_string(counts.live_edits) + " live edits, " +
@@ -92,7 +93,7 @@ void keyboard(DevChangesSelector::BuildContext& context, DevChangesState& state)
 	if (!state.keyboard_active || state.visible_nodes.empty() ||
 		context.uiManager.inputFields().hasPrimaryFieldFocus())
 		return;
-	const auto focused = context.uiManager.shortcuts().focusedElement();
+	const auto focused = FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement());
 	const bool owns_focus = std::ranges::any_of(state.visible_nodes, [&](auto index) {
 		return focused.id == FlowIDToClayID(::FlowUi::detail::element_id::resolveLocal(
 								 context.id, DevChangesSelectorNode::definitionId,
@@ -122,7 +123,7 @@ void keyboard(DevChangesSelector::BuildContext& context, DevChangesState& state)
 	const auto focus_node = [&](uint64_t identity) {
 		const auto element = ::FlowUi::detail::element_id::resolveLocal(
 			context.id, DevChangesSelectorNode::definitionId, Keyed("node", identity).token);
-		context.uiManager.shortcuts().setFocusedElement(context.uiManager.toClayEID(element));
+		FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(context.uiManager.toClayEID(element)));
 	};
 	if (pressed(FlowUi::keyCode(FlowUi::Key::Left))) {
 		if (!node.leaf && node.expanded)
@@ -149,15 +150,15 @@ void keyboard(DevChangesSelector::BuildContext& context, DevChangesState& state)
 	if (pressed(FlowUi::keyCode(FlowUi::Key::Enter))) {
 		const auto element = ::FlowUi::detail::element_id::resolveLocal(
 			context.id, DevChangesSelectorNode::definitionId, Keyed("node", node.identity).token);
-		if (context.uiManager.shortcuts().focusedElement().id != FlowIDToClayID(element))
+		if (FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id != FlowIDToClayID(element))
 			return;
 		changes_select_key(state, node.key);
 		rebuild_changes_model(state);
 		return;
 	}
 	if (moved) {
-		const auto viewport = Clay_GetElementData(context.clayID("scroll"));
-		const auto scroll = Clay_GetScrollContainerData(context.clayID("scroll"));
+		const auto viewport = Clay_GetElementData(FlowUi::ValueOrThrow(context.clayID("scroll")));
+		const auto scroll = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("scroll")));
 		if (viewport.found && scroll.found && scroll.scrollPosition) {
 			const float top = position * node_height + scroll.scrollPosition->y;
 			if (top < 0)
@@ -172,16 +173,16 @@ void keyboard(DevChangesSelector::BuildContext& context, DevChangesState& state)
 void DevChangesSelectorNode::onPressed(InteractionContext& context) {
 	FSEL::detail::selectable_surface::onPressed(context, context.params.changes != nullptr);
 	context.state().disclosure_armed =
-		!context.params.leaf && context.previousInteraction.isPressed(context.clayID("disclosure"));
+		!context.params.leaf && context.previousInteraction.isPressed(FlowUi::ValueOrThrow(context.clayID("disclosure")));
 }
 void DevChangesSelectorNode::onReleased(InteractionContext& context) {
 	if (!FSEL::detail::selectable_surface::onReleased(context, context.params.changes != nullptr))
 		return;
 	const bool disclosure = !context.params.leaf &&
-							context.previousInteraction.isReleased(context.clayID("disclosure"));
+							context.previousInteraction.isReleased(FlowUi::ValueOrThrow(context.clayID("disclosure")));
 	if (disclosure != context.state().disclosure_armed)
 		return;
-	context.uiManager.shortcuts().setFocusedElement(context.clayID());
+	FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(context.clayID()));
 	ui::activate(context.params.changes, disclosure ? ui::Toggle : ui::Select,
 				 context.params.identity);
 }
@@ -196,7 +197,7 @@ void DevChangesSelectorNode::buildElement(BuildContext& context) {
 	if (parameters.changes) {
 		auto& changes = *parameters.changes;
 		const bool focused =
-			context.uiManager.shortcuts().focusedElement().id == context.clayID().id;
+			FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id == context.clayID().id;
 		if (focused) {
 			changes.keyboard_active = true;
 			changes.focused_identity = parameters.identity;
@@ -216,11 +217,11 @@ void DevChangesSelectorNode::buildElement(BuildContext& context) {
 		indent.layout.sizing = {
 			.width = CLAY_SIZING_FIXED(std::min<uint16_t>(parameters.depth, 5) * 14.0f),
 			.height = CLAY_SIZING_GROW(0)};
-		CLAY(context.clayID("depth"), indent) {}
+		CLAY(FlowUi::ValueOrThrow(context.clayID("depth")), indent) {}
 		auto disclosure = ui::row(19);
 		disclosure.layout.sizing.width = CLAY_SIZING_FIXED(18);
 		disclosure.layout.childAlignment.x = CLAY_ALIGN_X_CENTER;
-		CLAY(context.clayID("disclosure"), disclosure) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("disclosure")), disclosure) {
 			if (!parameters.leaf) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
 				diagnostics_ui::icon(context, "disclosure-icon",
@@ -234,7 +235,7 @@ void DevChangesSelectorNode::buildElement(BuildContext& context) {
 		}
 		auto title = ui::row(19);
 		title.clip = {.horizontal = true, .scrollInputDisabled = true};
-		CLAY(context.clayID("label"), title)
+		CLAY(FlowUi::ValueOrThrow(context.clayID("label")), title)
 		label(context, parameters.label,
 			  parameters.selected || hovered || parameters.focused
 				  ? interface_theme::kTextCanvas
@@ -243,7 +244,7 @@ void DevChangesSelectorNode::buildElement(BuildContext& context) {
 			auto error = ui::row(19);
 			error.layout.sizing.width = CLAY_SIZING_FIXED(18);
 			error.layout.childAlignment.x = CLAY_ALIGN_X_CENTER;
-			CLAY(context.clayID("error"), error) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("error")), error) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
 				diagnostics_ui::icon(context, "error-icon", ui::Icon::Warning,
 									 interface_theme::kStatusRed, 12);
@@ -255,7 +256,7 @@ void DevChangesSelectorNode::buildElement(BuildContext& context) {
 		auto trailing = ui::row(19);
 		trailing.layout.sizing.width = CLAY_SIZING_FIT(0);
 		trailing.layout.padding.left = 6;
-		CLAY(context.clayID("operation"), trailing)
+		CLAY(FlowUi::ValueOrThrow(context.clayID("operation")), trailing)
 		label(context, parameters.trailing, parameters.operation_color, 10);
 		if (hovered && !parameters.tooltip.empty())
 			diagnostics_ui::pointer_tooltip(context, LocalElementName{"tooltip"},
@@ -282,12 +283,12 @@ void DevChangesSelector::buildElement(BuildContext& context) {
 	CLAY(context.clayID(), root) {
 		auto title = section(36, interface_theme::kDepth2Ink);
 		title.layout.padding = {12, 12, 0, 0};
-		CLAY(context.clayID("title"), title)
+		CLAY(FlowUi::ValueOrThrow(context.clayID("title")), title)
 		label(context, "Changes", interface_theme::kTextCanvas, 14);
 		auto domains = ui::column(0);
 		domains.backgroundColor = interface_theme::kDepth0Keel;
 		domains.border = {.color = interface_theme::kBorderPrimary, .width = {0, 0, 0, 1, 0}};
-		CLAY(context.clayID("domain-section"), domains) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("domain-section")), domains) {
 			static constexpr std::array<std::string_view, 4> labels{"All", "Elements", "Themes",
 																	"Memory"};
 			for (uint64_t domain = 0; domain < labels.size(); ++domain)
@@ -300,7 +301,7 @@ void DevChangesSelector::buildElement(BuildContext& context) {
 			filters.layout.padding.left = filters.layout.padding.right = 2;
 			filters.layout.childGap = 4;
 		}
-		CLAY(context.clayID("filters"), filters) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("filters")), filters) {
 			context.uiManager.createElement(kDevSelectorSearch, LocalElementName{"search"})
 				.setParameters({.query = &state.search,
 								.placeholder = "Search...",
@@ -331,11 +332,11 @@ void DevChangesSelector::buildElement(BuildContext& context) {
 		}
 		auto viewport = ui::viewport(context, "scroll", state.selector_scroll);
 		viewport.backgroundColor = interface_theme::kDepth0Keel;
-		CLAY(context.clayID("scroll"), viewport) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("scroll")), viewport) {
 			ui::restore_viewport_scroll(context, LocalElementName{"scroll"}, state.selector_scroll);
-			ui::FocusViewportScope focus_scope{state, context.clayID("scroll")};
-			CLAY(context.clayID("tree"), ui::column(0)) {
-				const auto viewport_bounds = Clay_GetElementData(context.clayID("scroll"));
+			ui::FocusViewportScope focus_scope{state, FlowUi::ValueOrThrow(context.clayID("scroll"))};
+			CLAY(FlowUi::ValueOrThrow(context.clayID("tree")), ui::column(0)) {
+				const auto viewport_bounds = Clay_GetElementData(FlowUi::ValueOrThrow(context.clayID("scroll")));
 				const float visible_height =
 					viewport_bounds.found ? viewport_bounds.boundingBox.height : 500;
 				const std::size_t render_begin =
@@ -349,7 +350,7 @@ void DevChangesSelector::buildElement(BuildContext& context) {
 				if (render_begin) {
 					auto spacer = ui::column(0);
 					spacer.layout.sizing.height = CLAY_SIZING_FIXED(node_height * render_begin);
-					CLAY(context.clayID("virtual-top"), spacer) {}
+					CLAY(FlowUi::ValueOrThrow(context.clayID("virtual-top")), spacer) {}
 				}
 				for (std::size_t navigation_index = render_begin; navigation_index < render_end;
 					 ++navigation_index) {
@@ -414,12 +415,12 @@ void DevChangesSelector::buildElement(BuildContext& context) {
 					auto spacer = ui::column(0);
 					spacer.layout.sizing.height =
 						CLAY_SIZING_FIXED(node_height * (state.visible_nodes.size() - render_end));
-					CLAY(context.clayID("virtual-bottom"), spacer) {}
+					CLAY(FlowUi::ValueOrThrow(context.clayID("virtual-bottom")), spacer) {}
 				}
 				if (state.visible_nodes.empty()) {
 					auto empty = ui::column(7);
 					empty.layout.padding = {12, 12, 16, 16};
-					CLAY(context.clayID("empty"), empty) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("empty")), empty) {
 						ui::text(context,
 								 state.review.rows.empty() ? "No baked or proposed changes"
 														   : "No changes match this filter",
@@ -436,7 +437,7 @@ void DevChangesSelector::buildElement(BuildContext& context) {
 		auto footer = ui::column(4);
 		footer.layout.padding = {10, 10, 8, 8};
 		footer.backgroundColor = interface_theme::kDepth2Ink;
-		CLAY(context.clayID("footer"), footer) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("footer")), footer) {
 			const auto visible_leaves = std::ranges::count_if(
 				state.visible_nodes, [&](auto index) { return state.nodes[index].leaf; });
 			ui::text(context,

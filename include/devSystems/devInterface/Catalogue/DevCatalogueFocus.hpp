@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #pragma once
 
 #include "FlowUi/Public/BuildConfig.hpp"
@@ -40,7 +41,7 @@ void register_target(Context& context, DevCatalogueState& state, Clay_ElementId 
 		state.focus_targets.emplace_back(
 			DevCatalogueFocusTarget{identity, state.registration_viewport, text_input});
 	if (pointer_focus && context.uiManager.getPreviousFramesInteraction().isPressed(identity)) {
-		context.uiManager.shortcuts().setFocusedElement(identity);
+		FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(identity));
 		if (!text_input.value)
 			context.uiManager.inputFields().requestCaret(FlowElementID{},
 														 CaretRequestKind::ClearAll);
@@ -64,7 +65,7 @@ void begin_frame(Context& context, DevCatalogueState& state) {
 		!previous.keyDown[FlowUi::keyCode(FlowUi::Key::Escape)] &&
 		!context.uiManager.inputFields().hasPrimaryFieldFocus() &&
 		!context.uiManager.popups().has_open_popups()) {
-		const auto focused = context.uiManager.shortcuts().focusedElement().id;
+		const auto focused = FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id;
 		if (std::ranges::any_of(state.focus_targets, [focused](const auto& target) {
 				return target.identity.id == focused;
 			})) {
@@ -76,7 +77,7 @@ void begin_frame(Context& context, DevCatalogueState& state) {
 	if (current.windowFocused && current.keyDown[FlowUi::keyCode(FlowUi::Key::Tab)] &&
 		!previous.keyDown[FlowUi::keyCode(FlowUi::Key::Tab)] && !state.focus_targets.empty() &&
 		!context.uiManager.popups().has_open_popups()) {
-		const auto focused = context.uiManager.shortcuts().focusedElement().id;
+		const auto focused = FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id;
 		const auto found = std::ranges::find(state.focus_targets, focused,
 											 [](const auto& target) { return target.identity.id; });
 		const bool reverse = current.keyDown[FlowUi::keyCode(FlowUi::Key::LeftShift)] ||
@@ -87,7 +88,7 @@ void begin_frame(Context& context, DevCatalogueState& state) {
 								  : static_cast<size_t>(found - state.focus_targets.begin());
 		const auto& target = state.focus_targets[(position + (reverse ? count - 1 : 1)) % count];
 		context.uiManager.inputFields().requestCaret(FlowElementID{}, CaretRequestKind::ClearAll);
-		context.uiManager.shortcuts().setFocusedElement(target.identity);
+		FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(target.identity));
 		if (target.text_input.value)
 			context.uiManager.inputFields().requestCaret(target.text_input,
 														 CaretRequestKind::SetPrimary);

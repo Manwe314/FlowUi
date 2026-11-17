@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,44 +106,149 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::ViewPortManager::DevViewportView Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Borrowed viewport and immutable-capture metadata; observation does not schedule rendering.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ViewPortManager_8hpp_source.html">ViewPortManager.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a795438494720e8d620af3fe0167e3c0c" id="r_a795438494720e8d620af3fe0167e3c0c"><td class="memItemLeft"><a id="a795438494720e8d620af3fe0167e3c0c" name="a795438494720e8d620af3fe0167e3c0c"></a>
 std::string_view&#160;</td><td class="memItemRight"><b>key</b> {}</td></tr>
+<tr class="memdesc:a795438494720e8d620af3fe0167e3c0c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed window-local viewport registration key. <br /></td></tr>
 <tr class="memitem:a293476fa6bc7a241e144911674e515c7" id="r_a293476fa6bc7a241e144911674e515c7"><td class="memItemLeft"><a id="a293476fa6bc7a241e144911674e515c7" name="a293476fa6bc7a241e144911674e515c7"></a>
 <a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a>&#160;</td><td class="memItemRight"><b>capture_texture</b> {}</td></tr>
+<tr class="memdesc:a293476fa6bc7a241e144911674e515c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed completed immutable-copy binding, if available. <br /></td></tr>
 <tr class="memitem:ad7af3b878d0afe4b10aa4e4f97d466a8" id="r_ad7af3b878d0afe4b10aa4e4f97d466a8"><td class="memItemLeft"><a id="ad7af3b878d0afe4b10aa4e4f97d466a8" name="ad7af3b878d0afe4b10aa4e4f97d466a8"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>generation</b> = 0</td></tr>
+<tr class="memdesc:ad7af3b878d0afe4b10aa4e4f97d466a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current source render-target generation. <br /></td></tr>
 <tr class="memitem:a5df7cb6f50b6dd325d927310c8fc7741" id="r_a5df7cb6f50b6dd325d927310c8fc7741"><td class="memItemLeft"><a id="a5df7cb6f50b6dd325d927310c8fc7741" name="a5df7cb6f50b6dd325d927310c8fc7741"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>captured_frame</b> = 0</td></tr>
-<tr class="memitem:a6069900c8238230139e38d35ae1f7216" id="r_a6069900c8238230139e38d35ae1f7216"><td class="memItemLeft"><a id="a6069900c8238230139e38d35ae1f7216" name="a6069900c8238230139e38d35ae1f7216"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>captured_generation</b> = 0</td></tr>
+<tr class="memdesc:a5df7cb6f50b6dd325d927310c8fc7741"><td class="mdescLeft">&#160;</td><td class="mdescRight">Source window-frame identity represented by the completed immutable capture. <br /></td></tr>
+<tr class="memitem:a6069900c8238230139e38d35ae1f7216" id="r_a6069900c8238230139e38d35ae1f7216"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a6069900c8238230139e38d35ae1f7216">captured_generation</a> = 0</td></tr>
+<tr class="memdesc:a6069900c8238230139e38d35ae1f7216"><td class="mdescLeft">&#160;</td><td class="mdescRight">Source frame, target generation, and GPU submission of the completed copy.  <br /></td></tr>
 <tr class="memitem:a14e4a078a82226b7afb0b8d56aec80cd" id="r_a14e4a078a82226b7afb0b8d56aec80cd"><td class="memItemLeft"><a id="a14e4a078a82226b7afb0b8d56aec80cd" name="a14e4a078a82226b7afb0b8d56aec80cd"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>captured_submission</b> = 0</td></tr>
+<tr class="memdesc:a14e4a078a82226b7afb0b8d56aec80cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">GPU submission that produced the immutable capture. <br /></td></tr>
 <tr class="memitem:aa1f3c493083d388a441a61647fdec02f" id="r_aa1f3c493083d388a441a61647fdec02f"><td class="memItemLeft"><a id="aa1f3c493083d388a441a61647fdec02f" name="aa1f3c493083d388a441a61647fdec02f"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>width</b> = 0</td></tr>
-<tr class="memitem:a1fb8ce280dc308b4ed590938dd5c979e" id="r_a1fb8ce280dc308b4ed590938dd5c979e"><td class="memItemLeft"><a id="a1fb8ce280dc308b4ed590938dd5c979e" name="a1fb8ce280dc308b4ed590938dd5c979e"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>height</b> = 0</td></tr>
+<tr class="memdesc:aa1f3c493083d388a441a61647fdec02f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current source width in pixels. <br /></td></tr>
+<tr class="memitem:a1fb8ce280dc308b4ed590938dd5c979e" id="r_a1fb8ce280dc308b4ed590938dd5c979e"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a1fb8ce280dc308b4ed590938dd5c979e">height</a> = 0</td></tr>
+<tr class="memdesc:a1fb8ce280dc308b4ed590938dd5c979e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current source dimensions in pixels and numeric Vulkan format.  <br /></td></tr>
 <tr class="memitem:a00a8d5c227e75c7cc54ca88f01cac83f" id="r_a00a8d5c227e75c7cc54ca88f01cac83f"><td class="memItemLeft"><a id="a00a8d5c227e75c7cc54ca88f01cac83f" name="a00a8d5c227e75c7cc54ca88f01cac83f"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>format</b> = 0</td></tr>
+<tr class="memdesc:a00a8d5c227e75c7cc54ca88f01cac83f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Numeric Vulkan format of the current render target. <br /></td></tr>
 <tr class="memitem:a361ca038f9ad3c896130a5736b0e3835" id="r_a361ca038f9ad3c896130a5736b0e3835"><td class="memItemLeft"><a id="a361ca038f9ad3c896130a5736b0e3835" name="a361ca038f9ad3c896130a5736b0e3835"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>captured_width</b> = 0</td></tr>
-<tr class="memitem:a186d70063f71914a7e7472185fe037cd" id="r_a186d70063f71914a7e7472185fe037cd"><td class="memItemLeft"><a id="a186d70063f71914a7e7472185fe037cd" name="a186d70063f71914a7e7472185fe037cd"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>captured_height</b> = 0</td></tr>
+<tr class="memdesc:a361ca038f9ad3c896130a5736b0e3835"><td class="mdescLeft">&#160;</td><td class="mdescRight">Immutable capture width in pixels. <br /></td></tr>
+<tr class="memitem:a186d70063f71914a7e7472185fe037cd" id="r_a186d70063f71914a7e7472185fe037cd"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a186d70063f71914a7e7472185fe037cd">captured_height</a> = 0</td></tr>
+<tr class="memdesc:a186d70063f71914a7e7472185fe037cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Completed copy dimensions in pixels and numeric Vulkan format.  <br /></td></tr>
 <tr class="memitem:a18e3f7544b39089185c77d3119443136" id="r_a18e3f7544b39089185c77d3119443136"><td class="memItemLeft"><a id="a18e3f7544b39089185c77d3119443136" name="a18e3f7544b39089185c77d3119443136"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>captured_format</b> = 0</td></tr>
+<tr class="memdesc:a18e3f7544b39089185c77d3119443136"><td class="mdescLeft">&#160;</td><td class="mdescRight">Numeric Vulkan format of the immutable capture. <br /></td></tr>
 <tr class="memitem:ade26bc93413dddd307744fdc35a74452" id="r_ade26bc93413dddd307744fdc35a74452"><td class="memItemLeft"><a id="ade26bc93413dddd307744fdc35a74452" name="ade26bc93413dddd307744fdc35a74452"></a>
 bool&#160;</td><td class="memItemRight"><b>has_callback</b> = false</td></tr>
-<tr class="memitem:a02e28366907b7accc80bc897c48d39f9" id="r_a02e28366907b7accc80bc897c48d39f9"><td class="memItemLeft"><a id="a02e28366907b7accc80bc897c48d39f9" name="a02e28366907b7accc80bc897c48d39f9"></a>
-bool&#160;</td><td class="memItemRight"><b>clear_every_frame</b> = true</td></tr>
+<tr class="memdesc:ade26bc93413dddd307744fdc35a74452"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the viewport has a custom render callback. <br /></td></tr>
+<tr class="memitem:a02e28366907b7accc80bc897c48d39f9" id="r_a02e28366907b7accc80bc897c48d39f9"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a02e28366907b7accc80bc897c48d39f9">clear_every_frame</a> = true</td></tr>
+<tr class="memdesc:a02e28366907b7accc80bc897c48d39f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether a render callback is installed; clear_every_frame describes its load policy.  <br /></td></tr>
 <tr class="memitem:a14829a64553399ea6107860ae1a21f39" id="r_a14829a64553399ea6107860ae1a21f39"><td class="memItemLeft"><a id="a14829a64553399ea6107860ae1a21f39" name="a14829a64553399ea6107860ae1a21f39"></a>
 bool&#160;</td><td class="memItemRight"><b>capture_supported</b> = false</td></tr>
-<tr class="memitem:ae997edab4079a5686467b10bf3d5c121" id="r_ae997edab4079a5686467b10bf3d5c121"><td class="memItemLeft"><a id="ae997edab4079a5686467b10bf3d5c121" name="ae997edab4079a5686467b10bf3d5c121"></a>
-bool&#160;</td><td class="memItemRight"><b>capture_pending</b> = false</td></tr>
+<tr class="memdesc:a14829a64553399ea6107860ae1a21f39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the source supports immutable GPU capture. <br /></td></tr>
+<tr class="memitem:ae997edab4079a5686467b10bf3d5c121" id="r_ae997edab4079a5686467b10bf3d5c121"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ae997edab4079a5686467b10bf3d5c121">capture_pending</a> = false</td></tr>
+<tr class="memdesc:ae997edab4079a5686467b10bf3d5c121"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether immutable capture is supported, pending, or last failed.  <br /></td></tr>
 <tr class="memitem:ac068a6ee3a06aae1f66ec9180d7d2146" id="r_ac068a6ee3a06aae1f66ec9180d7d2146"><td class="memItemLeft"><a id="ac068a6ee3a06aae1f66ec9180d7d2146" name="ac068a6ee3a06aae1f66ec9180d7d2146"></a>
 bool&#160;</td><td class="memItemRight"><b>capture_failed</b> = false</td></tr>
+<tr class="memdesc:ac068a6ee3a06aae1f66ec9180d7d2146"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the most recent immutable capture failed. <br /></td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Borrowed viewport and immutable-capture metadata; observation does not schedule rendering. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="ae997edab4079a5686467b10bf3d5c121" name="ae997edab4079a5686467b10bf3d5c121"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae997edab4079a5686467b10bf3d5c121">&#9670;&#160;</a></span>capture_pending</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::ViewPortManager::DevViewportView::capture_pending = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Whether immutable capture is supported, pending, or last failed. </p>
+<p>Whether an immutable capture has been requested but not completed. </p>
+
+</div>
+</div>
+<a id="a6069900c8238230139e38d35ae1f7216" name="a6069900c8238230139e38d35ae1f7216"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6069900c8238230139e38d35ae1f7216">&#9670;&#160;</a></span>captured_generation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::ViewPortManager::DevViewportView::captured_generation = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Source frame, target generation, and GPU submission of the completed copy. </p>
+<p>Render-target generation represented by the immutable capture. </p>
+
+</div>
+</div>
+<a id="a186d70063f71914a7e7472185fe037cd" name="a186d70063f71914a7e7472185fe037cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a186d70063f71914a7e7472185fe037cd">&#9670;&#160;</a></span>captured_height</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::ViewPortManager::DevViewportView::captured_height = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Completed copy dimensions in pixels and numeric Vulkan format. </p>
+<p>Immutable capture height in pixels. </p>
+
+</div>
+</div>
+<a id="a02e28366907b7accc80bc897c48d39f9" name="a02e28366907b7accc80bc897c48d39f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a02e28366907b7accc80bc897c48d39f9">&#9670;&#160;</a></span>clear_every_frame</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::ViewPortManager::DevViewportView::clear_every_frame = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Whether a render callback is installed; clear_every_frame describes its load policy. </p>
+<p>Whether the render target clears before each render pass. </p>
+
+</div>
+</div>
+<a id="a1fb8ce280dc308b4ed590938dd5c979e" name="a1fb8ce280dc308b4ed590938dd5c979e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1fb8ce280dc308b4ed590938dd5c979e">&#9670;&#160;</a></span>height</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::ViewPortManager::DevViewportView::height = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Current source dimensions in pixels and numeric Vulkan format. </p>
+<p>Current source height in pixels. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managers/<a class="el" href="ViewPortManager_8hpp_source.html">ViewPortManager.hpp</a></li>
 </ul>
@@ -160,7 +265,7 @@ bool&#160;</td><td class="memItemRight"><b>capture_failed</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1ViewPortManager.html">ViewPortManager</a></li><li class="navelem"><a href="structFlowUi_1_1ViewPortManager_1_1DevViewportView.html">DevViewportView</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1ViewPortManager.html">ViewPortManager</a></li><li class="navelem"><a href="structFlowUi_1_1ViewPortManager_1_1DevViewportView.html">DevViewportView</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

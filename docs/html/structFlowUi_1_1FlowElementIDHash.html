@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,12 +106,46 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::FlowElementIDHash Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="ElementID_8hpp_source.html">ElementID.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:afd5bffe9b7606791d5038584750dc3e6" id="r_afd5bffe9b7606791d5038584750dc3e6"><td class="memItemLeft"><a id="afd5bffe9b7606791d5038584750dc3e6" name="afd5bffe9b7606791d5038584750dc3e6"></a>
-constexpr std::size_t&#160;</td><td class="memItemRight"><b>operator()</b> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> id) const noexcept</td></tr>
+<tr class="memitem:afd5bffe9b7606791d5038584750dc3e6" id="r_afd5bffe9b7606791d5038584750dc3e6"><td class="memItemLeft">constexpr std::size_t&#160;</td><td class="memItemRight"><a class="el" href="#afd5bffe9b7606791d5038584750dc3e6">operator()</a> (<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> id) const noexcept</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Hash adapter for <a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a>; developer labels do not affect hashing. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="afd5bffe9b7606791d5038584750dc3e6" name="afd5bffe9b7606791d5038584750dc3e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afd5bffe9b7606791d5038584750dc3e6">&#9670;&#160;</a></span>operator()()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::size_t FlowUi::FlowElementIDHash::operator() </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return a container hash of the numeric identity. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> valid = <span class="keyword">static_cast&lt;</span><span class="keywordtype">bool</span><span class="keyword">&gt;</span>(first);</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> same = first == second;</div>
+<div class="line"><span class="keyword">const</span> std::size_t hash = <a class="code hl_struct" href="structFlowUi_1_1FlowElementIDHash.html">FlowUi::FlowElementIDHash</a>{}(first);</div>
+<div class="ttc" id="astructFlowUi_1_1FlowElementIDHash_html"><div class="ttname"><a href="structFlowUi_1_1FlowElementIDHash.html">FlowUi::FlowElementIDHash</a></div><div class="ttdef"><b>Definition</b> ElementID.hpp:597</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/identificationTypes/<a class="el" href="ElementID_8hpp_source.html">ElementID.hpp</a></li>
 </ul>
@@ -128,7 +162,7 @@ constexpr std::size_t&#160;</td><td class="memItemRight"><b>operator()</b> (<a c
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1FlowElementIDHash.html">FlowElementIDHash</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1FlowElementIDHash.html">FlowElementIDHash</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

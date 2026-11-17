@@ -11,14 +11,14 @@ void ThemeManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) co
 }
 #endif
 
-ThemeManager::ThemeManager()
-	: controller_(std::make_unique<detail::manager_storage::ThemeStorageController>()) {}
+ThemeManager::ThemeManager() noexcept = default;
 
 ThemeManager::~ThemeManager() {
 	destroy();
 }
 
 void ThemeManager::init(detail::storage::IStorageSystem& storage) {
+	if (!controller_) controller_ = std::make_unique<detail::manager_storage::ThemeStorageController>();
 	storage_ = &storage;
 	if (controller_) {
 		controller_->init(storage);

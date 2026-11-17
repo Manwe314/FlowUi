@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,23 +107,79 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#pragma once</span></div>
-<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &lt;cstddef&gt;</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;string_view&gt;</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &quot;FlowUi/Private/ColorParsing.hpp&quot;</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &quot;clay.h&quot;</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="keyword">namespace </span>FlowUi {</div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span></div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">template</span> &lt;std::<span class="keywordtype">size_t</span> Size&gt;</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>[[nodiscard]] <span class="keyword">consteval</span> Clay_Color Flow_Color(<span class="keyword">const</span> <span class="keywordtype">char</span> (&amp;hexRgba)[Size]) {</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    <span class="keywordflow">return</span> detail::decodeFlowColor(std::string_view{hexRgba, Size - 1u});</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>}</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span></div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>[[nodiscard]] Clay_Color Flow_Color(std::string_view hexRgba);</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span> </div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;cstddef&gt;</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;string_view&gt;</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &quot;FlowUi/Private/ColorParsing.hpp&quot;</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &quot;FlowUi/Public/errorManagement/Exception.hpp&quot;</span></div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#include &quot;FlowUi/Public/errorManagement/Result.hpp&quot;</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="preprocessor">#include &lt;type_traits&gt;</span></div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="preprocessor">#include &lt;utility&gt;</span></div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="preprocessor">#include &quot;clay.h&quot;</span></div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi.html">FlowUi</a> {</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="keyword">template</span> &lt;std::<span class="keywordtype">size_t</span> Size&gt;</div>
+<div class="foldopen" id="foldopen00037" data-start="{" data-end="}">
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">   37</a></span>[[nodiscard]] <span class="keyword">consteval</span> Clay_Color <a class="code hl_function" href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">Flow_Color</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> (&amp;hexRgba)[Size]) <span class="keyword">noexcept</span> {</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    <span class="keywordflow">return</span> detail::decodeFlowColor(std::string_view{hexRgba, Size - 1u});</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>}</div>
+</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span></div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#ace142c65e2493585476aeab3d8c7c526">   56</a></span>[[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;Clay_Color&gt;</a> <a class="code hl_function" href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">Flow_Color</a>(std::string_view hexRgba) <span class="keyword">noexcept</span>;</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span></div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Value&gt;</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    <span class="keyword">requires</span> (!std::is_void_v&lt;Value&gt;)</div>
+<div class="foldopen" id="foldopen00066" data-start="{" data-end="}">
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">   66</a></span>[[nodiscard]] Value&amp; <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">ValueOrThrow</a>(<a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;Value&gt;</a>&amp; result) {</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    <span class="keywordflow">if</span> (!result)</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>        <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>(result.<a class="code hl_function" href="classFlowUi_1_1Result.html#a5694ad00f39a0e2d187415ddd9b9801b">error</a>());</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    <span class="keywordflow">return</span> *result;</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>}</div>
+</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span></div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Value&gt;</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <span class="keyword">requires</span> (!std::is_void_v&lt;Value&gt;)</div>
+<div class="foldopen" id="foldopen00075" data-start="{" data-end="}">
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a3ceb806de1e8daeb712e7e3dd997188c">   75</a></span>[[nodiscard]] <span class="keyword">const</span> Value&amp; <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">ValueOrThrow</a>(<span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;Value&gt;</a>&amp; result) {</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    <span class="keywordflow">if</span> (!result)</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>        <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>(result.<a class="code hl_function" href="classFlowUi_1_1Result.html#a5694ad00f39a0e2d187415ddd9b9801b">error</a>());</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    <span class="keywordflow">return</span> *result;</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>}</div>
+</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span></div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Value&gt;</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <span class="keyword">requires</span> (!std::is_void_v&lt;Value&gt;)</div>
+<div class="foldopen" id="foldopen00093" data-start="{" data-end="}">
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a656e78d6925bcccd2995b26b42b0cf14">   93</a></span>[[nodiscard]] Value <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">ValueOrThrow</a>(<a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;Value&gt;</a>&amp;&amp; result) {</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    <span class="keywordflow">if</span> (!result)</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>        <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>(result.<a class="code hl_function" href="classFlowUi_1_1Result.html#a5694ad00f39a0e2d187415ddd9b9801b">error</a>());</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    <span class="keywordflow">return</span> std::move(*result);</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>}</div>
+</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span></div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Value&gt;</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    <span class="keyword">requires</span> (!std::is_void_v&lt;Value&gt;)</div>
+<div class="foldopen" id="foldopen00102" data-start="{" data-end="}">
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a5831f59f4d69bb7b0ae9cdf4d3afed46">  102</a></span>[[nodiscard]] Value <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">ValueOrThrow</a>(<span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;Value&gt;</a>&amp;&amp; result) {</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    <span class="keywordflow">if</span> (!result)</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>        <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>(result.<a class="code hl_function" href="classFlowUi_1_1Result.html#a5694ad00f39a0e2d187415ddd9b9801b">error</a>());</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    <span class="keywordflow">return</span> *result;</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>}</div>
+</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span></div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a862115940df61d7cdd9ac06d2d02a2fc">  113</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">ValueOrThrow</a>(<a class="code hl_typedef" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> status);</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span> </div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html"><div class="ttname"><a href="classFlowUi_1_1Result.html">FlowUi::Result</a></div><div class="ttdef"><b>Definition</b> Result.hpp:77</div></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html_a5694ad00f39a0e2d187415ddd9b9801b"><div class="ttname"><a href="classFlowUi_1_1Result.html#a5694ad00f39a0e2d187415ddd9b9801b">FlowUi::Result::error</a></div><div class="ttdeci">FlowUiError &amp; error() &amp;</div><div class="ttdef"><b>Definition</b> Result.hpp:253</div></div>
+<div class="ttc" id="anamespaceFlowUi_html"><div class="ttname"><a href="namespaceFlowUi.html">FlowUi</a></div><div class="ttdef"><b>Definition</b> App.hpp:29</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a5af3d554790b4adcde01b5b90a54fb4d"><div class="ttname"><a href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">FlowUi::Status</a></div><div class="ttdeci">Result&lt; void &gt; Status</div><div class="ttdef"><b>Definition</b> Result.hpp:446</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a5efb614726ef3592ac7dda2318b6bbe0"><div class="ttname"><a href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">FlowUi::Flow_Color</a></div><div class="ttdeci">consteval Clay_Color Flow_Color(const char(&amp;hexRgba)[Size]) noexcept</div><div class="ttdoc">Convert a literal #RRGGBB or #RRGGBBAA color into a Clay_Color at compile time.</div><div class="ttdef"><b>Definition</b> Color.hpp:37</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_aef54dabee32ff800d39da726c12a2ac8"><div class="ttname"><a href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a></div><div class="ttdeci">Value &amp; ValueOrThrow(Result&lt; Value &gt; &amp;result)</div><div class="ttdoc">Borrow a successful result&#39;s value, or throw FlowUiException preserving its error.</div><div class="ttdef"><b>Definition</b> Color.hpp:66</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

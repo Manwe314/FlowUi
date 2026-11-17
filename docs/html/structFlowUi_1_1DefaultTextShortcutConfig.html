@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,24 +106,111 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::DefaultTextShortcutConfig Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="ShortcutManagerConfig_8hpp_source.html">ShortcutManagerConfig.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:ac74fe4e40de8cf3608568b7f833a7a73" id="r_ac74fe4e40de8cf3608568b7f833a7a73"><td class="memItemLeft"><a id="ac74fe4e40de8cf3608568b7f833a7a73" name="ac74fe4e40de8cf3608568b7f833a7a73"></a>
-bool&#160;</td><td class="memItemRight"><b>enabled</b> = true</td></tr>
-<tr class="memitem:a5938a48c85fc7d43ee3e7a34a0c71468" id="r_a5938a48c85fc7d43ee3e7a34a0c71468"><td class="memItemLeft"><a id="a5938a48c85fc7d43ee3e7a34a0c71468" name="a5938a48c85fc7d43ee3e7a34a0c71468"></a>
-PlatformShortcutStyle&#160;</td><td class="memItemRight"><b>platform</b> = PlatformShortcutStyle::Auto</td></tr>
-<tr class="memitem:a626372a7c6f96f0ba87c5d5b71590414" id="r_a626372a7c6f96f0ba87c5d5b71590414"><td class="memItemLeft"><a id="a626372a7c6f96f0ba87c5d5b71590414" name="a626372a7c6f96f0ba87c5d5b71590414"></a>
-int32_t&#160;</td><td class="memItemRight"><b>priority</b> = 0</td></tr>
-<tr class="memitem:ad1260bc68357e7b2fd179319912ec57e" id="r_ad1260bc68357e7b2fd179319912ec57e"><td class="memItemLeft"><a id="ad1260bc68357e7b2fd179319912ec57e" name="ad1260bc68357e7b2fd179319912ec57e"></a>
-bool&#160;</td><td class="memItemRight"><b>selectAll</b> = true</td></tr>
-<tr class="memitem:aa7aefb1fbb554c746426347d4d772f85" id="r_aa7aefb1fbb554c746426347d4d772f85"><td class="memItemLeft"><a id="aa7aefb1fbb554c746426347d4d772f85" name="aa7aefb1fbb554c746426347d4d772f85"></a>
-bool&#160;</td><td class="memItemRight"><b>clipboard</b> = true</td></tr>
-<tr class="memitem:a51b4fcbc5ad7784f3dd93b0b57a5701a" id="r_a51b4fcbc5ad7784f3dd93b0b57a5701a"><td class="memItemLeft"><a id="a51b4fcbc5ad7784f3dd93b0b57a5701a" name="a51b4fcbc5ad7784f3dd93b0b57a5701a"></a>
-bool&#160;</td><td class="memItemRight"><b>undoRedoRequests</b> = true</td></tr>
-<tr class="memitem:a63d81921fbc79abe43c8b0afbd4c13cc" id="r_a63d81921fbc79abe43c8b0afbd4c13cc"><td class="memItemLeft"><a id="a63d81921fbc79abe43c8b0afbd4c13cc" name="a63d81921fbc79abe43c8b0afbd4c13cc"></a>
-bool&#160;</td><td class="memItemRight"><b>wordNavigation</b> = true</td></tr>
+<tr class="memitem:ac74fe4e40de8cf3608568b7f833a7a73" id="r_ac74fe4e40de8cf3608568b7f833a7a73"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ac74fe4e40de8cf3608568b7f833a7a73">enabled</a> = true</td></tr>
+<tr class="memitem:a5938a48c85fc7d43ee3e7a34a0c71468" id="r_a5938a48c85fc7d43ee3e7a34a0c71468"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a0e507a9881a6d25cb47e1999da040db5">PlatformShortcutStyle</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5938a48c85fc7d43ee3e7a34a0c71468">platform</a> = <a class="el" href="namespaceFlowUi.html#a0e507a9881a6d25cb47e1999da040db5a06b9281e396db002010bde1de57262eb">PlatformShortcutStyle::Auto</a></td></tr>
+<tr class="memitem:a626372a7c6f96f0ba87c5d5b71590414" id="r_a626372a7c6f96f0ba87c5d5b71590414"><td class="memItemLeft">int32_t&#160;</td><td class="memItemRight"><a class="el" href="#a626372a7c6f96f0ba87c5d5b71590414">priority</a> = 0</td></tr>
+<tr class="memitem:ad1260bc68357e7b2fd179319912ec57e" id="r_ad1260bc68357e7b2fd179319912ec57e"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ad1260bc68357e7b2fd179319912ec57e">selectAll</a> = true</td></tr>
+<tr class="memitem:aa7aefb1fbb554c746426347d4d772f85" id="r_aa7aefb1fbb554c746426347d4d772f85"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#aa7aefb1fbb554c746426347d4d772f85">clipboard</a> = true</td></tr>
+<tr class="memitem:a63d81921fbc79abe43c8b0afbd4c13cc" id="r_a63d81921fbc79abe43c8b0afbd4c13cc"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a63d81921fbc79abe43c8b0afbd4c13cc">wordNavigation</a> = true</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Built-in text commands registered at UI initialization for focused input fields. Individual families require enabled and perform operations owned by <a class="el" href="namespaceFlowUi.html">FlowUi</a>. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="aa7aefb1fbb554c746426347d4d772f85" name="aa7aefb1fbb554c746426347d4d772f85"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7aefb1fbb554c746426347d4d772f85">&#9670;&#160;</a></span>clipboard</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::DefaultTextShortcutConfig::clipboard = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Register copy, cut, and paste. </p>
+
+</div>
+</div>
+<a id="ac74fe4e40de8cf3608568b7f833a7a73" name="ac74fe4e40de8cf3608568b7f833a7a73"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac74fe4e40de8cf3608568b7f833a7a73">&#9670;&#160;</a></span>enabled</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::DefaultTextShortcutConfig::enabled = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Register the enabled command families during initialization. </p>
+
+</div>
+</div>
+<a id="a5938a48c85fc7d43ee3e7a34a0c71468" name="a5938a48c85fc7d43ee3e7a34a0c71468"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5938a48c85fc7d43ee3e7a34a0c71468">&#9670;&#160;</a></span>platform</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a0e507a9881a6d25cb47e1999da040db5">PlatformShortcutStyle</a> FlowUi::DefaultTextShortcutConfig::platform = <a class="el" href="namespaceFlowUi.html#a0e507a9881a6d25cb47e1999da040db5a06b9281e396db002010bde1de57262eb">PlatformShortcutStyle::Auto</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Platform convention for primary command modifiers. </p>
+
+</div>
+</div>
+<a id="a626372a7c6f96f0ba87c5d5b71590414" name="a626372a7c6f96f0ba87c5d5b71590414"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a626372a7c6f96f0ba87c5d5b71590414">&#9670;&#160;</a></span>priority</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t FlowUi::DefaultTextShortcutConfig::priority = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Dispatch priority assigned to built-in text shortcuts; higher values are considered first. </p>
+
+</div>
+</div>
+<a id="ad1260bc68357e7b2fd179319912ec57e" name="ad1260bc68357e7b2fd179319912ec57e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad1260bc68357e7b2fd179319912ec57e">&#9670;&#160;</a></span>selectAll</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::DefaultTextShortcutConfig::selectAll = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Register select-all. </p>
+
+</div>
+</div>
+<a id="a63d81921fbc79abe43c8b0afbd4c13cc" name="a63d81921fbc79abe43c8b0afbd4c13cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a63d81921fbc79abe43c8b0afbd4c13cc">&#9670;&#160;</a></span>wordNavigation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::DefaultTextShortcutConfig::wordNavigation = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Register word/document navigation and word deletion. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/configurationStructs/<a class="el" href="ShortcutManagerConfig_8hpp_source.html">ShortcutManagerConfig.hpp</a></li>
 </ul>
@@ -140,7 +227,7 @@ bool&#160;</td><td class="memItemRight"><b>wordNavigation</b> = true</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1DefaultTextShortcutConfig.html">DefaultTextShortcutConfig</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1DefaultTextShortcutConfig.html">DefaultTextShortcutConfig</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

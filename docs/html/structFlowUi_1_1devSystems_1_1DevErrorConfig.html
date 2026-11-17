@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,39 +106,60 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevErrorConfig Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Error producer buffers and evidence detail in development builds. Detail is capped by FLOWUI_DEV_ERROR_LEVEL; borrowed providers must outlive monitoring.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevConfig_8hpp_source.html">DevConfig.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:ace3c6fefd1e1b4d223204b05a8fa80c8" id="r_ace3c6fefd1e1b4d223204b05a8fa80c8"><td class="memItemLeft"><a id="ace3c6fefd1e1b4d223204b05a8fa80c8" name="ace3c6fefd1e1b4d223204b05a8fa80c8"></a>
-DevErrorCaptureLevel&#160;</td><td class="memItemRight"><b>level</b> = DevErrorCaptureLevel::Causal</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems.html#a00e969af671d56a7247ae30e25438b27">DevErrorCaptureLevel</a>&#160;</td><td class="memItemRight"><b>level</b> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a00e969af671d56a7247ae30e25438b27a376ddc595b141a7db7798145e4b6b286">DevErrorCaptureLevel::Causal</a></td></tr>
+<tr class="memdesc:ace3c6fefd1e1b4d223204b05a8fa80c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Error detail requested up to the compiled FLOWUI_DEV_ERROR_LEVEL. <br /></td></tr>
 <tr class="memitem:a9c23c0743ae4fd5828e7090e03a0b232" id="r_a9c23c0743ae4fd5828e7090e03a0b232"><td class="memItemLeft"><a id="a9c23c0743ae4fd5828e7090e03a0b232" name="a9c23c0743ae4fd5828e7090e03a0b232"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>producerRecordCapacity</b> = 256u</td></tr>
+<tr class="memdesc:a9c23c0743ae4fd5828e7090e03a0b232"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum records buffered by each producer before draining. <br /></td></tr>
 <tr class="memitem:a46bd33e774534730bb74d030ebb33bd2" id="r_a46bd33e774534730bb74d030ebb33bd2"><td class="memItemLeft"><a id="a46bd33e774534730bb74d030ebb33bd2" name="a46bd33e774534730bb74d030ebb33bd2"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>breadcrumbCapacity</b> = 512u</td></tr>
+<tr class="memdesc:a46bd33e774534730bb74d030ebb33bd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum breadcrumbs buffered by a producer. <br /></td></tr>
 <tr class="memitem:a3ddd1b875de1d425e9bfa9bf78e2923d" id="r_a3ddd1b875de1d425e9bfa9bf78e2923d"><td class="memItemLeft"><a id="a3ddd1b875de1d425e9bfa9bf78e2923d" name="a3ddd1b875de1d425e9bfa9bf78e2923d"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>recentBreadcrumbCount</b> = 32u</td></tr>
+<tr class="memdesc:a3ddd1b875de1d425e9bfa9bf78e2923d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum recent breadcrumbs attached to one occurrence. <br /></td></tr>
 <tr class="memitem:af5d29bfded7e699c929ce03c236d8c41" id="r_af5d29bfded7e699c929ce03c236d8c41"><td class="memItemLeft"><a id="af5d29bfded7e699c929ce03c236d8c41" name="af5d29bfded7e699c929ce03c236d8c41"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>nativeTextLimit</b> = static_cast&lt;uint32_t&gt;(kDevErrorNativeTextCapacity)</td></tr>
+uint32_t&#160;</td><td class="memItemRight"><b>nativeTextLimit</b> = static_cast&lt;uint32_t&gt;(<a class="el" href="namespaceFlowUi_1_1devSystems.html#a8aed0bfe511cb0db435e956fb423efc1">kDevErrorNativeTextCapacity</a>)</td></tr>
+<tr class="memdesc:af5d29bfded7e699c929ce03c236d8c41"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum native diagnostic text bytes copied, bounded by kDevErrorNativeTextCapacity. <br /></td></tr>
 <tr class="memitem:ae5204954ff1d482a003f587499665efb" id="r_ae5204954ff1d482a003f587499665efb"><td class="memItemLeft"><a id="ae5204954ff1d482a003f587499665efb" name="ae5204954ff1d482a003f587499665efb"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>threadRecorderCapacity</b> = 16u</td></tr>
+<tr class="memdesc:ae5204954ff1d482a003f587499665efb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum registered error recorder threads. <br /></td></tr>
 <tr class="memitem:a14f880db1052dd3ab378d8e09016adf1" id="r_a14f880db1052dd3ab378d8e09016adf1"><td class="memItemLeft"><a id="a14f880db1052dd3ab378d8e09016adf1" name="a14f880db1052dd3ab378d8e09016adf1"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>sourceDescriptorCapacity</b> = 1024u</td></tr>
+<tr class="memdesc:a14f880db1052dd3ab378d8e09016adf1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum copied error source descriptors. <br /></td></tr>
 <tr class="memitem:a9dc6611200e7e3b6ef344f8bf8e5cb5d" id="r_a9dc6611200e7e3b6ef344f8bf8e5cb5d"><td class="memItemLeft"><a id="a9dc6611200e7e3b6ef344f8bf8e5cb5d" name="a9dc6611200e7e3b6ef344f8bf8e5cb5d"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>breadcrumbDescriptorCapacity</b> = 256u</td></tr>
+<tr class="memdesc:a9dc6611200e7e3b6ef344f8bf8e5cb5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum registered breadcrumb descriptors. <br /></td></tr>
 <tr class="memitem:ac09ec69b1a4ead05422c6d795af02688" id="r_ac09ec69b1a4ead05422c6d795af02688"><td class="memItemLeft"><a id="ac09ec69b1a4ead05422c6d795af02688" name="ac09ec69b1a4ead05422c6d795af02688"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>stackTraceCapacity</b> = 256u</td></tr>
+<tr class="memdesc:ac09ec69b1a4ead05422c6d795af02688"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum retained raw stack traces. <br /></td></tr>
 <tr class="memitem:a8c146b995eabcb45ef500c7a7063371d" id="r_a8c146b995eabcb45ef500c7a7063371d"><td class="memItemLeft"><a id="a8c146b995eabcb45ef500c7a7063371d" name="a8c146b995eabcb45ef500c7a7063371d"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>maximumStackFrames</b> = 32u</td></tr>
+<tr class="memdesc:a8c146b995eabcb45ef500c7a7063371d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum frames copied from a single native stack. <br /></td></tr>
 <tr class="memitem:a9689bc01def7cd3952581c7e05290701" id="r_a9689bc01def7cd3952581c7e05290701"><td class="memItemLeft"><a id="a9689bc01def7cd3952581c7e05290701" name="a9689bc01def7cd3952581c7e05290701"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>snapshotProviderCapacity</b> = 64u</td></tr>
+<tr class="memdesc:a9689bc01def7cd3952581c7e05290701"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum registered diagnostic snapshot providers. <br /></td></tr>
 <tr class="memitem:a106c33bba498cdf4a092fc6d0829cfce" id="r_a106c33bba498cdf4a092fc6d0829cfce"><td class="memItemLeft"><a id="a106c33bba498cdf4a092fc6d0829cfce" name="a106c33bba498cdf4a092fc6d0829cfce"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>pendingSnapshotCapacity</b> = 128u</td></tr>
+<tr class="memdesc:a106c33bba498cdf4a092fc6d0829cfce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum queued safe-point snapshot requests. <br /></td></tr>
 <tr class="memitem:a6d9508c9b4feba11bf142204a4a75aa5" id="r_a6d9508c9b4feba11bf142204a4a75aa5"><td class="memItemLeft"><a id="a6d9508c9b4feba11bf142204a4a75aa5" name="a6d9508c9b4feba11bf142204a4a75aa5"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>retainedSnapshotCapacity</b> = 256u</td></tr>
+<tr class="memdesc:a6d9508c9b4feba11bf142204a4a75aa5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum retained captured state snapshots. <br /></td></tr>
 <tr class="memitem:a61d09dc36eeec804099a46992bbd2cd9" id="r_a61d09dc36eeec804099a46992bbd2cd9"><td class="memItemLeft"><a id="a61d09dc36eeec804099a46992bbd2cd9" name="a61d09dc36eeec804099a46992bbd2cd9"></a>
 <a class="el" href="classFlowUi_1_1devSystems_1_1DevErrorStackProvider.html">DevErrorStackProvider</a> *&#160;</td><td class="memItemRight"><b>stackProvider</b> = nullptr</td></tr>
+<tr class="memdesc:a61d09dc36eeec804099a46992bbd2cd9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed optional native stack provider; nullptr leaves native stack evidence unavailable. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Error producer buffers and evidence detail in development builds. Detail is capped by FLOWUI_DEV_ERROR_LEVEL; borrowed providers must outlive monitoring. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/<a class="el" href="DevConfig_8hpp_source.html">DevConfig.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -154,7 +175,7 @@ uint32_t&#160;</td><td class="memItemRight"><b>retainedSnapshotCapacity</b> = 25
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorConfig.html">DevErrorConfig</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevErrorConfig.html">DevErrorConfig</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include <algorithm>
 #include <cstdint>
 #include <optional>
@@ -99,7 +101,7 @@ struct Switch {
 			return;
 		}
 
-		const auto& theme = context.uiManager.theme<FSELTheme>().switchTheme;
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().switchTheme;
 		context.uiManager.requestCursor(
 			context.params.cursor.value_or(theme.cursor),
 			context.params.cursorPriority.value_or(theme.cursorPriority));
@@ -134,7 +136,7 @@ struct Switch {
 	 * context Borrowed context valid for this callback only.
 	 */
 	static void buildElement(BuildContext& context) {
-		const auto& theme = context.uiManager.theme<FSELTheme>().switchTheme;
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().switchTheme;
 		const FSELSwitchStateTheme appearance = resolveAppearance(context, theme);
 		const float trackWidth = std::max(
 			context.params.trackWidth.value_or(theme.trackWidth),
@@ -193,7 +195,7 @@ struct Switch {
 		};
 
 		CLAY(context.clayID(), track) {
-			CLAY(context.clayID("knob"), knob);
+			CLAY(FlowUi::ValueOrThrow(context.clayID("knob")), knob);
 		}
 	}
 

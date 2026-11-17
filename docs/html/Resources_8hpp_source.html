@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -115,17 +115,22 @@ $(function() {
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;string_view&gt;</span></div>
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;vector&gt;</span></div>
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">namespace </span>FlowUi {</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi.html">FlowUi</a> {</div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span></div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>[[nodiscard]] std::filesystem::path path_from_utf8(std::string_view text);</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>[[nodiscard]] std::string path_to_utf8(<span class="keyword">const</span> std::filesystem::path&amp; path);</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>[[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;std::filesystem::path&gt;</a> locate_resource(<span class="keyword">const</span> std::filesystem::path&amp; name,</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>                                                            <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceConfig.html">ResourceConfig</a>&amp; config = {});</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>[[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;std::vector&lt;unsigned char&gt;</a>&gt; read_file_bytes(<span class="keyword">const</span> std::filesystem::path&amp; path);</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>} <span class="comment">// namespace FlowUi</span></div>
-<div class="ttc" id="aclassFlowUi_1_1Result_html"><div class="ttname"><a href="classFlowUi_1_1Result.html">FlowUi::Result</a></div><div class="ttdef"><b>Definition</b> Result.hpp:29</div></div>
-<div class="ttc" id="astructFlowUi_1_1ResourceConfig_html"><div class="ttname"><a href="structFlowUi_1_1ResourceConfig.html">FlowUi::ResourceConfig</a></div><div class="ttdef"><b>Definition</b> ResourceConfig.hpp:9</div></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#aa5efbf74171b0882e4619e16d3f615d7">   26</a></span>[[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;std::filesystem::path&gt;</a> <a class="code hl_function" href="namespaceFlowUi.html#aa5efbf74171b0882e4619e16d3f615d7">path_from_utf8</a>(std::string_view text) <span class="keyword">noexcept</span>;</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a24058405ee08e691e0b3eb41df28dac6">   41</a></span>[[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;std::string&gt;</a> <a class="code hl_function" href="namespaceFlowUi.html#a24058405ee08e691e0b3eb41df28dac6">path_to_utf8</a>(<span class="keyword">const</span> std::filesystem::path&amp; path) <span class="keyword">noexcept</span>;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a00120c83b3aa52eb57e41531b05c894e">   62</a></span>[[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;std::filesystem::path&gt;</a> <a class="code hl_function" href="namespaceFlowUi.html#a00120c83b3aa52eb57e41531b05c894e">locate_resource</a>(<span class="keyword">const</span> std::filesystem::path&amp; name,</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>                                                            <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceConfig.html">ResourceConfig</a>&amp; config = {}) <span class="keyword">noexcept</span>;</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a3148e058f3ed88ddc3d39e17f987fca4">   79</a></span>[[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1Result.html">Result&lt;std::vector&lt;unsigned char&gt;</a>&gt; <a class="code hl_function" href="namespaceFlowUi.html#a3148e058f3ed88ddc3d39e17f987fca4">read_file_bytes</a>(<span class="keyword">const</span> std::filesystem::path&amp; path) <span class="keyword">noexcept</span>;</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html"><div class="ttname"><a href="classFlowUi_1_1Result.html">FlowUi::Result</a></div><div class="ttdef"><b>Definition</b> Result.hpp:77</div></div>
+<div class="ttc" id="anamespaceFlowUi_html"><div class="ttname"><a href="namespaceFlowUi.html">FlowUi</a></div><div class="ttdef"><b>Definition</b> App.hpp:29</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a00120c83b3aa52eb57e41531b05c894e"><div class="ttname"><a href="namespaceFlowUi.html#a00120c83b3aa52eb57e41531b05c894e">FlowUi::locate_resource</a></div><div class="ttdeci">Result&lt; std::filesystem::path &gt; locate_resource(const std::filesystem::path &amp;name, const ResourceConfig &amp;config={}) noexcept</div><div class="ttdoc">Locate a packaged resource in configured search order.</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a24058405ee08e691e0b3eb41df28dac6"><div class="ttname"><a href="namespaceFlowUi.html#a24058405ee08e691e0b3eb41df28dac6">FlowUi::path_to_utf8</a></div><div class="ttdeci">Result&lt; std::string &gt; path_to_utf8(const std::filesystem::path &amp;path) noexcept</div><div class="ttdoc">Serialize a native filesystem path as UTF-8 using generic path separators.</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a3148e058f3ed88ddc3d39e17f987fca4"><div class="ttname"><a href="namespaceFlowUi.html#a3148e058f3ed88ddc3d39e17f987fca4">FlowUi::read_file_bytes</a></div><div class="ttdeci">Result&lt; std::vector&lt; unsigned char &gt; &gt; read_file_bytes(const std::filesystem::path &amp;path) noexcept</div><div class="ttdoc">Read an entire file as bytes through a native filesystem path.</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_aa5efbf74171b0882e4619e16d3f615d7"><div class="ttname"><a href="namespaceFlowUi.html#aa5efbf74171b0882e4619e16d3f615d7">FlowUi::path_from_utf8</a></div><div class="ttdeci">Result&lt; std::filesystem::path &gt; path_from_utf8(std::string_view text) noexcept</div><div class="ttdoc">Convert UTF-8 text to a native filesystem path without a Windows code-page conversion.</div></div>
+<div class="ttc" id="astructFlowUi_1_1ResourceConfig_html"><div class="ttname"><a href="structFlowUi_1_1ResourceConfig.html">FlowUi::ResourceConfig</a></div><div class="ttdef"><b>Definition</b> ResourceConfig.hpp:12</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

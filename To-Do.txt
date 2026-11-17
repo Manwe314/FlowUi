@@ -170,6 +170,8 @@ things i want to do:
 			- Tabs and TAb bar elements
 			- Menu items a Menu elements
 			- Dedicated Scrolling Area with scroll indicator
+		- Error handling
+			- add Actionable Api for Error cases (cancel frame / request frame cancel ...)
 	
 	- Adding New systems:
 		- Asset Loader Concept manager?
@@ -182,6 +184,7 @@ things i want to do:
 		- Ofline font Baker UI interface
 		- Dev Mode Tooling to auto Train PGO.
 		- Add Pre Rasterized Icon Atlas Export For immediate recompile and re use.
+		- add Error codes to devCatalogue
 		- DevTooling
 			- Overlay service:
 				-	Text is usually over the eleent instead of it beeing outside it

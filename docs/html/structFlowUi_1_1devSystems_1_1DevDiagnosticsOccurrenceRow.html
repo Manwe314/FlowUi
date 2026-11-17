@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,30 +111,171 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:ab1161518aaf8bf1389e77822d5baee10" id="r_ab1161518aaf8bf1389e77822d5baee10"><td class="memItemLeft"><a id="ab1161518aaf8bf1389e77822d5baee10" name="ab1161518aaf8bf1389e77822d5baee10"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevDiagnosticsStepReference.html">DevDiagnosticsStepReference</a> &gt;&#160;</td><td class="memItemRight"><b>steps</b> {}</td></tr>
-<tr class="memitem:a7457db6759f7c5b8ae4fc618a954ac0e" id="r_a7457db6759f7c5b8ae4fc618a954ac0e"><td class="memItemLeft"><a id="a7457db6759f7c5b8ae4fc618a954ac0e" name="a7457db6759f7c5b8ae4fc618a954ac0e"></a>
-<a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>&#160;</td><td class="memItemRight"><b>error</b> {}</td></tr>
-<tr class="memitem:a380d3d774b7773c05a78f4156fe30277" id="r_a380d3d774b7773c05a78f4156fe30277"><td class="memItemLeft"><a id="a380d3d774b7773c05a78f4156fe30277" name="a380d3d774b7773c05a78f4156fe30277"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>id</b> = 0</td></tr>
-<tr class="memitem:ae16a39fa1d50397f342d704208a59066" id="r_ae16a39fa1d50397f342d704208a59066"><td class="memItemLeft"><a id="ae16a39fa1d50397f342d704208a59066" name="ae16a39fa1d50397f342d704208a59066"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>first_app_tick</b> = 0</td></tr>
-<tr class="memitem:a117cbee0ccc01e2fc02edeb1ac3d046f" id="r_a117cbee0ccc01e2fc02edeb1ac3d046f"><td class="memItemLeft"><a id="a117cbee0ccc01e2fc02edeb1ac3d046f" name="a117cbee0ccc01e2fc02edeb1ac3d046f"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>last_app_tick</b> = 0</td></tr>
-<tr class="memitem:a6d9a9663638d76f154a8476bd361f977" id="r_a6d9a9663638d76f154a8476bd361f977"><td class="memItemLeft"><a id="a6d9a9663638d76f154a8476bd361f977" name="a6d9a9663638d76f154a8476bd361f977"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>first_timestamp_ns</b> = 0</td></tr>
-<tr class="memitem:a4497166c6aa31b105c4ee8a85010577e" id="r_a4497166c6aa31b105c4ee8a85010577e"><td class="memItemLeft"><a id="a4497166c6aa31b105c4ee8a85010577e" name="a4497166c6aa31b105c4ee8a85010577e"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>last_timestamp_ns</b> = 0</td></tr>
-<tr class="memitem:a95cfad68304fad80a1c29d6cf00bf9d8" id="r_a95cfad68304fad80a1c29d6cf00bf9d8"><td class="memItemLeft"><a id="a95cfad68304fad80a1c29d6cf00bf9d8" name="a95cfad68304fad80a1c29d6cf00bf9d8"></a>
-ErrorResolution&#160;</td><td class="memItemRight"><b>resolution</b> = ErrorResolution::None</td></tr>
-<tr class="memitem:a7d818e19aed1931df2fff260821a0ebc" id="r_a7d818e19aed1931df2fff260821a0ebc"><td class="memItemLeft"><a id="a7d818e19aed1931df2fff260821a0ebc" name="a7d818e19aed1931df2fff260821a0ebc"></a>
-DevErrorOccurrenceState&#160;</td><td class="memItemRight"><b>state</b> = DevErrorOccurrenceState::Open</td></tr>
-<tr class="memitem:a27e50fd13d34e889f3dc77cafd7eea5f" id="r_a27e50fd13d34e889f3dc77cafd7eea5f"><td class="memItemLeft"><a id="a27e50fd13d34e889f3dc77cafd7eea5f" name="a27e50fd13d34e889f3dc77cafd7eea5f"></a>
-DevErrorRecordFlag&#160;</td><td class="memItemRight"><b>flags</b> = DevErrorRecordFlag::None</td></tr>
+<tr class="memitem:ab1161518aaf8bf1389e77822d5baee10" id="r_ab1161518aaf8bf1389e77822d5baee10"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevDiagnosticsStepReference.html">DevDiagnosticsStepReference</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ab1161518aaf8bf1389e77822d5baee10">steps</a> {}</td></tr>
+<tr class="memitem:a7457db6759f7c5b8ae4fc618a954ac0e" id="r_a7457db6759f7c5b8ae4fc618a954ac0e"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>&#160;</td><td class="memItemRight"><a class="el" href="#a7457db6759f7c5b8ae4fc618a954ac0e">error</a> {}</td></tr>
+<tr class="memitem:a380d3d774b7773c05a78f4156fe30277" id="r_a380d3d774b7773c05a78f4156fe30277"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a380d3d774b7773c05a78f4156fe30277">id</a> = 0</td></tr>
+<tr class="memitem:ae16a39fa1d50397f342d704208a59066" id="r_ae16a39fa1d50397f342d704208a59066"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ae16a39fa1d50397f342d704208a59066">first_app_tick</a> = 0</td></tr>
+<tr class="memitem:a117cbee0ccc01e2fc02edeb1ac3d046f" id="r_a117cbee0ccc01e2fc02edeb1ac3d046f"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a117cbee0ccc01e2fc02edeb1ac3d046f">last_app_tick</a> = 0</td></tr>
+<tr class="memitem:a6d9a9663638d76f154a8476bd361f977" id="r_a6d9a9663638d76f154a8476bd361f977"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a6d9a9663638d76f154a8476bd361f977">first_timestamp_ns</a> = 0</td></tr>
+<tr class="memitem:a4497166c6aa31b105c4ee8a85010577e" id="r_a4497166c6aa31b105c4ee8a85010577e"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a4497166c6aa31b105c4ee8a85010577e">last_timestamp_ns</a> = 0</td></tr>
+<tr class="memitem:a95cfad68304fad80a1c29d6cf00bf9d8" id="r_a95cfad68304fad80a1c29d6cf00bf9d8"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a94bf9fd3426ebd61a302d6b843d06837">ErrorResolution</a>&#160;</td><td class="memItemRight"><a class="el" href="#a95cfad68304fad80a1c29d6cf00bf9d8">resolution</a> = <a class="el" href="namespaceFlowUi.html#a94bf9fd3426ebd61a302d6b843d06837a6adf97f83acf6453d4a6a4b1070f3754">ErrorResolution::None</a></td></tr>
+<tr class="memitem:a7d818e19aed1931df2fff260821a0ebc" id="r_a7d818e19aed1931df2fff260821a0ebc"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ab67064ccea763f45a8028a5fc5f69f2f">DevErrorOccurrenceState</a>&#160;</td><td class="memItemRight"><a class="el" href="#a7d818e19aed1931df2fff260821a0ebc">state</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ab67064ccea763f45a8028a5fc5f69f2fac3bf447eabe632720a3aa1a7ce401274">DevErrorOccurrenceState::Open</a></td></tr>
+<tr class="memitem:a27e50fd13d34e889f3dc77cafd7eea5f" id="r_a27e50fd13d34e889f3dc77cafd7eea5f"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ac9db518d6de0f11929b6969157862fa1">DevErrorRecordFlag</a>&#160;</td><td class="memItemRight"><a class="el" href="#a27e50fd13d34e889f3dc77cafd7eea5f">flags</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ac9db518d6de0f11929b6969157862fa1a6adf97f83acf6453d4a6a4b1070f3754">DevErrorRecordFlag::None</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>One retained occurrence start, irrespective of its number of captured steps. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a7457db6759f7c5b8ae4fc618a954ac0e" name="a7457db6759f7c5b8ae4fc618a954ac0e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7457db6759f7c5b8ae4fc618a954ac0e">&#9670;&#160;</a></span>error</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> FlowUi::devSystems::DevDiagnosticsOccurrenceRow::error {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Production error contract and compact payload captured for this occurrence. </p>
+
+</div>
+</div>
+<a id="ae16a39fa1d50397f342d704208a59066" name="ae16a39fa1d50397f342d704208a59066"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae16a39fa1d50397f342d704208a59066">&#9670;&#160;</a></span>first_app_tick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevDiagnosticsOccurrenceRow::first_app_tick = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>First tick admitted to the capture or occurrence. </p>
+
+</div>
+</div>
+<a id="a6d9a9663638d76f154a8476bd361f977" name="a6d9a9663638d76f154a8476bd361f977"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d9a9663638d76f154a8476bd361f977">&#9670;&#160;</a></span>first_timestamp_ns</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevDiagnosticsOccurrenceRow::first_timestamp_ns = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>First observed occurrence timestamp in nanoseconds. </p>
+
+</div>
+</div>
+<a id="a27e50fd13d34e889f3dc77cafd7eea5f" name="a27e50fd13d34e889f3dc77cafd7eea5f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a27e50fd13d34e889f3dc77cafd7eea5f">&#9670;&#160;</a></span>flags</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ac9db518d6de0f11929b6969157862fa1">DevErrorRecordFlag</a> FlowUi::devSystems::DevDiagnosticsOccurrenceRow::flags = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ac9db518d6de0f11929b6969157862fa1a6adf97f83acf6453d4a6a4b1070f3754">DevErrorRecordFlag::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Bitmask of completion, provenance and capture-quality conditions. </p>
+
+</div>
+</div>
+<a id="a380d3d774b7773c05a78f4156fe30277" name="a380d3d774b7773c05a78f4156fe30277"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a380d3d774b7773c05a78f4156fe30277">&#9670;&#160;</a></span>id</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevDiagnosticsOccurrenceRow::id = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Stable identity of this retained entity; zero means unassigned. </p>
+
+</div>
+</div>
+<a id="a117cbee0ccc01e2fc02edeb1ac3d046f" name="a117cbee0ccc01e2fc02edeb1ac3d046f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a117cbee0ccc01e2fc02edeb1ac3d046f">&#9670;&#160;</a></span>last_app_tick</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevDiagnosticsOccurrenceRow::last_app_tick = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Last application tick associated with the occurrence. </p>
+
+</div>
+</div>
+<a id="a4497166c6aa31b105c4ee8a85010577e" name="a4497166c6aa31b105c4ee8a85010577e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4497166c6aa31b105c4ee8a85010577e">&#9670;&#160;</a></span>last_timestamp_ns</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::DevDiagnosticsOccurrenceRow::last_timestamp_ns = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Last observed occurrence timestamp in nanoseconds. </p>
+
+</div>
+</div>
+<a id="a95cfad68304fad80a1c29d6cf00bf9d8" name="a95cfad68304fad80a1c29d6cf00bf9d8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95cfad68304fad80a1c29d6cf00bf9d8">&#9670;&#160;</a></span>resolution</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a94bf9fd3426ebd61a302d6b843d06837">ErrorResolution</a> FlowUi::devSystems::DevDiagnosticsOccurrenceRow::resolution = <a class="el" href="namespaceFlowUi.html#a94bf9fd3426ebd61a302d6b843d06837a6adf97f83acf6453d4a6a4b1070f3754">ErrorResolution::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Resolution applied or reported for the error contract. </p>
+
+</div>
+</div>
+<a id="a7d818e19aed1931df2fff260821a0ebc" name="a7d818e19aed1931df2fff260821a0ebc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d818e19aed1931df2fff260821a0ebc">&#9670;&#160;</a></span>state</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ab67064ccea763f45a8028a5fc5f69f2f">DevErrorOccurrenceState</a> FlowUi::devSystems::DevDiagnosticsOccurrenceRow::state = <a class="el" href="namespaceFlowUi_1_1devSystems.html#ab67064ccea763f45a8028a5fc5f69f2fac3bf447eabe632720a3aa1a7ce401274">DevErrorOccurrenceState::Open</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Retention, correlation or collection state of this record. </p>
+
+</div>
+</div>
+<a id="ab1161518aaf8bf1389e77822d5baee10" name="ab1161518aaf8bf1389e77822d5baee10"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab1161518aaf8bf1389e77822d5baee10">&#9670;&#160;</a></span>steps</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="structFlowUi_1_1devSystems_1_1DevDiagnosticsStepReference.html">DevDiagnosticsStepReference</a>&gt; FlowUi::devSystems::DevDiagnosticsOccurrenceRow::steps {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned retained causal steps or their compact searchable references. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevDiagnosticsReporting_8hpp_source.html">DevDiagnosticsReporting.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -150,7 +291,7 @@ DevErrorRecordFlag&#160;</td><td class="memItemRight"><b>flags</b> = DevErrorRec
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevDiagnosticsOccurrenceRow.html">DevDiagnosticsOccurrenceRow</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1DevDiagnosticsOccurrenceRow.html">DevDiagnosticsOccurrenceRow</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

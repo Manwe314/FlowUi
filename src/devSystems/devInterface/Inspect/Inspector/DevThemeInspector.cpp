@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Inspect/Inspector/DevThemeInspector.hpp"
 #include "devSystems/devInterface/Inspect/DevThemeEditorData.hpp"
 #if FLOW_UI_DEV_MODE
@@ -11,7 +12,7 @@ namespace {
 // Actions resolve theme coordinates at invocation, while retained UI state owns the selection.
 constexpr auto kActivateTheme =
 	UiAction("flowui.dev_interface.theme.activate", [](App& app, DevInterfaceState& state) {
-		const auto status = app.themes().set_dev_active_variant(state.inspect_theme_type,
+		const auto status = FlowUi::ValueOrThrow(app.themes()).get().set_dev_active_variant(state.inspect_theme_type,
 																state.inspect_theme_variant);
 		state.lastActionMessage =
 			status ? "Active theme variant updated" : "Theme variant is unavailable";
@@ -25,7 +26,7 @@ constexpr auto kCloneTheme =
 		const auto* selected = selected_theme(catalogue, state);
 		if (!selected)
 			return;
-		const auto result = target.app->themes().clone_dev_variant(
+		const auto result = FlowUi::ValueOrThrow(target.app->themes()).get().clone_dev_variant(
 			state.inspect_theme_type, selected->variant, target.clone_name);
 		state.lastActionMessage = result ? "Cloned theme variant: " + target.clone_name
 										 : "Clone failed: enter a new, nonempty variant name";
@@ -50,7 +51,7 @@ constexpr auto kThemeFieldAction = UiAction(
 			return;
 		App& app = *target.app;
 		auto& state = *target.interface_state;
-		const auto schema = app.devTooling().schemas().view();
+		const auto schema = FlowUi::ValueOrThrow(app.devTooling()).get().schemas().view();
 		const auto catalogue = themes(app);
 		const auto* selected = selected_theme(catalogue, state);
 		if (!schema || !selected)
@@ -77,7 +78,7 @@ constexpr auto kThemeFieldAction = UiAction(
 		transaction.description =
 			operation == 2 ? "Propagate theme token to all variants" : "Revert theme token";
 		if (operation == 2) {
-			for (const auto& record : app.devTooling().overrides().themeBakeRecords()) {
+			for (const auto& record : FlowUi::ValueOrThrow(app.devTooling()).get().overrides().themeBakeRecords()) {
 				if (record.target.themeType != selected->type || record.target.variant == "*" ||
 					record.field != command.field || record.preview_only)
 					continue;
@@ -94,7 +95,7 @@ constexpr auto kThemeFieldAction = UiAction(
 		transaction.forward.emplace_back(command);
 		auto inverse = command;
 		inverse.kind = tooling::DevOverrideCommandKind::ClearThemeField;
-		for (const auto& record : app.devTooling().overrides().themeBakeRecords())
+		for (const auto& record : FlowUi::ValueOrThrow(app.devTooling()).get().overrides().themeBakeRecords())
 			if (record.target == command.theme && record.field == command.field &&
 				!record.preview_only) {
 				inverse.kind = tooling::DevOverrideCommandKind::SetThemeField;
@@ -103,7 +104,7 @@ constexpr auto kThemeFieldAction = UiAction(
 			}
 		transaction.inverse.emplace_back(std::move(inverse));
 		tooling::DevChangeSet changes{state.nextEditTransaction++, transaction.forward};
-		if (app.devTooling().overrides().submit(std::move(changes))) {
+		if (FlowUi::ValueOrThrow(app.devTooling()).get().overrides().submit(std::move(changes))) {
 			state.editUndoStack.emplace_back(std::move(transaction));
 			state.editRedoStack.clear();
 		}
@@ -116,7 +117,7 @@ void DevThemeInspector::buildElement(BuildContext& context) {
 	auto* state = context.params.interfaceState;
 	if (!app || !state)
 		return;
-	const auto schema = app->devTooling().schemas().view();
+	const auto schema = FlowUi::ValueOrThrow(app->devTooling()).get().schemas().view();
 	auto& model = state->theme_editor_model;
 	if (!model.refresh(*app))
 		return;
@@ -135,22 +136,22 @@ void DevThemeInspector::buildElement(BuildContext& context) {
 					.definitionName = selected->typeName})
 				.setDevInternalCapture(true)
 				.draw();
-			CLAY(context.clayID("metadata"), section()) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("metadata")), section()) {
 				text(context.uiManager,
 					 std::to_string(selected->payloadSize) + " bytes · revision " +
 						 std::to_string(selected->revision) + (selected->active ? " · Active" : ""),
 					 10, interface_theme::kTextMuted);
-				CLAY(context.clayID("actions"), row()) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("actions")), row()) {
 					button(context, "scope",
 						   state->inspect_theme_all_variants ? "Edit this variant"
 															 : "Edit all variants",
-						   ActionCall{app->actions().uiActions().make(kToggleScope, *app, *state)});
+						   ActionCall{FlowUi::ValueOrThrow(app->actions()).get().uiActions().make(kToggleScope, *app, *state)});
 					button(
 						context, "activate", "Set Active",
-						ActionCall{app->actions().uiActions().make(kActivateTheme, *app, *state)},
+						ActionCall{FlowUi::ValueOrThrow(app->actions()).get().uiActions().make(kActivateTheme, *app, *state)},
 						!selected->active && !state->inspect_theme_all_variants);
 				}
-				CLAY(context.clayID("clone"), row()) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("clone")), row()) {
 					FSEL::TextInputParameters name{};
 					name.value = &context.state().clone_name;
 					name.placeholder = "New variant name";
@@ -163,7 +164,7 @@ void DevThemeInspector::buildElement(BuildContext& context) {
 						.draw();
 					button(
 						context, "clone", "Clone Variant",
-						ActionCall{app->actions().uiActions().make(kCloneTheme, context.state())},
+						ActionCall{FlowUi::ValueOrThrow(app->actions()).get().uiActions().make(kCloneTheme, context.state())},
 						true, action_icon(app, interface_icons::kCopyKey));
 				}
 			}
@@ -171,7 +172,7 @@ void DevThemeInspector::buildElement(BuildContext& context) {
 			tabs.layout.padding = {};
 			tabs.layout.childGap = 0;
 			tabs.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
-			CLAY(context.clayID("tabs"), tabs) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("tabs")), tabs) {
 				for (uint64_t tab = 0; tab < 2; ++tab) {
 					FSEL::RadioChoiceParameters parameters{};
 					parameters.choiceValue = tab;
@@ -206,17 +207,17 @@ void DevThemeInspector::buildElement(BuildContext& context) {
 				}
 			}
 			if (state->inspect_theme_group) {
-				CLAY(context.clayID("group-filter"), section()) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("group-filter")), section()) {
 					button(context, "show-all", "Show all token groups",
-						   ActionCall{app->actions().uiActions().make(kClearGroup, *state)});
+						   ActionCall{FlowUi::ValueOrThrow(app->actions()).get().uiActions().make(kClearGroup, *state)});
 				}
 			}
-			auto scroll = scroll_surface(context.clayID("fields"));
-			CLAY(context.clayID("fields"), scroll) {
+			auto scroll = scroll_surface(FlowUi::ValueOrThrow(context.clayID("fields")));
+			CLAY(FlowUi::ValueOrThrow(context.clayID("fields")), scroll) {
 				auto cards = column();
 				cards.layout.padding = CLAY_PADDING_ALL(9);
 				cards.layout.childGap = 7;
-				CLAY(context.clayID("cards"), cards) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("cards")), cards) {
 					const auto* root = schema->findTheme(selected->type);
 					if (!root)
 						text(context.uiManager, "This theme has no reflected schema");
@@ -272,27 +273,27 @@ void DevThemeInspector::buildElement(BuildContext& context) {
 								continue;
 							++count;
 							const auto index = field_index(*schema, *leaf.field);
-							CLAY(context.clayID(RuntimeName(leaf.path)), card()) {
+							CLAY(FlowUi::ValueOrThrow(context.clayID(RuntimeName(leaf.path))), card()) {
 								text(context.uiManager, leaf.path, 12,
 									 interface_theme::kTextCanvas);
 								text(context.uiManager, "Authored  " + value.authored_text);
 								text(context.uiManager, "Baked  " + value.startup_text);
 								text(context.uiManager, "Live  " + value.live_text, 11,
 									 interface_theme::kAccentSeaGlass);
-								CLAY(context.clayID(RuntimeName(leaf.path + "-actions")), row()) {
+								CLAY(FlowUi::ValueOrThrow(context.clayID(RuntimeName(leaf.path + "-actions"))), row()) {
 									button(
 										context, "revert-" + leaf.path, "Revert Live",
-										ActionCall{app->actions().uiActions().make(
+										ActionCall{FlowUi::ValueOrThrow(app->actions()).get().uiActions().make(
 											kThemeFieldAction, context.state(), index, uint8_t{0})},
 										true, action_icon(app, interface_icons::kRevertKey));
 									button(
 										context, "authored-" + leaf.path, "Authored",
-										ActionCall{app->actions().uiActions().make(
+										ActionCall{FlowUi::ValueOrThrow(app->actions()).get().uiActions().make(
 											kThemeFieldAction, context.state(), index, uint8_t{1})},
 										!state->inspect_theme_all_variants);
 									button(
 										context, "broadcast-" + leaf.path, "All Variants",
-										ActionCall{app->actions().uiActions().make(
+										ActionCall{FlowUi::ValueOrThrow(app->actions()).get().uiActions().make(
 											kThemeFieldAction, context.state(), index, uint8_t{2})},
 										!state->inspect_theme_all_variants);
 								}
@@ -307,7 +308,7 @@ void DevThemeInspector::buildElement(BuildContext& context) {
 			auto empty = column();
 			empty.layout.sizing.height = CLAY_SIZING_GROW(0);
 			empty.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
-			CLAY(context.clayID("empty-selection"), empty) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("empty-selection")), empty) {
 				text(context.uiManager, "Select a theme from the selector", 12,
 					 interface_theme::kTextMuted);
 			}

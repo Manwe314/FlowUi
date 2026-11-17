@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Inspect/Workbench/DevClayCodeGenerator.hpp"
 
 #if FLOW_UI_DEV_MODE
@@ -5,10 +6,10 @@
 namespace FlowUi::devSystems::interface_elements {
 DevClayCodeGeneratorResources::DevClayCodeGeneratorResources([[maybe_unused]] App& app) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
-	auto& icons = app.icons();
+	auto& icons = FlowUi::ValueOrThrow(app.icons()).get();
 	interface_icons::registerDevInterfaceIcons(icons);
-	if (icons.contains(interface_icons::kCopyKey))
-		copy_icon = icons.textureRef(interface_icons::kCopyKey);
+	if (FlowUi::ValueOrThrow(icons.contains(interface_icons::kCopyKey)))
+		copy_icon = FlowUi::ValueOrThrow(icons.textureRef(interface_icons::kCopyKey));
 #endif
 }
 } // namespace FlowUi::devSystems::interface_elements
@@ -218,7 +219,7 @@ std::string generateClayCppCode(const tooling::DevClayNode& node) {
 } // namespace
 
 void DevClayCodeGenerator::onPressed(InteractionContext& context) {
-	if (!context.previousInteraction.isPressed(context.clayID("copy-btn"))) return;
+	if (!context.previousInteraction.isPressed(FlowUi::ValueOrThrow(context.clayID("copy-btn")))) return;
 
 	DevInterfaceState* const interfaceState = context.params.inspect.interfaceState;
 	if (!interfaceState || !context.params.inspect.app ||
@@ -227,12 +228,12 @@ void DevClayCodeGenerator::onPressed(InteractionContext& context) {
 	}
 
 	const tooling::DevTreeSnapshot& snapshot =
-		context.params.inspect.app->ui(interfaceState->selectedWindowId).devTreeSnapshot();
+		FlowUi::ValueOrThrow(context.params.inspect.app->ui(interfaceState->selectedWindowId)).get().devTreeSnapshot();
 	const tooling::DevClayNode* const node = findClayNodeForCode(snapshot, context.params.selectionKey);
 	if (!node) return;
 
 	const std::string code = generateClayCppCode(*node);
-	context.uiManager.setClipboardText(code);
+	FlowUi::ValueOrThrow(context.uiManager.setClipboardText(code));
 	context.state().copiedRecently = true;
 }
 
@@ -243,7 +244,7 @@ void DevClayCodeGenerator::buildElement(BuildContext& context) {
 
 	if (interfaceState && context.params.inspect.app &&
 		context.params.inspect.app->hasWindow(interfaceState->selectedWindowId)) {
-		snapshot = &context.params.inspect.app->ui(interfaceState->selectedWindowId).devTreeSnapshot();
+		snapshot = &FlowUi::ValueOrThrow(context.params.inspect.app->ui(interfaceState->selectedWindowId)).get().devTreeSnapshot();
 		if (snapshot && context.params.selectionKey != 0u) {
 			selectedClayNode = findClayNodeForCode(*snapshot, context.params.selectionKey);
 		}
@@ -279,7 +280,7 @@ void DevClayCodeGenerator::buildElement(BuildContext& context) {
 			.width = Clay_BorderWidth{0, 0, 0, 1, 0},
 		};
 
-		CLAY(context.clayID("code-gen-header"), header) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("code-gen-header")), header) {
 			CLAY_TEXT(
 				context.uiManager.toClayString("Element Code"),
 				CLAY_TEXT_CONFIG(codeTextStyle(interface_theme::kTextCanvas, 10)));
@@ -290,11 +291,11 @@ void DevClayCodeGenerator::buildElement(BuildContext& context) {
 				.width = CLAY_SIZING_GROW(0),
 				.height = CLAY_SIZING_GROW(0),
 			};
-			CLAY(context.clayID("spacer"), spacer) {}
+			CLAY(FlowUi::ValueOrThrow(context.clayID("spacer")), spacer) {}
 
 			// Copy Button
 			const bool isHovered = context.uiManager.getPreviousFramesInteraction().isHovered(
-				context.clayID("copy-btn"));
+				FlowUi::ValueOrThrow(context.clayID("copy-btn")));
 			const bool copiedRecently = context.state().copiedRecently;
 
 			Clay_ElementDeclaration copyBtn{};
@@ -314,7 +315,7 @@ void DevClayCodeGenerator::buildElement(BuildContext& context) {
 				.width = Clay_BorderWidth{1, 1, 1, 1, 0},
 			};
 
-			CLAY(context.clayID("copy-btn"), copyBtn) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("copy-btn")), copyBtn) {
 				const Clay_Color btnTextColor = copiedRecently ? interface_theme::kStatusGreen
 																: interface_theme::kTextCanvas;
 				if (context.resources().copy_icon.handle) {
@@ -324,7 +325,7 @@ void DevClayCodeGenerator::buildElement(BuildContext& context) {
 					image.layout.sizing = {CLAY_SIZING_FIXED(12), CLAY_SIZING_FIXED(12)};
 					image.backgroundColor = btnTextColor;
 					image.image.imageData = context.uiManager.imageData(icon);
-					CLAY(context.clayID("copy-icon"), image) {}
+					CLAY(FlowUi::ValueOrThrow(context.clayID("copy-icon")), image) {}
 				} else {
 					CLAY_TEXT(context.uiManager.toClayString(copiedRecently ? "Copied!" : "Copy"),
 							  CLAY_TEXT_CONFIG(codeTextStyle(btnTextColor, 9)));
@@ -342,7 +343,7 @@ void DevClayCodeGenerator::buildElement(BuildContext& context) {
 				.height = CLAY_SIZING_GROW(0),
 			};
 			empty.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
-			CLAY(context.clayID("empty-code"), empty) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("empty-code")), empty) {
 				CLAY_TEXT(
 					context.uiManager.toClayString("Select a Clay element to view generated code"),
 					CLAY_TEXT_CONFIG(codeTextStyle(interface_theme::kTextMuted, 11)));
@@ -351,7 +352,7 @@ void DevClayCodeGenerator::buildElement(BuildContext& context) {
 		}
 
 		// Scrollable Code Display
-		const Clay_ElementId scrollId = context.clayID("code-scroll");
+		const Clay_ElementId scrollId = FlowUi::ValueOrThrow(context.clayID("code-scroll"));
 		const Clay_ScrollContainerData scroll = Clay_GetScrollContainerData(scrollId);
 
 		Clay_ElementDeclaration scrollRegion{};
@@ -378,7 +379,7 @@ void DevClayCodeGenerator::buildElement(BuildContext& context) {
 			codeBody.layout.padding = Clay_Padding{12, 12, 10, 10};
 			codeBody.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 
-			CLAY(context.clayID("code-body"), codeBody) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("code-body")), codeBody) {
 				const std::string generatedCode = generateClayCppCode(*selectedClayNode);
 				CLAY_TEXT(
 					context.uiManager.toClayString(generatedCode),

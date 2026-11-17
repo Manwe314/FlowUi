@@ -42,7 +42,7 @@ std::size_t IconManager::devAtlasCount() const noexcept {
 	return controller_ ? controller_->atlasPages.size() : 0;
 }
 
-bool IconManager::visitDevIcons(void* userData, DevIconVisitor visitor) const {
+Result<bool> IconManager::visitDevIcons(void* userData, DevIconVisitor visitor) const noexcept try {
 	if (!controller_ || !visitor) return false;
 	for (const auto& [key, document] : controller_->documentsByKey) {
 		bool materialized = false;
@@ -66,9 +66,11 @@ bool IconManager::visitDevIcons(void* userData, DevIconVisitor visitor) const {
 		})) return false;
 	}
 	return true;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::IconLookup));
 }
 
-bool IconManager::visitDevAtlases(void* userData, DevAtlasVisitor visitor) const {
+Result<bool> IconManager::visitDevAtlases(void* userData, DevAtlasVisitor visitor) const noexcept try {
 	if (!controller_ || !visitor) return false;
 	for (std::uint32_t pageIndex = 0; pageIndex < controller_->atlasPages.size(); ++pageIndex) {
 		const AtlasPage& page = controller_->atlasPages[pageIndex];
@@ -89,6 +91,8 @@ bool IconManager::visitDevAtlases(void* userData, DevAtlasVisitor visitor) const
 		})) return false;
 	}
 	return true;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::IconLookup));
 }
 
 Result<IconManager::DevIconView> IconManager::devRasterize(
@@ -98,7 +102,9 @@ Result<IconManager::DevIconView> IconManager::devRasterize(
 	if (key.empty() || !width || !height || width > 512 || height > 512)
 		return unexpectedError(makeError(ErrorCode::IconRasterInvalid, ErrorSite::IconPublishAtlas));
 	try {
-		if (!contains(key)) return unexpectedError(makeError(ErrorCode::IconNotFound, ErrorSite::IconPublishAtlas));
+		const auto registered = contains(key);
+		if (!registered) return unexpectedError(registered.error());
+		if (!*registered) return unexpectedError(makeError(ErrorCode::IconNotFound, ErrorSite::IconPublishAtlas));
 		const bool existing = controller_->variantsByKeyAndSize.contains(makeVariantKey(key, width, height));
 		const auto& variant = ensureVariantForRequest(key, width, height, true);
 		return DevIconView{.key = variant.key.nameKey,
@@ -124,11 +130,11 @@ Result<bool> IconManager::devRemoveRaster(TextureHandle texture) noexcept {
 		if (found == controller_->variantsByKeyAndSize.end()) return false;
 		const auto& variant = found->second;
 		controller_->retiredRegions.reserve(controller_->retiredRegions.size() + 1);
+		storage_->noteManagerMutation(InvalidWindowId);
 		storage_->releaseAnonymousTexture(variant.texture);
 		controller_->retiredRegions.emplace_back(
 			detail::manager_storage::IconRetiredRegion{variant.texture, variant.pageIndex, variant.paddedRect});
 		controller_->variantsByKeyAndSize.erase(found);
-		storage_->noteManagerMutation(InvalidWindowId);
 		return true;
 	} catch (const FlowUiException& exception) {
 		return unexpectedError(exception.error());
@@ -646,13 +652,14 @@ bool IconManager::evictLeastRecentlyUsedVariant() {
 	}
 
 	const VariantEntry victim = victimIt->second;
+	controller_->retiredRegions.reserve(controller_->retiredRegions.size() + 1);
+	storage_->noteManagerMutation(InvalidWindowId);
 	storage_->releaseAnonymousTexture(victim.texture);
 	controller_->retiredRegions.push_back({victim.texture, victim.pageIndex, victim.paddedRect});
 	FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
 								FlowUi::detail::InitialCapacityTarget::icons_variants,
 								controller_->variantsByKeyAndSize.size());
 	controller_->variantsByKeyAndSize.erase(victimIt);
-	storage_->noteManagerMutation(InvalidWindowId);
 	return true;
 }
 
@@ -745,6 +752,11 @@ IconManager::VariantEntry& IconManager::ensureVariantForRequest(
 	}
 
 	TransientRasterResult raster = rasterizeForAtlas(nameKey, requestKey.requestedWidth, requestKey.requestedHeight);
+	decltype(controller_->variantsByKeyAndSize) preparedVariants;
+	preparedVariants.emplace(requestKey, VariantEntry{.key = requestKey});
+	auto preparedVariant = preparedVariants.extract(requestKey);
+	controller_->variantsByKeyAndSize.reserve(controller_->variantsByKeyAndSize.size() + 1);
+	storage_->noteManagerMutation(InvalidWindowId);
 	AtlasAllocation allocation{};
 	if (!tryAllocateAtlasRegion(raster.width, raster.height, allocation)) {
 		throw FlowUiException(makeError(ErrorCode::IconAtlasCapacityExceeded, ErrorSite::IconPublishAtlas));
@@ -754,10 +766,7 @@ IconManager::VariantEntry& IconManager::ensureVariantForRequest(
 	}
 
 	AtlasPage& page = controller_->atlasPages[allocation.pageIndex];
-	uploadRasterToAtlasPage(page, raster, allocation.contentRect);
-
-	VariantEntry entry{};
-	entry.key = requestKey;
+	VariantEntry& entry = preparedVariant.mapped();
 	entry.pageIndex = allocation.pageIndex;
 	entry.paddedRect = allocation.paddedRect;
 	entry.contentRect = allocation.contentRect;
@@ -766,28 +775,30 @@ IconManager::VariantEntry& IconManager::ensureVariantForRequest(
 	entry.lastUsedFrame = controller_->frameCounter;
 	entry.referencedThisFrame = true;
 	recalcAtlasUvs(entry, page);
+	TextureHandle preparedTexture{};
 	try {
-		entry.texture = storage_->createAnonymousTexture(storage::TextureViewDesc{
+		uploadRasterToAtlasPage(page, raster, allocation.contentRect);
+		preparedTexture = storage_->createAnonymousTexture(storage::TextureViewDesc{
 			.imageView = page.view, .sampler = controller_->atlasSampler,
 			.uv0x = entry.uv0x, .uv0y = entry.uv0y, .uv1x = entry.uv1x, .uv1y = entry.uv1y,
 			.sourceWidth = static_cast<int32_t>(entry.sourceWidth),
 			.sourceHeight = static_cast<int32_t>(entry.sourceHeight),
 		});
+		entry.texture = preparedTexture;
+		auto insertion = controller_->variantsByKeyAndSize.insert(std::move(preparedVariant));
+		if (!insertion.inserted) {
+			storage_->releaseAnonymousTexture(preparedTexture);
+			releasePageRegion(page, allocation.paddedRect);
+			return insertion.position->second;
+		}
+		page.lastUsedFrame = controller_->frameCounter;
+		return insertion.position->second;
 	} catch (...) {
+		if (preparedTexture)
+			try { storage_->releaseAnonymousTexture(preparedTexture); } catch (...) {}
 		releasePageRegion(page, allocation.paddedRect);
 		throw;
 	}
-
-	auto [it, inserted] = controller_->variantsByKeyAndSize.emplace(entry.key, std::move(entry));
-	if (!inserted) {
-		storage_->releaseAnonymousTexture(entry.texture);
-		releasePageRegion(page, allocation.paddedRect);
-		return it->second;
-	}
-
-	page.lastUsedFrame = controller_->frameCounter;
-	storage_->noteManagerMutation(InvalidWindowId);
-	return it->second;
 }
 
 void IconManager::prepareFrameTextures(
@@ -937,11 +948,13 @@ void IconManager::init(
 	}
 }
 
-Result<bool> IconManager::registerSvg(std::string_view key, std::string_view svgSource) {
+Result<bool> IconManager::registerSvg(std::string_view key, std::string_view svgSource) noexcept try {
 	return registerSvg(ResourceKey{.name = key}, svgSource);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::IconRegisterSource));
 }
 
-Result<bool> IconManager::registerSvg(ResourceKey key, std::string_view svgSource) {
+Result<bool> IconManager::registerSvg(ResourceKey key, std::string_view svgSource) noexcept try {
 	if (!storage_ || !controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::IconRegisterSource));
 	storage::ResourceKey normalized{};
 	try {
@@ -983,6 +996,7 @@ Result<bool> IconManager::registerSvg(ResourceKey key, std::string_view svgSourc
 
 	storage::BlobHandle source{};
 	try {
+		storage_->noteManagerMutation(InvalidWindowId);
 		source = storage_->createBlob(
 			std::as_bytes(std::span(svgSource.data(), svgSource.size())), normalized.name);
 	} catch (const std::bad_alloc&) {
@@ -1019,19 +1033,24 @@ Result<bool> IconManager::registerSvg(ResourceKey key, std::string_view svgSourc
 		storage_->releaseBlob(source);
 		return false;
 	}
-	storage_->noteManagerMutation(InvalidWindowId);
 	return true;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::IconRegisterSource));
 }
 
-Result<bool> IconManager::registerFromFile(std::string_view key, std::string_view filePath) {
+Result<bool> IconManager::registerFromFile(std::string_view key, std::string_view filePath) noexcept try {
 	return registerFromFile(ResourceKey{.name = key}, filePath);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::IconRegisterSource));
 }
 
-Result<bool> IconManager::registerFromFile(ResourceKey key, std::string_view filePath) {
-	return register_file(key, path_from_utf8(filePath));
+Result<bool> IconManager::registerFromFile(ResourceKey key, std::string_view filePath) noexcept try {
+	return register_file(key, detail::requireApiValue(path_from_utf8(filePath)));
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::IconRegisterSource));
 }
 
-Result<bool> IconManager::register_file(ResourceKey key, const std::filesystem::path& path) {
+Result<bool> IconManager::register_file(ResourceKey key, const std::filesystem::path& path) noexcept try {
 	if (!storage_ || !controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::IconRegisterSource));
 	try {
 		(void)iconKey(*storage_, key);
@@ -1051,11 +1070,15 @@ Result<bool> IconManager::register_file(ResourceKey key, const std::filesystem::
 	const std::string source((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
 	if (!stream.eof() && stream.fail()) return unexpectedError(makeError(ErrorCode::AssetReadFailed, ErrorSite::IconRegisterSource));
 	return registerSvg(key, source);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::IconRegisterSource));
 }
 
-Result<bool> IconManager::remove(std::string_view key) { return remove(ResourceKey{.name = key}); }
+Result<bool> IconManager::remove(std::string_view key) noexcept try { return remove(ResourceKey{.name = key}); } catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::IconRemove));
+}
 
-Result<bool> IconManager::remove(ResourceKey key) {
+Result<bool> IconManager::remove(ResourceKey key) noexcept try {
 	if (!storage_ || !controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::IconRemove));
 	storage::ResourceKey normalized{};
 	try {
@@ -1071,6 +1094,7 @@ Result<bool> IconManager::remove(ResourceKey key) {
 
 	controller_->retiredRegions.reserve(
 		controller_->retiredRegions.size() + controller_->variantsByKeyAndSize.size());
+	storage_->noteManagerMutation(InvalidWindowId);
 	const auto requestIdIt = controller_->requestTextureByKey.find(keyString);
 	if (requestIdIt != controller_->requestTextureByKey.end()) {
 		(void)storage_->removeTexture(normalized);
@@ -1102,23 +1126,30 @@ Result<bool> IconManager::remove(ResourceKey key) {
 								FlowUi::detail::InitialCapacityTarget::icons_documents,
 								controller_->documentsByKey.size());
 	controller_->documentsByKey.erase(it);
-	storage_->noteManagerMutation(InvalidWindowId);
 	return true;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::IconRemove));
 }
 
-bool IconManager::contains(std::string_view key) const {
+Result<bool> IconManager::contains(std::string_view key) const noexcept try {
 	return contains(ResourceKey{.name = key});
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::IconLookup));
 }
 
-bool IconManager::contains(ResourceKey key) const {
-	if (!storage_ || !controller_) return false;
+Result<bool> IconManager::contains(ResourceKey key) const noexcept try {
+	if (!storage_ || !controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::IconLookup));
 	(void)iconKey(*storage_, key);
 	return controller_->documentsByKey.find(std::string(key.name)) != controller_->documentsByKey.end();
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::IconLookup));
 }
 
-TextureRef IconManager::textureRef(std::string_view key) { return textureRef(ResourceKey{.name = key}); }
+Result<TextureRef> IconManager::textureRef(std::string_view key) noexcept try { return textureRef(ResourceKey{.name = key}); } catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::IconLookup));
+}
 
-TextureRef IconManager::textureRef(ResourceKey key) {
+Result<TextureRef> IconManager::textureRef(ResourceKey key) noexcept try {
 	if (!storage_ || !controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::IconLookup));
 	const storage::ResourceKey normalized = iconKey(*storage_, key);
 	const std::string_view stableKey = storage_->string(normalized.name);
@@ -1151,19 +1182,38 @@ TextureRef IconManager::textureRef(ResourceKey key) {
 
 	auto requestIdIt = controller_->requestTextureByKey.find(keyString);
 	if (requestIdIt == controller_->requestTextureByKey.end()) {
+		// Prepare both index nodes and bucket capacity before publishing a texture.
+		// Re-keying/inserting the prepared reverse node then requires no allocation.
+		std::unordered_map<uint64_t, std::string> pendingReverseIndex;
+		pendingReverseIndex.emplace(0, keyString);
+		auto reverseNode = pendingReverseIndex.extract(0);
+		controller_->requestedKeyByTexture.reserve(controller_->requestedKeyByTexture.size() + 1);
+		storage_->noteManagerMutation(InvalidWindowId);
+		auto pendingRequest =
+			controller_->requestTextureByKey.try_emplace(keyString, TextureHandle{}).first;
 		bool inserted = false;
 		const AtlasPage& page = controller_->atlasPages.front();
-		const TextureHandle requestTexture = storage_->publishTexture(normalized, storage::TextureViewDesc{
-			.imageView = page.view, .sampler = controller_->atlasSampler,
-			.sourceWidth = static_cast<int32_t>(std::max(1.0f, std::round(documentIt->second.intrinsicWidth))),
-			.sourceHeight = static_cast<int32_t>(std::max(1.0f, std::round(documentIt->second.intrinsicHeight))),
-		}, &inserted);
+		TextureHandle requestTexture{};
+		try {
+			requestTexture = storage_->publishTexture(normalized, storage::TextureViewDesc{
+				.imageView = page.view, .sampler = controller_->atlasSampler,
+				.sourceWidth = static_cast<int32_t>(std::max(1.0f, std::round(documentIt->second.intrinsicWidth))),
+				.sourceHeight = static_cast<int32_t>(std::max(1.0f, std::round(documentIt->second.intrinsicHeight))),
+			}, &inserted);
+		} catch (...) {
+			controller_->requestTextureByKey.erase(pendingRequest);
+			throw;
+		}
 		if (!inserted) {
 			detail::terminateForFatalError(makeError(ErrorCode::IconKeyCollision, ErrorSite::IconLookup));
 		}
-		requestIdIt = controller_->requestTextureByKey.emplace(keyString, requestTexture).first;
-		controller_->requestedKeyByTexture.emplace(requestTexture.packed(), keyString);
-		storage_->noteManagerMutation(InvalidWindowId);
+		pendingRequest->second = requestTexture;
+		requestIdIt = pendingRequest;
+		reverseNode.key() = requestTexture.packed();
+		const auto reverseInsertion = controller_->requestedKeyByTexture.insert(std::move(reverseNode));
+		if (!reverseInsertion.inserted) {
+			detail::terminateForFatalError(makeError(ErrorCode::IconKeyCollision, ErrorSite::IconLookup));
+		}
 	}
 
 	TextureRef texture{};
@@ -1173,6 +1223,8 @@ TextureRef IconManager::textureRef(ResourceKey key) {
 	texture.sourceWidth = static_cast<int32_t>(std::max(1.0f, std::round(documentIt->second.intrinsicWidth)));
 	texture.sourceHeight = static_cast<int32_t>(std::max(1.0f, std::round(documentIt->second.intrinsicHeight)));
 	return texture;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::IconLookup));
 }
 
 IconManager::TransientRasterResult IconManager::rasterizeForAtlas(std::string_view key, uint32_t requestedWidth, uint32_t requestedHeight) const

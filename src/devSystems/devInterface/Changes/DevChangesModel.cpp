@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Changes/DevChangesModel.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FlowUi/Public/App.hpp"
@@ -219,7 +220,7 @@ using namespace tooling;
 void refresh(App& app, DevInterfaceState& interface_state) {
 	auto& state = interface_state.changes;
 	state.memory_error.clear();
-	auto refreshed = app.devTooling().bakePipeline().query_review(current_request(interface_state));
+	auto refreshed = FlowUi::ValueOrThrow(app.devTooling()).get().bakePipeline().query_review(current_request(interface_state));
 	if (!refreshed.valid_disk && state.initialized && !state.review.disk_revision.empty()) {
 		if (state.review.valid_disk)
 			++state.review.counts.errors;
@@ -236,8 +237,8 @@ void refresh(App& app, DevInterfaceState& interface_state) {
 	if (std::ranges::any_of(state.review.rows, [](const auto& row) {
 			return row.disk_memory || row.proposed_memory;
 		})) {
-		const auto live = app.devMonitoring().memoryReporting().read_live();
-		const auto targets = app.devMonitoring().memoryReporting().tuningTargetSnapshot();
+		const auto live = FlowUi::ValueOrThrow(app.devMonitoring()).get().memoryReporting().read_live();
+		const auto targets = FlowUi::ValueOrThrow(app.devMonitoring()).get().memoryReporting().tuningTargetSnapshot();
 		state.memory_observations.reserve(state.review.counts.domains[2]);
 		for (const auto& row : state.review.rows) {
 			if (!row.disk_memory && !row.proposed_memory)
@@ -363,8 +364,8 @@ void navigate(App& app, DevInterfaceState& interface_state) {
 			interface_state.selectedElementId = {};
 			interface_state.inspectSelectedNodeKind = 0;
 			interface_state.inspectSelectedNodeKey = 0;
-			for (const auto& window : app.devWindowSnapshot()) {
-				const auto& tree = app.ui(window.id).devTreeSnapshot();
+			for (const auto& window : FlowUi::ValueOrThrow(app.devWindowSnapshot())) {
+				const auto& tree = FlowUi::ValueOrThrow(app.ui(window.id)).get().devTreeSnapshot();
 				const auto found = std::ranges::find_if(tree.flow.nodes, [&](const auto& node) {
 					return node.definition == entry->definition &&
 						   (entry->targetScope == DevOverrideScope::Definition ||
@@ -704,21 +705,25 @@ void service_changes(App& app, DevInterfaceState& interface_state, bool visible)
 		 command == DevChangesCommand::Undo || command == DevChangesCommand::Redo) &&
 		(state.stale ||
 		 current_request(interface_state).memory_revision != state.review.memory_revision);
-	auto& overrides = app.devTooling().overrides();
+	auto& overrides = FlowUi::ValueOrThrow(app.devTooling()).get().overrides();
 	if (state.runtime_transaction) {
 		std::size_t acknowledged = 0;
 		bool accepted = true;
+		bool partialEffects = false;
+		std::uint32_t completedCommands = 0;
 		std::string_view failure_reason{};
 		for (const auto& result : overrides.commandResults())
 			if (result.transaction == state.runtime_transaction) {
 				++acknowledged;
 				accepted = accepted && result.applied;
+				partialEffects = partialEffects || result.mayHavePartialEffects ||
+					(!result.applied && result.completedCommandCount != 0);
+				completedCommands += result.completedCommandCount;
 				if (!result.applied && failure_reason.empty())
 					failure_reason = runtime_failure_reason(result.status);
 			}
-		const auto expected = state.runtime_mode == 1 ? state.pending_runtime.inverse.size()
-													  : state.pending_runtime.forward.size();
-		if (acknowledged >= expected) {
+		// The engine acknowledges a whole submitted transaction once, including partial failure.
+		if (acknowledged != 0) {
 			state.runtime_transaction = 0;
 			if (accepted) {
 				if (state.runtime_mode == 1) {
@@ -737,9 +742,20 @@ void service_changes(App& app, DevInterfaceState& interface_state, bool visible)
 				state.runtime_message_is_error = false;
 				refresh(app, interface_state);
 			} else {
-				state.runtime_message = "Live command rejected for " + state.runtime_target_label +
-										": " + std::string(failure_reason) +
-										" Draft, manifest decisions and undo history are retained.";
+				if (partialEffects) {
+					state.runtime_undo.clear();
+					state.runtime_redo.clear();
+					state.pending_runtime = {};
+					refresh(app, interface_state);
+					state.runtime_message = "Live command failed for " + state.runtime_target_label +
+						": " + std::string(failure_reason) + ". " + std::to_string(completedCommands) +
+						" commands completed; the failed command may also have changed state. "
+						"Review the refreshed values before another edit. Live undo history was cleared.";
+				} else {
+					state.runtime_message = "Live command rejected for " + state.runtime_target_label +
+						": " + std::string(failure_reason) +
+						" Draft, manifest decisions and undo history are retained.";
+				}
 				state.runtime_message_is_error = true;
 			}
 		}
@@ -759,7 +775,7 @@ void service_changes(App& app, DevInterfaceState& interface_state, bool visible)
 				state.pending_runtime = {};
 		} else if (const auto* row = selected_changes_row(state)) {
 			state.runtime_target_label = row->target_name + "." + row->field_path;
-			const auto schema = app.devTooling().schemas().view();
+			const auto schema = FlowUi::ValueOrThrow(app.devTooling()).get().schemas().view();
 			if (schema) {
 				const auto action = command == DevChangesCommand::ApplySaved
 										? DevChangesRuntimeAction::ApplySaved
@@ -769,7 +785,7 @@ void service_changes(App& app, DevInterfaceState& interface_state, bool visible)
 										? DevChangesRuntimeAction::ResetAuthored
 										: DevChangesRuntimeAction::ApplyProposal;
 				state.pending_runtime =
-					prepare_changes_runtime_edit(*schema, overrides, app.themes(), *row,
+					prepare_changes_runtime_edit(*schema, overrides, FlowUi::ValueOrThrow(app.themes()).get(), *row,
 												 interface_state.selectedWindowId, action);
 			} else {
 				state.pending_runtime = {};
@@ -917,7 +933,7 @@ void service_changes(App& app, DevInterfaceState& interface_state, bool visible)
 			state.message_is_error = true;
 		} else {
 			const auto counts = state.review.counts;
-			const auto result = app.devTooling().bakePipeline().commit_review(
+			const auto result = FlowUi::ValueOrThrow(app.devTooling()).get().bakePipeline().commit_review(
 				state.review, current_request(interface_state).memory_revision);
 			if (result.applied) {
 				state.initialized = false;
@@ -932,7 +948,7 @@ void service_changes(App& app, DevInterfaceState& interface_state, bool visible)
 					"Bake rejected: the reviewed revision changed or the file could not be "
 					"written. Refresh to review the current disk state; pending work is retained.";
 				for (const auto& diagnostic :
-					 app.devTooling().bakePipeline().queryStatus().bakeDiagnostics)
+					 FlowUi::ValueOrThrow(app.devTooling()).get().bakePipeline().queryStatus().bakeDiagnostics)
 					if (!diagnostic.message.empty())
 						state.message += " " + diagnostic.message;
 				state.message_is_error = true;
@@ -953,7 +969,7 @@ void service_changes(App& app, DevInterfaceState& interface_state, bool visible)
 	}
 	if (visible && now - state.last_check_ns >= 1'000'000'000ull) {
 		state.last_check_ns = now;
-		const auto current = app.devTooling().bakePipeline().query_review(state.review.request);
+		const auto current = FlowUi::ValueOrThrow(app.devTooling()).get().bakePipeline().query_review(state.review.request);
 		if (current.disk_revision != state.review.disk_revision ||
 			current.schema_generation != state.review.schema_generation ||
 			current.proposal_revision != state.review.proposal_revision ||

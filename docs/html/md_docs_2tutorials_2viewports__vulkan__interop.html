@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,7 +106,7 @@ $(function() {
   <div class="headertitle"><div class="title">Viewports and Vulkan Interop </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>This tutorial builds a custom FlowUi element that displays a Vulkan-rendered 3D scene inside the UI. The example target is a model preview panel: FlowUi owns the window, swapchain, viewport images, command buffers, and UI rendering, while app code creates scene resources and records draw commands for one offscreen viewport.</p>
+<div class="textblock"><p>This tutorial builds a custom <a class="el" href="namespaceFlowUi.html">FlowUi</a> element that displays a Vulkan-rendered 3D scene inside the UI. The example target is a model preview panel: <a class="el" href="namespaceFlowUi.html">FlowUi</a> owns the window, swapchain, viewport images, command buffers, and UI rendering, while app code creates scene resources and records draw commands for one offscreen viewport.</p>
 <h1>Contents</h1>
 <ul>
 <li>Chapter 1: The Example App<ul>
@@ -152,8 +152,8 @@ $(function() {
 <div class="line">| texture slots        |  |      inside FlowUi UI     |</div>
 <div class="line">+----------------------+  +---------------------------+</div>
 </div><!-- fragment --><p>The preview is not drawn by Clay. Clay only draws an image node that samples a viewport texture. App Vulkan code records the 3D scene into that viewport texture before the main UI pass samples it.</p>
-<h2>What FlowUi Owns</h2>
-<p>FlowUi manages the infrastructure:</p>
+<h2>What <a class="el" href="namespaceFlowUi.html">FlowUi</a> Owns</h2>
+<p><a class="el" href="namespaceFlowUi.html">FlowUi</a> manages the infrastructure:</p>
 <ul>
 <li>The Vulkan instance, physical device, logical device, allocator, graphics queue, and swapchain.</li>
 <li>Per-frame viewport render target images.</li>
@@ -172,7 +172,7 @@ $(function() {
 <li>Pipeline layout and graphics pipeline compatible with the viewport color format.</li>
 <li>Any scene textures or samplers it creates.</li>
 </ul>
-<p>FlowUi exposes enough Vulkan interop handles for the app to create those resources against the same device and allocator.</p>
+<p><a class="el" href="namespaceFlowUi.html">FlowUi</a> exposes enough Vulkan interop handles for the app to create those resources against the same device and allocator.</p>
 <h1>Chapter 2: Create the Viewport</h1>
 <h2>Create Info</h2>
 <p>A viewport starts with <span class="tt"><a class="el" href="structFlowUi_1_1ViewPortCreateInfo.html" title="Creation settings for a viewport render target.">FlowUi::ViewPortCreateInfo</a></span>.</p>
@@ -181,53 +181,50 @@ $(function() {
 <div class="line">    .clearColor = {0.02f, 0.02f, 0.03f, 1.0f},</div>
 <div class="line">    .clearEveryFrame = <span class="keyword">true</span>,</div>
 <div class="line">};</div>
-<div class="ttc" id="astructFlowUi_1_1ViewPortCreateInfo_html"><div class="ttname"><a href="structFlowUi_1_1ViewPortCreateInfo.html">FlowUi::ViewPortCreateInfo</a></div><div class="ttdoc">Creation settings for a viewport render target.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:91</div></div>
-</div><!-- fragment --><p>The color format is the offscreen render target format. <span class="tt">clearEveryFrame</span> controls whether FlowUi clears before invoking your callback or preserves previous contents where possible.</p>
+<div class="ttc" id="astructFlowUi_1_1ViewPortCreateInfo_html"><div class="ttname"><a href="structFlowUi_1_1ViewPortCreateInfo.html">FlowUi::ViewPortCreateInfo</a></div><div class="ttdoc">Creation settings for a viewport render target.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:96</div></div>
+</div><!-- fragment --><p>The color format is the offscreen render target format. <span class="tt">clearEveryFrame</span> controls whether <a class="el" href="namespaceFlowUi.html">FlowUi</a> clears before invoking your callback or preserves previous contents where possible.</p>
 <h2>Create and Look Up the Viewport</h2>
 <p>Create the named viewport after <span class="tt">makeApplication()</span>.</p>
-<div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> app = <a class="code hl_function" href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a>(config);</div>
+<div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> app = <a class="code hl_function" href="group__flowui__app.html#gac333afcb2ea79328646bb4410e459233">FlowUi::makeApplication</a>(config);</div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> created = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#a821179f12d30b198fb71fd5ea230dd84">create</a>(<span class="stringliteral">&quot;scene/preview&quot;</span>, previewInfo);</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> created = <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a206a0ffcdffa757f0692489af10413d8">viewPorts</a>()).get().create(<span class="stringliteral">&quot;scene/preview&quot;</span>, previewInfo));</div>
 <div class="line">(void)created;</div>
-<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:61</div></div>
-<div class="ttc" id="aclassFlowUi_1_1App_html_a704db5cbbabc33705f691362bfb275b8"><div class="ttname"><a href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">FlowUi::App::viewPorts</a></div><div class="ttdeci">ViewPortManager &amp; viewPorts()</div><div class="ttdoc">Access the viewport manager.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html_a821179f12d30b198fb71fd5ea230dd84"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html#a821179f12d30b198fb71fd5ea230dd84">FlowUi::ViewPortManager::create</a></div><div class="ttdeci">Result&lt; bool &gt; create(std::string_view key, const ViewPortCreateInfo &amp;createInfo={})</div><div class="ttdoc">Create a viewport by key.</div></div>
-<div class="ttc" id="agroup__flowui__app_html_ga8afb464a3691ca644406ac41ff5281d2"><div class="ttname"><a href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a></div><div class="ttdeci">App makeApplication(const AppConfig &amp;cfg)</div><div class="ttdoc">Create a running FlowUi application from configuration.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:74</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html_a206a0ffcdffa757f0692489af10413d8"><div class="ttname"><a href="classFlowUi_1_1App.html#a206a0ffcdffa757f0692489af10413d8">FlowUi::App::viewPorts</a></div><div class="ttdeci">Result&lt; std::reference_wrapper&lt; ViewPortManager &gt; &gt; viewPorts() noexcept</div><div class="ttdoc">Access the viewport manager.</div></div>
+<div class="ttc" id="agroup__flowui__app_html_gac333afcb2ea79328646bb4410e459233"><div class="ttname"><a href="group__flowui__app.html#gac333afcb2ea79328646bb4410e459233">FlowUi::makeApplication</a></div><div class="ttdeci">Result&lt; App &gt; makeApplication(const AppConfig &amp;cfg) noexcept</div><div class="ttdoc">Create a running FlowUi application from configuration.</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_aef54dabee32ff800d39da726c12a2ac8"><div class="ttname"><a href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a></div><div class="ttdeci">Value &amp; ValueOrThrow(Result&lt; Value &gt; &amp;result)</div><div class="ttdoc">Borrow a successful result&#39;s value, or throw FlowUiException preserving its error.</div><div class="ttdef"><b>Definition</b> Color.hpp:66</div></div>
 </div><!-- fragment --><p>Use <span class="tt">contains()</span> for lightweight checks.</p>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (!app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#a6ae77f78ebf36af55bf61ff75bef31ec">contains</a>(<span class="stringliteral">&quot;scene/preview&quot;</span>)) {</div>
-<div class="line">    (void)app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#a821179f12d30b198fb71fd5ea230dd84">create</a>(<span class="stringliteral">&quot;scene/preview&quot;</span>, previewInfo);</div>
+<div class="fragment"><div class="line"><span class="keywordflow">if</span> (!<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a206a0ffcdffa757f0692489af10413d8">viewPorts</a>()).get().contains(<span class="stringliteral">&quot;scene/preview&quot;</span>))) {</div>
+<div class="line">    (void)<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a206a0ffcdffa757f0692489af10413d8">viewPorts</a>()).get().create(<span class="stringliteral">&quot;scene/preview&quot;</span>, previewInfo));</div>
 <div class="line">}</div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html_a6ae77f78ebf36af55bf61ff75bef31ec"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html#a6ae77f78ebf36af55bf61ff75bef31ec">FlowUi::ViewPortManager::contains</a></div><div class="ttdeci">bool contains(std::string_view key) const</div><div class="ttdoc">Return whether a viewport exists.</div></div>
 </div><!-- fragment --><p>Use <span class="tt">getViewPort()</span> when you need to configure the viewport object.</p>
-<div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* preview = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#af6d427e4ed40d83a5485ab81ede41beb">getViewPort</a>(<span class="stringliteral">&quot;scene/preview&quot;</span>);</div>
+<div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* preview = <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a206a0ffcdffa757f0692489af10413d8">viewPorts</a>()).get().getViewPort(<span class="stringliteral">&quot;scene/preview&quot;</span>));</div>
 <div class="line"><span class="keywordflow">if</span> (!preview) {</div>
 <div class="line">    <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;Preview viewport was not created.&quot;</span>);</div>
 <div class="line">}</div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html_af6d427e4ed40d83a5485ab81ede41beb"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html#af6d427e4ed40d83a5485ab81ede41beb">FlowUi::ViewPortManager::getViewPort</a></div><div class="ttdeci">ViewPort * getViewPort(std::string_view key)</div><div class="ttdoc">Return a mutable viewport by key.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPort_html"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a></div><div class="ttdoc">Offscreen render target that can be sampled by the FlowUi renderer.</div><div class="ttdef"><b>Definition</b> ViewPortManager.hpp:74</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPort_html"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a></div><div class="ttdoc">Offscreen render target that can be sampled by the FlowUi renderer.</div><div class="ttdef"><b>Definition</b> ViewPortManager.hpp:76</div></div>
 </div><!-- fragment --><p>The const overload is useful for read-only inspection:</p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* readOnlyPreview = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#af6d427e4ed40d83a5485ab81ede41beb">getViewPort</a>(<span class="stringliteral">&quot;scene/preview&quot;</span>);</div>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* readOnlyPreview = <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a206a0ffcdffa757f0692489af10413d8">viewPorts</a>()).get().getViewPort(<span class="stringliteral">&quot;scene/preview&quot;</span>));</div>
 </div><!-- fragment --><p>The viewport also stores its own key. That is useful when helper code receives a viewport pointer and still needs the stable name for logging, lookup tables, or element parameters.</p>
 <div class="fragment"><div class="line">std::string_view previewKey = preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#a15370700951136db591e68a2da5a8f72">getKey</a>();</div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_a15370700951136db591e68a2da5a8f72"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#a15370700951136db591e68a2da5a8f72">FlowUi::ViewPort::getKey</a></div><div class="ttdeci">std::string_view getKey() const noexcept</div><div class="ttdoc">Return this viewport&#39;s key.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_a15370700951136db591e68a2da5a8f72"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#a15370700951136db591e68a2da5a8f72">FlowUi::ViewPort::getKey</a></div><div class="ttdeci">std::string_view getKey() const noexcept</div><div class="ttdoc">Borrow this viewport&#39;s registration key.</div></div>
 </div><!-- fragment --><h2>Clear Behavior</h2>
 <p>Clear color can be changed later.</p>
-<div class="fragment"><div class="line">preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#a5041209fac6a58554ebe927bc70d194d">setClearColor</a>(0.01f, 0.015f, 0.025f, 1.0f);</div>
+<div class="fragment"><div class="line">preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#a6f2e8630dd9d07d4fe17541da98f553b">setClearColor</a>(0.01f, 0.015f, 0.025f, 1.0f);</div>
 <div class="line">std::array&lt;float, 4&gt; clear = preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#aa05840783a71a827fcaf9168f9b9195c">clearColor</a>();</div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_a5041209fac6a58554ebe927bc70d194d"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#a5041209fac6a58554ebe927bc70d194d">FlowUi::ViewPort::setClearColor</a></div><div class="ttdeci">void setClearColor(float r, float g, float b, float a)</div><div class="ttdoc">Set viewport clear color.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_aa05840783a71a827fcaf9168f9b9195c"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#aa05840783a71a827fcaf9168f9b9195c">FlowUi::ViewPort::clearColor</a></div><div class="ttdeci">std::array&lt; float, 4 &gt; clearColor() const noexcept</div><div class="ttdoc">Return viewport clear color.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_a6f2e8630dd9d07d4fe17541da98f553b"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#a6f2e8630dd9d07d4fe17541da98f553b">FlowUi::ViewPort::setClearColor</a></div><div class="ttdeci">Status setClearColor(float r, float g, float b, float a)</div><div class="ttdoc">Publish the RGBA viewport clear color.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_aa05840783a71a827fcaf9168f9b9195c"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#aa05840783a71a827fcaf9168f9b9195c">FlowUi::ViewPort::clearColor</a></div><div class="ttdeci">std::array&lt; float, 4 &gt; clearColor() const noexcept</div><div class="ttdoc">Read the viewport&#39;s RGBA clear color.</div></div>
 </div><!-- fragment --><p>Persistent viewports can disable per-frame clear.</p>
-<div class="fragment"><div class="line">preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#a39b1ba8923020766f15ee701575aa0ca">setClearEveryFrame</a>(<span class="keyword">false</span>);</div>
+<div class="fragment"><div class="line">preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#a83cfd1ad969a9d396e3848cdf4d01549">setClearEveryFrame</a>(<span class="keyword">false</span>);</div>
 <div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> clears = preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#a1e3f7471d119305a5f7b3ae32f0c63ad">clearEveryFrame</a>();</div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_a1e3f7471d119305a5f7b3ae32f0c63ad"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#a1e3f7471d119305a5f7b3ae32f0c63ad">FlowUi::ViewPort::clearEveryFrame</a></div><div class="ttdeci">bool clearEveryFrame() const noexcept</div><div class="ttdoc">Return whether the viewport clears every frame.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_a39b1ba8923020766f15ee701575aa0ca"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#a39b1ba8923020766f15ee701575aa0ca">FlowUi::ViewPort::setClearEveryFrame</a></div><div class="ttdeci">void setClearEveryFrame(bool enabled)</div><div class="ttdoc">Set whether the viewport clears every frame.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_a1e3f7471d119305a5f7b3ae32f0c63ad"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#a1e3f7471d119305a5f7b3ae32f0c63ad">FlowUi::ViewPort::clearEveryFrame</a></div><div class="ttdeci">bool clearEveryFrame() const noexcept</div><div class="ttdoc">Read the viewport clear policy.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_a83cfd1ad969a9d396e3848cdf4d01549"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#a83cfd1ad969a9d396e3848cdf4d01549">FlowUi::ViewPort::setClearEveryFrame</a></div><div class="ttdeci">Status setClearEveryFrame(bool enabled)</div><div class="ttdoc">Choose whether every pass clears the viewport.</div></div>
 </div><!-- fragment --><p>Most scene previews should keep clearing enabled. Disabling clear is more useful for accumulation or feedback-style render targets.</p>
 <h1>Chapter 3: Create Vulkan Scene Resources</h1>
 <h2>Get Interop Handles</h2>
 <p>Ask the viewport manager for shared Vulkan handles.</p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortVulkanInterop.html">FlowUi::ViewPortVulkanInterop</a>&amp; vk = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#ae7c0bc4fd533b02c7aee388d8ee272ec">getVulkanInterop</a>();</div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html_ae7c0bc4fd533b02c7aee388d8ee272ec"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html#ae7c0bc4fd533b02c7aee388d8ee272ec">FlowUi::ViewPortManager::getVulkanInterop</a></div><div class="ttdeci">const ViewPortVulkanInterop &amp; getVulkanInterop() const</div><div class="ttdoc">Return Vulkan interop handles for custom viewport rendering.</div></div>
-<div class="ttc" id="astructFlowUi_1_1ViewPortVulkanInterop_html"><div class="ttname"><a href="structFlowUi_1_1ViewPortVulkanInterop.html">FlowUi::ViewPortVulkanInterop</a></div><div class="ttdoc">Vulkan handles exposed to viewport render callbacks.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:29</div></div>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortVulkanInterop.html">FlowUi::ViewPortVulkanInterop</a>&amp; vk = <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a206a0ffcdffa757f0692489af10413d8">viewPorts</a>()).get().getVulkanInterop();</div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortVulkanInterop_html"><div class="ttname"><a href="structFlowUi_1_1ViewPortVulkanInterop.html">FlowUi::ViewPortVulkanInterop</a></div><div class="ttdoc">Vulkan handles exposed to viewport render callbacks.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:32</div></div>
 </div><!-- fragment --><p>The returned struct includes:</p>
 <ul>
 <li><span class="tt">instance</span></li>
@@ -238,7 +235,7 @@ $(function() {
 <li><span class="tt">graphicsQueueFamily</span></li>
 <li><span class="tt">framesInFlight</span></li>
 </ul>
-<p>These handles are owned by FlowUi. Use them to create compatible resources, but do not destroy the handles themselves.</p>
+<p>These handles are owned by <a class="el" href="namespaceFlowUi.html">FlowUi</a>. Use them to create compatible resources, but do not destroy the handles themselves.</p>
 <h2>Scene Renderer Shape</h2>
 <p>For a real app, wrap scene resources in a renderer object.</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>PreviewSceneRenderer {</div>
@@ -261,17 +258,17 @@ $(function() {
 <div class="line"> </div>
 <div class="line">    <span class="keywordtype">void</span> render(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a>&amp; context);</div>
 <div class="line">};</div>
-<div class="ttc" id="astructFlowUi_1_1ViewPortRenderContext_html"><div class="ttname"><a href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a></div><div class="ttdoc">Per-frame context passed to a viewport render callback.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:59</div></div>
-</div><!-- fragment --><p>The constructor uses FlowUi's device and allocator to create app-owned resources. The destructor destroys only the resources created by this renderer, never the handles borrowed from FlowUi.</p>
+<div class="ttc" id="astructFlowUi_1_1ViewPortRenderContext_html"><div class="ttname"><a href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a></div><div class="ttdoc">Per-frame context passed to a viewport render callback.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:64</div></div>
+</div><!-- fragment --><p>The constructor uses <a class="el" href="namespaceFlowUi.html">FlowUi</a>'s device and allocator to create app-owned resources. The destructor destroys only the resources created by this renderer, never the handles borrowed from <a class="el" href="namespaceFlowUi.html">FlowUi</a>.</p>
 <h2>Resource Lifetime</h2>
 <p>Keep the renderer alive as long as the viewport callback may use it.</p>
 <div class="fragment"><div class="line"><span class="keyword">auto</span> previewRenderer =</div>
-<div class="line">    std::make_shared&lt;PreviewSceneRenderer&gt;(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#ae7c0bc4fd533b02c7aee388d8ee272ec">getVulkanInterop</a>());</div>
+<div class="line">    std::make_shared&lt;PreviewSceneRenderer&gt;(<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a206a0ffcdffa757f0692489af10413d8">viewPorts</a>()).get().getVulkanInterop());</div>
 </div><!-- fragment --><p>The <span class="tt">shared_ptr</span> callback overload shown in the next chapter is useful because the viewport retains the renderer for you.</p>
 <h1>Chapter 4: Install Render Callbacks</h1>
 <h2>Simple Callback</h2>
 <p>For a stateless example, install a plain callback.</p>
-<div class="fragment"><div class="line">preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#a392c8372c68fd6562c4bc5f7ac4fc41f">setRenderCallback</a>([](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a>&amp; context) {</div>
+<div class="fragment"><div class="line">preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#ac350084073d484cee769167e325e941e">setRenderCallback</a>([](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a>&amp; context) {</div>
 <div class="line">    VkViewport viewport{};</div>
 <div class="line">    viewport.width = <span class="keyword">static_cast&lt;</span><span class="keywordtype">float</span><span class="keyword">&gt;</span>(context.<a class="code hl_variable" href="structFlowUi_1_1ViewPortRenderContext.html#ad2d72fbc27b6d6c9101b3e1d020b1b3b">extent</a>.width);</div>
 <div class="line">    viewport.height = <span class="keyword">static_cast&lt;</span><span class="keywordtype">float</span><span class="keyword">&gt;</span>(context.<a class="code hl_variable" href="structFlowUi_1_1ViewPortRenderContext.html#ad2d72fbc27b6d6c9101b3e1d020b1b3b">extent</a>.height);</div>
@@ -284,18 +281,18 @@ $(function() {
 <div class="line">    vkCmdSetViewport(context.<a class="code hl_variable" href="structFlowUi_1_1ViewPortRenderContext.html#a78359f529476829d7f7a84bf81778fd0">commandBuffer</a>, 0, 1, &amp;viewport);</div>
 <div class="line">    vkCmdSetScissor(context.<a class="code hl_variable" href="structFlowUi_1_1ViewPortRenderContext.html#a78359f529476829d7f7a84bf81778fd0">commandBuffer</a>, 0, 1, &amp;scissor);</div>
 <div class="line">});</div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_a392c8372c68fd6562c4bc5f7ac4fc41f"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#a392c8372c68fd6562c4bc5f7ac4fc41f">FlowUi::ViewPort::setRenderCallback</a></div><div class="ttdeci">void setRenderCallback(RenderCallback callback)</div><div class="ttdoc">Set the viewport render callback.</div></div>
-<div class="ttc" id="astructFlowUi_1_1ViewPortRenderContext_html_a78359f529476829d7f7a84bf81778fd0"><div class="ttname"><a href="structFlowUi_1_1ViewPortRenderContext.html#a78359f529476829d7f7a84bf81778fd0">FlowUi::ViewPortRenderContext::commandBuffer</a></div><div class="ttdeci">VkCommandBuffer commandBuffer</div><div class="ttdoc">Secondary command buffer for viewport rendering.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:66</div></div>
-<div class="ttc" id="astructFlowUi_1_1ViewPortRenderContext_html_ad2d72fbc27b6d6c9101b3e1d020b1b3b"><div class="ttname"><a href="structFlowUi_1_1ViewPortRenderContext.html#ad2d72fbc27b6d6c9101b3e1d020b1b3b">FlowUi::ViewPortRenderContext::extent</a></div><div class="ttdeci">VkExtent2D extent</div><div class="ttdoc">Current viewport render target extent in pixels.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:69</div></div>
-</div><!-- fragment --><p>This records into the secondary command buffer FlowUi provides.</p>
+<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_ac350084073d484cee769167e325e941e"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#ac350084073d484cee769167e325e941e">FlowUi::ViewPort::setRenderCallback</a></div><div class="ttdeci">Status setRenderCallback(const RenderCallback &amp;callback)</div><div class="ttdoc">Prepare and publish an owned viewport render callback.</div></div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortRenderContext_html_a78359f529476829d7f7a84bf81778fd0"><div class="ttname"><a href="structFlowUi_1_1ViewPortRenderContext.html#a78359f529476829d7f7a84bf81778fd0">FlowUi::ViewPortRenderContext::commandBuffer</a></div><div class="ttdeci">VkCommandBuffer commandBuffer</div><div class="ttdoc">Secondary command buffer for viewport rendering.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:71</div></div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortRenderContext_html_ad2d72fbc27b6d6c9101b3e1d020b1b3b"><div class="ttname"><a href="structFlowUi_1_1ViewPortRenderContext.html#ad2d72fbc27b6d6c9101b3e1d020b1b3b">FlowUi::ViewPortRenderContext::extent</a></div><div class="ttdeci">VkExtent2D extent</div><div class="ttdoc">Current viewport render target extent in pixels.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:74</div></div>
+</div><!-- fragment --><p>This records into the secondary command buffer <a class="el" href="namespaceFlowUi.html">FlowUi</a> provides.</p>
 <h2>Typed Shared Payload Callback</h2>
 <p>For an actual scene renderer, use the typed shared payload overload.</p>
-<div class="fragment"><div class="line">preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#a392c8372c68fd6562c4bc5f7ac4fc41f">setRenderCallback</a>(</div>
+<div class="fragment"><div class="line">preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#ac350084073d484cee769167e325e941e">setRenderCallback</a>(</div>
 <div class="line">    previewRenderer,</div>
 <div class="line">    [](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a>&amp; context, PreviewSceneRenderer&amp; renderer) {</div>
 <div class="line">        renderer.render(context);</div>
 <div class="line">    });</div>
-</div><!-- fragment --><p>FlowUi stores the <span class="tt">shared_ptr</span>, so <span class="tt">PreviewSceneRenderer</span> stays alive until the callback is replaced, cleared, or the viewport is removed.</p>
+</div><!-- fragment --><p><a class="el" href="namespaceFlowUi.html">FlowUi</a> stores the <span class="tt">shared_ptr</span>, so <span class="tt">PreviewSceneRenderer</span> stays alive until the callback is replaced, cleared, or the viewport is removed.</p>
 <p>Inside <span class="tt">render()</span>, record scene commands. The command buffer is already inside a dynamic rendering pass for the viewport target.</p>
 <div class="fragment"><div class="line"><span class="keywordtype">void</span> PreviewSceneRenderer::render(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a>&amp; context) {</div>
 <div class="line">    <span class="keywordflow">if</span> (context.<a class="code hl_variable" href="structFlowUi_1_1ViewPortRenderContext.html#ad2d72fbc27b6d6c9101b3e1d020b1b3b">extent</a>.width == 0 || context.<a class="code hl_variable" href="structFlowUi_1_1ViewPortRenderContext.html#ad2d72fbc27b6d6c9101b3e1d020b1b3b">extent</a>.height == 0) {</div>
@@ -320,22 +317,22 @@ $(function() {
 </div><!-- fragment --><h2>Render Context Rules</h2>
 <p><span class="tt"><a class="el" href="structFlowUi_1_1ViewPortRenderContext.html" title="Per-frame context passed to a viewport render callback.">FlowUi::ViewPortRenderContext</a></span> gives callback code:</p>
 <ul>
-<li><span class="tt">commandBuffer</span>: secondary command buffer already begun by FlowUi.</li>
+<li><span class="tt">commandBuffer</span>: secondary command buffer already begun by <a class="el" href="namespaceFlowUi.html">FlowUi</a>.</li>
 <li><span class="tt">extent</span>: current render target size in pixels.</li>
 <li><span class="tt">colorFormat</span>: viewport target format.</li>
 <li><span class="tt">frameIndex</span>: frame-resource index.</li>
 <li><span class="tt">key</span>: viewport key.</li>
 <li><span class="tt">vulkan</span>: borrowed interop handles.</li>
 </ul>
-<p>Do not call <span class="tt">vkBeginCommandBuffer()</span> or <span class="tt">vkEndCommandBuffer()</span> on <span class="tt">context.commandBuffer</span>. FlowUi handles that. Also do not transition the viewport image layout; FlowUi transitions it into a renderable layout before your callback and into a sampled layout afterward.</p>
+<p>Do not call <span class="tt">vkBeginCommandBuffer()</span> or <span class="tt">vkEndCommandBuffer()</span> on <span class="tt">context.commandBuffer</span>. <a class="el" href="namespaceFlowUi.html">FlowUi</a> handles that. Also do not transition the viewport image layout; <a class="el" href="namespaceFlowUi.html">FlowUi</a> transitions it into a renderable layout before your callback and into a sampled layout afterward.</p>
 <p>Use <span class="tt">hasRenderCallback()</span> when setup code may run more than once.</p>
 <div class="fragment"><div class="line"><span class="keywordflow">if</span> (!preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#a3c831bc9ef15c303e504f22569d7aca6">hasRenderCallback</a>()) {</div>
-<div class="line">    preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#a392c8372c68fd6562c4bc5f7ac4fc41f">setRenderCallback</a>(previewRenderer, renderPreviewScene);</div>
+<div class="line">    preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#ac350084073d484cee769167e325e941e">setRenderCallback</a>(previewRenderer, renderPreviewScene);</div>
 <div class="line">}</div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_a3c831bc9ef15c303e504f22569d7aca6"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#a3c831bc9ef15c303e504f22569d7aca6">FlowUi::ViewPort::hasRenderCallback</a></div><div class="ttdeci">bool hasRenderCallback() const noexcept</div><div class="ttdoc">Return whether a render callback is set.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_a3c831bc9ef15c303e504f22569d7aca6"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#a3c831bc9ef15c303e504f22569d7aca6">FlowUi::ViewPort::hasRenderCallback</a></div><div class="ttdeci">bool hasRenderCallback() const noexcept</div><div class="ttdoc">Test whether this viewport has an installed callback.</div></div>
 </div><!-- fragment --><p>Use <span class="tt">clearRenderCallback()</span> when the preview panel is disabled but the viewport texture can remain.</p>
-<div class="fragment"><div class="line">preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#a41cbb5a21265263d5cb7bfab078b9b99">clearRenderCallback</a>();</div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_a41cbb5a21265263d5cb7bfab078b9b99"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#a41cbb5a21265263d5cb7bfab078b9b99">FlowUi::ViewPort::clearRenderCallback</a></div><div class="ttdeci">void clearRenderCallback()</div><div class="ttdoc">Clear the viewport render callback.</div></div>
+<div class="fragment"><div class="line">preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#a9c79f6b25e36df51503412ab662299f5">clearRenderCallback</a>();</div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_a9c79f6b25e36df51503412ab662299f5"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#a9c79f6b25e36df51503412ab662299f5">FlowUi::ViewPort::clearRenderCallback</a></div><div class="ttdeci">Status clearRenderCallback()</div><div class="ttdoc">Clear the installed viewport render callback.</div></div>
 </div><!-- fragment --><h1>Chapter 5: Draw the Viewport in a Flow Element</h1>
 <h2>Preview Element Definition</h2>
 <p>The Flow element only displays a texture reference. It does not record Vulkan commands.</p>
@@ -351,17 +348,17 @@ $(function() {
 <div class="line"><span class="keyword">struct </span>ScenePreview {</div>
 <div class="line">    <span class="keyword">using </span>Parameters = ScenePreviewParams;</div>
 <div class="line">    <span class="keyword">using </span>BuildContext = <a class="code hl_struct" href="structFlowUi_1_1ElementBuildContext.html">FlowUi::ElementBuildContext&lt;ScenePreview&gt;</a>;</div>
-<div class="line">    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">auto</span> definitionId = FlowUi::DefinitionID(<span class="stringliteral">&quot;tutorial.scene-preview&quot;</span>);</div>
+<div class="line">    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">auto</span> definitionId = <a class="code hl_function" href="namespaceFlowUi.html#ab2fb588d55085807dcef2fe103c169ce">FlowUi::DefinitionID</a>(<span class="stringliteral">&quot;tutorial.scene-preview&quot;</span>);</div>
 <div class="line">    <span class="keyword">static</span> <span class="keyword">constexpr</span> std::string_view debugName = <span class="stringliteral">&quot;Scene Preview&quot;</span>;</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">static</span> <span class="keywordtype">void</span> buildElement(BuildContext&amp; context) {</div>
 <div class="line">        Clay_ElementDeclaration root{};</div>
 <div class="line">        root.layout.sizing = context.params.sizing;</div>
-<div class="line">        root.backgroundColor = FlowUi::Flow_Color(<span class="stringliteral">&quot;#05070cff&quot;</span>);</div>
+<div class="line">        root.backgroundColor = <a class="code hl_function" href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">FlowUi::Flow_Color</a>(<span class="stringliteral">&quot;#05070cff&quot;</span>);</div>
 <div class="line">        root.cornerRadius = CLAY_CORNER_RADIUS(8);</div>
 <div class="line">        <span class="keywordflow">if</span> (context.params.viewPorts != <span class="keyword">nullptr</span>) {</div>
 <div class="line">            <span class="keyword">auto</span> scene_texture = context.params.viewPorts-&gt;getTexture(context.params.viewportKey);</div>
-<div class="line">            scene_texture.fitMode = FlowUi::TextureFitMode::Contain;</div>
+<div class="line">            scene_texture.fitMode = <a class="code hl_enumvalue" href="namespaceFlowUi.html#af2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">FlowUi::TextureFitMode::Contain</a>;</div>
 <div class="line">            root.image.imageData = context.uiManager.imageData(scene_texture);</div>
 <div class="line">        }</div>
 <div class="line">        CLAY(context.clayID(), root) {}</div>
@@ -370,26 +367,28 @@ $(function() {
 <div class="line"> </div>
 <div class="line"><span class="keyword">inline</span> <span class="keyword">constexpr</span> ScenePreview kScenePreview{};</div>
 <div class="line"><span class="keyword">static_assert</span>(<a class="code hl_concept" href="conceptFlowUi_1_1FlowElement.html">FlowUi::FlowElement&lt;ScenePreview&gt;</a>);</div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html">FlowUi::ViewPortManager</a></div><div class="ttdoc">Creates, tracks, renders, and exposes offscreen viewports.</div><div class="ttdef"><b>Definition</b> ViewPortManager.hpp:293</div></div>
-<div class="ttc" id="aconceptFlowUi_1_1FlowElement_html"><div class="ttname"><a href="conceptFlowUi_1_1FlowElement.html">FlowUi::FlowElement</a></div><div class="ttdef"><b>Definition</b> ElementConcepts.hpp:44</div></div>
-<div class="ttc" id="astructFlowUi_1_1ElementBuildContext_html"><div class="ttname"><a href="structFlowUi_1_1ElementBuildContext.html">FlowUi::ElementBuildContext</a></div><div class="ttdoc">Context passed to constructElement and buildElement callbacks.</div><div class="ttdef"><b>Definition</b> ElementContexts.hpp:53</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html">FlowUi::ViewPortManager</a></div><div class="ttdoc">Creates, tracks, renders, and exposes offscreen viewports.</div><div class="ttdef"><b>Definition</b> ViewPortManager.hpp:302</div></div>
+<div class="ttc" id="aconceptFlowUi_1_1FlowElement_html"><div class="ttname"><a href="conceptFlowUi_1_1FlowElement.html">FlowUi::FlowElement</a></div><div class="ttdef"><b>Definition</b> ElementConcepts.hpp:60</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a5efb614726ef3592ac7dda2318b6bbe0"><div class="ttname"><a href="namespaceFlowUi.html#a5efb614726ef3592ac7dda2318b6bbe0">FlowUi::Flow_Color</a></div><div class="ttdeci">consteval Clay_Color Flow_Color(const char(&amp;hexRgba)[Size]) noexcept</div><div class="ttdoc">Convert a literal #RRGGBB or #RRGGBBAA color into a Clay_Color at compile time.</div><div class="ttdef"><b>Definition</b> Color.hpp:37</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_ab2fb588d55085807dcef2fe103c169ce"><div class="ttname"><a href="namespaceFlowUi.html#ab2fb588d55085807dcef2fe103c169ce">FlowUi::DefinitionID</a></div><div class="ttdeci">consteval FlowDefinitionID DefinitionID(const char(&amp;name)[N]) noexcept</div><div class="ttdef"><b>Definition</b> ElementID.hpp:243</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_af2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484"><div class="ttname"><a href="namespaceFlowUi.html#af2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">FlowUi::TextureFitMode::Contain</a></div><div class="ttdeci">@ Contain</div><div class="ttdoc">Fit the whole texture inside the target rectangle without cropping.</div><div class="ttdef"><b>Definition</b> TextureRef.hpp:15</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementBuildContext_html"><div class="ttname"><a href="structFlowUi_1_1ElementBuildContext.html">FlowUi::ElementBuildContext</a></div><div class="ttdoc">Context passed to constructElement and buildElement callbacks.</div><div class="ttdef"><b>Definition</b> ElementContexts.hpp:55</div></div>
 </div><!-- fragment --><p>The tag declares only its parameter capability. The build callback borrows the viewport manager, resolves the current texture, and copies its payload into frame-owned Clay storage with <span class="tt">imageData()</span>. Storage and the viewport manager retain GPU ownership; the returned pointer must not be kept across frames.</p>
 <h2>Using ViewPortManager::getTexture</h2>
 <p><span class="tt">ViewPortManager::getTexture(key)</span> is the most convenient way to draw by key.</p>
-<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> sceneTexture = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#aa24f7ce00d8a59ecd9a1bc4a4a92c921">getTexture</a>(<span class="stringliteral">&quot;scene/preview&quot;</span>);</div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html_aa24f7ce00d8a59ecd9a1bc4a4a92c921"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html#aa24f7ce00d8a59ecd9a1bc4a4a92c921">FlowUi::ViewPortManager::getTexture</a></div><div class="ttdeci">TextureRef getTexture(std::string_view key) const</div><div class="ttdoc">Return the texture reference for a viewport key.</div></div>
-<div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> TextureRef.hpp:30</div></div>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> sceneTexture = <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a206a0ffcdffa757f0692489af10413d8">viewPorts</a>()).get().getTexture(<span class="stringliteral">&quot;scene/preview&quot;</span>));</div>
+<div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> TextureRef.hpp:31</div></div>
 </div><!-- fragment --><p>If the key is missing, it returns fallback texture id <span class="tt">0</span> and logs a warning once.</p>
 <h2>Using ViewPort::textureRef</h2>
 <p>If you already have a viewport pointer, you can ask it for the current frame texture directly.</p>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (<a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* viewport = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#af6d427e4ed40d83a5485ab81ede41beb">getViewPort</a>(<span class="stringliteral">&quot;scene/preview&quot;</span>)) {</div>
+<div class="fragment"><div class="line"><span class="keywordflow">if</span> (<a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* viewport = <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a206a0ffcdffa757f0692489af10413d8">viewPorts</a>()).get().getViewPort(<span class="stringliteral">&quot;scene/preview&quot;</span>))) {</div>
 <div class="line">    <a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> sceneTexture = viewport-&gt;textureRef();</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>The manager form is usually simpler in UI code; the object form is useful when setup code already looked up the viewport.</p>
 <h1>Chapter 6: Frame Lifecycle for Viewports</h1>
 <p>Viewports are sized from the UI.</p>
-<p>During UI construction, the scene preview element emits a Clay image command that references <span class="tt">"scene/preview"</span>. At <span class="tt">endFrame()</span>, Clay has final image bounds. FlowUi then sees that the viewport texture was used and chooses a render target size from the largest UI image area that referenced it, scaled into framebuffer pixels.</p>
-<p>During <span class="tt">drawFrame()</span>, FlowUi:</p>
+<p>During UI construction, the scene preview element emits a Clay image command that references <span class="tt">"scene/preview"</span>. At <span class="tt">endFrame()</span>, Clay has final image bounds. <a class="el" href="namespaceFlowUi.html">FlowUi</a> then sees that the viewport texture was used and chooses a render target size from the largest UI image area that referenced it, scaled into framebuffer pixels.</p>
+<p>During <span class="tt">drawFrame()</span>, <a class="el" href="namespaceFlowUi.html">FlowUi</a>:</p>
 <ol type="1">
 <li>Resizes viewport images if the desired size changed.</li>
 <li>Remaps viewport texture refs to the current frame's viewport image.</li>
@@ -400,9 +399,9 @@ $(function() {
 <li>Executes viewport work before the main UI pass.</li>
 <li>Transitions the viewport image for sampling by the UI renderer.</li>
 </ol>
-<p>This means a render callback usually runs only when the viewport texture was referenced by UI for that frame. If the preview panel is closed and no image command uses the texture, FlowUi does not need to render that viewport.</p>
+<p>This means a render callback usually runs only when the viewport texture was referenced by UI for that frame. If the preview panel is closed and no image command uses the texture, <a class="el" href="namespaceFlowUi.html">FlowUi</a> does not need to render that viewport.</p>
 <p>You can inspect current size from the viewport object.</p>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (<span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* viewport = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#af6d427e4ed40d83a5485ab81ede41beb">getViewPort</a>(<span class="stringliteral">&quot;scene/preview&quot;</span>)) {</div>
+<div class="fragment"><div class="line"><span class="keywordflow">if</span> (<span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* viewport = <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a206a0ffcdffa757f0692489af10413d8">viewPorts</a>()).get().getViewPort(<span class="stringliteral">&quot;scene/preview&quot;</span>))) {</div>
 <div class="line">    <span class="keywordflow">if</span> (viewport-&gt;hasValidSize()) {</div>
 <div class="line">        VkExtent2D size = viewport-&gt;getSize();</div>
 <div class="line">        (void)size;</div>
@@ -411,54 +410,53 @@ $(function() {
 </div><!-- fragment --><p>Before the viewport has been referenced by UI, its size may be invalid or still at the initial placeholder size.</p>
 <h1>Chapter 7: Removal and Fallbacks</h1>
 <p>Remove a viewport when the scene preview is permanently closed.</p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#a30e8a1b555b572966efcea707dca470c">remove</a>(<span class="stringliteral">&quot;scene/preview&quot;</span>);</div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html_a30e8a1b555b572966efcea707dca470c"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html#a30e8a1b555b572966efcea707dca470c">FlowUi::ViewPortManager::remove</a></div><div class="ttdeci">Result&lt; bool &gt; remove(std::string_view key)</div><div class="ttdoc">Remove a viewport by key.</div></div>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a206a0ffcdffa757f0692489af10413d8">viewPorts</a>()).get().remove(<span class="stringliteral">&quot;scene/preview&quot;</span>));</div>
 </div><!-- fragment --><p>Removal destroys per-frame viewport resources and can block because the implementation waits for the Vulkan device to become idle before releasing resources.</p>
 <p>If the app only wants to stop drawing custom scene commands, keep the viewport and clear the callback instead.</p>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (<a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* viewport = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#af6d427e4ed40d83a5485ab81ede41beb">getViewPort</a>(<span class="stringliteral">&quot;scene/preview&quot;</span>)) {</div>
+<div class="fragment"><div class="line"><span class="keywordflow">if</span> (<a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* viewport = <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a206a0ffcdffa757f0692489af10413d8">viewPorts</a>()).get().getViewPort(<span class="stringliteral">&quot;scene/preview&quot;</span>))) {</div>
 <div class="line">    viewport-&gt;clearRenderCallback();</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>The viewport texture can still be drawn, but no app scene commands are recorded.</p>
 <h1>Final Shape</h1>
 <p>Setup creates the viewport, creates renderer resources through Vulkan interop, and installs the typed render callback.</p>
-<div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> app = <a class="code hl_function" href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a>(config);</div>
+<div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> app = <a class="code hl_function" href="group__flowui__app.html#gac333afcb2ea79328646bb4410e459233">FlowUi::makeApplication</a>(config);</div>
 <div class="line"> </div>
-<div class="line">(void)app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#a821179f12d30b198fb71fd5ea230dd84">create</a>(<span class="stringliteral">&quot;scene/preview&quot;</span>, <a class="code hl_struct" href="structFlowUi_1_1ViewPortCreateInfo.html">FlowUi::ViewPortCreateInfo</a>{</div>
+<div class="line">(void)<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a206a0ffcdffa757f0692489af10413d8">viewPorts</a>()).get().create(<span class="stringliteral">&quot;scene/preview&quot;</span>, <a class="code hl_struct" href="structFlowUi_1_1ViewPortCreateInfo.html">FlowUi::ViewPortCreateInfo</a>{</div>
 <div class="line">    .colorFormat = VK_FORMAT_R8G8B8A8_UNORM,</div>
 <div class="line">    .clearColor = {0.02f, 0.02f, 0.03f, 1.0f},</div>
-<div class="line">    .clearEveryFrame = <span class="keyword">true</span>,</div>
-<div class="line">});</div>
+<div class="line">    .<a class="code hl_variable" href="structFlowUi_1_1ViewPortCreateInfo.html#a8ad9f824c3440d44d2e1d5557dab352f">clearEveryFrame</a> = <span class="keyword">true</span>,</div>
+<div class="line">}));</div>
 <div class="line"> </div>
-<div class="line"><a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* preview = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#af6d427e4ed40d83a5485ab81ede41beb">getViewPort</a>(<span class="stringliteral">&quot;scene/preview&quot;</span>);</div>
-<div class="line"><span class="keyword">auto</span> renderer = std::make_shared&lt;PreviewSceneRenderer&gt;(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#ae7c0bc4fd533b02c7aee388d8ee272ec">getVulkanInterop</a>());</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* preview = <a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a206a0ffcdffa757f0692489af10413d8">viewPorts</a>()).get().getViewPort(<span class="stringliteral">&quot;scene/preview&quot;</span>));</div>
+<div class="line"><span class="keyword">auto</span> renderer = std::make_shared&lt;PreviewSceneRenderer&gt;(<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a206a0ffcdffa757f0692489af10413d8">viewPorts</a>()).get().getVulkanInterop());</div>
 <div class="line"> </div>
-<div class="line">preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#a392c8372c68fd6562c4bc5f7ac4fc41f">setRenderCallback</a>(</div>
+<div class="line">preview-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#ac350084073d484cee769167e325e941e">setRenderCallback</a>(</div>
 <div class="line">    renderer,</div>
 <div class="line">    [](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a>&amp; context, PreviewSceneRenderer&amp; renderer) {</div>
 <div class="line">        renderer.render(context);</div>
 <div class="line">    });</div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortCreateInfo_html_a8ad9f824c3440d44d2e1d5557dab352f"><div class="ttname"><a href="structFlowUi_1_1ViewPortCreateInfo.html#a8ad9f824c3440d44d2e1d5557dab352f">FlowUi::ViewPortCreateInfo::clearEveryFrame</a></div><div class="ttdeci">bool clearEveryFrame</div><div class="ttdoc">Whether the viewport should be cleared every frame.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:109</div></div>
 </div><!-- fragment --><p>The frame loop draws the preview element like ordinary UI.</p>
-<div class="fragment"><div class="line"><span class="keywordflow">while</span> (!app.<a class="code hl_function" href="classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913">shouldClose</a>()) {</div>
-<div class="line">    app.<a class="code hl_function" href="classFlowUi_1_1App.html#a1d86e3d448b77e5a32e4ee2f97b02974">beginFrame</a>();</div>
+<div class="fragment"><div class="line"><span class="keywordflow">while</span> (!<a class="code hl_function" href="namespaceFlowUi.html#aef54dabee32ff800d39da726c12a2ac8">FlowUi::ValueOrThrow</a>(app.<a class="code hl_function" href="classFlowUi_1_1App.html#abbdf6c689e95576b0fc71e738e3825e4">shouldClose</a>())) {</div>
+<div class="line">    app.<a class="code hl_function" href="classFlowUi_1_1App.html#ae29b4d381f377a79f272defcc40144ca">beginFrame</a>();</div>
 <div class="line"> </div>
-<div class="line">    app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>()</div>
-<div class="line">        .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">createElement</a>(kScenePreview, <span class="stringliteral">&quot;material/preview&quot;</span>)</div>
+<div class="line">    app.<a class="code hl_function" href="classFlowUi_1_1App.html#a572a046213b0d0460376a5cbc4b5651d">ui</a>()</div>
+<div class="line">        .createElement(kScenePreview, <span class="stringliteral">&quot;material/preview&quot;</span>)</div>
 <div class="line">        .setParameters(ScenePreviewParams{</div>
 <div class="line">            .viewportKey = <span class="stringliteral">&quot;scene/preview&quot;</span>,</div>
-<div class="line">            .viewPorts = &amp;app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>(),</div>
+<div class="line">            .viewPorts = &amp;app.<a class="code hl_function" href="classFlowUi_1_1App.html#a206a0ffcdffa757f0692489af10413d8">viewPorts</a>(),</div>
 <div class="line">        })</div>
 <div class="line">        .draw();</div>
 <div class="line"> </div>
-<div class="line">    app.<a class="code hl_function" href="classFlowUi_1_1App.html#a16773d85519758713e645694ffe55cca">endFrame</a>();</div>
-<div class="line">    app.<a class="code hl_function" href="classFlowUi_1_1App.html#a1d3a7a09c095e489d4165fa25ac35c43">drawFrame</a>();</div>
+<div class="line">    app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5f5e4ad829ba82f38c9a900f118f74c8">endFrame</a>();</div>
+<div class="line">    app.<a class="code hl_function" href="classFlowUi_1_1App.html#a0ccb254db3cad26a641aa6ab10c1f738">drawFrame</a>();</div>
 <div class="line">}</div>
-<div class="ttc" id="aclassFlowUi_1_1App_html_a16773d85519758713e645694ffe55cca"><div class="ttname"><a href="classFlowUi_1_1App.html#a16773d85519758713e645694ffe55cca">FlowUi::App::endFrame</a></div><div class="ttdeci">Status endFrame()</div><div class="ttdoc">End UI construction and produce render commands.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1App_html_a1d3a7a09c095e489d4165fa25ac35c43"><div class="ttname"><a href="classFlowUi_1_1App.html#a1d3a7a09c095e489d4165fa25ac35c43">FlowUi::App::drawFrame</a></div><div class="ttdeci">Status drawFrame()</div><div class="ttdoc">Submit the current frame for rendering and presentation.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1App_html_a1d86e3d448b77e5a32e4ee2f97b02974"><div class="ttname"><a href="classFlowUi_1_1App.html#a1d86e3d448b77e5a32e4ee2f97b02974">FlowUi::App::beginFrame</a></div><div class="ttdeci">Status beginFrame()</div><div class="ttdoc">Set whether the window backend should request shutdown.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1App_html_a788f5bbe3b0d496a41a71494a5f485bc"><div class="ttname"><a href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">FlowUi::App::ui</a></div><div class="ttdeci">UiManager &amp; ui()</div><div class="ttdoc">Access the UI manager.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1App_html_a9d853f690168da16dc71e453c9616913"><div class="ttname"><a href="classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913">FlowUi::App::shouldClose</a></div><div class="ttdeci">bool shouldClose() const</div><div class="ttdoc">Query whether the window backend requested shutdown.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a3ef6d75f9ad2e76294c104c4b3e25803"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Element &gt; createElement(const Element &amp;, LocalElementName localName, std::source_location sourceLocation=std::source_location::current())</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:289</div></div>
-</div><!-- fragment --><p>The key model is that app code records Vulkan scene commands only inside the viewport callback. FlowUi owns the viewport image lifecycle and exposes that image as a <span class="tt">TextureRef</span>, so the UI can display a custom-rendered scene exactly like any other image. </p>
+<div class="ttc" id="aclassFlowUi_1_1App_html_a0ccb254db3cad26a641aa6ab10c1f738"><div class="ttname"><a href="classFlowUi_1_1App.html#a0ccb254db3cad26a641aa6ab10c1f738">FlowUi::App::drawFrame</a></div><div class="ttdeci">Status drawFrame() noexcept</div><div class="ttdoc">Submit the current frame for rendering and presentation.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html_a572a046213b0d0460376a5cbc4b5651d"><div class="ttname"><a href="classFlowUi_1_1App.html#a572a046213b0d0460376a5cbc4b5651d">FlowUi::App::ui</a></div><div class="ttdeci">Result&lt; std::reference_wrapper&lt; UiManager &gt; &gt; ui() noexcept</div><div class="ttdoc">Access the UI manager.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html_a5f5e4ad829ba82f38c9a900f118f74c8"><div class="ttname"><a href="classFlowUi_1_1App.html#a5f5e4ad829ba82f38c9a900f118f74c8">FlowUi::App::endFrame</a></div><div class="ttdeci">Status endFrame() noexcept</div><div class="ttdoc">End UI construction and produce render commands.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html_abbdf6c689e95576b0fc71e738e3825e4"><div class="ttname"><a href="classFlowUi_1_1App.html#abbdf6c689e95576b0fc71e738e3825e4">FlowUi::App::shouldClose</a></div><div class="ttdeci">Result&lt; bool &gt; shouldClose() const noexcept</div><div class="ttdoc">Query whether the window backend requested shutdown.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html_ae29b4d381f377a79f272defcc40144ca"><div class="ttname"><a href="classFlowUi_1_1App.html#ae29b4d381f377a79f272defcc40144ca">FlowUi::App::beginFrame</a></div><div class="ttdeci">Status beginFrame() noexcept</div><div class="ttdoc">Poll events and begin a frame for the semantic main window.</div></div>
+</div><!-- fragment --><p>The key model is that app code records Vulkan scene commands only inside the viewport callback. <a class="el" href="namespaceFlowUi.html">FlowUi</a> owns the viewport image lifecycle and exposes that image as a <span class="tt">TextureRef</span>, so the UI can display a custom-rendered scene exactly like any other image. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

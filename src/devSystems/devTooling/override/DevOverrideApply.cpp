@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <utility>
+#include <type_traits>
 
 #include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
 
@@ -18,9 +19,25 @@ std::size_t mixHash(std::uint64_t left, std::uint64_t right) noexcept {
 bool sameStoredKey(
 	const DevOverrideApply::Record& record,
 	const DevElementOverrideTarget& target,
-	DevOverrideFieldKey field,
+	const DevOverrideFieldKey& field,
 	DevOverrideLayer layer) noexcept {
 	return record.target == target && record.field == field && record.layer == layer;
+}
+
+template <typename Predicate>
+void prepareTombstones(const std::vector<DevOverrideApply::Record>& records,
+					   std::vector<DevOverrideApply::Record>& tombstones, Predicate matches) {
+	static_assert(std::is_nothrow_move_constructible_v<DevOverrideApply::Record>);
+	std::vector<DevOverrideApply::Record> pending;
+	pending.reserve(static_cast<std::size_t>(std::count_if(records.begin(), records.end(), matches)));
+	for (const auto& record : records) {
+		if (matches(record))
+			pending.emplace_back(record);
+	}
+	// Finish allocation/copying before changing either published collection.
+	tombstones.reserve(tombstones.size() + pending.size());
+	for (auto& record : pending)
+		tombstones.emplace_back(std::move(record));
 }
 
 const tooling::DevFieldSchema* findField(
@@ -130,64 +147,52 @@ void DevOverrideApply::set(
 }
 
 void DevOverrideApply::clear(const DevElementOverrideTarget& target, DevOverrideFieldKey field,
-							 DevOverrideLayer layer, bool preserve_baked_assignment) noexcept {
-	if (preserve_baked_assignment) {
-		std::erase_if(bakeTombstones_, [&](const Record& record) {
-			return sameStoredKey(record, target, field, layer);
-		});
-	} else {
-		for (const Record& record : records_) {
-			if (sameStoredKey(record, target, field, layer))
-				bakeTombstones_.push_back(record);
-		}
-	}
-	std::erase_if(records_, [&](const Record& record) {
+							 DevOverrideLayer layer, bool preserve_baked_assignment) {
+	const auto matches = [&](const Record& record) {
 		return sameStoredKey(record, target, field, layer);
-	});
+	};
+	if (preserve_baked_assignment)
+		std::erase_if(bakeTombstones_, matches);
+	else
+		prepareTombstones(records_, bakeTombstones_, matches);
+	std::erase_if(records_, matches);
+	compiled_.clear();
 }
 
-void DevOverrideApply::resetDefinition(FlowDefinitionID definition) noexcept {
-	for (const Record& record : records_) {
-		if (record.target.definition == definition &&
-			record.target.scope == DevOverrideScope::Definition) {
-			bakeTombstones_.push_back(record);
-		}
-	}
-	std::erase_if(records_, [&](const Record& record) {
+void DevOverrideApply::resetDefinition(FlowDefinitionID definition) {
+	const auto matches = [&](const Record& record) {
 		return record.target.definition == definition &&
 			record.target.scope == DevOverrideScope::Definition;
-	});
+	};
+	prepareTombstones(records_, bakeTombstones_, matches);
+	std::erase_if(records_, matches);
+	compiled_.clear();
 }
 
-void DevOverrideApply::resetInstance(const DevElementOverrideTarget& target) noexcept {
-	for (const Record& record : records_) {
-		if (record.target.definition == target.definition &&
-			record.target.scope == DevOverrideScope::ExactInstance &&
-			record.target.window == target.window && record.target.instance == target.instance) {
-			bakeTombstones_.push_back(record);
-		}
-	}
-	std::erase_if(records_, [&](const Record& record) {
+void DevOverrideApply::resetInstance(const DevElementOverrideTarget& target) {
+	const auto matches = [&](const Record& record) {
 		return record.target.definition == target.definition &&
 			record.target.scope == DevOverrideScope::ExactInstance &&
-			record.target.window == target.window &&
-			record.target.instance == target.instance;
-	});
+			record.target.window == target.window && record.target.instance == target.instance;
+	};
+	prepareTombstones(records_, bakeTombstones_, matches);
+	std::erase_if(records_, matches);
+	compiled_.clear();
 }
 
-void DevOverrideApply::clearAll() noexcept {
-	bakeTombstones_.insert(bakeTombstones_.end(), records_.begin(), records_.end());
+void DevOverrideApply::clearAll() {
+	prepareTombstones(records_, bakeTombstones_, [](const Record&) { return true; });
 	records_.clear();
 	compiled_.clear();
 }
 
 void DevOverrideApply::rebuildCompiled() {
-	compiled_.clear();
-	compiled_.reserve(records_.size());
+	decltype(compiled_) prepared;
+	prepared.reserve(records_.size());
 	for (std::uint32_t index = 0; index < records_.size(); ++index) {
 		const Record& record = records_[index];
 		if (!record.schemaValid || record.layer == DevOverrideLayer::Count) continue;
-		CompiledDefinition& definition = compiled_[record.target.definition.value];
+		CompiledDefinition& definition = prepared[record.target.definition.value];
 		const std::size_t layer = static_cast<std::size_t>(record.layer);
 		if (record.target.scope == DevOverrideScope::Definition) {
 			definition.definition[layer].push_back(index);
@@ -198,6 +203,7 @@ void DevOverrideApply::rebuildCompiled() {
 			}][layer].push_back(index);
 		}
 	}
+	compiled_.swap(prepared);
 }
 
 void DevOverrideApply::apply(

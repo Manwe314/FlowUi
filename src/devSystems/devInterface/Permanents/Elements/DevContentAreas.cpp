@@ -1,3 +1,4 @@
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevContentAreas.hpp"
 
 #if FLOW_UI_DEV_MODE

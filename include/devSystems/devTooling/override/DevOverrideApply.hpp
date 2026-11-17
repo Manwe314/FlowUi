@@ -52,18 +52,18 @@ public:
 		DevOverrideLayer layer,
 		DevOwnedValue value,
 		std::uint64_t transaction);
-	/** @brief Remove matching target/field/layer assignments; preserve_baked_assignment suppresses a persistence removal tombstone. */
+	/** @brief Remove matching assignments after preparing persistence tombstones. Allocation failure leaves assignments unchanged; preserve_baked_assignment suppresses a tombstone. Rebuild compiled indices before applying retained assignments. */
 	void clear(
 		const DevElementOverrideTarget& target,
 		DevOverrideFieldKey field,
 		DevOverrideLayer layer,
-		bool preserve_baked_assignment = false) noexcept;
+		bool preserve_baked_assignment = false);
 	/** @brief Remove retained live assignments for the selected definition and record required bake removals. */
-	void resetDefinition(FlowDefinitionID definition) noexcept;
+	void resetDefinition(FlowDefinitionID definition);
 	/** @brief Remove retained assignments for the exact window-qualified instance and record required bake removals. */
-	void resetInstance(const DevElementOverrideTarget& target) noexcept;
+	void resetInstance(const DevElementOverrideTarget& target);
 	/** @brief Clear retained element assignments and compiled indices. */
-	void clearAll() noexcept;
+	void clearAll();
 	/** @brief Rebuild definition/instance lookup indices after assignment changes. */
 	void rebuildCompiled();
 

@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Inspect/Inspector/DevInspectInspector.hpp"
 
 #if FLOW_UI_DEV_MODE
@@ -51,7 +52,7 @@ void DevInspectInspector::buildElement(BuildContext& context) {
 	const tooling::DevFlowNode* selected = nullptr;
 	if (state && state->selectedElementId && context.params.app &&
 		context.params.app->hasWindow(state->selectedWindowId)) {
-		snapshot = &context.params.app->ui(state->selectedWindowId).devTreeSnapshot();
+		snapshot = &FlowUi::ValueOrThrow(context.params.app->ui(state->selectedWindowId)).get().devTreeSnapshot();
 		const auto found = std::ranges::find_if(
 			snapshot->flow.nodes,
 			[state](const tooling::DevFlowNode& node) {
@@ -111,7 +112,7 @@ void DevInspectInspector::buildElement(BuildContext& context) {
 			text.fontSize = 12;
 			text.wrapMode = CLAY_TEXT_WRAP_WORDS;
 			text.textAlignment = CLAY_TEXT_ALIGN_CENTER;
-			CLAY(context.clayID("empty-selection"), empty) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("empty-selection")), empty) {
 				CLAY_TEXT(
 					context.uiManager.toClayString("Select an Element From the Left Selector"),
 					CLAY_TEXT_CONFIG(text));

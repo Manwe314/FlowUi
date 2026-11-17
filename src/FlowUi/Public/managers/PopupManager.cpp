@@ -1,3 +1,4 @@
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "FlowUi/Public/managers/PopupManager.hpp"
 #include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
 #if FLOW_UI_DEV_MODE
@@ -472,6 +473,7 @@ void PopupManager::beginFrame(
 	const FrameInput& previousInput,
 	float viewportWidth,
 	float viewportHeight) {
+	frameError_ = {};
 	auto& current = state();
 	if (current.flags.has_flag(PopupManagerFlag::frame_active)) {
 		throw FlowUiException(makeError(ErrorCode::FrameAlreadyActive, ErrorSite::PopupBeginFrame));
@@ -564,16 +566,28 @@ uint32_t PopupManager::suppressedAnchorClayId() const {
 	return state().suppressedAnchorClayIdThisFrame;
 }
 
-Result<PopupFrame> PopupManager::request(FlowElementID popupId, const PopupRequest& requestValue) {
+Result<PopupFrame> PopupManager::request(FlowElementID popupId, const PopupRequest& requestValue) noexcept try {
 	return requestImpl(popupId.value, requestValue);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::PopupRequest);
+	if (!frameError_) frameError_ = error;
+	return unexpectedError(error);
 }
 
-Result<PopupFrame> PopupManager::request(GlobalFlowID popupId, const PopupRequest& requestValue) {
+Result<PopupFrame> PopupManager::request(GlobalFlowID popupId, const PopupRequest& requestValue) noexcept try {
 	return requestImpl(popupId.value, requestValue);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::PopupRequest);
+	if (!frameError_) frameError_ = error;
+	return unexpectedError(error);
 }
 
-Result<PopupFrame> PopupManager::request(FlowElementPartID popupId, const PopupRequest& requestValue) {
+Result<PopupFrame> PopupManager::request(FlowElementPartID popupId, const PopupRequest& requestValue) noexcept try {
 	return requestImpl(popupId.value, requestValue);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::PopupRequest);
+	if (!frameError_) frameError_ = error;
+	return unexpectedError(error);
 }
 
 Result<PopupFrame> PopupManager::requestImpl(uint64_t popupKey, const PopupRequest& requestValue) {
@@ -710,17 +724,39 @@ Result<PopupFrame> PopupManager::requestImpl(uint64_t popupKey, const PopupReque
 	return frame;
 }
 
-void PopupManager::dismiss(FlowElementID popupId) { dismissImpl(popupId.value); }
-void PopupManager::dismiss(GlobalFlowID popupId) { dismissImpl(popupId.value); }
-void PopupManager::dismiss(FlowElementPartID popupId) { dismissImpl(popupId.value); }
+void PopupManager::dismiss(FlowElementID popupId) try {
+	dismissImpl(popupId.value);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::PopupRequest);
+	if (!frameError_) frameError_ = error;
+	throw;
+}
+void PopupManager::dismiss(GlobalFlowID popupId) try {
+	dismissImpl(popupId.value);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::PopupRequest);
+	if (!frameError_) frameError_ = error;
+	throw;
+}
+void PopupManager::dismiss(FlowElementPartID popupId) try {
+	dismissImpl(popupId.value);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::PopupRequest);
+	if (!frameError_) frameError_ = error;
+	throw;
+}
 
 void PopupManager::dismissImpl(uint64_t popupKey) {
 	if (popupKey == 0) return;
 	auto& current = state();
 	auto& records = current.flags.has_flag(PopupManagerFlag::frame_active)
 		? current.workingRecords : current.committedRecords;
-	PopupRecord& record = records[popupKey];
-	if (!markDismissed(record)) return;
+	const auto found = records.find(popupKey);
+	PopupRecord replacement = found == records.end() ? PopupRecord{} : found->second;
+	if (!markDismissed(replacement)) return;
+	if (!current.flags.has_flag(PopupManagerFlag::frame_active))
+		storage_->noteManagerMutation(window_);
+	records.insert_or_assign(popupKey, replacement);
 
 	if (current.flags.has_flag(PopupManagerFlag::frame_active)) {
 		if (const auto submission = current.currentSubmissionByKey.find(popupKey);
@@ -729,21 +765,31 @@ void PopupManager::dismissImpl(uint64_t popupKey) {
 			frame.visible = false;
 			frame.measureOnly = false;
 		}
-	} else {
-		storage_->noteManagerMutation(window_);
 	}
 }
 
-bool PopupManager::consumeDismissed(FlowElementID popupId) {
+bool PopupManager::consumeDismissed(FlowElementID popupId) try {
 	return consumeDismissedImpl(popupId.value);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::PopupRequest);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
-bool PopupManager::consumeDismissed(GlobalFlowID popupId) {
+bool PopupManager::consumeDismissed(GlobalFlowID popupId) try {
 	return consumeDismissedImpl(popupId.value);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::PopupRequest);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
-bool PopupManager::consumeDismissed(FlowElementPartID popupId) {
+bool PopupManager::consumeDismissed(FlowElementPartID popupId) try {
 	return consumeDismissedImpl(popupId.value);
+} catch (...) {
+	const auto error = detail::currentExceptionError(ErrorSite::PopupRequest);
+	if (!frameError_) frameError_ = error;
+	throw;
 }
 
 bool PopupManager::consumeDismissedImpl(uint64_t popupKey) {
@@ -755,9 +801,9 @@ bool PopupManager::consumeDismissedImpl(uint64_t popupKey) {
 	if (record == records.end() ||
 		!record->second.flags.has_flag(PopupRecordFlag::dismissal_pending))
 		return false;
-	record->second.flags.set_flag(PopupRecordFlag::dismissal_pending, false);
 	if (!current.flags.has_flag(PopupManagerFlag::frame_active))
 		storage_->noteManagerMutation(window_);
+	record->second.flags.set_flag(PopupRecordFlag::dismissal_pending, false);
 	return true;
 }
 
@@ -813,6 +859,7 @@ void PopupManager::endFrame() {
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
 								FlowUi::detail::InitialCapacityTarget::popups_stack,
 								std::max(current.committedStack.size(), nextStack.size()));
+	storage_->noteManagerMutation(window_);
 	current.committedRecords.swap(current.workingRecords);
 	current.committedStack.swap(nextStack);
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
@@ -828,7 +875,6 @@ void PopupManager::endFrame() {
 								current.currentSubmissionByKey.size());
 	current.currentSubmissionByKey.clear();
 	current.flags.set_flag(PopupManagerFlag::frame_active, false);
-	storage_->noteManagerMutation(window_);
 }
 
 void PopupManager::cancelFrame() noexcept {

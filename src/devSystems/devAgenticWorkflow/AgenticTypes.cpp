@@ -4,6 +4,7 @@
 #include <charconv>
 #include <ctime>
 #include <iomanip>
+#include <new>
 #include <random>
 #include <sstream>
 
@@ -62,8 +63,11 @@ Result<std::string> make_identifier(std::string_view prefix) noexcept {
 				output.push_back(hex[(word >> (28u - digit_index * 4u)) & 0xfu]);
 		}
 		return output;
-	} catch (...) {
+	} catch (const std::bad_alloc&) {
 		return unexpectedError(makeError(ErrorCode::AllocationFailed, ErrorSite::AgenticConfigure));
+	} catch (...) {
+		return unexpectedError(
+			makeError(ErrorCode::ForeignExceptionObserved, ErrorSite::AgenticConfigure));
 	}
 }
 std::uint64_t monotonic_nanoseconds() noexcept {

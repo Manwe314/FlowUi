@@ -19,8 +19,8 @@ void testPublicOverloads() {
 	static_assert(std::is_same_v<decltype(static_cast<FlowUi::Status (App::*)(WindowId)>(&App::beginFrame)),
 		FlowUi::Status (App::*)(WindowId)>);
 	static_assert(std::is_same_v<decltype(static_cast<FlowUi::Status (App::*)()>(&App::beginFrame)), FlowUi::Status (App::*)()>);
-	static_assert(std::is_same_v<decltype(static_cast<FlowUi::UiManager& (App::*)(WindowId)>(&App::ui)),
-		FlowUi::UiManager& (App::*)(WindowId)>);
+	static_assert(std::is_same_v<decltype(static_cast<FlowUi::Result<std::reference_wrapper<FlowUi::UiManager>> (App::*)(WindowId) noexcept>(&App::ui)),
+		FlowUi::Result<std::reference_wrapper<FlowUi::UiManager>> (App::*)(WindowId) noexcept>);
 	static_assert(!std::is_copy_constructible_v<Swapchain>);
 	static_assert(std::is_nothrow_move_constructible_v<Swapchain>);
 	static_assert(!std::is_copy_constructible_v<SwapchainGeneration>);
@@ -38,15 +38,15 @@ void testFlowColorRgbAndRgbaForms() {
 	FLOWUI_CHECK(rgb.a == 0xff);
 
 	const std::string_view runtimeHex = "#12abcd34";
-	const Clay_Color rgba = FlowUi::Flow_Color(runtimeHex);
+	const Clay_Color rgba = FlowUi::test::requireValue(FlowUi::Flow_Color(runtimeHex));
 	FLOWUI_CHECK(rgba.r == 0x12);
 	FLOWUI_CHECK(rgba.g == 0xab);
 	FLOWUI_CHECK(rgba.b == 0xcd);
 	FLOWUI_CHECK(rgba.a == 0x34);
 
-	FLOWUI_CHECK_THROWS(FlowUi::Flow_Color(std::string_view{"#12345"}));
-	FLOWUI_CHECK_THROWS(FlowUi::Flow_Color(std::string_view{"123456"}));
-	FLOWUI_CHECK_THROWS(FlowUi::Flow_Color(std::string_view{"#12345g"}));
+	FLOWUI_CHECK(!FlowUi::Flow_Color(std::string_view{"#12345"}));
+	FLOWUI_CHECK(!FlowUi::Flow_Color(std::string_view{"123456"}));
+	FLOWUI_CHECK(!FlowUi::Flow_Color(std::string_view{"#12345g"}));
 }
 
 std::string readSource(const char* path) {

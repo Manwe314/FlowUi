@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #include "FlowUi/Public/Flow.hpp"
 #include "devSystems/devInterface/Inspect/Selector/DevInspectSelector.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.hpp"
@@ -23,7 +24,7 @@ void frame(App& app) {
 	assert(app.drawFrame());
 }
 [[nodiscard]] WindowId interface_window(App& app) {
-	for (const auto& window : app.devWindowSnapshot())
+	for (const auto& window : ::FlowUi::test::requireValue(app.devWindowSnapshot()))
 		if (window.title == "FlowUi Developer Interface")
 			return window.id;
 	return InvalidWindowId;
@@ -38,8 +39,8 @@ void verify_startup_capture(bool open_early) {
 	startup_config.dev.monitoring.timingReporting.minimumFramesInFlightMultiplier = 1;
 	startup_config.vk.enableValidation = true;
 	startup_config.window.title = "Startup timing capture verification";
-	auto startup_app = makeApplication(startup_config);
-	auto& startup_capture = startup_app.devMonitoring().performance_capture();
+	auto startup_app = ::FlowUi::test::requireValue(makeApplication(startup_config));
+	auto& startup_capture = ::FlowUi::test::requireValue(startup_app.devMonitoring()).get().performance_capture();
 	assert(startup_capture.startup_capture());
 	frame(startup_app);
 	frame(startup_app);
@@ -51,7 +52,7 @@ void verify_startup_capture(bool open_early) {
 		 ++frame_count)
 		frame(startup_app);
 	assert(startup_capture.status().phase == PerformanceCapturePhase::Sealed);
-	const auto retained = startup_app.devMonitoring().timingReporting().status();
+	const auto retained = ::FlowUi::test::requireValue(startup_app.devMonitoring()).get().timingReporting().status();
 	assert(retained.capture_overwritten_ticks == 0 && retained.oldestRetainedAppTick == 1);
 	if (!open_early) {
 		assert(interface_window(startup_app) == InvalidWindowId);
@@ -66,11 +67,11 @@ void verify_startup_capture(bool open_early) {
 	frame(startup_app);
 	const auto startup_window = interface_window(startup_app);
 	assert(startup_window != InvalidWindowId);
-	const auto& startup_tree = startup_app.ui(startup_window).devTreeSnapshot();
+	const auto& startup_tree = ::FlowUi::test::requireValue(startup_app.ui(startup_window)).get().devTreeSnapshot();
 	assert(std::ranges::any_of(startup_tree.flow.nodes, [](const auto& node) {
 		return node.definition == DevPerformanceWorkbench::definitionId;
 	}));
-	auto view = startup_app.devMonitoring().timingReporting().read_capture();
+	auto view = ::FlowUi::test::requireValue(startup_app.devMonitoring()).get().timingReporting().read_capture();
 	assert(view.generation == 1 && !view.first.empty());
 	assert(!view.first.front().windows.empty());
 	std::cout << "Startup snapshot survives " << (open_early ? "early opening" : "ring capacity")
@@ -90,18 +91,18 @@ int main(int argument_count, char** arguments) {
 	config.dev.excludeInternalDevElementsFromCapture = false;
 	config.window.title = "Capture lifecycle integration";
 	config.vk.enableValidation = true;
-	auto app = makeApplication(config);
+	auto app = ::FlowUi::test::requireValue(makeApplication(config));
 	app.request_dev_interface_toggle();
 	frame(app);
 	const auto window = interface_window(app);
 	assert(window != InvalidWindowId);
-	const auto& tree = app.ui(window).devTreeSnapshot();
+	const auto& tree = ::FlowUi::test::requireValue(app.ui(window)).get().devTreeSnapshot();
 	FlowElementID selector_id{};
 	for (const auto& node : tree.flow.nodes)
 		if (node.definition == DevInspectSelector::definitionId)
 			selector_id.value = node.instance.value;
 	assert(selector_id);
-	auto* selector_state = app.elements().getStatePointer(kDevInspectSelector, window, selector_id);
+	auto* selector_state = ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.elements()).get().getStatePointer(kDevInspectSelector, window, selector_id));
 	assert(selector_state);
 	const auto selector_address = selector_state;
 	const auto frame_before_close = tree.frameNumber;
@@ -110,29 +111,29 @@ int main(int argument_count, char** arguments) {
 	assert(interface_window(app) == window);
 	for (int frame_index = 0; frame_index < 7; ++frame_index)
 		frame(app);
-	assert(app.ui(window).devTreeSnapshot().frameNumber == frame_before_close);
-	assert(app.elements().getStatePointer(kDevInspectSelector, window, selector_id) ==
+	assert(::FlowUi::test::requireValue(app.ui(window)).get().devTreeSnapshot().frameNumber == frame_before_close);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.elements()).get().getStatePointer(kDevInspectSelector, window, selector_id)) ==
 		   selector_address);
 	app.request_dev_interface_toggle();
 	frame(app);
-	assert(app.ui(window).devTreeSnapshot().frameNumber > frame_before_close);
-	app.devTooling().inspect_interaction().toggle_surface(tooling::DevOverlayModeFlags::Typography);
-	const auto saved_overlay_flags = app.devTooling().inspect_interaction().mode_flags();
-	app.devTooling().inspect_interaction().toggle_primary_pick();
-	assert(app.devTooling().inspect_interaction().picking());
+	assert(::FlowUi::test::requireValue(app.ui(window)).get().devTreeSnapshot().frameNumber > frame_before_close);
+	::FlowUi::test::requireValue(app.devTooling()).get().inspect_interaction().toggle_surface(tooling::DevOverlayModeFlags::Typography);
+	const auto saved_overlay_flags = ::FlowUi::test::requireValue(app.devTooling()).get().inspect_interaction().mode_flags();
+	::FlowUi::test::requireValue(app.devTooling()).get().inspect_interaction().toggle_primary_pick();
+	assert(::FlowUi::test::requireValue(app.devTooling()).get().inspect_interaction().picking());
 	PerformanceCaptureSettings settings;
 	settings.end_mode = PerformanceCaptureEndMode::Manual;
 	assert(app.request_dev_performance_capture(settings));
 	frame(app); // suspension tick
-	auto& capture = app.devMonitoring().performance_capture();
+	auto& capture = ::FlowUi::test::requireValue(app.devMonitoring()).get().performance_capture();
 	assert(capture.status().phase == PerformanceCapturePhase::Armed);
-	const auto suspension_frame = app.ui(window).devTreeSnapshot().frameNumber;
+	const auto suspension_frame = ::FlowUi::test::requireValue(app.ui(window)).get().devTreeSnapshot().frameNumber;
 	frame(app); // first clean tick
 	assert(capture.status().phase == PerformanceCapturePhase::Recording);
-	assert(capture.interface_work_suspended() && app.devTooling().inspect_interaction().picking());
+	assert(capture.interface_work_suspended() && ::FlowUi::test::requireValue(app.devTooling()).get().inspect_interaction().picking());
 	for (int frame_index = 0; frame_index < 5; ++frame_index)
 		frame(app);
-	assert(app.ui(window).devTreeSnapshot().frameNumber == suspension_frame);
+	assert(::FlowUi::test::requireValue(app.ui(window)).get().devTreeSnapshot().frameNumber == suspension_frame);
 	app.request_dev_interface_toggle();
 	for (int frame_index = 0;
 		 frame_index < 100 && capture.status().phase != PerformanceCapturePhase::Sealed;
@@ -142,20 +143,20 @@ int main(int argument_count, char** arguments) {
 	assert(interface_window(app) == window);
 	frame(app);
 	bool performance_visible = false;
-	for (const auto& node : app.ui(window).devTreeSnapshot().flow.nodes)
+	for (const auto& node : ::FlowUi::test::requireValue(app.ui(window)).get().devTreeSnapshot().flow.nodes)
 		if (node.definition == DevPerformanceWorkbench::definitionId)
 			performance_visible = true;
 	assert(performance_visible);
 	assert(!capture.interface_work_suspended());
-	assert(app.devTooling().inspect_interaction().mode_flags() == saved_overlay_flags);
-	assert(!app.devTooling()
+	assert(::FlowUi::test::requireValue(app.devTooling()).get().inspect_interaction().mode_flags() == saved_overlay_flags);
+	assert(!::FlowUi::test::requireValue(app.devTooling()).get()
 				.inspect_interaction()
 				.picking()); // normal navigation to Performance cancels a pick
-	app.devTooling().inspect_interaction().cancel_pick();
-	assert(app.elements().getStatePointer(kDevInspectSelector, window, selector_id) ==
+	::FlowUi::test::requireValue(app.devTooling()).get().inspect_interaction().cancel_pick();
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.elements()).get().getStatePointer(kDevInspectSelector, window, selector_id)) ==
 		   selector_address);
 	{
-		auto view = app.devMonitoring().timingReporting().read_capture();
+		auto view = ::FlowUi::test::requireValue(app.devMonitoring()).get().timingReporting().read_capture();
 		assert(view.generation == 1);
 		constexpr std::array reporting_names{std::string_view{"flowui.dev.reporting.consume"},
 											 std::string_view{"flowui.dev.reporting.timing"},

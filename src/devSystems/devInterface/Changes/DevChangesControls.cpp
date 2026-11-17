@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Changes/DevChangesControls.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Changes/DevChangesUi.hpp"
@@ -23,7 +24,7 @@ void DevChangesControls::buildElement(BuildContext& context) {
 						   "Writes the reviewed manifest. Rebuild the application to use it. " +
 							   changes_summary(state.review.counts));
 		if (assigned_width >= 600) {
-			CLAY(context.clayID("bake-consequence"), changes_ui::column(0))
+			CLAY(FlowUi::ValueOrThrow(context.clayID("bake-consequence")), changes_ui::column(0))
 			changes_ui::text(context,
 							 "Writes the reviewed manifest. Rebuild the application to use it.",
 							 interface_theme::kTextSecondary, 11);

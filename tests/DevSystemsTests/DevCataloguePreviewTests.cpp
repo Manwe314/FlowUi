@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
@@ -98,15 +99,15 @@ void theme_and_passive_scopes_restore_nested_resolution(FlowUi::UiManager& ui) {
 		const FlowUi::UiManager::DevPassivePreviewScope passive(ui);
 		assert(ui.isDevPassivePreview());
 		assert(ui.isDevInternalScope());
-		assert(&ui.theme<ColorTheme>() == &outer);
+		assert(&::FlowUi::test::requireValue(ui.theme<ColorTheme>()).get() == &outer);
 		{
 			const FlowUi::UiManager::DevThemeScope inner_scope(ui, payload(inner));
 			const FlowUi::UiManager::DevThemeScope other_type(ui, payload(spacing));
 			const FlowUi::UiManager::DevPassivePreviewScope nested(ui);
-			assert(&ui.theme<ColorTheme>() == &inner);
-			assert(&ui.theme<SpacingTheme>() == &spacing);
+			assert(&::FlowUi::test::requireValue(ui.theme<ColorTheme>()).get() == &inner);
+			assert(&::FlowUi::test::requireValue(ui.theme<SpacingTheme>()).get() == &spacing);
 		}
-		assert(&ui.theme<ColorTheme>() == &outer);
+		assert(&::FlowUi::test::requireValue(ui.theme<ColorTheme>()).get() == &outer);
 		assert(ui.isDevPassivePreview());
 	}
 	assert(!ui.isDevPassivePreview());
@@ -118,21 +119,21 @@ void verify_live_preview_scopes() {
 	config.window.title = "Catalogue passive preview verification";
 	config.window.width = 320;
 	config.window.height = 240;
-	auto app = FlowUi::makeApplication(config);
-	assert(app.themes().registerTheme(ColorTheme{1}));
-	theme_and_passive_scopes_restore_nested_resolution(app.ui());
-	assert(app.ui().theme<ColorTheme>().value == 1);
-	assert(app.themes().getActiveTheme<ColorTheme>().value == 1);
+	auto app = ::FlowUi::test::requireValue(FlowUi::makeApplication(config));
+	assert(::FlowUi::test::requireValue(app.themes()).get().registerTheme(ColorTheme{1}));
+	theme_and_passive_scopes_restore_nested_resolution(::FlowUi::test::requireValue(app.ui()).get());
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().theme<ColorTheme>()).get().value == 1);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.themes()).get().getActiveTheme<ColorTheme>()).get().value == 1);
 #if FLOWUI_INCLUDE_ICON_MANAGER
-	assert(!app.icons().devRasterize("", 16, 16));
-	assert(!app.icons().devRasterize("catalogue-test/unregistered", 16, 16));
+	assert(!::FlowUi::test::requireValue(app.icons()).get().devRasterize("", 16, 16));
+	assert(!::FlowUi::test::requireValue(app.icons()).get().devRasterize("catalogue-test/unregistered", 16, 16));
 	constexpr std::string_view icon_name = "catalogue-test/logical-icon";
-	assert(app.icons().registerSvg(
+	assert(::FlowUi::test::requireValue(app.icons()).get().registerSvg(
 		icon_name,
 		R"(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" fill="#ef8530"/></svg>)"));
-	const auto existing = app.icons().devRasterize(icon_name, 16, 16);
+	const auto existing = ::FlowUi::test::requireValue(app.icons()).get().devRasterize(icon_name, 16, 16);
 	assert(existing && existing->newlyRasterized);
-	const auto reused = app.icons().devRasterize(icon_name, 16, 16);
+	const auto reused = ::FlowUi::test::requireValue(app.icons()).get().devRasterize(icon_name, 16, 16);
 	assert(reused && !reused->newlyRasterized && reused->texture == existing->texture);
 	FlowUi::devSystems::DevInterfaceState interface_state;
 	FlowUi::devSystems::service_catalogue(app, interface_state, true);
@@ -160,22 +161,22 @@ void verify_live_preview_scopes() {
 	FlowUi::devSystems::service_catalogue(app, interface_state, true);
 	assert(catalogue.preview_rasters.empty() && find_icon()->icons.size() == 1);
 	assert(find_icon()->icons.front().atlasTexture == existing->texture);
-	assert(app.icons().contains(icon_name));
-	const auto already_removed = app.icons().devRemoveRaster(preview);
+	assert(::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.icons()).get().contains(icon_name)));
+	const auto already_removed = ::FlowUi::test::requireValue(app.icons()).get().devRemoveRaster(preview);
 	assert(already_removed && !*already_removed);
-	const auto replacement = app.icons().devRasterize(icon_name, 24, 24);
+	const auto replacement = ::FlowUi::test::requireValue(app.icons()).get().devRasterize(icon_name, 24, 24);
 	assert(replacement && replacement->newlyRasterized && replacement->texture != preview);
-	const auto stale_removal = app.icons().devRemoveRaster(preview);
+	const auto stale_removal = ::FlowUi::test::requireValue(app.icons()).get().devRemoveRaster(preview);
 	assert(stale_removal && !*stale_removal);
-	const auto removed_replacement = app.icons().devRemoveRaster(replacement->texture);
+	const auto removed_replacement = ::FlowUi::test::requireValue(app.icons()).get().devRemoveRaster(replacement->texture);
 	assert(removed_replacement && *removed_replacement);
 #endif
 	assert(app.beginFrame());
-	app.ui().createElement(ParentProbe{}, "normal").draw();
+	::FlowUi::test::requireValue(app.ui()).get().createElement(ParentProbe{}, "normal").draw();
 	assert(ParentProbe::logic_calls == 1 && NestedProbe::logic_calls == 1);
 	{
-		const FlowUi::UiManager::DevPassivePreviewScope passive(app.ui());
-		app.ui().createElement(ParentProbe{}, "passive").draw();
+		const FlowUi::UiManager::DevPassivePreviewScope passive(::FlowUi::test::requireValue(app.ui()).get());
+		::FlowUi::test::requireValue(app.ui()).get().createElement(ParentProbe{}, "passive").draw();
 	}
 	assert(ParentProbe::logic_calls == 1 && NestedProbe::logic_calls == 1);
 	assert(app.endFrame());
@@ -191,13 +192,13 @@ void verify_cached_raster_layout() {
 	configuration.window.title = "Catalogue cached raster layout verification";
 	configuration.window.width = 600;
 	configuration.window.height = 720;
-	auto app = makeApplication(configuration);
+	auto app = ::FlowUi::test::requireValue(makeApplication(configuration));
 	constexpr std::string_view icon_name = "catalogue-test/responsive-cached-sizes";
-	assert(app.icons().registerSvg(
+	assert(::FlowUi::test::requireValue(app.icons()).get().registerSvg(
 		icon_name,
 		R"(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" fill="#ef8530"/></svg>)"));
 	for (const uint32_t size : {12, 16, 20, 24, 32, 40, 48, 56, 64})
-		assert(app.icons().devRasterize(icon_name, size, size));
+		assert(::FlowUi::test::requireValue(app.icons()).get().devRasterize(icon_name, size, size));
 	DevInterfaceState session{};
 	service_catalogue(app, session, true);
 	const auto selected =
@@ -207,7 +208,7 @@ void verify_cached_raster_layout() {
 	constexpr auto workbench = Global<kDevCatalogueWorkbench>("catalogue.cached-raster.regression");
 	const auto owner = FlowElementID{workbench.value};
 	const auto named_bounds = [&](LocalElementName name) {
-		return Clay_GetElementData(app.ui().toClayEID(::FlowUi::detail::element_id::resolveLocal(
+		return Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(::FlowUi::detail::element_id::resolveLocal(
 			owner, DevCatalogueWorkbench::definitionId, name.token)));
 	};
 	const auto draw = [&](float host_width) {
@@ -217,14 +218,14 @@ void verify_cached_raster_layout() {
 			root.layout.sizing = {CLAY_SIZING_FIXED(host_width), CLAY_SIZING_FIXED(600)};
 			root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 			CLAY(CLAY_ID("cached-raster-regression-host"), root)
-			app.ui()
+			::FlowUi::test::requireValue(app.ui()).get()
 				.createElement(kDevCatalogueWorkbench, workbench)
 				.setParameters({&app, &session})
 				.draw();
 			assert(app.endFrame());
 			assert(app.drawFrame());
 		}
-		const auto host = Clay_GetElementData(app.ui().toClayEID(owner));
+		const auto host = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(owner));
 		const auto toolbar = named_bounds(LocalElementName{"cached-raster-toolbar"});
 		const auto canvas = named_bounds(LocalElementName{"asset-canvas"});
 		const auto content = named_bounds(LocalElementName{"focused-scroll"});
@@ -234,7 +235,7 @@ void verify_cached_raster_layout() {
 			  LocalElementName{"raster-step"}, LocalElementName{"icon-tint"}}) {
 			const auto identity = ::FlowUi::detail::element_id::resolveLocal(
 				owner, diagnostics_ui::Control::definitionId, name.token);
-			const auto control = Clay_GetElementData(app.ui().toClayEID(identity));
+			const auto control = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(identity));
 			assert(control.found && control.boundingBox.x >= host.boundingBox.x);
 			assert(control.boundingBox.x + control.boundingBox.width <=
 				   host.boundingBox.x + host.boundingBox.width);
@@ -246,7 +247,7 @@ void verify_cached_raster_layout() {
 			const auto identity = ::FlowUi::detail::element_id::resolveLocal(
 				owner, diagnostics_ui::Control::definitionId,
 				Keyed("cached-raster-choice", raster.atlasTexture.packed()).token);
-			const auto choice = Clay_GetElementData(app.ui().toClayEID(identity));
+			const auto choice = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(identity));
 			assert(choice.found);
 			assert(choice.boundingBox.x >= host.boundingBox.x);
 			assert(choice.boundingBox.x + choice.boundingBox.width <=

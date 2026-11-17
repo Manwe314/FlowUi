@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include <algorithm>
 #include <cstdint>
 #include <optional>
@@ -143,20 +145,29 @@ struct ComboBoxResources {
 	/** Borrowed cached closed icon texture; empty if the semantic key was unavailable. */
 	TextureRef closedIcon{};
 
-	/** Construct empty icon references. */
+	/** Construct empty icon references.
+	 * @par Example
+	 * @code{.cpp}
+	 * FlowUi::FSEL::ComboBoxResources artwork{};
+	 * @endcode
+	 */
 	ComboBoxResources() = default;
 	/**
 	 * Resolve available standard icons from the app; missing icons remain empty. @param app Owning
 	 * application whose icon resources outlive these references.
+	 * @par Example
+	 * @code{.cpp}
+	 * FlowUi::FSEL::ComboBoxResources artwork{application};
+	 * @endcode
 	 */
 	explicit ComboBoxResources(App& app) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
-		IconManager& icons = app.icons();
-		if (icons.contains(standard_icons::kComboBoxOpenKey)) {
-			openIcon = icons.textureRef(standard_icons::kComboBoxOpenKey);
+		IconManager& icons = FlowUi::ValueOrThrow(app.icons()).get();
+		if (FlowUi::ValueOrThrow(icons.contains(standard_icons::kComboBoxOpenKey))) {
+			openIcon = FlowUi::ValueOrThrow(icons.textureRef(standard_icons::kComboBoxOpenKey));
 		}
-		if (icons.contains(standard_icons::kComboBoxClosedKey)) {
-			closedIcon = icons.textureRef(standard_icons::kComboBoxClosedKey);
+		if (FlowUi::ValueOrThrow(icons.contains(standard_icons::kComboBoxClosedKey))) {
+			closedIcon = FlowUi::ValueOrThrow(icons.textureRef(standard_icons::kComboBoxClosedKey));
 		}
 #else
 		(void)app;
@@ -194,7 +205,7 @@ struct ComboBox {
 	 */
 	static void onHovered(InteractionContext& context) {
 		if (!isEnabled(context.params)) return;
-		const auto& theme = context.uiManager.theme<FSELTheme>().comboBoxTheme;
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().comboBoxTheme;
 		context.uiManager.requestCursor(
 			context.params.cursor.value_or(theme.cursor),
 			context.params.cursorPriority.value_or(theme.cursorPriority));
@@ -233,7 +244,7 @@ struct ComboBox {
 		auto& state = context.state();
 		if (context.params.open) state.open = *context.params.open;
 
-		if (context.uiManager.popups().consumeDismissed(context.part(Parts::popup))) {
+		if (context.uiManager.popups().consumeDismissed(FlowUi::ValueOrThrow(context.part(Parts::popup)))) {
 			setOpen(context, false);
 		}
 
@@ -248,7 +259,7 @@ struct ComboBox {
 			context.uiManager.getPreviousFramesInteraction();
 		for (const ComboBoxOption& option : context.params.options) {
 			if (!option.enabled) continue;
-			const Clay_ElementId optionId = context.clayID(Keyed("option", option.value));
+			const Clay_ElementId optionId = FlowUi::ValueOrThrow(context.clayID(Keyed("option", option.value)));
 			if (interaction.isPressed(optionId)) {
 				state.optionArmed = true;
 				state.optionMouseUpObserved = false;
@@ -275,7 +286,7 @@ struct ComboBox {
 	 * context Borrowed context valid for this callback only.
 	 */
 	static void buildElement(BuildContext& context) {
-		const auto& theme = context.uiManager.theme<FSELTheme>().comboBoxTheme;
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().comboBoxTheme;
 		const bool enabled = isEnabled(context.params);
 		const bool open = context.params.open ? *context.params.open : context.state().open;
 		const ComboBoxOption* selected = selectedOption(context.params);
@@ -320,7 +331,7 @@ struct ComboBox {
 		textConfig.textAlignment = context.params.labelAlignment;
 		CLAY(context.clayID(), trigger) {
 			if (selected && content_layout.show_leading_icon) {
-				drawIcon(context, context.clayID("selected-icon"), selected->icon,
+				drawIcon(context, FlowUi::ValueOrThrow(context.clayID("selected-icon")), selected->icon,
 						 appearance.iconColor, content_layout.icon_size);
 			}
 			Clay_ElementDeclaration labelRoot{};
@@ -338,7 +349,7 @@ struct ComboBox {
 				.vertical = false,
 				.scrollInputDisabled = true,
 			};
-			CLAY(context.clayID("label"), labelRoot) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("label")), labelRoot) {
 				CLAY_TEXT(context.uiManager.toClayString(selected ? selected->text
 																  : context.params.placeholder),
 						  CLAY_TEXT_CONFIG(textConfig));
@@ -406,7 +417,7 @@ private:
 	static Clay_TextElementConfig makeTextConfig(
 		BuildContext& context,
 		Clay_Color color) {
-		const auto& theme = context.uiManager.theme<FSELTheme>().comboBoxTheme;
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().comboBoxTheme;
 		Clay_TextElementConfig config{};
 		config.textColor = color;
 		config.fontId = context.uiManager.resolveFont(
@@ -423,7 +434,7 @@ private:
 		BuildContext& context,
 		bool enabled,
 		bool open) {
-		const auto& theme = context.uiManager.theme<FSELTheme>().comboBoxTheme;
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().comboBoxTheme;
 		if (!enabled) return theme.disabled;
 		if (open) return theme.open;
 		return context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID())
@@ -459,12 +470,12 @@ private:
 			.x = CLAY_ALIGN_X_CENTER,
 			.y = CLAY_ALIGN_Y_CENTER,
 		};
-		CLAY(context.clayID("disclosure-slot"), slot) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("disclosure-slot")), slot) {
 			const TextureRef icon =
 				open ? context.params.openIcon.value_or(context.resources().openIcon)
 					 : context.params.closedIcon.value_or(context.resources().closedIcon);
 			if (icon.handle) {
-				drawIcon(context, context.clayID("disclosure-icon"), icon, color, iconSize);
+				drawIcon(context, FlowUi::ValueOrThrow(context.clayID("disclosure-icon")), icon, color, iconSize);
 			} else {
 				Clay_TextElementConfig fallback = makeTextConfig(context, color);
 				fallback.fontSize = static_cast<uint16_t>(
@@ -479,7 +490,7 @@ private:
 	static void drawPopup(BuildContext& context, const FSELComboBoxTheme& theme) {
 		const float optionHeight =
 			std::max(context.params.optionHeight.value_or(theme.optionHeight), 1.0f);
-		const auto& surface = context.uiManager.theme<FSELTheme>().popupSurfaceTheme;
+		const auto& surface = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().popupSurfaceTheme;
 		const float minimumPopupHeight =
 			optionHeight + static_cast<float>(surface.padding.top + surface.padding.bottom);
 		const float maximumHeight = std::max(
@@ -530,7 +541,7 @@ private:
 		if (expectedWidth > 0.0f) {
 			request.expectedSize = Clay_Dimensions{expectedWidth, popupHeight};
 		}
-		const FlowElementPartID popupId = context.part(Parts::popup);
+		const FlowElementPartID popupId = FlowUi::ValueOrThrow(context.part(Parts::popup));
 		const PopupFrame frame = context.uiManager.popups().request(popupId, request).value_or(PopupFrame{});
 		if (!frame.visible && !frame.measureOnly) return;
 
@@ -548,7 +559,7 @@ private:
 		popup.border = {.color = surface.borderColor, .width = surface.borderWidth};
 		popup.floating = frame.floating;
 
-		const Clay_ElementId scrollId = context.clayID("scroll-viewport");
+		const Clay_ElementId scrollId = FlowUi::ValueOrThrow(context.clayID("scroll-viewport"));
 		const Clay_ScrollContainerData scroll = Clay_GetScrollContainerData(scrollId);
 		const float trackHeight = std::max(
 			popupHeight - searchHeight - searchGap -
@@ -571,7 +582,7 @@ private:
 				searchSlot.layout.childAlignment = {
 					.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 				searchSlot.clip = {.horizontal = true, .vertical = true};
-				CLAY(context.clayID("popup-search-slot"), searchSlot) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("popup-search-slot")), searchSlot) {
 					TextInputParameters search{};
 					search.value = context.params.popupSearchValue;
 					search.syncPolicy = TextFieldSyncPolicy::Live;
@@ -595,7 +606,7 @@ private:
 				.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
 			contentRow.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 			contentRow.layout.childGap = theme.scrollGap;
-			CLAY(context.clayID("popup-content"), contentRow) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("popup-content")), contentRow) {
 			Clay_ElementDeclaration viewport{};
 			viewport.layout.sizing = {
 				.width = CLAY_SIZING_GROW(0),
@@ -615,7 +626,7 @@ private:
 				};
 				options.layout.childGap = theme.optionGap;
 				options.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
-				CLAY(context.clayID("options"), options) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("options")), options) {
 					for (const ComboBoxOption& option : context.params.options) {
 						drawOption(context, option, optionHeight, theme);
 					}
@@ -633,7 +644,7 @@ private:
 		const ComboBoxOption& option,
 		float height,
 		const FSELComboBoxTheme& theme) {
-		const Clay_ElementId id = context.clayID(Keyed("option", option.value));
+		const Clay_ElementId id = FlowUi::ValueOrThrow(context.clayID(Keyed("option", option.value)));
 		const InteractionSnapshot& interaction =
 			context.uiManager.getPreviousFramesInteraction();
 		FSELComboBoxOptionStateTheme appearance = theme.optionIdle;
@@ -671,7 +682,7 @@ private:
 		row.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
 		CLAY(id, row) {
 			if (content_layout.show_leading_icon) {
-				drawIcon(context, context.clayID(Keyed("option-icon", option.value)), option.icon,
+				drawIcon(context, FlowUi::ValueOrThrow(context.clayID(Keyed("option-icon", option.value))), option.icon,
 						 appearance.iconColor, content_layout.icon_size);
 			}
 			Clay_ElementDeclaration labelSlot{};
@@ -680,7 +691,7 @@ private:
 					? CLAY_SIZING_GROW(0, content_layout.label_width) : CLAY_SIZING_FIXED(0),
 				.height = CLAY_SIZING_FIT(0)};
 			labelSlot.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
-			CLAY(context.clayID(Keyed("option-label", option.value)), labelSlot) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("option-label", option.value))), labelSlot) {
 				auto text_config = makeTextConfig(context, appearance.textColor);
 				text_config.fontSize = static_cast<uint16_t>(std::max(
 					1.0f, std::min<float>(text_config.fontSize, content_layout.content_height)));
@@ -701,11 +712,11 @@ private:
 		track.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		track.backgroundColor = theme.scrollTrackColor;
 		track.cornerRadius = CLAY_CORNER_RADIUS(theme.scrollTrackWidth * 0.5f);
-		CLAY(context.clayID("scroll-track"), track) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("scroll-track")), track) {
 			if (thumb.offset > 0.0f) {
 				Clay_ElementDeclaration spacer{};
 				spacer.layout.sizing.height = CLAY_SIZING_FIXED(thumb.offset);
-				CLAY(context.clayID("scroll-thumb-offset"), spacer);
+				CLAY(FlowUi::ValueOrThrow(context.clayID("scroll-thumb-offset")), spacer);
 			}
 			Clay_ElementDeclaration thumbDeclaration{};
 			thumbDeclaration.layout.sizing = {
@@ -714,7 +725,7 @@ private:
 			};
 			thumbDeclaration.backgroundColor = theme.scrollThumbColor;
 			thumbDeclaration.cornerRadius = CLAY_CORNER_RADIUS(theme.scrollTrackWidth * 0.5f);
-			CLAY(context.clayID("scroll-thumb"), thumbDeclaration);
+			CLAY(FlowUi::ValueOrThrow(context.clayID("scroll-thumb")), thumbDeclaration);
 		}
 	}
 };

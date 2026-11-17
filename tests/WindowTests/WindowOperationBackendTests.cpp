@@ -200,7 +200,9 @@ void test_native_window_operations() {
 	FlowUi::detail::platform::GlfwPlatformProviderService service;
 	FLOWUI_CHECK(service.initialize({}));
 	FlowUi::InputSink firstSink;
+	FLOWUI_CHECK(firstSink.initialize());
 	FlowUi::InputSink secondSink;
+	FLOWUI_CHECK(secondSink.initialize());
 	FlowUi::detail::platform::GlfwWindowState first_window;
 	FlowUi::detail::platform::GlfwWindowState second_window;
 	FLOWUI_CHECK(
@@ -285,6 +287,7 @@ void test_initial_fullscreen_restoration() {
 	FlowUi::detail::platform::GlfwPlatformProviderService service;
 	FLOWUI_CHECK(service.initialize({}));
 	FlowUi::InputSink sink;
+	FLOWUI_CHECK(sink.initialize());
 	FlowUi::detail::platform::GlfwWindowState fullscreen_window;
 	FLOWUI_CHECK(
 		service.initializeWindow(fullscreen_window, FlowUi::WindowId{1u}, configuration, sink));
@@ -324,6 +327,7 @@ void testProviderOwnershipAndLifecycle() {
 	detail::input::InputState firstInput;
 	firstInput.bindTarget(11u);
 	InputSink secondSink;
+	FLOWUI_CHECK(secondSink.initialize());
 	std::unordered_map<WindowId, std::unique_ptr<GlfwWindowState>> states;
 	states.emplace(11u, std::make_unique<GlfwWindowState>());
 	auto& firstState = *states.at(11u);
@@ -396,6 +400,7 @@ void testTypedBindingAndClipboardServices() {
 	GlfwWindowInput firstInput;
 	FLOWUI_CHECK(firstInput.initialize(firstWindow, configuration.input));
 	InputSink sink;
+	FLOWUI_CHECK(sink.initialize());
 	GlfwEventBinding binding;
 	FLOWUI_CHECK(!binding.attach(secondWindow, firstInput, sink, 21u));
 	FLOWUI_CHECK(!glfwGetWindowUserPointer(firstWindow.native()));
@@ -415,23 +420,23 @@ void testTypedBindingAndClipboardServices() {
 	FLOWUI_CHECK(service.initializeWindow(state, 22u, configuration, sink));
 	WindowPlatformServices facade;
 	FLOWUI_CHECK(!facade.hasClipboardAccess());
-	FLOWUI_CHECK(facade.clipboardText().empty());
+	FLOWUI_CHECK(!facade.clipboardText());
 	facade.bind(service, state);
 	FLOWUI_CHECK(facade.hasClipboardAccess());
 	FLOWUI_CHECK(service.setClipboardText(state, ""));
 	const auto emptyClipboard = service.clipboardText(state);
 	FLOWUI_CHECK(emptyClipboard && emptyClipboard->empty());
-	facade.setClipboardText("FlowUi λ\nsecond line");
-	FLOWUI_CHECK(facade.clipboardText() == "FlowUi λ\nsecond line");
-	facade.setCursor(CursorType::IBeam);
-	facade.setCursor(CursorType::IBeam);
-	facade.setCursor(CursorType::Default);
+	FLOWUI_CHECK(facade.setClipboardText("FlowUi λ\nsecond line"));
+	FLOWUI_CHECK(::FlowUi::test::requireValue(facade.clipboardText()) == "FlowUi λ\nsecond line");
+	FLOWUI_CHECK(facade.setCursor(CursorType::IBeam));
+	FLOWUI_CHECK(facade.setCursor(CursorType::IBeam));
+	FLOWUI_CHECK(facade.setCursor(CursorType::Default));
 	FLOWUI_CHECK(!service.setCursor(state, static_cast<CursorType>(255u)));
 	facade.detach();
 	FLOWUI_CHECK(!facade.hasClipboardAccess());
-	FLOWUI_CHECK(facade.clipboardText().empty());
-	facade.setClipboardText("detached");
-	FLOWUI_CHECK(service.clipboardText(state).value() == "FlowUi λ\nsecond line");
+	FLOWUI_CHECK(!facade.clipboardText());
+	FLOWUI_CHECK(!facade.setClipboardText("detached"));
+	FLOWUI_CHECK(::FlowUi::test::requireValue(service.clipboardText(state)) == "FlowUi λ\nsecond line");
 	service.shutdownWindow(state);
 	FLOWUI_CHECK(!service.clipboardText(state));
 }

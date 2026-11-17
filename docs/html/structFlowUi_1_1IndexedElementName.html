@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,26 +111,98 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a84be8faf0cb727f1a890196efdf3534d" id="r_a84be8faf0cb727f1a890196efdf3534d"><td class="memItemLeft"><a id="a84be8faf0cb727f1a890196efdf3534d" name="a84be8faf0cb727f1a890196efdf3534d"></a>
-constexpr&#160;</td><td class="memItemRight"><b>operator bool</b> () const noexcept</td></tr>
+<tr class="memitem:a84be8faf0cb727f1a890196efdf3534d" id="r_a84be8faf0cb727f1a890196efdf3534d"><td class="memItemLeft">constexpr&#160;</td><td class="memItemRight"><a class="el" href="#a84be8faf0cb727f1a890196efdf3534d">operator bool</a> () const noexcept</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a1280b76811d5eccfcbe2b8dd0511a82b" id="r_a1280b76811d5eccfcbe2b8dd0511a82b"><td class="memItemLeft"><a id="a1280b76811d5eccfcbe2b8dd0511a82b" name="a1280b76811d5eccfcbe2b8dd0511a82b"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>token</b> = 0</td></tr>
-<tr class="memitem:a5e61a674ceb20f17b51e4ca175541893" id="r_a5e61a674ceb20f17b51e4ca175541893"><td class="memItemLeft"><a id="a5e61a674ceb20f17b51e4ca175541893" name="a5e61a674ceb20f17b51e4ca175541893"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>debugName</b> {}</td></tr>
-<tr class="memitem:a9473c62f13e95ea4e9ef40f986c54f7a" id="r_a9473c62f13e95ea4e9ef40f986c54f7a"><td class="memItemLeft"><a id="a9473c62f13e95ea4e9ef40f986c54f7a" name="a9473c62f13e95ea4e9ef40f986c54f7a"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>index</b> = 0</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a843f34daf6c68bd6f3aee26a6d9f147d" id="r_a843f34daf6c68bd6f3aee26a6d9f147d"><td class="memItemLeft"><a id="a843f34daf6c68bd6f3aee26a6d9f147d" name="a843f34daf6c68bd6f3aee26a6d9f147d"></a>
-constexpr bool&#160;</td><td class="memItemRight"><b>operator==</b> (<a class="el" href="structFlowUi_1_1IndexedElementName.html">IndexedElementName</a> lhs, <a class="el" href="structFlowUi_1_1IndexedElementName.html">IndexedElementName</a> rhs) noexcept</td></tr>
+<tr class="memitem:a1280b76811d5eccfcbe2b8dd0511a82b" id="r_a1280b76811d5eccfcbe2b8dd0511a82b"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a1280b76811d5eccfcbe2b8dd0511a82b">token</a> = 0</td></tr>
+<tr class="memitem:a5e61a674ceb20f17b51e4ca175541893" id="r_a5e61a674ceb20f17b51e4ca175541893"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a5e61a674ceb20f17b51e4ca175541893">debugName</a> {}</td></tr>
+<tr class="memitem:a9473c62f13e95ea4e9ef40f986c54f7a" id="r_a9473c62f13e95ea4e9ef40f986c54f7a"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a9473c62f13e95ea4e9ef40f986c54f7a">index</a> = 0</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Precomposed numeric/keyed local-name token. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a84be8faf0cb727f1a890196efdf3534d" name="a84be8faf0cb727f1a890196efdf3534d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a84be8faf0cb727f1a890196efdf3534d">&#9670;&#160;</a></span>operator bool()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::IndexedElementName::operator bool </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel explicit">explicit</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return whether the name has a nonzero token. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">constexpr</span> <a class="code hl_struct" href="structFlowUi_1_1LocalElementName.html">FlowUi::LocalElementName</a> row{<span class="stringliteral">&quot;records/row&quot;</span>};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> positional = <a class="code hl_function" href="namespaceFlowUi.html#ac6240c50bc1cd842b3503644a10ae529">FlowUi::Indexed</a>(row, 0);</div>
+<div class="line"><span class="keyword">const</span> std::uint64_t recordKey = 42;</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> keyed = <a class="code hl_function" href="namespaceFlowUi.html#a05588c5fcd43864ce0dd395601d4a666">FlowUi::Keyed</a>(row, recordKey);</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> same = positional == keyed;</div>
+<div class="ttc" id="anamespaceFlowUi_html_a05588c5fcd43864ce0dd395601d4a666"><div class="ttname"><a href="namespaceFlowUi.html#a05588c5fcd43864ce0dd395601d4a666">FlowUi::Keyed</a></div><div class="ttdeci">constexpr IndexedElementName Keyed(LocalElementName name, uint64_t key) noexcept</div><div class="ttdef"><b>Definition</b> ElementID.hpp:307</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_ac6240c50bc1cd842b3503644a10ae529"><div class="ttname"><a href="namespaceFlowUi.html#ac6240c50bc1cd842b3503644a10ae529">FlowUi::Indexed</a></div><div class="ttdeci">constexpr IndexedElementName Indexed(LocalElementName name, uint64_t index) noexcept</div><div class="ttdef"><b>Definition</b> ElementID.hpp:280</div></div>
+<div class="ttc" id="astructFlowUi_1_1LocalElementName_html"><div class="ttname"><a href="structFlowUi_1_1LocalElementName.html">FlowUi::LocalElementName</a></div><div class="ttdef"><b>Definition</b> ElementID.hpp:33</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a5e61a674ceb20f17b51e4ca175541893" name="a5e61a674ceb20f17b51e4ca175541893"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5e61a674ceb20f17b51e4ca175541893">&#9670;&#160;</a></span>debugName</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::IndexedElementName::debugName {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed authored label retained in developer builds; backing storage must outlive its uses. </p>
+
+</div>
+</div>
+<a id="a9473c62f13e95ea4e9ef40f986c54f7a" name="a9473c62f13e95ea4e9ef40f986c54f7a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9473c62f13e95ea4e9ef40f986c54f7a">&#9670;&#160;</a></span>index</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::IndexedElementName::index = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Numeric index or key retained for developer inspection. </p>
+
+</div>
+</div>
+<a id="a1280b76811d5eccfcbe2b8dd0511a82b" name="a1280b76811d5eccfcbe2b8dd0511a82b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1280b76811d5eccfcbe2b8dd0511a82b">&#9670;&#160;</a></span>token</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::IndexedElementName::token = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Prehashed identity token; zero is invalid. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/identificationTypes/<a class="el" href="ElementID_8hpp_source.html">ElementID.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -146,7 +218,7 @@ constexpr bool&#160;</td><td class="memItemRight"><b>operator==</b> (<a class="e
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1IndexedElementName.html">IndexedElementName</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1IndexedElementName.html">IndexedElementName</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

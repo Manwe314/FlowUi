@@ -272,6 +272,16 @@ private:
 			if (value != nullptr) std::destroy_at(static_cast<T*>(value));
 		}
 
+		static void copyConstructOrThrow(const void* source, void* destination) {
+			if constexpr (std::is_copy_constructible_v<T>)
+				std::construct_at(static_cast<T*>(destination), *static_cast<const T*>(source));
+		}
+
+		static void moveConstructNoexcept(void* source, void* destination) noexcept {
+			if constexpr (std::is_nothrow_move_constructible_v<T>)
+				std::construct_at(static_cast<T*>(destination), std::move(*static_cast<T*>(source)));
+		}
+
 		static std::string_view textView(const void* value) noexcept {
 			if (value == nullptr) return {};
 			if constexpr (hasAssignableText) {
@@ -472,10 +482,10 @@ private:
 
 		static constexpr DevTypeOps operations{
 			.type = ::FlowUi::detail::typeHash<T>(),
-			.copyConstruct = &copyConstruct,
+			.copyConstruct = std::is_nothrow_destructible_v<T> ? &copyConstruct : nullptr,
 			.moveConstruct = &moveConstruct,
 			.copyAssign = &copyAssign,
-			.destroy = &destroy,
+			.destroy = std::is_nothrow_destructible_v<T> ? &destroy : nullptr,
 			.textView = schema_detail::isString<T> ? &textView : nullptr,
 			.optionalHasValue = schema_detail::IsOptional<T>::value ? &optionalHasValue : nullptr,
 			.optionalValueAddress = schema_detail::IsOptional<T>::value
@@ -499,6 +509,10 @@ private:
 			.assignTextValue = hasAssignableText ? &assignTextValue : nullptr,
 			.setOptionalPresence = schema_detail::IsOptional<T>::value
 				? &setOptionalPresence : nullptr,
+			.copyConstructOrThrow = std::is_copy_constructible_v<T> && std::is_nothrow_destructible_v<T>
+				? &copyConstructOrThrow : nullptr,
+			.moveConstructNoexcept = std::is_nothrow_move_constructible_v<T>
+				? &moveConstructNoexcept : nullptr,
 		};
 	};
 

@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsModel.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp"
@@ -722,7 +723,7 @@ Status navigate_diagnostics_performance(App& app, DevInterfaceState& interface_s
 	if (correlation.state != DevErrorCorrelationState::Available || !correlation.capture_generation)
 		return unexpectedError(
 			makeError(ErrorCode::ObjectNotInitialized, ErrorSite::AppAccessDevMonitoring));
-	auto capture = app.devMonitoring().timingReporting().read_capture();
+	auto capture = FlowUi::ValueOrThrow(app.devMonitoring()).get().timingReporting().read_capture();
 	if (capture.generation != correlation.capture_generation)
 		return unexpectedError(
 			makeError(ErrorCode::ObjectNotInitialized, ErrorSite::AppAccessDevMonitoring));
@@ -769,7 +770,7 @@ Status navigate_diagnostics_memory(App& app, DevInterfaceState& interface_state)
 		return unexpectedError(
 			makeError(ErrorCode::ObjectNotInitialized, ErrorSite::AppAccessDevMonitoring));
 	const auto& correlation = state.selected->memory;
-	auto& reporting = app.devMonitoring().memoryReporting();
+	auto& reporting = FlowUi::ValueOrThrow(app.devMonitoring()).get().memoryReporting();
 	const auto status = reporting.status();
 	if (correlation.state != DevErrorCorrelationState::Available ||
 		status.history_storage_generation != correlation.history_generation)
@@ -882,14 +883,14 @@ Status navigate_diagnostics_memory(App& app, DevInterfaceState& interface_state)
 
 void service_diagnostics(App& app, DevInterfaceState& interface_state, bool visible) {
 	auto& state = interface_state.diagnostics;
-	auto& reporting = app.devMonitoring().errorReporting();
+	auto& reporting = FlowUi::ValueOrThrow(app.devMonitoring()).get().errorReporting();
 	const auto command = std::exchange(state.pending, DevDiagnosticsCommand::None);
 	const auto now = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
 											   std::chrono::steady_clock::now().time_since_epoch())
 											   .count());
 	try {
 		if (visible || command != DevDiagnosticsCommand::None) {
-			state.live_capture_config = app.devMonitoring().errors().config();
+			state.live_capture_config = FlowUi::ValueOrThrow(app.devMonitoring()).get().errors().config();
 			state.live_reporting_config = reporting.config();
 		}
 		if (command != DevDiagnosticsCommand::None)
@@ -912,12 +913,12 @@ void service_diagnostics(App& app, DevInterfaceState& interface_state, bool visi
 			state.message = "Selection cleared";
 			break;
 		case DevDiagnosticsCommand::ApplyCaptureLevel: {
-			auto config = app.devMonitoring().errors().config();
+			auto config = FlowUi::ValueOrThrow(app.devMonitoring()).get().errors().config();
 			config.level = static_cast<DevErrorCaptureLevel>(
 				std::min(state.capture_level, static_cast<uint64_t>(compiledDevErrorLevel())));
-			app.devMonitoring().errors().setConfig(config);
+			FlowUi::ValueOrThrow(app.devMonitoring()).get().errors().setConfig(config);
 			state.capture_level =
-				static_cast<uint64_t>(app.devMonitoring().errors().config().level);
+				static_cast<uint64_t>(FlowUi::ValueOrThrow(app.devMonitoring()).get().errors().config().level);
 			state.message = "Effective capture level updated for future evidence";
 			state.last_refresh_ns = 0;
 			break;
@@ -1060,7 +1061,7 @@ void service_diagnostics(App& app, DevInterfaceState& interface_state, bool visi
 							std::to_string(state.groups.size()) + " groups";
 		}
 		if (command != DevDiagnosticsCommand::None) {
-			state.live_capture_config = app.devMonitoring().errors().config();
+			state.live_capture_config = FlowUi::ValueOrThrow(app.devMonitoring()).get().errors().config();
 			state.live_reporting_config = reporting.config();
 			state.capture_level = static_cast<uint64_t>(state.live_capture_config.level);
 		}

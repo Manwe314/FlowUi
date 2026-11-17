@@ -15,12 +15,15 @@
 using namespace FlowUi;
 using namespace FlowUi::devSystems::agentic;
 namespace {
+[[nodiscard]] bool traceRuntime() noexcept {
+	return std::getenv("FLOWUI_AGENTIC_RUNTIME_TRACE") != nullptr;
+}
 struct Fixture {
 	std::vector<FrameInput> inputs;
 	std::uint64_t presses = 0, releases = 0, held = 0;
 	void frame(App& application) {
 		FLOWUI_CHECK(application.beginFrame());
-		const auto& previous = application.ui().getPreviousFramesInteraction();
+		const auto& previous = ::FlowUi::test::requireValue(application.ui()).get().getPreviousFramesInteraction();
 		const auto target = CLAY_ID("interaction_raw_target");
 		if (previous.isPressed(target))
 			++presses;
@@ -28,7 +31,7 @@ struct Fixture {
 			++releases;
 		if (previous.isHeld(target))
 			++held;
-		inputs.emplace_back(application.ui().getCurrentFrameInput());
+		inputs.emplace_back(::FlowUi::test::requireValue(application.ui()).get().getCurrentFrameInput());
 		Clay_ElementDeclaration declaration{};
 		declaration.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
 		declaration.backgroundColor = {20, 40, 60, 255};
@@ -55,13 +58,17 @@ std::string start(AgenticWorkflowService& service, const AgenticInteractionPlan&
 		command(service, "interaction.start",
 				Json::make_object({{"plan", to_json(plan, true)}, {"idempotency_key", key}}));
 	FLOWUI_CHECK(response.find("job_id"));
+	if (traceRuntime())
+		std::cerr << "interaction start " << key << '\n';
 	return std::string(response.find("job_id")->string_or());
 }
 Json finish(App& application, Fixture& fixture, std::string_view job_id) {
-	const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(15);
+	const auto started = std::chrono::steady_clock::now();
+	const auto initialFrames = fixture.inputs.size();
+	const auto deadline = started + std::chrono::seconds(15);
 	while (std::chrono::steady_clock::now() < deadline) {
 		fixture.frame(application);
-		const auto status = command(application.agentic_workflow(), "job.status",
+		const auto status = command(::FlowUi::test::requireValue(application.agentic_workflow()).get(), "job.status",
 									Json::make_object({{"job_id", job_id}}));
 		const auto phase = status.find("phase");
 		if (phase && phase->string_or() == "failed") {
@@ -69,7 +76,7 @@ Json finish(App& application, Fixture& fixture, std::string_view job_id) {
 			FLOWUI_CHECK(false);
 		}
 		if (phase && phase->string_or() == "sealed") {
-			const auto result = command(application.agentic_workflow(), "interaction.query",
+			const auto result = command(::FlowUi::test::requireValue(application.agentic_workflow()).get(), "interaction.query",
 										Json::make_object({{"job_id", job_id}}));
 			FLOWUI_CHECK(result.find("cleanup_complete") &&
 						 result.find("cleanup_complete")->bool_or());
@@ -78,6 +85,10 @@ Json finish(App& application, Fixture& fixture, std::string_view job_id) {
 			const auto manifest = read_manifest(path->string_or());
 			FLOWUI_CHECK(manifest);
 			FLOWUI_CHECK(read_artifact_json(*manifest, "interaction_results"));
+			if (traceRuntime())
+				std::cerr << "interaction sealed frames=" << fixture.inputs.size() - initialFrames
+					<< " milliseconds=" << std::chrono::duration_cast<std::chrono::milliseconds>(
+						std::chrono::steady_clock::now() - started).count() << '\n';
 			return result;
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -87,25 +98,77 @@ Json finish(App& application, Fixture& fixture, std::string_view job_id) {
 }
 /* Drive the existing backend callback, retaining its ordinary InputQueue assessment semantics. */
 void assess_native_key(App& application, int key, bool down) {
-	auto* window = static_cast<GLFWwindow*>(application.nativeWindowHandle());
+	auto* window = static_cast<GLFWwindow*>(::FlowUi::test::requireValue(application.nativeWindowHandle()));
 	FLOWUI_CHECK(window);
 	const auto callback = glfwSetKeyCallback(window, nullptr);
 	FLOWUI_CHECK(callback);
 	glfwSetKeyCallback(window, callback);
 	callback(window, key, 0, down ? GLFW_PRESS : GLFW_RELEASE, 0);
 }
-void verify_handoff_across_jobs(App& application, Fixture& fixture) {
-	auto& service = application.agentic_workflow();
+struct NativeFocusObservation {
+	inline static NativeFocusObservation* active = nullptr;
+	GLFWwindow* window;
+	GLFWwindowfocusfun previous;
+	std::uint64_t losses = 0;
+	explicit NativeFocusObservation(GLFWwindow* observed) : window(observed) {
+		FLOWUI_CHECK(!active);
+		active = this;
+		previous = glfwSetWindowFocusCallback(window, [](GLFWwindow* changed, int focused) {
+			if (active && active->window == changed) {
+				if (!focused)
+					++active->losses;
+				if (active->previous)
+					active->previous(changed, focused);
+			}
+		});
+	}
+	~NativeFocusObservation() {
+		glfwSetWindowFocusCallback(window, previous);
+		active = nullptr;
+	}
+};
+void verify_handoff_across_jobs(App& application, Fixture& fixture,
+							   bool retainNativeInput = false) {
+	auto* window = static_cast<GLFWwindow*>(
+		::FlowUi::test::requireValue(application.nativeWindowHandle()));
+	glfwFocusWindow(window);
+	FLOWUI_CHECK(application.pollEvents());
+	FLOWUI_CHECK(glfwGetWindowAttrib(window, GLFW_FOCUSED) == GLFW_TRUE);
+	NativeFocusObservation focusObservation(window);
+	auto& service = ::FlowUi::test::requireValue(application.agentic_workflow()).get();
 	auto runtime = service.interaction_runtime();
 	FLOWUI_CHECK(runtime);
 	AgenticInteractionPlan neutral_plan;
 	neutral_plan.window_id = application.mainWindowId();
+	neutral_plan.include_native_input = retainNativeInput;
 	AgenticInteractionSpan span;
 	span.count = 4;
 	neutral_plan.spans.emplace_back(span);
+	assess_native_key(application, GLFW_KEY_A, false);
 	assess_native_key(application, GLFW_KEY_A, true);
+	fixture.frame(application);
+	FLOWUI_CHECK(fixture.inputs.back().keyDown[GLFW_KEY_A]);
 	const auto initial_job = start(service, neutral_plan, "handoff-initial-input");
 	finish(application, fixture, initial_job);
+	if (!(*runtime)->controls_window(application.mainWindowId())) {
+		std::cerr << "handoff lost; native focus=" << glfwGetWindowAttrib(window, GLFW_FOCUSED)
+			<< " focus losses=" << focusObservation.losses
+			<< " current effective focus=" << fixture.inputs.back().windowFocused << '\n';
+		const auto records = command(service, "interaction.query",
+			Json::make_object({{"job_id", initial_job}, {"kind", "inputs"},
+							   {"limit", Json::number(100)}}));
+		for (const auto& record : records.find("records")->array) {
+			const auto* native = record.find("native_input");
+			if (!native)
+				continue;
+			const auto* keys = native->find("keys_down");
+			const bool held = keys && std::any_of(keys->array.begin(), keys->array.end(),
+				[](const Json& key) { return key.uint64_or() == GLFW_KEY_A; });
+			std::cerr << "handoff native A=" << held << " focused="
+				<< native->find("window_focused")->bool_or() << " cleanup="
+				<< record.find("cleanup")->bool_or() << '\n';
+		}
+	}
 	FLOWUI_CHECK((*runtime)->controls_window(application.mainWindowId()));
 	FLOWUI_CHECK(!fixture.inputs.back().keyDown[GLFW_KEY_A]);
 	const auto next_job = start(service, neutral_plan, "handoff-queued-input");
@@ -114,8 +177,8 @@ void verify_handoff_across_jobs(App& application, Fixture& fixture) {
 	assessed.keyDown[GLFW_KEY_A] = true;
 	EvidenceFrameKey probe;
 	probe.window_id = application.mainWindowId();
-	probe.app_tick = application.ui().dev_completed_app_tick();
-	probe.window_frame = application.ui().dev_completed_window_frame() + 1;
+	probe.app_tick = ::FlowUi::test::requireValue(application.ui()).get().dev_completed_app_tick();
+	probe.window_frame = ::FlowUi::test::requireValue(application.ui()).get().dev_completed_window_frame() + 1;
 	FLOWUI_CHECK((*runtime)->select_input(probe, assessed, 1));
 	FLOWUI_CHECK(!assessed.keyDown[GLFW_KEY_A]);
 	finish(application, fixture, next_job);
@@ -149,7 +212,7 @@ void verify_handoff_across_jobs(App& application, Fixture& fixture) {
 	assess_native_key(application, GLFW_KEY_A, false);
 	fixture.frame(application);
 }
-void run() {
+void run(bool handoffOnly = false, bool retainNativeInput = false) {
 	const auto identifier = make_identifier("interaction_native_tests");
 	FLOWUI_CHECK(identifier);
 	const auto directory = std::filesystem::temp_directory_path() / *identifier;
@@ -174,17 +237,21 @@ void run() {
 	configuration.agentic_workflow.input_control_enabled = true;
 	configuration.agentic_workflow.action_control_enabled = true;
 	std::string scenario_child;
-	auto application = makeApplication(configuration);
+	auto application = ::FlowUi::test::requireValue(makeApplication(configuration));
 	Fixture fixture;
 	fixture.inputs.reserve(1024);
-	auto& service = application.agentic_workflow();
+	auto& service = ::FlowUi::test::requireValue(application.agentic_workflow()).get();
+	if (handoffOnly) {
+		verify_handoff_across_jobs(application, fixture, retainNativeInput);
+		return;
+	}
 	application.request_dev_interface_toggle();
 	const auto malformed = service.submit_command(AgenticCommandRequest{
 		Json::make_object({{"window_id", "bad"}}), "malformed-input", "interaction.targets"});
 	FLOWUI_CHECK(malformed && malformed->find("exit_code")->uint64_or() == 2);
 	for (int frame = 0; frame < 4; ++frame)
 		fixture.frame(application);
-	application.devTooling().inspect_interaction().toggle_primary_pick();
+	::FlowUi::test::requireValue(application.devTooling()).get().inspect_interaction().toggle_primary_pick();
 	AgenticInteractionPlan raw;
 	raw.window_id = application.mainWindowId();
 	raw.fixture_id = "raw-clay-root";
@@ -218,8 +285,8 @@ void run() {
 	foreign_scope.run_id = "run_other_process";
 	FLOWUI_CHECK(!service.start_interaction(to_json(foreign_scope, true), "raw-click-key-text"));
 	FLOWUI_CHECK(service.query_interaction(job)->phase == AgenticInteractionPhase::completed);
-	FLOWUI_CHECK(application.devTooling().inspect_interaction().picking());
-	application.devTooling().inspect_interaction().cancel_pick();
+	FLOWUI_CHECK(::FlowUi::test::requireValue(application.devTooling()).get().inspect_interaction().picking());
+	::FlowUi::test::requireValue(application.devTooling()).get().inspect_interaction().cancel_pick();
 	application.request_dev_interface_toggle();
 	fixture.frame(application);
 	FLOWUI_CHECK(fixture.presses >= 1 && fixture.releases >= 1 && fixture.held >= 1);
@@ -334,7 +401,7 @@ void run() {
 	exact.clock = AgenticInteractionClock::exact_window_frames;
 	exact.baseline = AgenticInteractionBaseline::require_neutral;
 	exact.run_id = service.capabilities()->run_id;
-	exact.first_window_frame = application.ui().dev_completed_window_frame() + 4;
+	exact.first_window_frame = ::FlowUi::test::requireValue(application.ui()).get().dev_completed_window_frame() + 4;
 	const auto exact_job = start(service, exact, "exact-window-frames");
 	const auto exact_result = finish(application, fixture, exact_job);
 	FLOWUI_CHECK(exact_result.find("execution_succeeded")->bool_or());
@@ -402,7 +469,7 @@ void run() {
 	FLOWUI_CHECK(interaction_plan_from_json(recorded_plan));
 	std::uint64_t action_calls = 0;
 	constexpr auto action_id = AppAction("interaction.test.action");
-	const auto bound = application.actions().appActions().bind(
+	const auto bound = ::FlowUi::test::requireValue(application.actions()).get().appActions().bind(
 		action_id, [](std::uint64_t* calls) { ++*calls; }, &action_calls);
 	FLOWUI_CHECK(bound);
 	const auto runtime = service.interaction_runtime();
@@ -445,7 +512,7 @@ void run() {
 	scenario.descriptor.fixture_id = "raw-clay-root";
 	scenario.setup = [source = to_json(common, true), &scenario_child](
 						 const AgenticScenarioContext& context) -> Result<AgenticScenarioProgress> {
-		auto& service = context.application->agentic_workflow();
+		auto& service = ::FlowUi::test::requireValue(context.application->agentic_workflow()).get();
 		if (scenario_child.empty()) {
 			auto child = service.start_interaction(source, "scenario-setup-input");
 			if (!child)
@@ -468,7 +535,7 @@ void run() {
 		[&scenario_child](
 			const AgenticScenarioContext& context) -> Result<AgenticScenarioProgress> {
 		const auto result =
-			context.application->agentic_workflow().query_interaction(scenario_child);
+			::FlowUi::test::requireValue(context.application->agentic_workflow()).get().query_interaction(scenario_child);
 		if (!result || !result->execution_succeeded)
 			return unexpectedError(agentic_error(AgenticError::incomplete));
 		return AgenticScenarioProgress::complete;
@@ -553,13 +620,16 @@ void run() {
 				 "idempotency_conflict");
 }
 } // namespace
-int main() {
+int main(int argumentCount, char** arguments) {
 #if !defined(_WIN32)
 	if (!std::getenv("DISPLAY") && !std::getenv("WAYLAND_DISPLAY"))
 		return 77;
 #endif
 	FlowUi::test::Runner runner;
+	const std::string_view mode = argumentCount == 2 ? arguments[1] : "all";
+	const bool handoffOnly = mode == "handoff" || mode == "handoff-native";
+	const bool retainNativeInput = mode == "handoff-native";
 	runner.run("input replacement, raw Clay controls, cancellation, recording and action evidence",
-			   run);
+			   [handoffOnly, retainNativeInput] { run(handoffOnly, retainNativeInput); });
 	return runner.finish();
 }

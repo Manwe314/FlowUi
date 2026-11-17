@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,44 +106,287 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::MemoryValueSample Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevMemoryTypes_8hpp_source.html">DevMemoryTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a35846ff6e0b1d6c0c3ee75468c28c2a3" id="r_a35846ff6e0b1d6c0c3ee75468c28c2a3"><td class="memItemLeft"><a id="a35846ff6e0b1d6c0c3ee75468c28c2a3" name="a35846ff6e0b1d6c0c3ee75468c28c2a3"></a>
-MemorySourceId&#160;</td><td class="memItemRight"><b>source</b> = 0u</td></tr>
-<tr class="memitem:a5e80fbbdd238f0605015a7a9add8c632" id="r_a5e80fbbdd238f0605015a7a9add8c632"><td class="memItemLeft"><a id="a5e80fbbdd238f0605015a7a9add8c632" name="a5e80fbbdd238f0605015a7a9add8c632"></a>
-WindowId&#160;</td><td class="memItemRight"><b>window</b> = InvalidWindowId</td></tr>
-<tr class="memitem:aaf53ad738df45c1b8b9f4620e980f26a" id="r_aaf53ad738df45c1b8b9f4620e980f26a"><td class="memItemLeft"><a id="aaf53ad738df45c1b8b9f4620e980f26a" name="aaf53ad738df45c1b8b9f4620e980f26a"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>logicalLiveBytes</b> = 0u</td></tr>
-<tr class="memitem:a74d4c6f51be0501951e4bb21312c62c6" id="r_a74d4c6f51be0501951e4bb21312c62c6"><td class="memItemLeft"><a id="a74d4c6f51be0501951e4bb21312c62c6" name="a74d4c6f51be0501951e4bb21312c62c6"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>retiredBytes</b> = 0u</td></tr>
-<tr class="memitem:aa8496d0da7bf9c2e8107c77208b3a4ab" id="r_aa8496d0da7bf9c2e8107c77208b3a4ab"><td class="memItemLeft"><a id="aa8496d0da7bf9c2e8107c77208b3a4ab" name="aa8496d0da7bf9c2e8107c77208b3a4ab"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>reusableBytes</b> = 0u</td></tr>
-<tr class="memitem:a0dd930025a62dc8a9b0ebb25a2d1b5b8" id="r_a0dd930025a62dc8a9b0ebb25a2d1b5b8"><td class="memItemLeft"><a id="a0dd930025a62dc8a9b0ebb25a2d1b5b8" name="a0dd930025a62dc8a9b0ebb25a2d1b5b8"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>backingAllocatedBytes</b> = 0u</td></tr>
-<tr class="memitem:ad2d1e4ec6ea33a56a81342222afdc76f" id="r_ad2d1e4ec6ea33a56a81342222afdc76f"><td class="memItemLeft"><a id="ad2d1e4ec6ea33a56a81342222afdc76f" name="ad2d1e4ec6ea33a56a81342222afdc76f"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>peakLogicalBytes</b> = 0u</td></tr>
-<tr class="memitem:a5e23ead054358b546483f6fb0d05e9f9" id="r_a5e23ead054358b546483f6fb0d05e9f9"><td class="memItemLeft"><a id="a5e23ead054358b546483f6fb0d05e9f9" name="a5e23ead054358b546483f6fb0d05e9f9"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>peakBackingAllocatedBytes</b> = 0u</td></tr>
-<tr class="memitem:ad6cdebf8bd52fd6e81631d90116cdef5" id="r_ad6cdebf8bd52fd6e81631d90116cdef5"><td class="memItemLeft"><a id="ad6cdebf8bd52fd6e81631d90116cdef5" name="ad6cdebf8bd52fd6e81631d90116cdef5"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>peakObjectCount</b> = 0u</td></tr>
-<tr class="memitem:a441bc7b0d1d62c3c6c09ae3e512f0d5e" id="r_a441bc7b0d1d62c3c6c09ae3e512f0d5e"><td class="memItemLeft"><a id="a441bc7b0d1d62c3c6c09ae3e512f0d5e" name="a441bc7b0d1d62c3c6c09ae3e512f0d5e"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>objectCount</b> = 0u</td></tr>
-<tr class="memitem:ac91c38ef12fc1e7fd95c8700eaaaafd2" id="r_ac91c38ef12fc1e7fd95c8700eaaaafd2"><td class="memItemLeft"><a id="ac91c38ef12fc1e7fd95c8700eaaaafd2" name="ac91c38ef12fc1e7fd95c8700eaaaafd2"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>capacityCount</b> = 0u</td></tr>
-<tr class="memitem:ac85d147815f393e8e199cbce9cc429c8" id="r_ac85d147815f393e8e199cbce9cc429c8"><td class="memItemLeft"><a id="ac85d147815f393e8e199cbce9cc429c8" name="ac85d147815f393e8e199cbce9cc429c8"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>allocationOps</b> = 0u</td></tr>
-<tr class="memitem:aa03eb5dc850bdaa29cdee950a551cc50" id="r_aa03eb5dc850bdaa29cdee950a551cc50"><td class="memItemLeft"><a id="aa03eb5dc850bdaa29cdee950a551cc50" name="aa03eb5dc850bdaa29cdee950a551cc50"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>logicalReleaseOps</b> = 0u</td></tr>
-<tr class="memitem:af7b450dac9b916d3dc583c4abe62c712" id="r_af7b450dac9b916d3dc583c4abe62c712"><td class="memItemLeft"><a id="af7b450dac9b916d3dc583c4abe62c712" name="af7b450dac9b916d3dc583c4abe62c712"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>physicalReleaseOps</b> = 0u</td></tr>
-<tr class="memitem:a4d730867cb99457dabd8d69413d72622" id="r_a4d730867cb99457dabd8d69413d72622"><td class="memItemLeft"><a id="a4d730867cb99457dabd8d69413d72622" name="a4d730867cb99457dabd8d69413d72622"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>growthOps</b> = 0u</td></tr>
-<tr class="memitem:a306c3c756408f31f09cbbb02163ed9c2" id="r_a306c3c756408f31f09cbbb02163ed9c2"><td class="memItemLeft"><a id="a306c3c756408f31f09cbbb02163ed9c2" name="a306c3c756408f31f09cbbb02163ed9c2"></a>
-MemorySampleFlag&#160;</td><td class="memItemRight"><b>flags</b> = MemorySampleFlag::None</td></tr>
-<tr class="memitem:ad07159b0460c7f747370b4f75143aed8" id="r_ad07159b0460c7f747370b4f75143aed8"><td class="memItemLeft"><a id="ad07159b0460c7f747370b4f75143aed8" name="ad07159b0460c7f747370b4f75143aed8"></a>
-uint16_t&#160;</td><td class="memItemRight"><b>value_fields</b> = 127u</td></tr>
+<tr class="memitem:a35846ff6e0b1d6c0c3ee75468c28c2a3" id="r_a35846ff6e0b1d6c0c3ee75468c28c2a3"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad77f8008bc1cd25d210f535c630fb739">MemorySourceId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a35846ff6e0b1d6c0c3ee75468c28c2a3">source</a> = 0u</td></tr>
+<tr class="memitem:a5e80fbbdd238f0605015a7a9add8c632" id="r_a5e80fbbdd238f0605015a7a9add8c632"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5e80fbbdd238f0605015a7a9add8c632">window</a> = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td></tr>
+<tr class="memitem:aaf53ad738df45c1b8b9f4620e980f26a" id="r_aaf53ad738df45c1b8b9f4620e980f26a"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#aaf53ad738df45c1b8b9f4620e980f26a">logicalLiveBytes</a> = 0u</td></tr>
+<tr class="memitem:a74d4c6f51be0501951e4bb21312c62c6" id="r_a74d4c6f51be0501951e4bb21312c62c6"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a74d4c6f51be0501951e4bb21312c62c6">retiredBytes</a> = 0u</td></tr>
+<tr class="memitem:aa8496d0da7bf9c2e8107c77208b3a4ab" id="r_aa8496d0da7bf9c2e8107c77208b3a4ab"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#aa8496d0da7bf9c2e8107c77208b3a4ab">reusableBytes</a> = 0u</td></tr>
+<tr class="memitem:a0dd930025a62dc8a9b0ebb25a2d1b5b8" id="r_a0dd930025a62dc8a9b0ebb25a2d1b5b8"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a0dd930025a62dc8a9b0ebb25a2d1b5b8">backingAllocatedBytes</a> = 0u</td></tr>
+<tr class="memitem:ad2d1e4ec6ea33a56a81342222afdc76f" id="r_ad2d1e4ec6ea33a56a81342222afdc76f"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ad2d1e4ec6ea33a56a81342222afdc76f">peakLogicalBytes</a> = 0u</td></tr>
+<tr class="memitem:a5e23ead054358b546483f6fb0d05e9f9" id="r_a5e23ead054358b546483f6fb0d05e9f9"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a5e23ead054358b546483f6fb0d05e9f9">peakBackingAllocatedBytes</a> = 0u</td></tr>
+<tr class="memitem:ad6cdebf8bd52fd6e81631d90116cdef5" id="r_ad6cdebf8bd52fd6e81631d90116cdef5"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ad6cdebf8bd52fd6e81631d90116cdef5">peakObjectCount</a> = 0u</td></tr>
+<tr class="memitem:a441bc7b0d1d62c3c6c09ae3e512f0d5e" id="r_a441bc7b0d1d62c3c6c09ae3e512f0d5e"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a441bc7b0d1d62c3c6c09ae3e512f0d5e">objectCount</a> = 0u</td></tr>
+<tr class="memitem:ac91c38ef12fc1e7fd95c8700eaaaafd2" id="r_ac91c38ef12fc1e7fd95c8700eaaaafd2"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ac91c38ef12fc1e7fd95c8700eaaaafd2">capacityCount</a> = 0u</td></tr>
+<tr class="memitem:ac85d147815f393e8e199cbce9cc429c8" id="r_ac85d147815f393e8e199cbce9cc429c8"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ac85d147815f393e8e199cbce9cc429c8">allocationOps</a> = 0u</td></tr>
+<tr class="memitem:aa03eb5dc850bdaa29cdee950a551cc50" id="r_aa03eb5dc850bdaa29cdee950a551cc50"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#aa03eb5dc850bdaa29cdee950a551cc50">logicalReleaseOps</a> = 0u</td></tr>
+<tr class="memitem:af7b450dac9b916d3dc583c4abe62c712" id="r_af7b450dac9b916d3dc583c4abe62c712"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#af7b450dac9b916d3dc583c4abe62c712">physicalReleaseOps</a> = 0u</td></tr>
+<tr class="memitem:a4d730867cb99457dabd8d69413d72622" id="r_a4d730867cb99457dabd8d69413d72622"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a4d730867cb99457dabd8d69413d72622">growthOps</a> = 0u</td></tr>
+<tr class="memitem:a306c3c756408f31f09cbbb02163ed9c2" id="r_a306c3c756408f31f09cbbb02163ed9c2"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a211f6ef27eb50d8223611d793550d034">MemorySampleFlag</a>&#160;</td><td class="memItemRight"><a class="el" href="#a306c3c756408f31f09cbbb02163ed9c2">flags</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a211f6ef27eb50d8223611d793550d034a6adf97f83acf6453d4a6a4b1070f3754">MemorySampleFlag::None</a></td></tr>
+<tr class="memitem:ad07159b0460c7f747370b4f75143aed8" id="r_ad07159b0460c7f747370b4f75143aed8"><td class="memItemLeft">uint16_t&#160;</td><td class="memItemRight"><a class="el" href="#ad07159b0460c7f747370b4f75143aed8">value_fields</a> = 127u</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Measured source values for one window or app-wide scope. value_fields distinguishes unavailable metrics from measured zeros; flags qualify accuracy and overlap. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="ac85d147815f393e8e199cbce9cc429c8" name="ac85d147815f393e8e199cbce9cc429c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac85d147815f393e8e199cbce9cc429c8">&#9670;&#160;</a></span>allocationOps</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryValueSample::allocationOps = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Recorded allocation operation count. </p>
+
+</div>
+</div>
+<a id="a0dd930025a62dc8a9b0ebb25a2d1b5b8" name="a0dd930025a62dc8a9b0ebb25a2d1b5b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0dd930025a62dc8a9b0ebb25a2d1b5b8">&#9670;&#160;</a></span>backingAllocatedBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryValueSample::backingAllocatedBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Current total allocated backing bytes. </p>
+
+</div>
+</div>
+<a id="ac91c38ef12fc1e7fd95c8700eaaaafd2" name="ac91c38ef12fc1e7fd95c8700eaaaafd2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac91c38ef12fc1e7fd95c8700eaaaafd2">&#9670;&#160;</a></span>capacityCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryValueSample::capacityCount = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Current reserved object or entry capacity. </p>
+
+</div>
+</div>
+<a id="a306c3c756408f31f09cbbb02163ed9c2" name="a306c3c756408f31f09cbbb02163ed9c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a306c3c756408f31f09cbbb02163ed9c2">&#9670;&#160;</a></span>flags</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a211f6ef27eb50d8223611d793550d034">MemorySampleFlag</a> FlowUi::devSystems::MemoryValueSample::flags = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a211f6ef27eb50d8223611d793550d034a6adf97f83acf6453d4a6a4b1070f3754">MemorySampleFlag::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Accuracy, completeness, and overlap qualifiers. </p>
+
+</div>
+</div>
+<a id="a4d730867cb99457dabd8d69413d72622" name="a4d730867cb99457dabd8d69413d72622"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4d730867cb99457dabd8d69413d72622">&#9670;&#160;</a></span>growthOps</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryValueSample::growthOps = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Recorded backing-growth operation count. </p>
+
+</div>
+</div>
+<a id="aaf53ad738df45c1b8b9f4620e980f26a" name="aaf53ad738df45c1b8b9f4620e980f26a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaf53ad738df45c1b8b9f4620e980f26a">&#9670;&#160;</a></span>logicalLiveBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryValueSample::logicalLiveBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Current logical live payload bytes. </p>
+
+</div>
+</div>
+<a id="aa03eb5dc850bdaa29cdee950a551cc50" name="aa03eb5dc850bdaa29cdee950a551cc50"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa03eb5dc850bdaa29cdee950a551cc50">&#9670;&#160;</a></span>logicalReleaseOps</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryValueSample::logicalReleaseOps = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Recorded logical-release operation count. </p>
+
+</div>
+</div>
+<a id="a441bc7b0d1d62c3c6c09ae3e512f0d5e" name="a441bc7b0d1d62c3c6c09ae3e512f0d5e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a441bc7b0d1d62c3c6c09ae3e512f0d5e">&#9670;&#160;</a></span>objectCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryValueSample::objectCount = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Current live object or entry count. </p>
+
+</div>
+</div>
+<a id="a5e23ead054358b546483f6fb0d05e9f9" name="a5e23ead054358b546483f6fb0d05e9f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5e23ead054358b546483f6fb0d05e9f9">&#9670;&#160;</a></span>peakBackingAllocatedBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryValueSample::peakBackingAllocatedBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Observed high-water allocated backing bytes. </p>
+
+</div>
+</div>
+<a id="ad2d1e4ec6ea33a56a81342222afdc76f" name="ad2d1e4ec6ea33a56a81342222afdc76f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad2d1e4ec6ea33a56a81342222afdc76f">&#9670;&#160;</a></span>peakLogicalBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryValueSample::peakLogicalBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Observed high-water live byte demand. </p>
+
+</div>
+</div>
+<a id="ad6cdebf8bd52fd6e81631d90116cdef5" name="ad6cdebf8bd52fd6e81631d90116cdef5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad6cdebf8bd52fd6e81631d90116cdef5">&#9670;&#160;</a></span>peakObjectCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryValueSample::peakObjectCount = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Observed high-water object/entry demand. </p>
+
+</div>
+</div>
+<a id="af7b450dac9b916d3dc583c4abe62c712" name="af7b450dac9b916d3dc583c4abe62c712"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af7b450dac9b916d3dc583c4abe62c712">&#9670;&#160;</a></span>physicalReleaseOps</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryValueSample::physicalReleaseOps = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Recorded physical-release operation count. </p>
+
+</div>
+</div>
+<a id="a74d4c6f51be0501951e4bb21312c62c6" name="a74d4c6f51be0501951e4bb21312c62c6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a74d4c6f51be0501951e4bb21312c62c6">&#9670;&#160;</a></span>retiredBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryValueSample::retiredBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Bytes awaiting safe physical reclamation. </p>
+
+</div>
+</div>
+<a id="aa8496d0da7bf9c2e8107c77208b3a4ab" name="aa8496d0da7bf9c2e8107c77208b3a4ab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa8496d0da7bf9c2e8107c77208b3a4ab">&#9670;&#160;</a></span>reusableBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryValueSample::reusableBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Allocated backing bytes currently available for reuse. </p>
+
+</div>
+</div>
+<a id="a35846ff6e0b1d6c0c3ee75468c28c2a3" name="a35846ff6e0b1d6c0c3ee75468c28c2a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a35846ff6e0b1d6c0c3ee75468c28c2a3">&#9670;&#160;</a></span>source</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad77f8008bc1cd25d210f535c630fb739">MemorySourceId</a> FlowUi::devSystems::MemoryValueSample::source = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Source whose measurements or operation this record describes. </p>
+
+</div>
+</div>
+<a id="ad07159b0460c7f747370b4f75143aed8" name="ad07159b0460c7f747370b4f75143aed8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad07159b0460c7f747370b4f75143aed8">&#9670;&#160;</a></span>value_fields</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint16_t FlowUi::devSystems::MemoryValueSample::value_fields = 127u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Bitwise <a class="el" href="namespaceFlowUi_1_1devSystems.html#afe295a3df02496764ccd046cdc959143">MemoryValueField</a> availability mask; absent fields are not measured zeros. </p>
+
+</div>
+</div>
+<a id="a5e80fbbdd238f0605015a7a9add8c632" name="a5e80fbbdd238f0605015a7a9add8c632"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5e80fbbdd238f0605015a7a9add8c632">&#9670;&#160;</a></span>window</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> FlowUi::devSystems::MemoryValueSample::window = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owning window, or zero for app-wide attribution. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/memory/<a class="el" href="DevMemoryTypes_8hpp_source.html">DevMemoryTypes.hpp</a></li>
 </ul>
@@ -160,7 +403,7 @@ uint16_t&#160;</td><td class="memItemRight"><b>value_fields</b> = 127u</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1MemoryValueSample.html">MemoryValueSample</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1MemoryValueSample.html">MemoryValueSample</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

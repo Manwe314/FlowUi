@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,24 +106,127 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::StaticMemorySourceDescriptor Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevMemoryTypes_8hpp_source.html">DevMemoryTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a253d7123cedafdbe3f5d1e95d4922f05" id="r_a253d7123cedafdbe3f5d1e95d4922f05"><td class="memItemLeft"><a id="a253d7123cedafdbe3f5d1e95d4922f05" name="a253d7123cedafdbe3f5d1e95d4922f05"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>name</b> {}</td></tr>
-<tr class="memitem:a5233da4774bb6cfa4918088b2bfe18fd" id="r_a5233da4774bb6cfa4918088b2bfe18fd"><td class="memItemLeft"><a id="a5233da4774bb6cfa4918088b2bfe18fd" name="a5233da4774bb6cfa4918088b2bfe18fd"></a>
-MemorySourceId&#160;</td><td class="memItemRight"><b>id</b> = 0u</td></tr>
-<tr class="memitem:accdefb3cebd06b28a92d0b7a5313e892" id="r_accdefb3cebd06b28a92d0b7a5313e892"><td class="memItemLeft"><a id="accdefb3cebd06b28a92d0b7a5313e892" name="accdefb3cebd06b28a92d0b7a5313e892"></a>
-MemorySourceId&#160;</td><td class="memItemRight"><b>parent</b> = 0u</td></tr>
-<tr class="memitem:a338a8de1ae4de32122e9a36407234a34" id="r_a338a8de1ae4de32122e9a36407234a34"><td class="memItemLeft"><a id="a338a8de1ae4de32122e9a36407234a34" name="a338a8de1ae4de32122e9a36407234a34"></a>
-MemoryTuningTargetId&#160;</td><td class="memItemRight"><b>tuningTarget</b> = 0u</td></tr>
-<tr class="memitem:a512e50dce851de77bc90841fad89b607" id="r_a512e50dce851de77bc90841fad89b607"><td class="memItemLeft"><a id="a512e50dce851de77bc90841fad89b607" name="a512e50dce851de77bc90841fad89b607"></a>
-MemoryDomain&#160;</td><td class="memItemRight"><b>domain</b> = MemoryDomain::StorageCpu</td></tr>
-<tr class="memitem:aa8581567be3401fa3e3135d88d46eed4" id="r_aa8581567be3401fa3e3135d88d46eed4"><td class="memItemLeft"><a id="aa8581567be3401fa3e3135d88d46eed4" name="aa8581567be3401fa3e3135d88d46eed4"></a>
-MemorySourceKind&#160;</td><td class="memItemRight"><b>kind</b> = MemorySourceKind::Allocator</td></tr>
-<tr class="memitem:a5cafb89dd997e7d773d270b7d7190e2c" id="r_a5cafb89dd997e7d773d270b7d7190e2c"><td class="memItemLeft"><a id="a5cafb89dd997e7d773d270b7d7190e2c" name="a5cafb89dd997e7d773d270b7d7190e2c"></a>
-MemoryAccuracy&#160;</td><td class="memItemRight"><b>accuracy</b> = MemoryAccuracy::Exact</td></tr>
+<tr class="memitem:a253d7123cedafdbe3f5d1e95d4922f05" id="r_a253d7123cedafdbe3f5d1e95d4922f05"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a253d7123cedafdbe3f5d1e95d4922f05">name</a> {}</td></tr>
+<tr class="memitem:a5233da4774bb6cfa4918088b2bfe18fd" id="r_a5233da4774bb6cfa4918088b2bfe18fd"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad77f8008bc1cd25d210f535c630fb739">MemorySourceId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5233da4774bb6cfa4918088b2bfe18fd">id</a> = 0u</td></tr>
+<tr class="memitem:accdefb3cebd06b28a92d0b7a5313e892" id="r_accdefb3cebd06b28a92d0b7a5313e892"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad77f8008bc1cd25d210f535c630fb739">MemorySourceId</a>&#160;</td><td class="memItemRight"><a class="el" href="#accdefb3cebd06b28a92d0b7a5313e892">parent</a> = 0u</td></tr>
+<tr class="memitem:a338a8de1ae4de32122e9a36407234a34" id="r_a338a8de1ae4de32122e9a36407234a34"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a60e98cdbd0ab17b6bc9fd353d45d0f1d">MemoryTuningTargetId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a338a8de1ae4de32122e9a36407234a34">tuningTarget</a> = 0u</td></tr>
+<tr class="memitem:a512e50dce851de77bc90841fad89b607" id="r_a512e50dce851de77bc90841fad89b607"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a19e5d03bd7140cd8ecd82c699d1d5b4a">MemoryDomain</a>&#160;</td><td class="memItemRight"><a class="el" href="#a512e50dce851de77bc90841fad89b607">domain</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a19e5d03bd7140cd8ecd82c699d1d5b4aa07ddd4a80ba585e98ea95c4f7fd84738">MemoryDomain::StorageCpu</a></td></tr>
+<tr class="memitem:aa8581567be3401fa3e3135d88d46eed4" id="r_aa8581567be3401fa3e3135d88d46eed4"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a1d79947125efd4049986d6b61715cb09">MemorySourceKind</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa8581567be3401fa3e3135d88d46eed4">kind</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a1d79947125efd4049986d6b61715cb09afb1925517296a258d34f3c05e78ce0b2">MemorySourceKind::Allocator</a></td></tr>
+<tr class="memitem:a5cafb89dd997e7d773d270b7d7190e2c" id="r_a5cafb89dd997e7d773d270b7d7190e2c"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a70be91a6004d3f14c01a5a0b9b70397f">MemoryAccuracy</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5cafb89dd997e7d773d270b7d7190e2c">accuracy</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a70be91a6004d3f14c01a5a0b9b70397fa1649aed298f99d587e2eb30c1db5946b">MemoryAccuracy::Exact</a></td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Allocation-free source registration descriptor with a borrowed static name. <a class="el" href="classFlowUi_1_1devSystems_1_1DevMemory.html#a8e345bd25f213fde678a5d9df50cd599">DevMemory::registerSource()</a> copies the name before returning. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a5cafb89dd997e7d773d270b7d7190e2c" name="a5cafb89dd997e7d773d270b7d7190e2c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5cafb89dd997e7d773d270b7d7190e2c">&#9670;&#160;</a></span>accuracy</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a70be91a6004d3f14c01a5a0b9b70397f">MemoryAccuracy</a> FlowUi::devSystems::StaticMemorySourceDescriptor::accuracy = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a70be91a6004d3f14c01a5a0b9b70397fa1649aed298f99d587e2eb30c1db5946b">MemoryAccuracy::Exact</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Accuracy expected from the accounting method. </p>
+
+</div>
+</div>
+<a id="a512e50dce851de77bc90841fad89b607" name="a512e50dce851de77bc90841fad89b607"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a512e50dce851de77bc90841fad89b607">&#9670;&#160;</a></span>domain</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a19e5d03bd7140cd8ecd82c699d1d5b4a">MemoryDomain</a> FlowUi::devSystems::StaticMemorySourceDescriptor::domain = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a19e5d03bd7140cd8ecd82c699d1d5b4aa07ddd4a80ba585e98ea95c4f7fd84738">MemoryDomain::StorageCpu</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Accounting domain used for grouping and overlap handling. </p>
+
+</div>
+</div>
+<a id="a5233da4774bb6cfa4918088b2bfe18fd" name="a5233da4774bb6cfa4918088b2bfe18fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5233da4774bb6cfa4918088b2bfe18fd">&#9670;&#160;</a></span>id</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad77f8008bc1cd25d210f535c630fb739">MemorySourceId</a> FlowUi::devSystems::StaticMemorySourceDescriptor::id = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Stable source identity; zero is invalid. </p>
+
+</div>
+</div>
+<a id="aa8581567be3401fa3e3135d88d46eed4" name="aa8581567be3401fa3e3135d88d46eed4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa8581567be3401fa3e3135d88d46eed4">&#9670;&#160;</a></span>kind</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a1d79947125efd4049986d6b61715cb09">MemorySourceKind</a> FlowUi::devSystems::StaticMemorySourceDescriptor::kind = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a1d79947125efd4049986d6b61715cb09afb1925517296a258d34f3c05e78ce0b2">MemorySourceKind::Allocator</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owning subsystem/container category. </p>
+
+</div>
+</div>
+<a id="a253d7123cedafdbe3f5d1e95d4922f05" name="a253d7123cedafdbe3f5d1e95d4922f05"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a253d7123cedafdbe3f5d1e95d4922f05">&#9670;&#160;</a></span>name</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::devSystems::StaticMemorySourceDescriptor::name {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Borrowed stable source name, normally backed by a string literal. </p>
+
+</div>
+</div>
+<a id="accdefb3cebd06b28a92d0b7a5313e892" name="accdefb3cebd06b28a92d0b7a5313e892"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#accdefb3cebd06b28a92d0b7a5313e892">&#9670;&#160;</a></span>parent</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ad77f8008bc1cd25d210f535c630fb739">MemorySourceId</a> FlowUi::devSystems::StaticMemorySourceDescriptor::parent = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Parent source for hierarchical grouping; zero is a root. </p>
+
+</div>
+</div>
+<a id="a338a8de1ae4de32122e9a36407234a34" name="a338a8de1ae4de32122e9a36407234a34"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a338a8de1ae4de32122e9a36407234a34">&#9670;&#160;</a></span>tuningTarget</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a60e98cdbd0ab17b6bc9fd353d45d0f1d">MemoryTuningTargetId</a> FlowUi::devSystems::StaticMemorySourceDescriptor::tuningTarget = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Associated configurable capacity target, or zero if none. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/memory/<a class="el" href="DevMemoryTypes_8hpp_source.html">DevMemoryTypes.hpp</a></li>
 </ul>
@@ -140,7 +243,7 @@ MemoryAccuracy&#160;</td><td class="memItemRight"><b>accuracy</b> = MemoryAccura
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1StaticMemorySourceDescriptor.html">StaticMemorySourceDescriptor</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1StaticMemorySourceDescriptor.html">StaticMemorySourceDescriptor</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

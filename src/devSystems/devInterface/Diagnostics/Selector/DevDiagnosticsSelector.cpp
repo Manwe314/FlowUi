@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.hpp"
 #include "FlowUi/Public/input/Key.hpp"
 
@@ -146,7 +147,7 @@ void choice(Context& context, uint64_t value, uint64_t& selection, std::string_v
 }
 
 void filters(Context& context, DevDiagnosticsState& state) {
-	const auto popup_id = context.childID("filters");
+	const auto popup_id = FlowUi::ValueOrThrow(context.childID("filters"));
 	if (context.uiManager.popups().consumeDismissed(popup_id)) {
 		state.filters_open = false;
 		return;
@@ -155,7 +156,7 @@ void filters(Context& context, DevDiagnosticsState& state) {
 	const float width = std::min(340.0f, std::max(180.0f, viewport.width - 20));
 	const float height = std::min(520.0f, std::max(180.0f, viewport.height - 100));
 	PopupRequest request{};
-	request.anchor = PopupAnchor::element(context.childID("actions"));
+	request.anchor = PopupAnchor::element(FlowUi::ValueOrThrow(context.childID("actions")));
 	request.expectedSize = Clay_Dimensions{width, height};
 	request.placement.offset.y = 4;
 	const auto popup = context.uiManager.popups().request(popup_id, request);
@@ -174,15 +175,15 @@ void filters(Context& context, DevDiagnosticsState& state) {
 	panel.border = {.color = interface_theme::kBorderVisible, .width = {1, 1, 1, 1, 0}};
 	panel.cornerRadius = CLAY_CORNER_RADIUS(4);
 	panel.floating = popup->floating;
-	CLAY(context.clayID("filters"), panel) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("filters")), panel) {
 		auto heading = ui::row(34);
-		CLAY(context.clayID("filter-heading"), heading) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("filter-heading")), heading) {
 			ui::text(context, "Advanced filters", interface_theme::kTextCanvas, 13);
 			button(context, "close-filters", "Close", Filters, 0, {}, Icon::Close);
 		}
 		auto viewport_panel = ui::column(0);
 		viewport_panel.layout.sizing.height = CLAY_SIZING_GROW(0);
-		const auto scroll_id = context.clayID("filter-scroll");
+		const auto scroll_id = FlowUi::ValueOrThrow(context.clayID("filter-scroll"));
 		const auto scroll = Clay_GetScrollContainerData(scroll_id);
 		viewport_panel.clip = {.vertical = true,
 							   .childOffset = scroll.found && scroll.scrollPosition
@@ -191,7 +192,7 @@ void filters(Context& context, DevDiagnosticsState& state) {
 		CLAY(scroll_id, viewport_panel) {
 			auto contents = ui::column(8);
 			contents.layout.padding.right = 5;
-			CLAY(context.clayID("filter-contents"), contents) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("filter-contents")), contents) {
 				ui::text(context,
 						 "Masks include checked values. All predicates apply to one retained "
 						 "occurrence.",
@@ -293,10 +294,10 @@ void keyboard(Context& context, DevDiagnosticsState& state, std::span<const Navi
 	if (rows.empty() || !navigation.keyboard_active ||
 		context.uiManager.inputFields().hasPrimaryFieldFocus())
 		return;
-	const auto focused = context.uiManager.shortcuts().focusedElement().id;
+	const auto focused = FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id;
 	const auto focused_row = navigation.domain_focus
-								 ? context.clayID(Keyed("domain", navigation.focused_domain)).id
-								 : context.clayID(Keyed("issue", navigation.focused_identity)).id;
+								 ? FlowUi::ValueOrThrow(context.clayID(Keyed("domain", navigation.focused_domain))).id
+								 : FlowUi::ValueOrThrow(context.clayID(Keyed("issue", navigation.focused_identity))).id;
 	if (focused != context.clayID().id && focused != focused_row)
 		return;
 	const auto found = std::ranges::find_if(rows, [&](const auto& row) {
@@ -321,13 +322,13 @@ void keyboard(Context& context, DevDiagnosticsState& state, std::span<const Navi
 	if (pressed(FlowUi::keyCode(FlowUi::Key::Up)) || pressed(FlowUi::keyCode(FlowUi::Key::Down)) ||
 		pressed(FlowUi::keyCode(FlowUi::Key::Left)) ||
 		pressed(FlowUi::keyCode(FlowUi::Key::Right))) {
-		context.uiManager.shortcuts().setFocusedElement(context.clayID());
+		FlowUi::ValueOrThrow(context.uiManager.shortcuts().setFocusedElement(context.clayID()));
 		const auto target_id = navigation.domain_focus
-								   ? context.clayID(Keyed("domain", navigation.focused_domain))
-								   : context.clayID(Keyed("issue", navigation.focused_identity));
+								   ? FlowUi::ValueOrThrow(context.clayID(Keyed("domain", navigation.focused_domain)))
+								   : FlowUi::ValueOrThrow(context.clayID(Keyed("issue", navigation.focused_identity)));
 		const auto target = Clay_GetElementData(target_id);
-		const auto viewport = Clay_GetElementData(context.clayID("scroll"));
-		const auto scroll = Clay_GetScrollContainerData(context.clayID("scroll"));
+		const auto viewport = Clay_GetElementData(FlowUi::ValueOrThrow(context.clayID("scroll")));
+		const auto scroll = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("scroll")));
 		if (target.found && viewport.found && scroll.found && scroll.scrollPosition) {
 			if (target.boundingBox.y < viewport.boundingBox.y)
 				scroll.scrollPosition->y += viewport.boundingBox.y - target.boundingBox.y;
@@ -358,12 +359,12 @@ void DevDiagnosticsSelector::buildElement(BuildContext& context) {
 			header.layout.padding = {12, 10, 0, 0};
 			header.backgroundColor = interface_theme::kDepth2Ink;
 			header.border = {.color = interface_theme::kBorderPrimary, .width = {0, 0, 0, 1, 0}};
-			CLAY(context.clayID("header"), header) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("header")), header) {
 				ui::icon(context, "issues-icon", Icon::Issue, interface_theme::kTextSecondary, 14);
 				ui::text(context, "Issues", interface_theme::kTextCanvas, 13);
 				auto spacer = ui::column();
 				spacer.layout.sizing.height = CLAY_SIZING_FIXED(1);
-				CLAY(context.clayID("count-spacer"), spacer) {}
+				CLAY(FlowUi::ValueOrThrow(context.clayID("count-spacer")), spacer) {}
 				ui::text(context,
 						 state.groups.size() == state.total_groups
 							 ? std::to_string(state.groups.size()) + " groups"
@@ -379,15 +380,15 @@ void DevDiagnosticsSelector::buildElement(BuildContext& context) {
 				.draw();
 			auto controls = ui::column(6);
 			controls.layout.padding = {8, 8, 6, 7};
-			CLAY(context.clayID("controls"), controls) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("controls")), controls) {
 				constexpr std::array<std::string_view, 3> activity_labels{"All", "Ongoing",
 																		  "Recent"};
 				auto activity_clip = ui::column(0);
 				activity_clip.layout.sizing.height = CLAY_SIZING_FIXED(28);
 				activity_clip.clip = {.horizontal = true, .scrollInputDisabled = true};
-				CLAY(context.clayID("activity-clip"), activity_clip) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("activity-clip")), activity_clip) {
 					auto track = selector_choice_track();
-					CLAY(context.clayID("activity-track"), track) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("activity-track")), track) {
 						for (size_t label_index = 0; label_index < activity_labels.size();
 							 ++label_index)
 							choice(context, label_index, state.filters.activity_view,
@@ -395,7 +396,7 @@ void DevDiagnosticsSelector::buildElement(BuildContext& context) {
 					}
 				}
 				auto actions = ui::row();
-				CLAY(context.clayID("actions"), actions) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("actions")), actions) {
 					const auto count = diagnostics_filter_count(state.filters);
 					button(context, "show-filters",
 						   count ? "Filters (" + std::to_string(count) + ")" : "Filters...",
@@ -405,7 +406,7 @@ void DevDiagnosticsSelector::buildElement(BuildContext& context) {
 					if (!state.filters.search.empty())
 						button(context, "clear-search", "Clear", ClearSearch);
 				}
-				CLAY(context.clayID("refresh-status"), ui::row()) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("refresh-status")), ui::row()) {
 					button(
 						context, "refresh-order", state.order_changed ? "Refresh order" : "Refresh",
 						RefreshOrder, 0,
@@ -418,7 +419,7 @@ void DevDiagnosticsSelector::buildElement(BuildContext& context) {
 			auto content = ui::column(0);
 			content.layout.sizing.height = CLAY_SIZING_GROW(0);
 			content.backgroundColor = interface_theme::kDepth0Keel;
-			const auto scroll_id = context.clayID("scroll");
+			const auto scroll_id = FlowUi::ValueOrThrow(context.clayID("scroll"));
 			const auto scroll = Clay_GetScrollContainerData(scroll_id);
 			if (scroll.found && scroll.scrollPosition)
 				state.selector_scroll = scroll.scrollPosition->y;
@@ -428,7 +429,7 @@ void DevDiagnosticsSelector::buildElement(BuildContext& context) {
 											   : Clay_Vector2{0, state.selector_scroll}};
 			CLAY(scroll_id, content) {
 				auto tree = ui::column(0);
-				CLAY(context.clayID("tree"), tree) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("tree")), tree) {
 					std::vector<ErrorDomain> domains{};
 					domains.reserve(21);
 					for (const auto& group : state.groups)
@@ -523,7 +524,7 @@ void DevDiagnosticsSelector::buildElement(BuildContext& context) {
 					if (state.groups.empty()) {
 						auto empty = ui::column(8);
 						empty.layout.padding = {12, 12, 15, 15};
-						CLAY(context.clayID("empty"), empty) {
+						CLAY(FlowUi::ValueOrThrow(context.clayID("empty")), empty) {
 							ui::text(context,
 									 state.snapshot.rows.empty() ? "No retained issues"
 																 : "No retained issues match",
@@ -550,7 +551,7 @@ void DevDiagnosticsSelector::buildElement(BuildContext& context) {
 			footer.layout.padding = {10, 10, 9, 9};
 			footer.backgroundColor = interface_theme::kDepth2Ink;
 			footer.border = {.color = interface_theme::kBorderPrimary, .width = {0, 0, 1, 0, 0}};
-			CLAY(context.clayID("footer"), footer) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("footer")), footer) {
 				ui::text(context,
 						 std::to_string(state.snapshot.status.retainedOccurrences) +
 							 " retained occurrences · tick " + std::to_string(state.anchor_tick),

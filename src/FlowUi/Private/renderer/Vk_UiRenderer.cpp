@@ -1737,12 +1737,18 @@ void VulkanUiRenderer::destroy(
 	frameResourceCount_ = 1u;
 
 	(void)vk;
-	if (descriptorBundleHandle_) storageSystem.releaseWindowDescriptorBundle(descriptorBundleHandle_, lastUse);
-	if (pipelineBundleHandle_) storageSystem.releaseRendererPipelineBundle(pipelineBundleHandle_, lastUse);
-	if (layoutHandle_) storageSystem.releaseRendererLayout(layoutHandle_, lastUse);
-	descriptorBundleHandle_ = {};
-	pipelineBundleHandle_ = {};
-	layoutHandle_ = {};
+	if (descriptorBundleHandle_) {
+		storageSystem.releaseWindowDescriptorBundle(descriptorBundleHandle_, lastUse);
+		descriptorBundleHandle_ = {};
+	}
+	if (pipelineBundleHandle_) {
+		storageSystem.releaseRendererPipelineBundle(pipelineBundleHandle_, lastUse);
+		pipelineBundleHandle_ = {};
+	}
+	if (layoutHandle_) {
+		storageSystem.releaseRendererLayout(layoutHandle_, lastUse);
+		layoutHandle_ = {};
+	}
 	nativeDescriptors_ = {};
 	nativePipelineBundle_ = {};
 	nativeLayout_ = {};
@@ -1750,7 +1756,10 @@ void VulkanUiRenderer::destroy(
 	descriptors_ = Descriptors{};
 
 	for (UiFrameResources& frame : frameResources_) {
-		if (frame.instanceBuffer) storageSystem.releaseBuffer(frame.instanceBuffer);
+		if (frame.instanceBuffer) {
+			storageSystem.releaseBuffer(frame.instanceBuffer);
+			frame.instanceBuffer = {};
+		}
 	}
 	frameResources_.clear();
 

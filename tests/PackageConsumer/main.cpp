@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #include "FlowUi.hpp"
 #include "FlowUi/Public/Resources.hpp"
 #include <iostream>
@@ -32,13 +33,13 @@ int main(int argument_count, char**) {
 		app_config.window.height = 240;
 		app_config.vk.enableValidation = true;
 		app_config.errors.policy.defaultFont = FlowUi::DefaultFontFailurePolicy::FailAppImmediately;
-		application = FlowUi::makeApplication(app_config);
+		application = ::FlowUi::test::requireValue(FlowUi::makeApplication(app_config));
 		for (unsigned frame = 0; frame < 4; ++frame) {
 			if (!application.beginFrame() || !application.endFrame() || !application.drawFrame())
 				return 2;
 		}
 	}
 	const auto layout = CLAY_LAYOUT_DEFAULT;
-	std::cout << FlowUi::path_to_utf8(*font) << '\n';
+	std::cout << ::FlowUi::test::requireValue(FlowUi::path_to_utf8(*font)) << '\n';
 	return layout.childGap == 0u && Clay_MinMemorySize() > 0u ? 0 : 1;
 }

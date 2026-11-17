@@ -94,7 +94,7 @@ concept HasMutableStatePointer = requires(
 	Manager& manager,
 	FlowUi::WindowId window,
 	FlowUi::FlowElementID elementId) {
-	{ manager.getStatePointer(kStatefulElement, window, elementId) } -> std::same_as<State*>;
+	{ manager.getStatePointer(kStatefulElement, window, elementId) } -> std::same_as<FlowUi::Result<State*>>;
 };
 
 template <typename Manager>
@@ -153,9 +153,14 @@ static_assert(std::same_as<
 	decltype(std::declval<StatefulDefinition::BuildContext&>().clayID()),
 	Clay_ElementId>);
 static_assert(std::same_as<
+	decltype(std::declval<StatefulDefinition::InteractionContext&>().clayID()),
+	Clay_ElementId>);
+static_assert(!noexcept(std::declval<StatefulDefinition::BuildContext&>().clayID()));
+static_assert(!noexcept(std::declval<StatefulDefinition::InteractionContext&>().clayID()));
+static_assert(std::same_as<
 	decltype(std::declval<StatefulDefinition::BuildContext&>().childID(
 		std::declval<FlowUi::LocalElementName>())),
-	FlowUi::FlowElementID>);
+	FlowUi::Result<FlowUi::FlowElementID>>);
 static_assert(HasMutableState<StatefulDefinition::BuildContext>);
 static_assert(HasConstState<StatefulDefinition::BuildContext>);
 static_assert(HasMutableState<StatefulDefinition::InteractionContext>);
@@ -168,7 +173,7 @@ static_assert(std::same_as<
 		kStatefulElement,
 		FlowUi::MainWindowId,
 		kStatefulInstance)),
-	const State*>);
+	FlowUi::Result<const State*>>);
 static_assert(HasMutableStatePointer<FlowUi::ElementManager>);
 static_assert(!HasMutableStatePointerOnConstManager<FlowUi::ElementManager>);
 static_assert(!AcceptsRawNumericStateId<FlowUi::ElementManager>);
@@ -177,43 +182,43 @@ static_assert(std::same_as<
 		kStatefulElement,
 		FlowUi::MainWindowId,
 		kStatefulInstance)),
-	bool>);
+	FlowUi::Result<bool>>);
 static_assert(std::same_as<
 	decltype(std::declval<const FlowUi::ElementManager&>().getStatePointerConst(
 		kStatefulElement,
 		FlowUi::MainWindowId,
 		kStatefulPartInstance)),
-	const State*>);
+	FlowUi::Result<const State*>>);
 static_assert(std::same_as<
 	decltype(std::declval<FlowUi::ElementManager&>().getStatePointer(
 		kStatefulElement,
 		FlowUi::MainWindowId,
 		kStatefulPartInstance)),
-	State*>);
+	FlowUi::Result<State*>>);
 static_assert(std::same_as<
 	decltype(std::declval<FlowUi::ElementManager&>().eraseState(
 		kStatefulElement,
 		FlowUi::MainWindowId,
 		kStatefulPartInstance)),
-	bool>);
+	FlowUi::Result<bool>>);
 static_assert(std::same_as<
 	decltype(std::declval<const FlowUi::ElementManager&>().getStatePointerConst(
 		kStatefulElement,
 		FlowUi::MainWindowId,
 		kGlobalStatefulInstance)),
-	const State*>);
+	FlowUi::Result<const State*>>);
 static_assert(std::same_as<
 	decltype(std::declval<FlowUi::ElementManager&>().getStatePointer(
 		kStatefulElement,
 		FlowUi::MainWindowId,
 		kGlobalStatefulInstance)),
-	State*>);
+	FlowUi::Result<State*>>);
 static_assert(std::same_as<
 	decltype(std::declval<FlowUi::ElementManager&>().eraseState(
 		kStatefulElement,
 		FlowUi::MainWindowId,
 		kGlobalStatefulInstance)),
-	bool>);
+	FlowUi::Result<bool>>);
 static_assert(!HasRawNumericCallableStateApi<FlowUi::ElementManager>);
 static_assert(!HasRawNumericReadState<FlowUi::ElementManager>);
 static_assert(!HasRawNumericModifyState<FlowUi::ElementManager>);
@@ -223,29 +228,29 @@ void compileTypedManagerCalls(
 	const FlowUi::ElementManager& constManager) {
 	const FlowUi::FlowElementID elementId = kStatefulInstance;
 	[[maybe_unused]] const State* read =
-		constManager.getStatePointerConst(kStatefulElement, FlowUi::MainWindowId, elementId);
+		::FlowUi::test::requireValue(constManager.getStatePointerConst(kStatefulElement, FlowUi::MainWindowId, elementId));
 	[[maybe_unused]] State* mutableState =
-		manager.getStatePointer(kStatefulElement, FlowUi::MainWindowId, elementId);
+		::FlowUi::test::requireValue(manager.getStatePointer(kStatefulElement, FlowUi::MainWindowId, elementId));
 	[[maybe_unused]] const bool erased =
-		manager.eraseState(kStatefulElement, FlowUi::MainWindowId, elementId);
+		::FlowUi::test::requireValue(manager.eraseState(kStatefulElement, FlowUi::MainWindowId, elementId));
 	[[maybe_unused]] const State* globalRead =
-		constManager.getStatePointerConst(
-			kStatefulElement, FlowUi::MainWindowId, kGlobalStatefulInstance);
+		::FlowUi::test::requireValue(constManager.getStatePointerConst(
+			kStatefulElement, FlowUi::MainWindowId, kGlobalStatefulInstance));
 	[[maybe_unused]] State* globalMutable =
-		manager.getStatePointer(
-			kStatefulElement, FlowUi::MainWindowId, kGlobalStatefulInstance);
+		::FlowUi::test::requireValue(manager.getStatePointer(
+			kStatefulElement, FlowUi::MainWindowId, kGlobalStatefulInstance));
 	[[maybe_unused]] const bool globalErased =
-		manager.eraseState(
-			kStatefulElement, FlowUi::MainWindowId, kGlobalStatefulInstance);
+		::FlowUi::test::requireValue(manager.eraseState(
+			kStatefulElement, FlowUi::MainWindowId, kGlobalStatefulInstance));
 	[[maybe_unused]] const State* partRead =
-		constManager.getStatePointerConst(
-			kStatefulElement, FlowUi::MainWindowId, kStatefulPartInstance);
+		::FlowUi::test::requireValue(constManager.getStatePointerConst(
+			kStatefulElement, FlowUi::MainWindowId, kStatefulPartInstance));
 	[[maybe_unused]] State* partMutable =
-		manager.getStatePointer(
-			kStatefulElement, FlowUi::MainWindowId, kStatefulPartInstance);
+		::FlowUi::test::requireValue(manager.getStatePointer(
+			kStatefulElement, FlowUi::MainWindowId, kStatefulPartInstance));
 	[[maybe_unused]] const bool partErased =
-		manager.eraseState(
-			kStatefulElement, FlowUi::MainWindowId, kStatefulPartInstance);
+		::FlowUi::test::requireValue(manager.eraseState(
+			kStatefulElement, FlowUi::MainWindowId, kStatefulPartInstance));
 }
 
 void testPhaseFPublicSurfaceCompiles() {

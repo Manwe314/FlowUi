@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include <string_view>
 
 
@@ -90,7 +92,7 @@ struct SelectableSurface {
 private:
 	static bool isEnabled(const InteractionContext& context) {
 		return context.params.enabled &&
-			context.actionAvailability(context.params.onSelected).enabled;
+			FlowUi::ValueOrThrow(context.actionAvailability(context.params.onSelected)).enabled;
 	}
 
 	static bool isEnabled(const BuildContext& context) {

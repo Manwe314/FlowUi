@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Private/ApiBoundary.hpp"
+
 #include "FlowUi/Public/BuildConfig.hpp"
 
 #include <filesystem>
@@ -30,26 +32,14 @@ class App;
  */
 
 /**
- * @brief Loads image files and exposes them as FlowUi texture references.
+ * @brief App-shared image loading and generation-checked texture lookup.
  *
- * ImageManager uploads decoded image files as standalone Vulkan textures and
- * registers them under application-defined keys. The returned TextureRef can be
- * passed to FlowUi image drawing code and adjusted with TextureRef options such
- * as fitMode and tintEnabled.
- *
- * @code{.cpp}
- * FlowUi::ImageManager& images = app.images();
- * const auto registered = images.registerImage("hero/logo", "assets/images/logo.png");
- * if (!registered) {
- *     return; // Report registered.error() to the application's error handler.
- * }
- *
- * FlowUi::TextureRef logo = images.getTexture("hero/logo");
- * logo.fitMode = FlowUi::TextureFitMode::Contain;
- * @endcode
- *
- * @see @ref md_docs_2tutorials_2images__icons__textures "Images, Icons, and Texture References"
- * @see @ref md_docs_2concepts_2managers "Managers"
+ * Recoverable operations return checked Result/Status values. A successful bool
+ * payload may be false; inspect the payload only after checking the Result.
+ * Obtain App-owned managers through the checked App getter and unwrap its
+ * reference_wrapper with result->get().
+ * Returned text, metadata, resource views, and pointers remain borrowed under
+ * each operation's documented invalidation rules.
  */
 class ImageManager {
 public:
@@ -69,130 +59,236 @@ public:
 	[[nodiscard]] std::uint64_t devRevision() const noexcept { return devRevision_; }
 	/** @brief Return the number of currently published entries in this development catalogue. */
 	[[nodiscard]] std::size_t devImageCount() const noexcept { return devImages_.size(); }
-	/** @brief Visit borrowed catalogue entries synchronously; return false when a visitor stops early. */
-	bool visitDevImages(void* userData, DevImageVisitor visitor) const;
+	/**
+	 * @brief Observe development catalogue entries without invoking application operations.
+	 *
+	 * Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts named image registrations; completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to FlowUiError. Earlier callback effects, including the counter, are not rolled back on failure.
+	 *
+	 * @return Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a null visitor. A failed Result is an operational/callback error, not an incomplete-visit bool.
+	 *
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE
+	 * std::size_t count = 0;
+	 * auto result = manager.visitDevImages(&count,
+	 *     [](void* target, const FlowUi::ImageManager::DevImageView& image) {
+	 *         auto& observedCount = *static_cast<std::size_t*>(target);
+	 *         if (!image.key.empty()) {
+	 *             ++observedCount;
+	 *         }
+	 *         return true;
+	 *     });
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const bool completed = *result;
+	 * #endif
+	 * @endcode
+	 */
+	Result<bool> visitDevImages(void* userData, DevImageVisitor visitor) const noexcept;
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	/** @brief Attach a borrowed development memory recorder; null disables recording. */
 	void setDevMemoryRecorder(devSystems::DevMemoryRecorder* recorder) noexcept { devMemoryRecorder_ = recorder; }
 #endif
 	/**
-	 * @brief Load and register an image from disk under a caller-provided key.
+	 * @brief Load an encoded image and publish its sampled texture.
 	 *
-	 * The image is decoded with stb_image and uploaded as an RGBA8 sRGB Vulkan
-	 * texture. Supported file formats are the stb_image formats compiled into
-	 * FlowUi: JPEG, PNG, TGA, BMP, PSD, GIF, HDR, PIC, PNM/PPM, and PGM.
+	 * The UTF-8 file path is consumed synchronously. Supported stb_image formats are decoded as RGBA8 sRGB. The replacement is prepared before publication; replaced generations retire after their recorded GPU uses. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.
 	 *
-	 * Registering an existing key replaces the previous image resource and keeps
-	 * the key active with the new texture data.
-	 *
-	 * @param key string image key.
-	 * @param filePath Path to an image file on disk.
-	 * @return A result whose value is true for a newly registered key or false
-	 * when an existing image was replaced. Initialization, key, file, decode,
-	 * and upload failures are returned as structured errors.
-	 * @throws std::bad_alloc if allocating path or registration metadata fails.
+	 * @return Success contains true for a new key or false when an existing image was replaced; false is a completed replacement, not an error.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * const auto registered = app.images().registerImage(
-	 *     "profile/avatar",
-	 *     "assets/images/avatar.png");
-	 * if (!registered) {
-	 *     return; // Report registered.error() to the application's error handler.
+	 * const FlowUi::ResourceKey key{.name = "brand/logo"};
+	 * auto result = manager.registerImage(key, "assets/logo.png");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
 	 * }
-	 * const bool inserted = *registered;
+	 * const auto inserted = *result;
 	 * @endcode
 	 */
-	[[nodiscard]] Result<bool> registerImage(ResourceKey key, std::string_view filePath);
-	/** Load an image through a native filesystem path. */
-	[[nodiscard]] Result<bool> register_image_file(ResourceKey key, const std::filesystem::path& file_path);
-	/** Load an image through a native filesystem path under a string key. */
-	[[nodiscard]] Result<bool> register_image_file(std::string_view key, const std::filesystem::path& file_path) {
+	[[nodiscard]] Result<bool> registerImage(ResourceKey key, std::string_view filePath) noexcept;
+	/**
+	 * @brief Load an encoded image from a native filesystem path.
+	 *
+	 * Use this overload for native platform paths. Decoding/publication and lifetime rules match registerImage(). ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.
+	 *
+	 * @return Success contains true for insertion or false for a completed replacement; inspect the Result separately from that bool.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey key{.name = "brand/logo"};
+	 * const std::filesystem::path assetPath{"assets/logo.png"};
+	 * auto result = manager.register_image_file(key, assetPath);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto inserted = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<bool> register_image_file(ResourceKey key, const std::filesystem::path& file_path) noexcept;
+	/**
+	 * @brief Load an encoded image from a native filesystem path.
+	 *
+	 * Use this overload for native platform paths. Decoding/publication and lifetime rules match registerImage().
+	 *
+	 * @return Success contains true for insertion or false for a completed replacement; inspect the Result separately from that bool.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * const std::filesystem::path assetPath{"assets/logo.png"};
+	 * auto result = manager.register_image_file("brand/logo", assetPath);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto inserted = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<bool> register_image_file(std::string_view key, const std::filesystem::path& file_path) noexcept try {
 		return register_image_file(ResourceKey{.name = key}, file_path);
+	} catch (...) {
+		return unexpectedError(detail::currentExceptionError(ErrorSite::ImageRegister));
 	}
-	/** @brief Load or replace an image under an app-shared string key; filePath is UTF-8. */
-	[[nodiscard]] Result<bool> registerImage(std::string_view key, std::string_view filePath) {
+	/**
+	 * @brief Load an encoded image and publish its sampled texture.
+	 *
+	 * The UTF-8 file path is consumed synchronously. Supported stb_image formats are decoded as RGBA8 sRGB. The replacement is prepared before publication; replaced generations retire after their recorded GPU uses.
+	 *
+	 * @return Success contains true for a new key or false when an existing image was replaced; false is a completed replacement, not an error.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * auto result = manager.registerImage("brand/logo", "assets/logo.png");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto inserted = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<bool> registerImage(std::string_view key, std::string_view filePath) noexcept try {
 		return registerImage(ResourceKey{.name = key}, filePath);
+	} catch (...) {
+		return unexpectedError(detail::currentExceptionError(ErrorSite::ImageRegister));
 	}
 
 	/**
-	 * @brief Remove a registered image by key.
+	 * @brief Unregister an image and retire its texture generation.
 	 *
-	 * Removing an image retires its logical texture generation and GPU resource
-	 * after the exact last storage submission completes. TextureRef values
-	 * previously returned for the key should be treated as invalid after removal.
+	 * Previously acquired texture handles no longer identify a published generation; reacquire a texture after registering the key again. GPU resources retire after recorded uses finish. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.
 	 *
-	 * @param key string image key to remove.
-	 * @return A result whose value is true when an image was removed or false
-	 * when the key was absent. Initialization and storage failures are returned
-	 * as structured errors.
+	 * @return Success contains true if removed and false if no image was registered.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * const auto removed = app.images().removeImage("profile/avatar");
-	 * if (!removed) {
-	 *     return; // Report removed.error() to the application's error handler.
+	 * const FlowUi::ResourceKey key{.name = "brand/logo"};
+	 * auto result = manager.removeImage(key);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
 	 * }
-	 * if (*removed) {
-	 *     // The image can be registered again under the same key.
-	 * }
+	 * const auto removed = *result;
 	 * @endcode
 	 */
-	[[nodiscard]] Result<bool> removeImage(ResourceKey key);
-	/** @brief Remove an image under an app-shared string key; return false when absent. */
-	[[nodiscard]] Result<bool> removeImage(std::string_view key) {
+	[[nodiscard]] Result<bool> removeImage(ResourceKey key) noexcept;
+	/**
+	 * @brief Unregister an image and retire its texture generation.
+	 *
+	 * Previously acquired texture handles no longer identify a published generation; reacquire a texture after registering the key again. GPU resources retire after recorded uses finish.
+	 *
+	 * @return Success contains true if removed and false if no image was registered.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * auto result = manager.removeImage("brand/logo");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto removed = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<bool> removeImage(std::string_view key) noexcept try {
 		return removeImage(ResourceKey{.name = key});
+	} catch (...) {
+		return unexpectedError(detail::currentExceptionError(ErrorSite::ImageRemove));
 	}
 
 	/**
-	 * @brief Return whether an image key is registered.
+	 * @brief Test whether an image key is registered.
 	 *
-	 * This lookup does not perform file IO or GPU work. Resource-key
-	 * normalization may allocate or report an invalid key.
+	 * No file loading or GPU work is performed, but key normalization can allocate or fail. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.
 	 *
-	 * @param key string image key to test.
-	 * @retval true key is registered.
-	 * @retval false key is not registered.
+	 * @return Success contains true when registered or false when absent; an invalid key or detached manager is an error.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * if (!app.images().contains("profile/avatar")) {
-	 *     (void)app.images().registerImage("profile/avatar", "assets/images/avatar.png");
+	 * const FlowUi::ResourceKey key{.name = "brand/logo"};
+	 * auto result = manager.contains(key);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
 	 * }
+	 * const auto registered = *result;
 	 * @endcode
 	 */
-	[[nodiscard]] bool contains(ResourceKey key) const;
-	/** @brief Test whether an app-shared image string key is registered. */
-	[[nodiscard]] bool contains(std::string_view key) const {
+	[[nodiscard]] Result<bool> contains(ResourceKey key) const noexcept;
+	/**
+	 * @brief Test whether an image key is registered.
+	 *
+	 * No file loading or GPU work is performed, but key normalization can allocate or fail.
+	 *
+	 * @return Success contains true when registered or false when absent; an invalid key or detached manager is an error.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * auto result = manager.contains("brand/logo");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto registered = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<bool> contains(std::string_view key) const noexcept try {
 		return contains(ResourceKey{.name = key});
+	} catch (...) {
+		return unexpectedError(detail::currentExceptionError(ErrorSite::ImageLookup));
 	}
 
 	/**
-	 * @brief Return the texture reference for a registered image key.
+	 * @brief Resolve an image key to a TextureRef value.
 	 *
-	 * The returned TextureRef contains a generation-checked logical handle and
-	 * source image dimensions. If key is missing, this function returns an
-	 * invalid handle and reports the missing key once. SkipVisual marks that result
-	 * to be skipped; otherwise the renderer uses its fallback texture. The result and its source
-	 * key borrow manager-owned metadata; removal invalidates the handle.
+	 * TextureRef is a value with borrowed source-key metadata and generation-checked resource identity, not ownership of a texture. Reacquire after replacement/removal and keep borrowed metadata within the App lifetime. fit and tint are caller presentation settings. ResourceKey overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.
 	 *
-	 * Application code may adjust TextureRef fields such as fitMode and
-	 * tintEnabled before passing it to image drawing code. Manager-owned handle and
-	 * UV fields should be left unchanged.
-	 *
-	 * @param key string image key to resolve.
-	 * @return TextureRef for key, or an invalid fallback reference when missing.
+	 * @return A missing key is a successful unavailable reference with an invalid handle. MissingVisualPolicy::SkipVisual requests omission; the fallback policy requests the renderer fallback, and the missing-key diagnostic is reported once.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
 	 *
 	 * @code{.cpp}
-	 * FlowUi::TextureRef avatar = app.images().getTexture("profile/avatar");
-	 * avatar.fitMode = FlowUi::TextureFitMode::Cover;
-	 * avatar.tintEnabled = false;
+	 * const FlowUi::ResourceKey key{.name = "brand/logo"};
+	 * auto result = manager.getTexture(key);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto texture = *result;
 	 * @endcode
-	 *
-	 * @see @ref md_docs_2tutorials_2images__icons__textures "Images, Icons, and Texture References"
 	 */
-	[[nodiscard]] TextureRef getTexture(ResourceKey key) const;
-	/** @brief Resolve an app-shared image string key using the configured missing-visual policy. */
-	[[nodiscard]] TextureRef getTexture(std::string_view key) const {
+	[[nodiscard]] Result<TextureRef> getTexture(ResourceKey key) const noexcept;
+	/**
+	 * @brief Resolve an image key to a TextureRef value.
+	 *
+	 * TextureRef is a value with borrowed source-key metadata and generation-checked resource identity, not ownership of a texture. Reacquire after replacement/removal and keep borrowed metadata within the App lifetime. fit and tint are caller presentation settings.
+	 *
+	 * @return A missing key is a successful unavailable reference with an invalid handle. MissingVisualPolicy::SkipVisual requests omission; the fallback policy requests the renderer fallback, and the missing-key diagnostic is reported once.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * auto result = manager.getTexture("brand/logo");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto texture = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<TextureRef> getTexture(std::string_view key) const noexcept try {
 		return getTexture(ResourceKey{.name = key});
+	} catch (...) {
+		return unexpectedError(detail::currentExceptionError(ErrorSite::ImageLookup));
 	}
 
 private:

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include <algorithm>
 #include <cstdint>
 #include <optional>
@@ -165,7 +167,7 @@ struct SplitterHandle {
 	 * context Borrowed context valid for this callback only.
 	 */
 	static void buildElement(BuildContext& context) {
-		const auto& theme = context.uiManager.theme<FSELTheme>();
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get();
 		const auto& splitterTheme = theme.splitterHandleTheme;
 		const auto& state = context.state();
 		const float thickness = std::max(context.params.thickness, 1.0f);
@@ -230,12 +232,12 @@ struct SplitterHandle {
 		};
 		CLAY(rootId, root) {
 			if (separate_surfaces) {
-				CLAY(context.clayID("leading-surface"),
+				CLAY(FlowUi::ValueOrThrow(context.clayID("leading-surface")),
 					 surface(context.params.leadingSurfaceColor.value_or(Clay_Color{})));
 			}
-			CLAY(context.clayID("visual"), visual);
+			CLAY(FlowUi::ValueOrThrow(context.clayID("visual")), visual);
 			if (separate_surfaces) {
-				CLAY(context.clayID("trailing-surface"),
+				CLAY(FlowUi::ValueOrThrow(context.clayID("trailing-surface")),
 					 surface(context.params.trailingSurfaceColor.value_or(Clay_Color{})));
 			}
 		}
@@ -247,7 +249,7 @@ private:
 	}
 
 	static void requestResizeCursor(InteractionContext& context) {
-		const auto& theme = context.uiManager.theme<FSELTheme>();
+		const auto& theme = FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get();
 		const auto& splitterTheme = theme.splitterHandleTheme;
 		const CursorType cursor =
 			context.params.axis == SplitterAxis::Horizontal

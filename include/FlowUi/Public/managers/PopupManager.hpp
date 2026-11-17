@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Private/ApiBoundary.hpp"
+
 #include "FlowUi/Public/BuildConfig.hpp"
 
 #include <cstdint>
@@ -28,6 +30,24 @@ namespace devSystems { class MemorySampleSink; }
  */
 class PopupManager {
 public:
+	/**
+	 * @brief Read a caught failure requiring cancellation of the popup frame.
+	 *
+	 * UiManager checks the latch during frame completion.
+	 *
+	 * @return Success means no popup frame error has been latched; an error requires cancellation of the surrounding frame.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * auto result = manager.frameStatus();
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * @endcode
+	 */
+	[[nodiscard]] Status frameStatus() const noexcept {
+		return frameError_ ? Status{unexpectedError(frameError_)} : Status{};
+	}
 #if FLOW_UI_DEV_MODE
 	/** Whether a visible popup owns keyboard navigation in the preceding committed frame. */
 	[[nodiscard]] bool has_open_popups() const noexcept;
@@ -37,43 +57,148 @@ public:
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
 #endif
 	/**
-	 * @brief Submit an open popup for the active window frame.
-	 * @param popupId Stable popup identity in this window; zero yields an empty frame.
-	 * @param request Anchor, placement, layer, sizing, and dismissal behavior.
-	 * @return Placement/visibility information, or PopupFrameInactive or a
-	 * duplicate-submission error according to the configured policy. A successful
-	 * frame may be hidden or measure-only; inspect it before drawing contents.
+	 * @brief Submit an open popup for the active window UI build.
+	 *
+	 * Request each popup once per active build. Emit the floating root when visible or measureOnly, using its floating configuration. Placement/dismissal participate in commit; canceling the build rolls them back. Default unknown-size policy uses a hidden measurement frame.
+	 *
+	 * @return Success contains PopupFrame, which may be hidden or measureOnly; a zero ID yields an empty frame. Inactive frame or configured duplicate/placement failures return errors.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * FlowUi::PopupRequest request{};
+	 * request.anchor = FlowUi::PopupAnchor::parent();
+	 * request.expectedSize = Clay_Dimensions{240.0f, 160.0f};
+	 * auto result = manager.request(fieldId, request);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto popup = *result;
+	 * @endcode
 	 */
-	[[nodiscard]] Result<PopupFrame> request(FlowElementID popupId, const PopupRequest& request);
-	/** @brief Submit a popup addressed by a global ID; the request() frame contract applies. */
-	[[nodiscard]] Result<PopupFrame> request(GlobalFlowID popupId, const PopupRequest& request);
-	/** @brief Submit a popup addressed by a semantic part ID; the request() frame contract applies. */
-	[[nodiscard]] Result<PopupFrame> request(FlowElementPartID popupId, const PopupRequest& request);
+	[[nodiscard]] Result<PopupFrame> request(FlowElementID popupId, const PopupRequest& request) noexcept;
+	/**
+	 * @brief Submit an open popup for the active window UI build.
+	 *
+	 * Request each popup once per active build. Emit the floating root when visible or measureOnly, using its floating configuration. Placement/dismissal participate in commit; canceling the build rolls them back. Default unknown-size policy uses a hidden measurement frame.
+	 *
+	 * @return Success contains PopupFrame, which may be hidden or measureOnly; a zero ID yields an empty frame. Inactive frame or configured duplicate/placement failures return errors.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * FlowUi::PopupRequest request{};
+	 * request.anchor = FlowUi::PopupAnchor::parent();
+	 * request.expectedSize = Clay_Dimensions{240.0f, 160.0f};
+	 * auto result = manager.request(fieldId, request);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto popup = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<PopupFrame> request(GlobalFlowID popupId, const PopupRequest& request) noexcept;
+	/**
+	 * @brief Submit an open popup for the active window UI build.
+	 *
+	 * Request each popup once per active build. Emit the floating root when visible or measureOnly, using its floating configuration. Placement/dismissal participate in commit; canceling the build rolls them back. Default unknown-size policy uses a hidden measurement frame.
+	 *
+	 * @return Success contains PopupFrame, which may be hidden or measureOnly; a zero ID yields an empty frame. Inactive frame or configured duplicate/placement failures return errors.
+	 * Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.
+	 *
+	 * @code{.cpp}
+	 * FlowUi::PopupRequest request{};
+	 * request.anchor = FlowUi::PopupAnchor::parent();
+	 * request.expectedSize = Clay_Dimensions{240.0f, 160.0f};
+	 * auto result = manager.request(fieldId, request);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const auto popup = *result;
+	 * @endcode
+	 */
+	[[nodiscard]] Result<PopupFrame> request(FlowElementPartID popupId, const PopupRequest& request) noexcept;
 
 	/**
-	 * @brief Mark a popup dismissed and record a consumable dismissal notification.
-	 * @param popupId Popup identity; zero is ignored.
-	 * During a build, changes commit with that frame. Outside a build they update
-	 * committed state immediately. An already submitted popup becomes hidden.
+	 * @brief Dismiss a popup and record a consumable notification.
+	 *
+	 * During a build the change commits with the frame and is rolled back on cancel. Outside a build it commits immediately. An already submitted popup becomes hidden.
+	 *
+	 * @post The dismissal request has completed; zero IDs are ignored.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * manager.dismiss(fieldId);
+	 * @endcode
 	 */
 	void dismiss(FlowElementID popupId);
-	/** @brief Dismiss a popup addressed by a global ID. */
+	/**
+	 * @brief Dismiss a popup and record a consumable notification.
+	 *
+	 * During a build the change commits with the frame and is rolled back on cancel. Outside a build it commits immediately. An already submitted popup becomes hidden.
+	 *
+	 * @post The dismissal request has completed; zero IDs are ignored.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * manager.dismiss(fieldId);
+	 * @endcode
+	 */
 	void dismiss(GlobalFlowID popupId);
-	/** @brief Dismiss a popup addressed by a semantic part ID. */
+	/**
+	 * @brief Dismiss a popup and record a consumable notification.
+	 *
+	 * During a build the change commits with the frame and is rolled back on cancel. Outside a build it commits immediately. An already submitted popup becomes hidden.
+	 *
+	 * @post The dismissal request has completed; zero IDs are ignored.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * manager.dismiss(fieldId);
+	 * @endcode
+	 */
 	void dismiss(FlowElementPartID popupId);
 
 	/**
-	 * @brief Read and clear a pending dismissal notification for popupId.
-	 * @return True once per pending dismissal; false for zero, unknown, or
-	 * already consumed IDs. Reading during a canceled build is rolled back.
+	 * @brief Read and consume one pending popup dismissal.
+	 *
+	 * Consumption during a canceled build is rolled back.
+	 *
+	 * @return true once per notification, or false for zero, unknown, or already-consumed IDs.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * const auto dismissed = manager.consumeDismissed(fieldId);
+	 * @endcode
 	 */
 	[[nodiscard]] bool consumeDismissed(FlowElementID popupId);
-	/** @brief Consume a dismissal notification addressed by a global ID. */
+	/**
+	 * @brief Read and consume one pending popup dismissal.
+	 *
+	 * Consumption during a canceled build is rolled back.
+	 *
+	 * @return true once per notification, or false for zero, unknown, or already-consumed IDs.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * const auto dismissed = manager.consumeDismissed(fieldId);
+	 * @endcode
+	 */
 	[[nodiscard]] bool consumeDismissed(GlobalFlowID popupId);
-	/** @brief Consume a dismissal notification addressed by a semantic part ID. */
+	/**
+	 * @brief Read and consume one pending popup dismissal.
+	 *
+	 * Consumption during a canceled build is rolled back.
+	 *
+	 * @return true once per notification, or false for zero, unknown, or already-consumed IDs.
+	 * @throws FlowUiException for library validation/storage failures. Allocation and other operation exceptions propagate unchanged. Every exception latches frame failure; abandon the current frame.
+	 *
+	 * @code{.cpp}
+	 * const auto dismissed = manager.consumeDismissed(fieldId);
+	 * @endcode
+	 */
 	[[nodiscard]] bool consumeDismissed(FlowElementPartID popupId);
 
 private:
+	mutable FlowUiError frameError_{};
 	friend class UiManager;
 
 	void init(detail::storage::IStorageSystem& storage, WindowId window, const ErrorPolicy& policy);

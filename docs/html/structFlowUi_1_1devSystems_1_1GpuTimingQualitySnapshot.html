@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,34 +106,207 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::GpuTimingQualitySnapshot Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevGpuTiming_8hpp_source.html">DevGpuTiming.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a3d40bf14ce91d6844b2f44f5ee3425cf" id="r_a3d40bf14ce91d6844b2f44f5ee3425cf"><td class="memItemLeft"><a id="a3d40bf14ce91d6844b2f44f5ee3425cf" name="a3d40bf14ce91d6844b2f44f5ee3425cf"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>resolvedSubmissions</b> = 0u</td></tr>
-<tr class="memitem:af03fc0a0832899aae303b0a167030576" id="r_af03fc0a0832899aae303b0a167030576"><td class="memItemLeft"><a id="af03fc0a0832899aae303b0a167030576" name="af03fc0a0832899aae303b0a167030576"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>recordedZones</b> = 0u</td></tr>
-<tr class="memitem:aff1b0f28a3d4bf8c9ad680feacfd78d2" id="r_aff1b0f28a3d4bf8c9ad680feacfd78d2"><td class="memItemLeft"><a id="aff1b0f28a3d4bf8c9ad680feacfd78d2" name="aff1b0f28a3d4bf8c9ad680feacfd78d2"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>truncatedZones</b> = 0u</td></tr>
-<tr class="memitem:a1b7b84a11075e0bd1b827a1449feb1d4" id="r_a1b7b84a11075e0bd1b827a1449feb1d4"><td class="memItemLeft"><a id="a1b7b84a11075e0bd1b827a1449feb1d4" name="a1b7b84a11075e0bd1b827a1449feb1d4"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>unavailableQueries</b> = 0u</td></tr>
-<tr class="memitem:a3d9e3c4e1efd8e0e53c43f70640fa20e" id="r_a3d9e3c4e1efd8e0e53c43f70640fa20e"><td class="memItemLeft"><a id="a3d9e3c4e1efd8e0e53c43f70640fa20e" name="a3d9e3c4e1efd8e0e53c43f70640fa20e"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>queryPoolFailures</b> = 0u</td></tr>
-<tr class="memitem:a981662efc018c1fd0e5eddcf0563539e" id="r_a981662efc018c1fd0e5eddcf0563539e"><td class="memItemLeft"><a id="a981662efc018c1fd0e5eddcf0563539e" name="a981662efc018c1fd0e5eddcf0563539e"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>queryReadFailures</b> = 0u</td></tr>
-<tr class="memitem:a9341cf456e2ef695ba620dbef4312a67" id="r_a9341cf456e2ef695ba620dbef4312a67"><td class="memItemLeft"><a id="a9341cf456e2ef695ba620dbef4312a67" name="a9341cf456e2ef695ba620dbef4312a67"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>droppedRecords</b> = 0u</td></tr>
-<tr class="memitem:afc00d62fb65ef8d84cb1d72e361fc943" id="r_afc00d62fb65ef8d84cb1d72e361fc943"><td class="memItemLeft"><a id="afc00d62fb65ef8d84cb1d72e361fc943" name="afc00d62fb65ef8d84cb1d72e361fc943"></a>
-bool&#160;</td><td class="memItemRight"><b>supported</b> = false</td></tr>
-<tr class="memitem:a0cb2a9270079979f02e2983858dc504e" id="r_a0cb2a9270079979f02e2983858dc504e"><td class="memItemLeft"><a id="a0cb2a9270079979f02e2983858dc504e" name="a0cb2a9270079979f02e2983858dc504e"></a>
-bool&#160;</td><td class="memItemRight"><b>synchronization2Available</b> = false</td></tr>
-<tr class="memitem:ad573c48c89ffd38fbfaea099af311dfe" id="r_ad573c48c89ffd38fbfaea099af311dfe"><td class="memItemLeft"><a id="ad573c48c89ffd38fbfaea099af311dfe" name="ad573c48c89ffd38fbfaea099af311dfe"></a>
-bool&#160;</td><td class="memItemRight"><b>calibrated</b> = false</td></tr>
-<tr class="memitem:a05d44b7fd8deff517f839476b9607bcf" id="r_a05d44b7fd8deff517f839476b9607bcf"><td class="memItemLeft"><a id="a05d44b7fd8deff517f839476b9607bcf" name="a05d44b7fd8deff517f839476b9607bcf"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>timestampValidBits</b> = 0u</td></tr>
-<tr class="memitem:acef204d29287ac1786c1bbe8ffce89d7" id="r_acef204d29287ac1786c1bbe8ffce89d7"><td class="memItemLeft"><a id="acef204d29287ac1786c1bbe8ffce89d7" name="acef204d29287ac1786c1bbe8ffce89d7"></a>
-double&#160;</td><td class="memItemRight"><b>timestampPeriodNs</b> = 0.0</td></tr>
+<tr class="memitem:a3d40bf14ce91d6844b2f44f5ee3425cf" id="r_a3d40bf14ce91d6844b2f44f5ee3425cf"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a3d40bf14ce91d6844b2f44f5ee3425cf">resolvedSubmissions</a> = 0u</td></tr>
+<tr class="memitem:af03fc0a0832899aae303b0a167030576" id="r_af03fc0a0832899aae303b0a167030576"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#af03fc0a0832899aae303b0a167030576">recordedZones</a> = 0u</td></tr>
+<tr class="memitem:aff1b0f28a3d4bf8c9ad680feacfd78d2" id="r_aff1b0f28a3d4bf8c9ad680feacfd78d2"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#aff1b0f28a3d4bf8c9ad680feacfd78d2">truncatedZones</a> = 0u</td></tr>
+<tr class="memitem:a1b7b84a11075e0bd1b827a1449feb1d4" id="r_a1b7b84a11075e0bd1b827a1449feb1d4"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a1b7b84a11075e0bd1b827a1449feb1d4">unavailableQueries</a> = 0u</td></tr>
+<tr class="memitem:a3d9e3c4e1efd8e0e53c43f70640fa20e" id="r_a3d9e3c4e1efd8e0e53c43f70640fa20e"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a3d9e3c4e1efd8e0e53c43f70640fa20e">queryPoolFailures</a> = 0u</td></tr>
+<tr class="memitem:a981662efc018c1fd0e5eddcf0563539e" id="r_a981662efc018c1fd0e5eddcf0563539e"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a981662efc018c1fd0e5eddcf0563539e">queryReadFailures</a> = 0u</td></tr>
+<tr class="memitem:a9341cf456e2ef695ba620dbef4312a67" id="r_a9341cf456e2ef695ba620dbef4312a67"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a9341cf456e2ef695ba620dbef4312a67">droppedRecords</a> = 0u</td></tr>
+<tr class="memitem:afc00d62fb65ef8d84cb1d72e361fc943" id="r_afc00d62fb65ef8d84cb1d72e361fc943"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#afc00d62fb65ef8d84cb1d72e361fc943">supported</a> = false</td></tr>
+<tr class="memitem:a0cb2a9270079979f02e2983858dc504e" id="r_a0cb2a9270079979f02e2983858dc504e"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a0cb2a9270079979f02e2983858dc504e">synchronization2Available</a> = false</td></tr>
+<tr class="memitem:ad573c48c89ffd38fbfaea099af311dfe" id="r_ad573c48c89ffd38fbfaea099af311dfe"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ad573c48c89ffd38fbfaea099af311dfe">calibrated</a> = false</td></tr>
+<tr class="memitem:a05d44b7fd8deff517f839476b9607bcf" id="r_a05d44b7fd8deff517f839476b9607bcf"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a05d44b7fd8deff517f839476b9607bcf">timestampValidBits</a> = 0u</td></tr>
+<tr class="memitem:acef204d29287ac1786c1bbe8ffce89d7" id="r_acef204d29287ac1786c1bbe8ffce89d7"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#acef204d29287ac1786c1bbe8ffce89d7">timestampPeriodNs</a> = 0.0</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>GPU capability and query-quality snapshot. Uncalibrated timestamps cannot be placed directly on the CPU timeline. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="ad573c48c89ffd38fbfaea099af311dfe" name="ad573c48c89ffd38fbfaea099af311dfe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad573c48c89ffd38fbfaea099af311dfe">&#9670;&#160;</a></span>calibrated</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::GpuTimingQualitySnapshot::calibrated = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether device timestamps can be aligned with the CPU capture clock. </p>
+
+</div>
+</div>
+<a id="a9341cf456e2ef695ba620dbef4312a67" name="a9341cf456e2ef695ba620dbef4312a67"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9341cf456e2ef695ba620dbef4312a67">&#9670;&#160;</a></span>droppedRecords</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuTimingQualitySnapshot::droppedRecords = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of dropped records. </p>
+
+</div>
+</div>
+<a id="a3d9e3c4e1efd8e0e53c43f70640fa20e" name="a3d9e3c4e1efd8e0e53c43f70640fa20e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3d9e3c4e1efd8e0e53c43f70640fa20e">&#9670;&#160;</a></span>queryPoolFailures</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuTimingQualitySnapshot::queryPoolFailures = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of query pool failures. </p>
+
+</div>
+</div>
+<a id="a981662efc018c1fd0e5eddcf0563539e" name="a981662efc018c1fd0e5eddcf0563539e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a981662efc018c1fd0e5eddcf0563539e">&#9670;&#160;</a></span>queryReadFailures</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuTimingQualitySnapshot::queryReadFailures = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of query read failures. </p>
+
+</div>
+</div>
+<a id="af03fc0a0832899aae303b0a167030576" name="af03fc0a0832899aae303b0a167030576"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af03fc0a0832899aae303b0a167030576">&#9670;&#160;</a></span>recordedZones</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuTimingQualitySnapshot::recordedZones = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of recorded zones. </p>
+
+</div>
+</div>
+<a id="a3d40bf14ce91d6844b2f44f5ee3425cf" name="a3d40bf14ce91d6844b2f44f5ee3425cf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3d40bf14ce91d6844b2f44f5ee3425cf">&#9670;&#160;</a></span>resolvedSubmissions</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuTimingQualitySnapshot::resolvedSubmissions = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of resolved submissions. </p>
+
+</div>
+</div>
+<a id="afc00d62fb65ef8d84cb1d72e361fc943" name="afc00d62fb65ef8d84cb1d72e361fc943"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afc00d62fb65ef8d84cb1d72e361fc943">&#9670;&#160;</a></span>supported</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::GpuTimingQualitySnapshot::supported = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether the renderer queue supports timestamp capture. </p>
+
+</div>
+</div>
+<a id="a0cb2a9270079979f02e2983858dc504e" name="a0cb2a9270079979f02e2983858dc504e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0cb2a9270079979f02e2983858dc504e">&#9670;&#160;</a></span>synchronization2Available</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::GpuTimingQualitySnapshot::synchronization2Available = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether synchronization2 timestamp commands are available. </p>
+
+</div>
+</div>
+<a id="acef204d29287ac1786c1bbe8ffce89d7" name="acef204d29287ac1786c1bbe8ffce89d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acef204d29287ac1786c1bbe8ffce89d7">&#9670;&#160;</a></span>timestampPeriodNs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double FlowUi::devSystems::GpuTimingQualitySnapshot::timestampPeriodNs = 0.0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Device timestamp period in nanoseconds per tick. </p>
+
+</div>
+</div>
+<a id="a05d44b7fd8deff517f839476b9607bcf" name="a05d44b7fd8deff517f839476b9607bcf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a05d44b7fd8deff517f839476b9607bcf">&#9670;&#160;</a></span>timestampValidBits</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::GpuTimingQualitySnapshot::timestampValidBits = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of valid bits in raw device timestamps. </p>
+
+</div>
+</div>
+<a id="aff1b0f28a3d4bf8c9ad680feacfd78d2" name="aff1b0f28a3d4bf8c9ad680feacfd78d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aff1b0f28a3d4bf8c9ad680feacfd78d2">&#9670;&#160;</a></span>truncatedZones</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuTimingQualitySnapshot::truncatedZones = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of truncated zones. </p>
+
+</div>
+</div>
+<a id="a1b7b84a11075e0bd1b827a1449feb1d4" name="a1b7b84a11075e0bd1b827a1449feb1d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1b7b84a11075e0bd1b827a1449feb1d4">&#9670;&#160;</a></span>unavailableQueries</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuTimingQualitySnapshot::unavailableQueries = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of unavailable queries. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/timing/<a class="el" href="DevGpuTiming_8hpp_source.html">DevGpuTiming.hpp</a></li>
 </ul>
@@ -150,7 +323,7 @@ double&#160;</td><td class="memItemRight"><b>timestampPeriodNs</b> = 0.0</td></t
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1GpuTimingQualitySnapshot.html">GpuTimingQualitySnapshot</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1GpuTimingQualitySnapshot.html">GpuTimingQualitySnapshot</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

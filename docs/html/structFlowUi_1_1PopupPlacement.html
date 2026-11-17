@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,16 +106,63 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::PopupPlacement Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="PopupTypes_8hpp_source.html">PopupTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:adb4c458f9c0be7b01b83830cf451eedb" id="r_adb4c458f9c0be7b01b83830cf451eedb"><td class="memItemLeft"><a id="adb4c458f9c0be7b01b83830cf451eedb" name="adb4c458f9c0be7b01b83830cf451eedb"></a>
-PopupAttachmentPoint&#160;</td><td class="memItemRight"><b>anchorPoint</b> = PopupAttachmentPoint::BottomLeft</td></tr>
-<tr class="memitem:afd90ebf346c1c7004897d658947e23f6" id="r_afd90ebf346c1c7004897d658947e23f6"><td class="memItemLeft"><a id="afd90ebf346c1c7004897d658947e23f6" name="afd90ebf346c1c7004897d658947e23f6"></a>
-PopupAttachmentPoint&#160;</td><td class="memItemRight"><b>popupPoint</b> = PopupAttachmentPoint::TopLeft</td></tr>
-<tr class="memitem:a613696492c1d1b77fee30744089bdcc1" id="r_a613696492c1d1b77fee30744089bdcc1"><td class="memItemLeft"><a id="a613696492c1d1b77fee30744089bdcc1" name="a613696492c1d1b77fee30744089bdcc1"></a>
-Clay_Vector2&#160;</td><td class="memItemRight"><b>offset</b> {}</td></tr>
+<tr class="memitem:adb4c458f9c0be7b01b83830cf451eedb" id="r_adb4c458f9c0be7b01b83830cf451eedb"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a69b894db58c2baf3587d43a8670d833c">PopupAttachmentPoint</a>&#160;</td><td class="memItemRight"><a class="el" href="#adb4c458f9c0be7b01b83830cf451eedb">anchorPoint</a> = <a class="el" href="namespaceFlowUi.html#a69b894db58c2baf3587d43a8670d833ca98e5a1c44509157ebcaf46c515c78875">PopupAttachmentPoint::BottomLeft</a></td></tr>
+<tr class="memitem:afd90ebf346c1c7004897d658947e23f6" id="r_afd90ebf346c1c7004897d658947e23f6"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a69b894db58c2baf3587d43a8670d833c">PopupAttachmentPoint</a>&#160;</td><td class="memItemRight"><a class="el" href="#afd90ebf346c1c7004897d658947e23f6">popupPoint</a> = <a class="el" href="namespaceFlowUi.html#a69b894db58c2baf3587d43a8670d833cab32beb056fbfe36afbabc6c88c81ab36">PopupAttachmentPoint::TopLeft</a></td></tr>
+<tr class="memitem:a613696492c1d1b77fee30744089bdcc1" id="r_a613696492c1d1b77fee30744089bdcc1"><td class="memItemLeft">Clay_Vector2&#160;</td><td class="memItemRight"><a class="el" href="#a613696492c1d1b77fee30744089bdcc1">offset</a> {}</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Align anchorPoint on the anchor with popupPoint on the popup, then add offset in layout pixels. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="adb4c458f9c0be7b01b83830cf451eedb" name="adb4c458f9c0be7b01b83830cf451eedb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adb4c458f9c0be7b01b83830cf451eedb">&#9670;&#160;</a></span>anchorPoint</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a69b894db58c2baf3587d43a8670d833c">PopupAttachmentPoint</a> FlowUi::PopupPlacement::anchorPoint = <a class="el" href="namespaceFlowUi.html#a69b894db58c2baf3587d43a8670d833ca98e5a1c44509157ebcaf46c515c78875">PopupAttachmentPoint::BottomLeft</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Reference point on the anchor rectangle. </p>
+
+</div>
+</div>
+<a id="a613696492c1d1b77fee30744089bdcc1" name="a613696492c1d1b77fee30744089bdcc1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a613696492c1d1b77fee30744089bdcc1">&#9670;&#160;</a></span>offset</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Clay_Vector2 FlowUi::PopupPlacement::offset {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Additional offset in logical layout pixels. </p>
+
+</div>
+</div>
+<a id="afd90ebf346c1c7004897d658947e23f6" name="afd90ebf346c1c7004897d658947e23f6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afd90ebf346c1c7004897d658947e23f6">&#9670;&#160;</a></span>popupPoint</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a69b894db58c2baf3587d43a8670d833c">PopupAttachmentPoint</a> FlowUi::PopupPlacement::popupPoint = <a class="el" href="namespaceFlowUi.html#a69b894db58c2baf3587d43a8670d833cab32beb056fbfe36afbabc6c88c81ab36">PopupAttachmentPoint::TopLeft</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Point on the popup aligned with the anchor reference point. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="PopupTypes_8hpp_source.html">PopupTypes.hpp</a></li>
 </ul>
@@ -132,7 +179,7 @@ Clay_Vector2&#160;</td><td class="memItemRight"><b>offset</b> {}</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1PopupPlacement.html">PopupPlacement</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1PopupPlacement.html">PopupPlacement</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

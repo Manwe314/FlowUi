@@ -1,9 +1,11 @@
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticLocalTransport.hpp"
 
 #include <algorithm>
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <cstdio>
 #include <cstring>
 #include <mutex>
 #include <thread>
@@ -290,6 +292,7 @@ void close_socket(int socket_descriptor) noexcept {
 } // namespace
 
 struct AgenticLocalServer::Impl {
+	inline static thread_local Impl* executingServer = nullptr;
 	struct Worker {
 		std::thread thread;
 #ifdef _WIN32
@@ -303,11 +306,16 @@ struct AgenticLocalServer::Impl {
 	AgenticLocalHandler handler{};
 	std::array<Worker, local_worker_count> workers;
 	std::atomic<bool> active{false};
+	std::atomic<bool> workerFailed{false};
 #ifndef _WIN32
 	int listener = -1;
 #endif
 
-	void run(Worker& worker) noexcept {
+	void run(Worker& worker) noexcept try {
+		struct HandlerThreadScope {
+			Impl* previous;
+			~HandlerThreadScope() noexcept { executingServer = previous; }
+		} handlerThreadScope{std::exchange(executingServer, this)};
 #ifdef _WIN32
 		while (active.load()) {
 			const auto pipe = worker.connection.load();
@@ -389,12 +397,17 @@ struct AgenticLocalServer::Impl {
 			}
 		}
 #endif
+	} catch (...) {
+		workerFailed.store(true);
+		active.store(false);
 	}
 };
 
 AgenticLocalServer::AgenticLocalServer() : impl_(std::make_unique<Impl>()) {}
 AgenticLocalServer::~AgenticLocalServer() {
-	stop();
+	const auto stopped = stop();
+	if (!stopped)
+		std::fputs("FlowUi agentic local transport shutdown incomplete\n", stderr);
 }
 
 Status AgenticLocalServer::start(const AgenticLocalEndpoint& endpoint,
@@ -402,7 +415,9 @@ Status AgenticLocalServer::start(const AgenticLocalEndpoint& endpoint,
 	try {
 		if (!valid_endpoint(endpoint) || !handler)
 			return transport_error(ErrorCode::AgenticInvalidRequest);
-		if (impl_->active.load())
+		if (impl_->active.load() ||
+			std::any_of(impl_->workers.begin(), impl_->workers.end(),
+				[](const auto& worker) { return worker.thread.joinable(); }))
 			return transport_error(ErrorCode::AgenticBusy);
 		impl_->endpoint = endpoint;
 		impl_->handler = std::move(handler);
@@ -433,7 +448,9 @@ Status AgenticLocalServer::start(const AgenticLocalEndpoint& endpoint,
 		}
 		LocalFree(security_descriptor);
 		if (creation_error != ERROR_SUCCESS) {
-			stop();
+			const auto stopped = stop();
+			if (!stopped)
+				return stopped;
 			return transport_error(ErrorCode::AgenticUnavailable, creation_error);
 		}
 #else
@@ -472,7 +489,9 @@ Status AgenticLocalServer::start(const AgenticLocalEndpoint& endpoint,
 				worker.thread = std::thread(
 					[implementation = impl_.get(), slot = &worker] { implementation->run(*slot); });
 		} catch (...) {
-			stop();
+			const auto stopped = stop();
+			if (!stopped)
+				return stopped;
 			return transport_error(ErrorCode::AgenticUnavailable);
 		}
 		return {};
@@ -481,9 +500,11 @@ Status AgenticLocalServer::start(const AgenticLocalEndpoint& endpoint,
 	}
 }
 
-void AgenticLocalServer::stop() noexcept {
+Status AgenticLocalServer::stop() noexcept try {
 	if (!impl_)
-		return;
+		return {};
+	if (Impl::executingServer == impl_.get())
+		return transport_error(ErrorCode::AgenticBusy);
 	impl_->active.store(false);
 #ifdef _WIN32
 	for (auto& worker : impl_->workers) {
@@ -520,6 +541,11 @@ void AgenticLocalServer::stop() noexcept {
 	}
 #endif
 	impl_->handler = {};
+	if (impl_->workerFailed.exchange(false))
+		return transport_error(ErrorCode::AgenticUnavailable);
+	return {};
+} catch (...) {
+	return unexpectedError(FlowUi::detail::currentExceptionError(ErrorSite::AgenticCommand));
 }
 
 bool AgenticLocalServer::running() const noexcept {

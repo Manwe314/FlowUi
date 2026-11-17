@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,16 +106,63 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::TimingWindowReport Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevTimingReporting_8hpp_source.html">DevTimingReporting.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a5f083d0a828dd853d61790cf47a3673d" id="r_a5f083d0a828dd853d61790cf47a3673d"><td class="memItemLeft"><a id="a5f083d0a828dd853d61790cf47a3673d" name="a5f083d0a828dd853d61790cf47a3673d"></a>
-WindowId&#160;</td><td class="memItemRight"><b>window</b> = InvalidWindowId</td></tr>
-<tr class="memitem:aeb31e23311e7c710fbc4ebeb70ac4837" id="r_aeb31e23311e7c710fbc4ebeb70ac4837"><td class="memItemLeft"><a id="aeb31e23311e7c710fbc4ebeb70ac4837" name="aeb31e23311e7c710fbc4ebeb70ac4837"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1TimingFrameReport.html">TimingFrameReport</a> &gt;&#160;</td><td class="memItemRight"><b>frames</b> {}</td></tr>
-<tr class="memitem:a14c3ed6760fc99c8301936b663e4f33d" id="r_a14c3ed6760fc99c8301936b663e4f33d"><td class="memItemLeft"><a id="a14c3ed6760fc99c8301936b663e4f33d" name="a14c3ed6760fc99c8301936b663e4f33d"></a>
-bool&#160;</td><td class="memItemRight"><b>occupied</b> = false</td></tr>
+<tr class="memitem:a5f083d0a828dd853d61790cf47a3673d" id="r_a5f083d0a828dd853d61790cf47a3673d"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5f083d0a828dd853d61790cf47a3673d">window</a> = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td></tr>
+<tr class="memitem:aeb31e23311e7c710fbc4ebeb70ac4837" id="r_aeb31e23311e7c710fbc4ebeb70ac4837"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1TimingFrameReport.html">TimingFrameReport</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aeb31e23311e7c710fbc4ebeb70ac4837">frames</a> {}</td></tr>
+<tr class="memitem:a14c3ed6760fc99c8301936b663e4f33d" id="r_a14c3ed6760fc99c8301936b663e4f33d"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a14c3ed6760fc99c8301936b663e4f33d">occupied</a> = false</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Owned frame evidence for one window within an app tick. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="aeb31e23311e7c710fbc4ebeb70ac4837" name="aeb31e23311e7c710fbc4ebeb70ac4837"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb31e23311e7c710fbc4ebeb70ac4837">&#9670;&#160;</a></span>frames</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="structFlowUi_1_1devSystems_1_1TimingFrameReport.html">TimingFrameReport</a>&gt; FlowUi::devSystems::TimingWindowReport::frames {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned timing evidence for this window's frames within the application tick. </p>
+
+</div>
+</div>
+<a id="a14c3ed6760fc99c8301936b663e4f33d" name="a14c3ed6760fc99c8301936b663e4f33d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a14c3ed6760fc99c8301936b663e4f33d">&#9670;&#160;</a></span>occupied</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::TimingWindowReport::occupied = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether this reusable ring slot currently contains a valid report. </p>
+
+</div>
+</div>
+<a id="a5f083d0a828dd853d61790cf47a3673d" name="a5f083d0a828dd853d61790cf47a3673d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f083d0a828dd853d61790cf47a3673d">&#9670;&#160;</a></span>window</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a> FlowUi::devSystems::TimingWindowReport::window = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Window identity; InvalidWindowId means no window attribution. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevTimingReporting_8hpp_source.html">DevTimingReporting.hpp</a></li>
 </ul>
@@ -132,7 +179,7 @@ bool&#160;</td><td class="memItemRight"><b>occupied</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1TimingWindowReport.html">TimingWindowReport</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1TimingWindowReport.html">TimingWindowReport</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

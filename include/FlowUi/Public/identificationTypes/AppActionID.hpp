@@ -25,12 +25,32 @@ struct AppActionID {
 	std::string_view debugName;
 #endif
 
-	/** Return whether the identity is nonzero; does not test whether it is bound. */
+	/**
+	 * Return whether the identity is nonzero; does not test whether it is bound.
+	 * @par Example
+	 * @code{.cpp}
+	 * constexpr auto first = FlowUi::AppAction("editor.save");
+	 * constexpr auto second = FlowUi::AppAction("editor.save");
+	 * const bool valid = static_cast<bool>(first);
+	 * const bool same = first == second;
+	 * const std::size_t hash = FlowUi::AppActionIDHash{}(first);
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return value != 0;
 	}
 
-	/** Compare numeric identities, ignoring developer labels. */
+	/**
+	 * Compare numeric identities, ignoring developer labels.
+	 * @par Example
+	 * @code{.cpp}
+	 * constexpr auto first = FlowUi::AppAction("editor.save");
+	 * constexpr auto second = FlowUi::AppAction("editor.save");
+	 * const bool valid = static_cast<bool>(first);
+	 * const bool same = first == second;
+	 * const std::size_t hash = FlowUi::AppActionIDHash{}(first);
+	 * @endcode
+	 */
 	[[nodiscard]] friend constexpr bool operator==(AppActionID lhs, AppActionID rhs) noexcept {
 		return lhs.value == rhs.value;
 	}
@@ -42,7 +62,12 @@ inline constexpr AppActionID InvalidAppActionID{};
 
 /** Hash a stable authored literal into an application-action identity at compile time.
  * @param name Nonempty action name; developer builds borrow its literal storage.
- * @return Nonzero action ID for binding and invocation. */
+ * @return Action ID for binding and invocation; an empty literal produces the invalid zero ID.
+ * @par Example
+ * @code{.cpp}
+ * constexpr FlowUi::AppActionID save = FlowUi::AppAction("application.save");
+ * @endcode
+ */
 template <std::size_t N>
 [[nodiscard]] consteval AppActionID AppAction(const char (&name)[N]) noexcept {
 	const std::string_view view = detail::identity_hash::literalView(name);
@@ -56,7 +81,17 @@ template <std::size_t N>
 
 /** Container hash adapter for application-action identity; ignores developer labels. */
 struct AppActionIDHash {
-	/** Hash the numeric action identity for associative containers. */
+	/**
+	 * Hash the numeric action identity for associative containers.
+	 * @par Example
+	 * @code{.cpp}
+	 * constexpr auto first = FlowUi::AppAction("editor.save");
+	 * constexpr auto second = FlowUi::AppAction("editor.save");
+	 * const bool valid = static_cast<bool>(first);
+	 * const bool same = first == second;
+	 * const std::size_t hash = FlowUi::AppActionIDHash{}(first);
+	 * @endcode
+	 */
 	[[nodiscard]] constexpr std::size_t operator()(AppActionID id) const noexcept {
 		return static_cast<std::size_t>(id.value ^ (id.value >> 32u));
 	}

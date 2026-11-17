@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,36 +107,46 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Configures Vulkan device, swapchain, and frame scheduling defaults.  
- <a href="#details">More...</a></p>
-
 <p><code>#include &lt;<a class="el" href="VulkanConfig_8hpp_source.html">VulkanConfig.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:gadaae2433c5725ae3d81b120326eb42a6" id="r_gadaae2433c5725ae3d81b120326eb42a6"><td class="memItemLeft">
-<a class="el" href="group__flowui__config.html#gad7eda856ae51a88ad99efd967439facb">PresentMode</a>&#160;</td><td class="memItemRight"><b>presentMode</b> = PresentMode::Fifo</td></tr>
-<tr class="memdesc:gadaae2433c5725ae3d81b120326eb42a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Preferred swapchain presentation mode. <br /></td></tr>
-<tr class="memitem:ga57b35b5f53ac26dc0120bffeb1f74995" id="r_ga57b35b5f53ac26dc0120bffeb1f74995"><td class="memItemLeft">
+<tr class="memitem:adaae2433c5725ae3d81b120326eb42a6" id="r_adaae2433c5725ae3d81b120326eb42a6"><td class="memItemLeft"><a class="el" href="group__flowui__config.html#gad7eda856ae51a88ad99efd967439facb">PresentMode</a>&#160;</td><td class="memItemRight"><a class="el" href="#adaae2433c5725ae3d81b120326eb42a6">presentMode</a> = <a class="el" href="group__flowui__config.html#ggad7eda856ae51a88ad99efd967439facbaa0476ca4d7283b340d24c53c16270958">PresentMode::Fifo</a></td></tr>
+<tr class="memitem:a57b35b5f53ac26dc0120bffeb1f74995" id="r_a57b35b5f53ac26dc0120bffeb1f74995"><td class="memItemLeft"><a id="a57b35b5f53ac26dc0120bffeb1f74995" name="a57b35b5f53ac26dc0120bffeb1f74995"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>framesInFlight</b> = 2</td></tr>
-<tr class="memdesc:ga57b35b5f53ac26dc0120bffeb1f74995"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of frames the renderer may keep in flight. <br /></td></tr>
-<tr class="memitem:gaf08c2cb657d48a6d7c3aae1e01fcc3df" id="r_gaf08c2cb657d48a6d7c3aae1e01fcc3df"><td class="memItemLeft">
+<tr class="memdesc:a57b35b5f53ac26dc0120bffeb1f74995"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of frame resource slots; app initialization clamps zero to one. <br /></td></tr>
+<tr class="memitem:af08c2cb657d48a6d7c3aae1e01fcc3df" id="r_af08c2cb657d48a6d7c3aae1e01fcc3df"><td class="memItemLeft"><a id="af08c2cb657d48a6d7c3aae1e01fcc3df" name="af08c2cb657d48a6d7c3aae1e01fcc3df"></a>
 bool&#160;</td><td class="memItemRight"><b>enableValidation</b> = true</td></tr>
-<tr class="memdesc:gaf08c2cb657d48a6d7c3aae1e01fcc3df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable Vulkan validation layers when they are available. <br /></td></tr>
-<tr class="memitem:ga2113a59485755cf238d536f5eedb4c76" id="r_ga2113a59485755cf238d536f5eedb4c76"><td class="memItemLeft">
+<tr class="memdesc:af08c2cb657d48a6d7c3aae1e01fcc3df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable Vulkan validation layers when they are available. <br /></td></tr>
+<tr class="memitem:a2113a59485755cf238d536f5eedb4c76" id="r_a2113a59485755cf238d536f5eedb4c76"><td class="memItemLeft"><a id="a2113a59485755cf238d536f5eedb4c76" name="a2113a59485755cf238d536f5eedb4c76"></a>
 bool&#160;</td><td class="memItemRight"><b>enableDebugUtils</b> = true</td></tr>
-<tr class="memdesc:ga2113a59485755cf238d536f5eedb4c76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable Vulkan debug utils messenger support when available. <br /></td></tr>
-<tr class="memitem:gae93a1d85e75f22c0615814c639b2510d" id="r_gae93a1d85e75f22c0615814c639b2510d"><td class="memItemLeft">
+<tr class="memdesc:a2113a59485755cf238d536f5eedb4c76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable Vulkan debug utils messenger support when available. <br /></td></tr>
+<tr class="memitem:ae93a1d85e75f22c0615814c639b2510d" id="r_ae93a1d85e75f22c0615814c639b2510d"><td class="memItemLeft"><a id="ae93a1d85e75f22c0615814c639b2510d" name="ae93a1d85e75f22c0615814c639b2510d"></a>
 bool&#160;</td><td class="memItemRight"><b>preferDiscreteGPU</b> = true</td></tr>
-<tr class="memdesc:gae93a1d85e75f22c0615814c639b2510d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefer a discrete GPU when selecting a physical device. <br /></td></tr>
-<tr class="memitem:ga27609afa6b372beb9c1106f5bc018bd8" id="r_ga27609afa6b372beb9c1106f5bc018bd8"><td class="memItemLeft">
+<tr class="memdesc:ae93a1d85e75f22c0615814c639b2510d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefer a discrete GPU when selecting a physical device. <br /></td></tr>
+<tr class="memitem:a27609afa6b372beb9c1106f5bc018bd8" id="r_a27609afa6b372beb9c1106f5bc018bd8"><td class="memItemLeft"><a id="a27609afa6b372beb9c1106f5bc018bd8" name="a27609afa6b372beb9c1106f5bc018bd8"></a>
 bool&#160;</td><td class="memItemRight"><b>srgbBackbuffer</b> = true</td></tr>
-<tr class="memdesc:ga27609afa6b372beb9c1106f5bc018bd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefer an sRGB swapchain format when the surface supports one. <br /></td></tr>
+<tr class="memdesc:a27609afa6b372beb9c1106f5bc018bd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefer an sRGB swapchain format when the surface supports one. <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Configures Vulkan device, swapchain, and frame scheduling defaults. </p>
-<p>These options are consumed during renderer initialization. Rendering uses a fixed sample count of one (x1). </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<div class="textblock"><p>Device, swapchain, and frame scheduling defaults consumed at renderer initialization. Availability-dependent preferences may fall back; rendering uses one sample per pixel. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="adaae2433c5725ae3d81b120326eb42a6" name="adaae2433c5725ae3d81b120326eb42a6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adaae2433c5725ae3d81b120326eb42a6">&#9670;&#160;</a></span>presentMode</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__flowui__config.html#gad7eda856ae51a88ad99efd967439facb">PresentMode</a> FlowUi::VulkanConfig::presentMode = <a class="el" href="group__flowui__config.html#ggad7eda856ae51a88ad99efd967439facbaa0476ca4d7283b340d24c53c16270958">PresentMode::Fifo</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Preferred presentation mode; unsupported modes fall back to FIFO (vertical synchronization). </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/configurationStructs/<a class="el" href="VulkanConfig_8hpp_source.html">VulkanConfig.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -152,7 +162,7 @@ bool&#160;</td><td class="memItemRight"><b>srgbBackbuffer</b> = true</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1VulkanConfig.html">VulkanConfig</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1VulkanConfig.html">VulkanConfig</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

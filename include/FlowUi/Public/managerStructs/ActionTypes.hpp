@@ -48,6 +48,12 @@ struct ActionSourceLocation {
 /**
  * Copyable call to an application action by stable identity; binding and availability are checked at
  * invocation.
+
+ *
+ * @par Example
+ * @code{.cpp}
+ * const bool invoked = static_cast<bool>(call); // Binding/availability are checked separately.
+ * @endcode
  */
 struct AppActionCall {
 	/** Application action identity; value-initialize the call to obtain an empty call. */
@@ -62,6 +68,12 @@ struct AppActionCall {
 /**
  * Small copyable UI operation with inline borrowed resource bindings. Obtain it from
  * UiActions::make(); bound resources must outlive invocation.
+
+ *
+ * @par Example
+ * @code{.cpp}
+ * const FlowUi::UiActionCall call{}; // Empty calls are inert.
+ * @endcode
  */
 class UiActionCall {
 public:
@@ -116,6 +128,14 @@ struct ActionStableReference {
 /**
  * Type-erased application or UI action passed to elements, shortcuts, and ActionManager. Copying never
  * extends the lifetime of borrowed UI resources.
+
+ *
+ * @par Example
+ * @code{.cpp}
+ * const FlowUi::ActionCall call{appCall};
+ * const FlowUi::ActionStableReference stable = call.stableReference();
+ * const FlowUi::ActionCall restored = FlowUi::ActionCall::fromStable(stable.kind, stable.id);
+ * @endcode
  */
 class ActionCall {
 public:
@@ -241,15 +261,35 @@ enum class ActionInvokeError : uint8_t {
 };
 
 /** Typed action return value or dispatch failure. Check hasValue() before value(); error() is meaningful only on failure. Exceptions thrown by an invoked action propagate separately.
- * @tparam Result Owned action result type. */
+ * @tparam Result Owned action result type.
+ * @note ActionResult uses ActionInvokeError rather than FlowUiError. Owned results
+ * used by AppActions::invokeFor require nonthrowing destruction; callbacks and
+ * payload copy/move operations can throw separately.
+ *
+ * @par Example
+ * @code{.cpp}
+ * auto result = actions.invokeFor<std::string>(exportPath);
+ * if (!result.hasValue()) {
+ *     const FlowUi::ActionInvokeError error = result.error();
+ *     return; // Handle the dispatch failure before accessing its value.
+ * }
+ * const auto& observed = result;
+ * const std::string& path = observed.value();
+ * std::string& editable = result.value();
+ * editable.append(".json");
+ * std::string ownedPath = std::move(result).value();
+ * @endcode
+ */
 template <typename Result>
 class ActionResult {
 public:
-	/** Store an owned successful result. */
+	/** Store an owned successful result; value construction/movement may throw.
+	 * @see ActionResult for checked mutable, const and moving value() usage. */
 	ActionResult(Result result)
 		: value_(std::move(result)) {}
 
-	/** Store a dispatch failure. */
+	/** Store a dispatch failure without running a callback.
+	 * @see ActionResult for propagating a checked error() result. */
 	ActionResult(ActionInvokeError error) noexcept
 		: error_(error) {}
 
@@ -271,11 +311,23 @@ private:
 	ActionInvokeError error_ = ActionInvokeError::Empty;
 };
 
-/** Success/failure outcome for an action that returns no value. error() is meaningful only on failure. */
+/** Success/failure outcome for an action that returns no value. error() is meaningful only on failure.
+ *
+ * @par Example
+ * @code{.cpp}
+ * auto result = actions.invokeFor<void>(save);
+ * if (!result) {
+ *     const FlowUi::ActionInvokeError error = result.error();
+ *     return; // Handle the dispatch failure before continuing.
+ * }
+ * result.value(); // No payload; the invocation's success was checked above.
+ * @endcode
+ */
 template <>
 class ActionResult<void> {
 public:
-	/** Return a successful action invocation with no value. */
+	/** Create a successful no-value outcome without invoking an action.
+	 * @see ActionResult<void> for checked invocation and success() usage. */
 	[[nodiscard]] static ActionResult success() noexcept {
 		return ActionResult(true, ActionInvokeError::Empty);
 	}
@@ -287,7 +339,7 @@ public:
 	/** Return whether invocation succeeded. */
 	[[nodiscard]] explicit operator bool() const noexcept { return hasValue(); }
 	/** No-value compatibility observer; it performs no validation. */
-	void value() const {}
+	void value() const noexcept {}
 	/** Return the dispatch error; meaningful only when hasValue() is false. */
 	[[nodiscard]] ActionInvokeError error() const noexcept { return error_; }
 
@@ -386,14 +438,22 @@ struct UiActionRecipe {
  * @par Arguments
  * - @p fn Operation accepting the resource arguments later supplied to UiActions::make().
  * @note In development builds, the additional source argument records the recipe definition location.
- * @return Recipe containing fn and its generated type identity. */
+ * @return Recipe containing fn and its generated type identity.
+ *
+ * @par Example
+ * @code{.cpp}
+ * bool open = false;
+ * constexpr auto toggle = FlowUi::UiAction([](bool& value) { value = !value; });
+ * const FlowUi::UiActionCall call = actions.make(toggle, open); // open must outlive the call.
+ * @endcode
+ */
 template <typename Fn>
 [[nodiscard]] constexpr auto UiAction(
 	Fn fn
 #if FLOW_UI_DEV_MODE
 	, ActionSourceLocation source = ActionSourceLocation::current()
 #endif
-	) {
+	) noexcept {
 	using Operation = std::remove_cvref_t<Fn>;
 	static_assert(std::is_empty_v<Operation>,
 		"FlowUi UiAction recipes must be stateless; pass local resources to uiActions().make().");
@@ -421,7 +481,16 @@ template <typename Fn>
  * - @p name Stable authored recipe name; the literal is borrowed in developer builds.
  * - @p fn Stateless concrete operation returning void.
  * @note In development builds, the additional source argument records the recipe definition location.
- * @return Named recipe to bind through UiActions::make(). */
+ * @return Named recipe to bind through UiActions::make().
+ *
+ * @par Example
+ * @code{.cpp}
+ * bool open = false;
+ * constexpr auto toggle = FlowUi::UiAction(
+ *     "docs.named.toggle", [](bool& value) { value = !value; });
+ * const FlowUi::UiActionCall call = actions.make(toggle, open); // open must outlive the call.
+ * @endcode
+ */
 template <std::size_t N, typename Fn>
 [[nodiscard]] consteval auto UiAction(
 	const char (&name)[N],
@@ -429,7 +498,7 @@ template <std::size_t N, typename Fn>
 #if FLOW_UI_DEV_MODE
 	, ActionSourceLocation source = ActionSourceLocation::current()
 #endif
-	) {
+	) noexcept {
 	static_assert(N > 1, "FlowUi UI action recipe names must not be empty.");
 	auto recipe = UiAction(
 		fn

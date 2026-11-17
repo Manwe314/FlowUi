@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,41 +106,192 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevTimingRecorder Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevTiming_8hpp_source.html">DevTiming.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a5fec11b00f575062cc33602b84815f87" id="r_a5fec11b00f575062cc33602b84815f87"><td class="memItemLeft"><a id="a5fec11b00f575062cc33602b84815f87" name="a5fec11b00f575062cc33602b84815f87"></a>
-&#160;</td><td class="memItemRight"><b>DevTimingRecorder</b> (const DevTimingRecorder &amp;)=delete</td></tr>
+<tr class="memitem:a82f769d923b4f0e267fe8430dcbc2f96" id="r_a82f769d923b4f0e267fe8430dcbc2f96"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a82f769d923b4f0e267fe8430dcbc2f96">~DevTimingRecorder</a> ()</td></tr>
+<tr class="memitem:a5fec11b00f575062cc33602b84815f87" id="r_a5fec11b00f575062cc33602b84815f87"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a5fec11b00f575062cc33602b84815f87">DevTimingRecorder</a> (const DevTimingRecorder &amp;)=delete</td></tr>
 <tr class="memitem:ab375be9d002fec98dd150f6c591e7c3b" id="r_ab375be9d002fec98dd150f6c591e7c3b"><td class="memItemLeft"><a id="ab375be9d002fec98dd150f6c591e7c3b" name="ab375be9d002fec98dd150f6c591e7c3b"></a>
-DevTimingRecorder &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const DevTimingRecorder &amp;)=delete</td></tr>
-<tr class="memitem:ab8311cb27c44454f07b03e3be0af5179" id="r_ab8311cb27c44454f07b03e3be0af5179"><td class="memItemLeft"><a id="ab8311cb27c44454f07b03e3be0af5179" name="ab8311cb27c44454f07b03e3be0af5179"></a>
-&#160;</td><td class="memItemRight"><b>DevTimingRecorder</b> (DevTimingRecorder &amp;&amp;)=delete</td></tr>
+<a class="el" href="#a5fec11b00f575062cc33602b84815f87">DevTimingRecorder</a> &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const <a class="el" href="#a5fec11b00f575062cc33602b84815f87">DevTimingRecorder</a> &amp;)=delete</td></tr>
+<tr class="memitem:ab8311cb27c44454f07b03e3be0af5179" id="r_ab8311cb27c44454f07b03e3be0af5179"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ab8311cb27c44454f07b03e3be0af5179">DevTimingRecorder</a> (DevTimingRecorder &amp;&amp;)=delete</td></tr>
 <tr class="memitem:afab7b62e739d852754817e967df9117f" id="r_afab7b62e739d852754817e967df9117f"><td class="memItemLeft"><a id="afab7b62e739d852754817e967df9117f" name="afab7b62e739d852754817e967df9117f"></a>
-DevTimingRecorder &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (DevTimingRecorder &amp;&amp;)=delete</td></tr>
-<tr class="memitem:a3eb6e8f367d81541c55aacbe51f6968d" id="r_a3eb6e8f367d81541c55aacbe51f6968d"><td class="memItemLeft"><a id="a3eb6e8f367d81541c55aacbe51f6968d" name="a3eb6e8f367d81541c55aacbe51f6968d"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1ActiveZoneToken.html">ActiveZoneToken</a>&#160;</td><td class="memItemRight"><b>tryBegin</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingZoneDescriptor.html">TimingZoneDescriptor</a> &amp;descriptor, <a class="el" href="structFlowUi_1_1devSystems_1_1TimingEntityRef.html">TimingEntityRef</a> entity={}) noexcept</td></tr>
-<tr class="memitem:aa89e37a43a4c7832d39a78371bc83e8b" id="r_aa89e37a43a4c7832d39a78371bc83e8b"><td class="memItemLeft"><a id="aa89e37a43a4c7832d39a78371bc83e8b" name="aa89e37a43a4c7832d39a78371bc83e8b"></a>
-void&#160;</td><td class="memItemRight"><b>end</b> (<a class="el" href="structFlowUi_1_1devSystems_1_1ActiveZoneToken.html">ActiveZoneToken</a> token, TimingRecordFlag result=TimingRecordFlag::Completed) noexcept</td></tr>
-<tr class="memitem:a4c51c50d1fc523318ce59090a657d31c" id="r_a4c51c50d1fc523318ce59090a657d31c"><td class="memItemLeft"><a id="a4c51c50d1fc523318ce59090a657d31c" name="a4c51c50d1fc523318ce59090a657d31c"></a>
-void&#160;</td><td class="memItemRight"><b>endElement</b> (<a class="el" href="structFlowUi_1_1devSystems_1_1ActiveZoneToken.html">ActiveZoneToken</a> token, <a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a> definition, TimingRecordFlag result=TimingRecordFlag::Completed) noexcept</td></tr>
-<tr class="memitem:a4508aadcb7f01066a4c6d8b06e6efbd6" id="r_a4508aadcb7f01066a4c6d8b06e6efbd6"><td class="memItemLeft"><a id="a4508aadcb7f01066a4c6d8b06e6efbd6" name="a4508aadcb7f01066a4c6d8b06e6efbd6"></a>
-void&#160;</td><td class="memItemRight"><b>setFrameContext</b> (<a class="el" href="structFlowUi_1_1devSystems_1_1WindowFrameKey.html">WindowFrameKey</a> frame, AppTickId appTick=0u) noexcept</td></tr>
-<tr class="memitem:a2f6a276cac52a8ddf038a352f11766a3" id="r_a2f6a276cac52a8ddf038a352f11766a3"><td class="memItemLeft"><a id="a2f6a276cac52a8ddf038a352f11766a3" name="a2f6a276cac52a8ddf038a352f11766a3"></a>
-void&#160;</td><td class="memItemRight"><b>clearFrameContext</b> () noexcept</td></tr>
-<tr class="memitem:a27d93fded72161611dfa2173c5d2babc" id="r_a27d93fded72161611dfa2173c5d2babc"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a27d93fded72161611dfa2173c5d2babc">pending_scope_count</a> (AppTickId first_tick, AppTickId end_tick) const noexcept</td></tr>
-<tr class="memitem:a60e4109b441590df4a14c2fd97ddab26" id="r_a60e4109b441590df4a14c2fd97ddab26"><td class="memItemLeft"><a id="a60e4109b441590df4a14c2fd97ddab26" name="a60e4109b441590df4a14c2fd97ddab26"></a>
-TimingTrackId&#160;</td><td class="memItemRight"><b>trackId</b> () const noexcept</td></tr>
-<tr class="memitem:a20b13c037eeb79074d6299085588f7a1" id="r_a20b13c037eeb79074d6299085588f7a1"><td class="memItemLeft"><a id="a20b13c037eeb79074d6299085588f7a1" name="a20b13c037eeb79074d6299085588f7a1"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>trackName</b> () const noexcept</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a5c653935e9e860f9f61646a02cef6339" id="r_a5c653935e9e860f9f61646a02cef6339"><td class="memItemLeft"><a id="a5c653935e9e860f9f61646a02cef6339" name="a5c653935e9e860f9f61646a02cef6339"></a>
-class&#160;</td><td class="memItemRight"><b>DevTiming</b></td></tr>
-<tr class="memitem:ac2d3313a2e419af5ce80d1621a7d40f4" id="r_ac2d3313a2e419af5ce80d1621a7d40f4"><td class="memItemLeft"><a id="ac2d3313a2e419af5ce80d1621a7d40f4" name="ac2d3313a2e419af5ce80d1621a7d40f4"></a>
-class&#160;</td><td class="memItemRight"><b>DevTimingThreadAttachment</b></td></tr>
+<a class="el" href="#a5fec11b00f575062cc33602b84815f87">DevTimingRecorder</a> &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (<a class="el" href="#a5fec11b00f575062cc33602b84815f87">DevTimingRecorder</a> &amp;&amp;)=delete</td></tr>
+<tr class="memitem:a3eb6e8f367d81541c55aacbe51f6968d" id="r_a3eb6e8f367d81541c55aacbe51f6968d"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1ActiveZoneToken.html">ActiveZoneToken</a>&#160;</td><td class="memItemRight"><a class="el" href="#a3eb6e8f367d81541c55aacbe51f6968d">tryBegin</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingZoneDescriptor.html">TimingZoneDescriptor</a> &amp;descriptor, <a class="el" href="structFlowUi_1_1devSystems_1_1TimingEntityRef.html">TimingEntityRef</a> entity={}) noexcept</td></tr>
+<tr class="memitem:aa89e37a43a4c7832d39a78371bc83e8b" id="r_aa89e37a43a4c7832d39a78371bc83e8b"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aa89e37a43a4c7832d39a78371bc83e8b">end</a> (<a class="el" href="structFlowUi_1_1devSystems_1_1ActiveZoneToken.html">ActiveZoneToken</a> token, <a class="el" href="namespaceFlowUi_1_1devSystems.html#a87af1338d5bbccd7fa17efdee41d0829">TimingRecordFlag</a> result=<a class="el" href="namespaceFlowUi_1_1devSystems.html#a87af1338d5bbccd7fa17efdee41d0829a07ca5050e697392c9ed47e6453f1453f">TimingRecordFlag::Completed</a>) noexcept</td></tr>
+<tr class="memitem:a4c51c50d1fc523318ce59090a657d31c" id="r_a4c51c50d1fc523318ce59090a657d31c"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a4c51c50d1fc523318ce59090a657d31c">endElement</a> (<a class="el" href="structFlowUi_1_1devSystems_1_1ActiveZoneToken.html">ActiveZoneToken</a> token, <a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a> definition, <a class="el" href="namespaceFlowUi_1_1devSystems.html#a87af1338d5bbccd7fa17efdee41d0829">TimingRecordFlag</a> result=<a class="el" href="namespaceFlowUi_1_1devSystems.html#a87af1338d5bbccd7fa17efdee41d0829a07ca5050e697392c9ed47e6453f1453f">TimingRecordFlag::Completed</a>) noexcept</td></tr>
+<tr class="memitem:a4508aadcb7f01066a4c6d8b06e6efbd6" id="r_a4508aadcb7f01066a4c6d8b06e6efbd6"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a4508aadcb7f01066a4c6d8b06e6efbd6">setFrameContext</a> (<a class="el" href="structFlowUi_1_1devSystems_1_1WindowFrameKey.html">WindowFrameKey</a> frame, <a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> appTick=0u) noexcept</td></tr>
+<tr class="memitem:a2f6a276cac52a8ddf038a352f11766a3" id="r_a2f6a276cac52a8ddf038a352f11766a3"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a2f6a276cac52a8ddf038a352f11766a3">clearFrameContext</a> () noexcept</td></tr>
+<tr class="memitem:a27d93fded72161611dfa2173c5d2babc" id="r_a27d93fded72161611dfa2173c5d2babc"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a27d93fded72161611dfa2173c5d2babc">pending_scope_count</a> (<a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> first_tick, <a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> end_tick) const noexcept</td></tr>
+<tr class="memitem:a60e4109b441590df4a14c2fd97ddab26" id="r_a60e4109b441590df4a14c2fd97ddab26"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a47547727848de48eeb7c4c21e7d34094">TimingTrackId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a60e4109b441590df4a14c2fd97ddab26">trackId</a> () const noexcept</td></tr>
+<tr class="memitem:a20b13c037eeb79074d6299085588f7a1" id="r_a20b13c037eeb79074d6299085588f7a1"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a20b13c037eeb79074d6299085588f7a1">trackName</a> () const noexcept</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Thread-attached CPU timing producer. Use it only on its attached thread and keep its <a class="el" href="classFlowUi_1_1devSystems_1_1DevTiming.html">DevTiming</a> owner alive until all zones and attachments are destroyed. </p>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a82f769d923b4f0e267fe8430dcbc2f96" name="a82f769d923b4f0e267fe8430dcbc2f96"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a82f769d923b4f0e267fe8430dcbc2f96">&#9670;&#160;</a></span>~DevTimingRecorder()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevTimingRecorder::~DevTimingRecorder </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Release owned monitoring state after dependent recorders, attachments and scopes are finished. </p>
+
+</div>
+</div>
+<a id="a5fec11b00f575062cc33602b84815f87" name="a5fec11b00f575062cc33602b84815f87"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5fec11b00f575062cc33602b84815f87">&#9670;&#160;</a></span>DevTimingRecorder() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevTimingRecorder::DevTimingRecorder </td>
+          <td>(</td>
+          <td class="paramtype">const DevTimingRecorder &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copying is disabled to preserve ownership and producer identity. </p>
+
+</div>
+</div>
+<a id="ab8311cb27c44454f07b03e3be0af5179" name="ab8311cb27c44454f07b03e3be0af5179"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab8311cb27c44454f07b03e3be0af5179">&#9670;&#160;</a></span>DevTimingRecorder() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevTimingRecorder::DevTimingRecorder </td>
+          <td>(</td>
+          <td class="paramtype">DevTimingRecorder &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Moving is disabled to preserve the owner and active scope addresses. </p>
+
+</div>
+</div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a2f6a276cac52a8ddf038a352f11766a3" name="a2f6a276cac52a8ddf038a352f11766a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2f6a276cac52a8ddf038a352f11766a3">&#9670;&#160;</a></span>clearFrameContext()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevTimingRecorder::clearFrameContext </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Clear window-frame attribution for subsequent producer records. </p>
+
+</div>
+</div>
+<a id="aa89e37a43a4c7832d39a78371bc83e8b" name="aa89e37a43a4c7832d39a78371bc83e8b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa89e37a43a4c7832d39a78371bc83e8b">&#9670;&#160;</a></span>end()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevTimingRecorder::end </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1devSystems_1_1ActiveZoneToken.html">ActiveZoneToken</a></td>          <td class="paramname"><span class="paramname"><em>token</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a87af1338d5bbccd7fa17efdee41d0829">TimingRecordFlag</a></td>          <td class="paramname"><span class="paramname"><em>result</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a87af1338d5bbccd7fa17efdee41d0829a07ca5050e697392c9ed47e6453f1453f">TimingRecordFlag::Completed</a></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>End the admitted zone with the supplied completion flags; inactive tokens are ignored. </p>
+
+</div>
+</div>
+<a id="a4c51c50d1fc523318ce59090a657d31c" name="a4c51c50d1fc523318ce59090a657d31c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4c51c50d1fc523318ce59090a657d31c">&#9670;&#160;</a></span>endElement()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevTimingRecorder::endElement </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1devSystems_1_1ActiveZoneToken.html">ActiveZoneToken</a></td>          <td class="paramname"><span class="paramname"><em>token</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a></td>          <td class="paramname"><span class="paramname"><em>definition</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a87af1338d5bbccd7fa17efdee41d0829">TimingRecordFlag</a></td>          <td class="paramname"><span class="paramname"><em>result</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a87af1338d5bbccd7fa17efdee41d0829a07ca5050e697392c9ed47e6453f1453f">TimingRecordFlag::Completed</a></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>End a CPU zone and add its inclusive duration to the supplied element definition aggregate. </p>
+
+</div>
+</div>
 <a id="a27d93fded72161611dfa2173c5d2babc" name="a27d93fded72161611dfa2173c5d2babc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a27d93fded72161611dfa2173c5d2babc">&#9670;&#160;</a></span>pending_scope_count()</h2>
 
@@ -153,12 +304,12 @@ class&#160;</td><td class="memItemRight"><b>DevTimingThreadAttachment</b></td></
         <tr>
           <td class="memname">uint64_t FlowUi::devSystems::DevTimingRecorder::pending_scope_count </td>
           <td>(</td>
-          <td class="paramtype">AppTickId</td>          <td class="paramname"><span class="paramname"><em>first_tick</em></span>, </td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a></td>          <td class="paramname"><span class="paramname"><em>first_tick</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">AppTickId</td>          <td class="paramname"><span class="paramname"><em>end_tick</em></span>&#160;) const</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a></td>          <td class="paramname"><span class="paramname"><em>end_tick</em></span>&#160;) const</td>
         </tr>
       </table>
   </td>
@@ -167,7 +318,119 @@ class&#160;</td><td class="memItemRight"><b>DevTimingThreadAttachment</b></td></
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Number of published active scopes attributed to the requested interval. </p>
+<p>Count active published scopes in the half-open [first_tick, end_tick) tick interval. </p>
+
+</div>
+</div>
+<a id="a4508aadcb7f01066a4c6d8b06e6efbd6" name="a4508aadcb7f01066a4c6d8b06e6efbd6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4508aadcb7f01066a4c6d8b06e6efbd6">&#9670;&#160;</a></span>setFrameContext()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevTimingRecorder::setFrameContext </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1devSystems_1_1WindowFrameKey.html">WindowFrameKey</a></td>          <td class="paramname"><span class="paramname"><em>frame</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a></td>          <td class="paramname"><span class="paramname"><em>appTick</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0u</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Set the window frame and application tick copied into subsequently opened zones on this producer. </p>
+
+</div>
+</div>
+<a id="a60e4109b441590df4a14c2fd97ddab26" name="a60e4109b441590df4a14c2fd97ddab26"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a60e4109b441590df4a14c2fd97ddab26">&#9670;&#160;</a></span>trackId()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a47547727848de48eeb7c4c21e7d34094">TimingTrackId</a> FlowUi::devSystems::DevTimingRecorder::trackId </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return this producer track identity. </p>
+
+</div>
+</div>
+<a id="a20b13c037eeb79074d6299085588f7a1" name="a20b13c037eeb79074d6299085588f7a1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a20b13c037eeb79074d6299085588f7a1">&#9670;&#160;</a></span>trackName()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::devSystems::DevTimingRecorder::trackName </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Borrow this producer track name; the owner retains its storage. </p>
+
+</div>
+</div>
+<a id="a3eb6e8f367d81541c55aacbe51f6968d" name="a3eb6e8f367d81541c55aacbe51f6968d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3eb6e8f367d81541c55aacbe51f6968d">&#9670;&#160;</a></span>tryBegin()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1ActiveZoneToken.html">ActiveZoneToken</a> FlowUi::devSystems::DevTimingRecorder::tryBegin </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1TimingZoneDescriptor.html">TimingZoneDescriptor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>descriptor</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1devSystems_1_1TimingEntityRef.html">TimingEntityRef</a></td>          <td class="paramname"><span class="paramname"><em>entity</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Try to admit a CPU zone under the effective capture level, filters and stack capacity. Return an inactive token when suppressed or full. Descriptor strings must outlive the timing owner. </p>
 
 </div>
 </div>
@@ -187,7 +450,7 @@ class&#160;</td><td class="memItemRight"><b>DevTimingThreadAttachment</b></td></
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

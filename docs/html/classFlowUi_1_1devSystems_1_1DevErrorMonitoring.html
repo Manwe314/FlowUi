@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,72 +106,220 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevErrorMonitoring Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevError_8hpp_source.html">DevError.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ac3767750427e3eac29a2533f82a938cc" id="r_ac3767750427e3eac29a2533f82a938cc"><td class="memItemLeft"><a id="ac3767750427e3eac29a2533f82a938cc" name="ac3767750427e3eac29a2533f82a938cc"></a>
-&#160;</td><td class="memItemRight"><b>DevErrorMonitoring</b> (<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorConfig.html">DevErrorConfig</a> config={})</td></tr>
-<tr class="memitem:abeef669e35c98b7abf39276badc0fd54" id="r_abeef669e35c98b7abf39276badc0fd54"><td class="memItemLeft"><a id="abeef669e35c98b7abf39276badc0fd54" name="abeef669e35c98b7abf39276badc0fd54"></a>
-&#160;</td><td class="memItemRight"><b>DevErrorMonitoring</b> (const DevErrorMonitoring &amp;)=delete</td></tr>
-<tr class="memitem:a6e8cceb32ba4a5dbfe4bfa09adbe751c" id="r_a6e8cceb32ba4a5dbfe4bfa09adbe751c"><td class="memItemLeft"><a id="a6e8cceb32ba4a5dbfe4bfa09adbe751c" name="a6e8cceb32ba4a5dbfe4bfa09adbe751c"></a>
-DevErrorMonitoring &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const DevErrorMonitoring &amp;)=delete</td></tr>
-<tr class="memitem:aabaa17edc1c79cf7016bfe14052ff77f" id="r_aabaa17edc1c79cf7016bfe14052ff77f"><td class="memItemLeft"><a id="aabaa17edc1c79cf7016bfe14052ff77f" name="aabaa17edc1c79cf7016bfe14052ff77f"></a>
-DevErrorThreadAttachment&#160;</td><td class="memItemRight"><b>attachCurrentThread</b> (std::string_view name)</td></tr>
-<tr class="memitem:ae88734cef566be007dd65350ae68e3d0" id="r_ae88734cef566be007dd65350ae68e3d0"><td class="memItemLeft"><a id="ae88734cef566be007dd65350ae68e3d0" name="ae88734cef566be007dd65350ae68e3d0"></a>
-void&#160;</td><td class="memItemRight"><b>observeProductionEvent</b> (const <a class="el" href="structFlowUi_1_1ErrorEventView.html">ErrorEventView</a> &amp;event) noexcept</td></tr>
-<tr class="memitem:a48000685258592fb5a42141c7caa2dc5" id="r_a48000685258592fb5a42141c7caa2dc5"><td class="memItemLeft"><a id="a48000685258592fb5a42141c7caa2dc5" name="a48000685258592fb5a42141c7caa2dc5"></a>
-void&#160;</td><td class="memItemRight"><b>recordProductionEvent</b> (DevErrorOccurrenceId occurrence, const <a class="el" href="structFlowUi_1_1ErrorEventView.html">ErrorEventView</a> &amp;event, const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSourceDescriptor.html">DevErrorSourceDescriptor</a> &amp;source={}) noexcept</td></tr>
-<tr class="memitem:abdad17108007803f4a5fdf434daf679d" id="r_abdad17108007803f4a5fdf434daf679d"><td class="memItemLeft"><a id="abdad17108007803f4a5fdf434daf679d" name="abdad17108007803f4a5fdf434daf679d"></a>
-DevErrorOccurrenceId&#160;</td><td class="memItemRight"><b>recordRaised</b> (<a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> error, const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSourceDescriptor.html">DevErrorSourceDescriptor</a> &amp;source, DevErrorRecordFlag flags=DevErrorRecordFlag::None, std::string_view nativeText={}) noexcept</td></tr>
-<tr class="memitem:ac9e59c1025a128495ced83bb22880567" id="r_ac9e59c1025a128495ced83bb22880567"><td class="memItemLeft"><a id="ac9e59c1025a128495ced83bb22880567" name="ac9e59c1025a128495ced83bb22880567"></a>
-void&#160;</td><td class="memItemRight"><b>recordStep</b> (DevErrorOccurrenceId occurrence, DevErrorStepKind kind, <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> error={}, ErrorResolution resolution=ErrorResolution::None, const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSourceDescriptor.html">DevErrorSourceDescriptor</a> &amp;source={}) noexcept</td></tr>
-<tr class="memitem:a71717cf49443cd4667555a09840f29a6" id="r_a71717cf49443cd4667555a09840f29a6"><td class="memItemLeft"><a id="a71717cf49443cd4667555a09840f29a6" name="a71717cf49443cd4667555a09840f29a6"></a>
-void&#160;</td><td class="memItemRight"><b>recordEvidence</b> (DevErrorOccurrenceId occurrence, const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorEvidenceBlock.html">DevErrorEvidenceBlock</a> &amp;evidence, const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSourceDescriptor.html">DevErrorSourceDescriptor</a> &amp;source={}) noexcept</td></tr>
-<tr class="memitem:a20f5efc104596815b04b0b8a3592e027" id="r_a20f5efc104596815b04b0b8a3592e027"><td class="memItemLeft"><a id="a20f5efc104596815b04b0b8a3592e027" name="a20f5efc104596815b04b0b8a3592e027"></a>
-void&#160;</td><td class="memItemRight"><b>recordBreadcrumb</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorBreadcrumbDescriptor.html">DevErrorBreadcrumbDescriptor</a> &amp;descriptor, uint64_t primaryValue=0u, uint64_t secondaryValue=0u, DevErrorOccurrenceId occurrence=0u) noexcept</td></tr>
-<tr class="memitem:a546bb80f6183e5984bdd8b70a0c7c0ec" id="r_a546bb80f6183e5984bdd8b70a0c7c0ec"><td class="memItemLeft"><a id="a546bb80f6183e5984bdd8b70a0c7c0ec" name="a546bb80f6183e5984bdd8b70a0c7c0ec"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSourceDescriptor.html">DevErrorSourceDescriptor</a> &gt;&#160;</td><td class="memItemRight"><b>sourceSnapshot</b> () const</td></tr>
-<tr class="memitem:a76376da41bfc3e0408916fc19fa4a3ad" id="r_a76376da41bfc3e0408916fc19fa4a3ad"><td class="memItemLeft"><a id="a76376da41bfc3e0408916fc19fa4a3ad" name="a76376da41bfc3e0408916fc19fa4a3ad"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorBreadcrumbDescriptor.html">DevErrorBreadcrumbDescriptor</a> &gt;&#160;</td><td class="memItemRight"><b>breadcrumbDescriptorSnapshot</b> () const</td></tr>
-<tr class="memitem:a2e392040820096d081f2262e8ab6b2ea" id="r_a2e392040820096d081f2262e8ab6b2ea"><td class="memItemLeft"><a id="a2e392040820096d081f2262e8ab6b2ea" name="a2e392040820096d081f2262e8ab6b2ea"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorStackTrace.html">DevErrorStackTrace</a> &gt;&#160;</td><td class="memItemRight"><b>stackSnapshot</b> () const</td></tr>
-<tr class="memitem:a67e3c53a0bbb0491e37222c477399f46" id="r_a67e3c53a0bbb0491e37222c477399f46"><td class="memItemLeft"><a id="a67e3c53a0bbb0491e37222c477399f46" name="a67e3c53a0bbb0491e37222c477399f46"></a>
-bool&#160;</td><td class="memItemRight"><b>registerSnapshotProvider</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSnapshotProvider.html">DevErrorSnapshotProvider</a> &amp;provider) noexcept</td></tr>
-<tr class="memitem:ad7d32e7855071158b75f649e07b574d2" id="r_ad7d32e7855071158b75f649e07b574d2"><td class="memItemLeft"><a id="ad7d32e7855071158b75f649e07b574d2" name="ad7d32e7855071158b75f649e07b574d2"></a>
-void&#160;</td><td class="memItemRight"><b>unregisterSnapshotProvider</b> (DevErrorSnapshotSourceId source, const void *owner) noexcept</td></tr>
-<tr class="memitem:a6a343be0177404341bbba0aee2ef908d" id="r_a6a343be0177404341bbba0aee2ef908d"><td class="memItemLeft"><a id="a6a343be0177404341bbba0aee2ef908d" name="a6a343be0177404341bbba0aee2ef908d"></a>
-bool&#160;</td><td class="memItemRight"><b>requestSnapshot</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSnapshotRequest.html">DevErrorSnapshotRequest</a> &amp;request) noexcept</td></tr>
-<tr class="memitem:a6d26719382a1645651691ecdb18bb73c" id="r_a6d26719382a1645651691ecdb18bb73c"><td class="memItemLeft"><a id="a6d26719382a1645651691ecdb18bb73c" name="a6d26719382a1645651691ecdb18bb73c"></a>
-void&#160;</td><td class="memItemRight"><b>captureDeferredSnapshots</b> () noexcept</td></tr>
+<tr class="memitem:ac3767750427e3eac29a2533f82a938cc" id="r_ac3767750427e3eac29a2533f82a938cc"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ac3767750427e3eac29a2533f82a938cc">DevErrorMonitoring</a> (<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorConfig.html">DevErrorConfig</a> <a class="el" href="#a418a39891d411a934f6bb84533ca7cf8">config</a>={})</td></tr>
+<tr class="memitem:a33db296c2dc3db97c62237e0cd1edfc9" id="r_a33db296c2dc3db97c62237e0cd1edfc9"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a33db296c2dc3db97c62237e0cd1edfc9">~DevErrorMonitoring</a> ()</td></tr>
+<tr class="memitem:abeef669e35c98b7abf39276badc0fd54" id="r_abeef669e35c98b7abf39276badc0fd54"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#abeef669e35c98b7abf39276badc0fd54">DevErrorMonitoring</a> (const DevErrorMonitoring &amp;)=delete</td></tr>
+<tr class="memitem:a6e8cceb32ba4a5dbfe4bfa09adbe751c" id="r_a6e8cceb32ba4a5dbfe4bfa09adbe751c"><td class="memItemLeft"><a class="el" href="#ac3767750427e3eac29a2533f82a938cc">DevErrorMonitoring</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a6e8cceb32ba4a5dbfe4bfa09adbe751c">operator=</a> (const <a class="el" href="#ac3767750427e3eac29a2533f82a938cc">DevErrorMonitoring</a> &amp;)=delete</td></tr>
+<tr class="memitem:aabaa17edc1c79cf7016bfe14052ff77f" id="r_aabaa17edc1c79cf7016bfe14052ff77f"><td class="memItemLeft">DevErrorThreadAttachment&#160;</td><td class="memItemRight"><a class="el" href="#aabaa17edc1c79cf7016bfe14052ff77f">attachCurrentThread</a> (std::string_view name)</td></tr>
+<tr class="memitem:ae88734cef566be007dd65350ae68e3d0" id="r_ae88734cef566be007dd65350ae68e3d0"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ae88734cef566be007dd65350ae68e3d0">observeProductionEvent</a> (const <a class="el" href="structFlowUi_1_1ErrorEventView.html">ErrorEventView</a> &amp;event) noexcept</td></tr>
+<tr class="memitem:a48000685258592fb5a42141c7caa2dc5" id="r_a48000685258592fb5a42141c7caa2dc5"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a48000685258592fb5a42141c7caa2dc5">recordProductionEvent</a> (<a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a> occurrence, const <a class="el" href="structFlowUi_1_1ErrorEventView.html">ErrorEventView</a> &amp;event, const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSourceDescriptor.html">DevErrorSourceDescriptor</a> &amp;source={}) noexcept</td></tr>
+<tr class="memitem:abdad17108007803f4a5fdf434daf679d" id="r_abdad17108007803f4a5fdf434daf679d"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a>&#160;</td><td class="memItemRight"><a class="el" href="#abdad17108007803f4a5fdf434daf679d">recordRaised</a> (<a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> error, const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSourceDescriptor.html">DevErrorSourceDescriptor</a> &amp;source, <a class="el" href="namespaceFlowUi_1_1devSystems.html#ac9db518d6de0f11929b6969157862fa1">DevErrorRecordFlag</a> flags=<a class="el" href="namespaceFlowUi_1_1devSystems.html#ac9db518d6de0f11929b6969157862fa1a6adf97f83acf6453d4a6a4b1070f3754">DevErrorRecordFlag::None</a>, std::string_view nativeText={}) noexcept</td></tr>
+<tr class="memitem:ac9e59c1025a128495ced83bb22880567" id="r_ac9e59c1025a128495ced83bb22880567"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ac9e59c1025a128495ced83bb22880567">recordStep</a> (<a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a> occurrence, <a class="el" href="namespaceFlowUi_1_1devSystems.html#a8352f6e25ae802ff815ed08d58e08b79">DevErrorStepKind</a> kind, <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> error={}, <a class="el" href="namespaceFlowUi.html#a94bf9fd3426ebd61a302d6b843d06837">ErrorResolution</a> resolution=<a class="el" href="namespaceFlowUi.html#a94bf9fd3426ebd61a302d6b843d06837a6adf97f83acf6453d4a6a4b1070f3754">ErrorResolution::None</a>, const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSourceDescriptor.html">DevErrorSourceDescriptor</a> &amp;source={}) noexcept</td></tr>
+<tr class="memitem:a71717cf49443cd4667555a09840f29a6" id="r_a71717cf49443cd4667555a09840f29a6"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a71717cf49443cd4667555a09840f29a6">recordEvidence</a> (<a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a> occurrence, const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorEvidenceBlock.html">DevErrorEvidenceBlock</a> &amp;evidence, const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSourceDescriptor.html">DevErrorSourceDescriptor</a> &amp;source={}) noexcept</td></tr>
+<tr class="memitem:a20f5efc104596815b04b0b8a3592e027" id="r_a20f5efc104596815b04b0b8a3592e027"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a20f5efc104596815b04b0b8a3592e027">recordBreadcrumb</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorBreadcrumbDescriptor.html">DevErrorBreadcrumbDescriptor</a> &amp;descriptor, uint64_t primaryValue=0u, uint64_t secondaryValue=0u, <a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a> occurrence=0u) noexcept</td></tr>
+<tr class="memitem:a546bb80f6183e5984bdd8b70a0c7c0ec" id="r_a546bb80f6183e5984bdd8b70a0c7c0ec"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSourceDescriptor.html">DevErrorSourceDescriptor</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a546bb80f6183e5984bdd8b70a0c7c0ec">sourceSnapshot</a> () const</td></tr>
+<tr class="memitem:a76376da41bfc3e0408916fc19fa4a3ad" id="r_a76376da41bfc3e0408916fc19fa4a3ad"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorBreadcrumbDescriptor.html">DevErrorBreadcrumbDescriptor</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a76376da41bfc3e0408916fc19fa4a3ad">breadcrumbDescriptorSnapshot</a> () const</td></tr>
+<tr class="memitem:a2e392040820096d081f2262e8ab6b2ea" id="r_a2e392040820096d081f2262e8ab6b2ea"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorStackTrace.html">DevErrorStackTrace</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a2e392040820096d081f2262e8ab6b2ea">stackSnapshot</a> () const</td></tr>
+<tr class="memitem:a67e3c53a0bbb0491e37222c477399f46" id="r_a67e3c53a0bbb0491e37222c477399f46"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a67e3c53a0bbb0491e37222c477399f46">registerSnapshotProvider</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSnapshotProvider.html">DevErrorSnapshotProvider</a> &amp;provider) noexcept</td></tr>
+<tr class="memitem:ad7d32e7855071158b75f649e07b574d2" id="r_ad7d32e7855071158b75f649e07b574d2"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ad7d32e7855071158b75f649e07b574d2">unregisterSnapshotProvider</a> (<a class="el" href="namespaceFlowUi_1_1devSystems.html#a242f28264f3031574437322a0af26db0">DevErrorSnapshotSourceId</a> source, const void *owner) noexcept</td></tr>
+<tr class="memitem:a6a343be0177404341bbba0aee2ef908d" id="r_a6a343be0177404341bbba0aee2ef908d"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a6a343be0177404341bbba0aee2ef908d">requestSnapshot</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSnapshotRequest.html">DevErrorSnapshotRequest</a> &amp;request) noexcept</td></tr>
+<tr class="memitem:a6d26719382a1645651691ecdb18bb73c" id="r_a6d26719382a1645651691ecdb18bb73c"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a6d26719382a1645651691ecdb18bb73c">captureDeferredSnapshots</a> () noexcept</td></tr>
 <tr class="memitem:a95bfd976e19139288df823d7325fd4f4" id="r_a95bfd976e19139288df823d7325fd4f4"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a95bfd976e19139288df823d7325fd4f4">drain_snapshots_into</a> (std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSnapshot.html">DevErrorSnapshot</a> &gt; &amp;destination)</td></tr>
 <tr class="memitem:aab57b0a3048f737548e72e5380d2dee5" id="r_aab57b0a3048f737548e72e5380d2dee5"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aab57b0a3048f737548e72e5380d2dee5">drain_records_into</a> (std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorRecord.html">DevErrorRecord</a> &gt; &amp;destination)</td></tr>
 <tr class="memitem:a5eff97b2796278fe7eff803df46d5ae3" id="r_a5eff97b2796278fe7eff803df46d5ae3"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a5eff97b2796278fe7eff803df46d5ae3">drain_breadcrumbs_into</a> (std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorBreadcrumb.html">DevErrorBreadcrumb</a> &gt; &amp;destination)</td></tr>
-<tr class="memitem:a9f72279b0367b32980a7258d001d1651" id="r_a9f72279b0367b32980a7258d001d1651"><td class="memItemLeft"><a id="a9f72279b0367b32980a7258d001d1651" name="a9f72279b0367b32980a7258d001d1651"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSnapshot.html">DevErrorSnapshot</a> &gt;&#160;</td><td class="memItemRight"><b>drainSnapshots</b> ()</td></tr>
-<tr class="memitem:aff72b49b931a36ee1711408b52cc0ce3" id="r_aff72b49b931a36ee1711408b52cc0ce3"><td class="memItemLeft"><a id="aff72b49b931a36ee1711408b52cc0ce3" name="aff72b49b931a36ee1711408b52cc0ce3"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorRecord.html">DevErrorRecord</a> &gt;&#160;</td><td class="memItemRight"><b>drainRecords</b> ()</td></tr>
-<tr class="memitem:ab9060f15efbdebd52a344d49cfc0cac3" id="r_ab9060f15efbdebd52a344d49cfc0cac3"><td class="memItemLeft"><a id="ab9060f15efbdebd52a344d49cfc0cac3" name="ab9060f15efbdebd52a344d49cfc0cac3"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorBreadcrumb.html">DevErrorBreadcrumb</a> &gt;&#160;</td><td class="memItemRight"><b>drainBreadcrumbs</b> ()</td></tr>
-<tr class="memitem:ace9dfac6235a5aea4a02c29bd047880f" id="r_ace9dfac6235a5aea4a02c29bd047880f"><td class="memItemLeft"><a id="ace9dfac6235a5aea4a02c29bd047880f" name="ace9dfac6235a5aea4a02c29bd047880f"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorQualitySnapshot.html">DevErrorQualitySnapshot</a>&#160;</td><td class="memItemRight"><b>qualitySnapshot</b> () const noexcept</td></tr>
-<tr class="memitem:abc632cc0b3b45f27d30d54c64fe968c2" id="r_abc632cc0b3b45f27d30d54c64fe968c2"><td class="memItemLeft"><a id="abc632cc0b3b45f27d30d54c64fe968c2" name="abc632cc0b3b45f27d30d54c64fe968c2"></a>
-std::optional&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorFatalCapsule.html">DevErrorFatalCapsule</a> &gt;&#160;</td><td class="memItemRight"><b>fatalCapsuleSnapshot</b> () const noexcept</td></tr>
-<tr class="memitem:a99b0a01d1160cabfe078499afd2b530e" id="r_a99b0a01d1160cabfe078499afd2b530e"><td class="memItemLeft"><a id="a99b0a01d1160cabfe078499afd2b530e" name="a99b0a01d1160cabfe078499afd2b530e"></a>
-void&#160;</td><td class="memItemRight"><b>publishFatalSafePoint</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorFatalSafePointSummary.html">DevErrorFatalSafePointSummary</a> &amp;summary) noexcept</td></tr>
-<tr class="memitem:a5bf87577c36593f7373e8d9c84dc0cd8" id="r_a5bf87577c36593f7373e8d9c84dc0cd8"><td class="memItemLeft"><a id="a5bf87577c36593f7373e8d9c84dc0cd8" name="a5bf87577c36593f7373e8d9c84dc0cd8"></a>
-void&#160;</td><td class="memItemRight"><b>setConfig</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorConfig.html">DevErrorConfig</a> &amp;config) noexcept</td></tr>
-<tr class="memitem:a418a39891d411a934f6bb84533ca7cf8" id="r_a418a39891d411a934f6bb84533ca7cf8"><td class="memItemLeft"><a id="a418a39891d411a934f6bb84533ca7cf8" name="a418a39891d411a934f6bb84533ca7cf8"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorConfig.html">DevErrorConfig</a>&#160;</td><td class="memItemRight"><b>config</b> () const noexcept</td></tr>
+<tr class="memitem:a9f72279b0367b32980a7258d001d1651" id="r_a9f72279b0367b32980a7258d001d1651"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSnapshot.html">DevErrorSnapshot</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a9f72279b0367b32980a7258d001d1651">drainSnapshots</a> ()</td></tr>
+<tr class="memitem:aff72b49b931a36ee1711408b52cc0ce3" id="r_aff72b49b931a36ee1711408b52cc0ce3"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorRecord.html">DevErrorRecord</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aff72b49b931a36ee1711408b52cc0ce3">drainRecords</a> ()</td></tr>
+<tr class="memitem:ab9060f15efbdebd52a344d49cfc0cac3" id="r_ab9060f15efbdebd52a344d49cfc0cac3"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorBreadcrumb.html">DevErrorBreadcrumb</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ab9060f15efbdebd52a344d49cfc0cac3">drainBreadcrumbs</a> ()</td></tr>
+<tr class="memitem:ace9dfac6235a5aea4a02c29bd047880f" id="r_ace9dfac6235a5aea4a02c29bd047880f"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorQualitySnapshot.html">DevErrorQualitySnapshot</a>&#160;</td><td class="memItemRight"><a class="el" href="#ace9dfac6235a5aea4a02c29bd047880f">qualitySnapshot</a> () const noexcept</td></tr>
+<tr class="memitem:abc632cc0b3b45f27d30d54c64fe968c2" id="r_abc632cc0b3b45f27d30d54c64fe968c2"><td class="memItemLeft">std::optional&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorFatalCapsule.html">DevErrorFatalCapsule</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#abc632cc0b3b45f27d30d54c64fe968c2">fatalCapsuleSnapshot</a> () const noexcept</td></tr>
+<tr class="memitem:a99b0a01d1160cabfe078499afd2b530e" id="r_a99b0a01d1160cabfe078499afd2b530e"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a99b0a01d1160cabfe078499afd2b530e">publishFatalSafePoint</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorFatalSafePointSummary.html">DevErrorFatalSafePointSummary</a> &amp;summary) noexcept</td></tr>
+<tr class="memitem:a5bf87577c36593f7373e8d9c84dc0cd8" id="r_a5bf87577c36593f7373e8d9c84dc0cd8"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a5bf87577c36593f7373e8d9c84dc0cd8">setConfig</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorConfig.html">DevErrorConfig</a> &amp;<a class="el" href="#a418a39891d411a934f6bb84533ca7cf8">config</a>) noexcept</td></tr>
+<tr class="memitem:a418a39891d411a934f6bb84533ca7cf8" id="r_a418a39891d411a934f6bb84533ca7cf8"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorConfig.html">DevErrorConfig</a>&#160;</td><td class="memItemRight"><a class="el" href="#a418a39891d411a934f6bb84533ca7cf8">config</a> () const noexcept</td></tr>
 <tr class="memitem:a2d4d87393844377a90248925fbb8d695" id="r_a2d4d87393844377a90248925fbb8d695"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorProducerScope.html">DevErrorProducerScope</a>&#160;</td><td class="memItemRight"><a class="el" href="#a2d4d87393844377a90248925fbb8d695">producer_scope</a> () const noexcept</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a4ac01bed1dfb1fe04f1dd0e9ac55fa56" id="r_a4ac01bed1dfb1fe04f1dd0e9ac55fa56"><td class="memItemLeft"><a id="a4ac01bed1dfb1fe04f1dd0e9ac55fa56" name="a4ac01bed1dfb1fe04f1dd0e9ac55fa56"></a>
-class&#160;</td><td class="memItemRight"><b>DevErrorRecorder</b></td></tr>
-<tr class="memitem:a0a3295dd778f02df17705fde1c0e62da" id="r_a0a3295dd778f02df17705fde1c0e62da"><td class="memItemLeft"><a id="a0a3295dd778f02df17705fde1c0e62da" name="a0a3295dd778f02df17705fde1c0e62da"></a>
-class&#160;</td><td class="memItemRight"><b>DevErrorThreadAttachment</b></td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Owner of bounded diagnostic producers, causal records and deferred snapshots. Thread attachments and borrowed snapshot providers must be released before destruction. </p>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="ac3767750427e3eac29a2533f82a938cc" name="ac3767750427e3eac29a2533f82a938cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac3767750427e3eac29a2533f82a938cc">&#9670;&#160;</a></span>DevErrorMonitoring() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevErrorMonitoring::DevErrorMonitoring </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorConfig.html">DevErrorConfig</a></td>          <td class="paramname"><span class="paramname"><em>config</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel explicit">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Owner of bounded diagnostic producers, causal records and deferred snapshots. Thread attachments and borrowed snapshot providers must be released before destruction. </p>
+
+</div>
+</div>
+<a id="a33db296c2dc3db97c62237e0cd1edfc9" name="a33db296c2dc3db97c62237e0cd1edfc9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a33db296c2dc3db97c62237e0cd1edfc9">&#9670;&#160;</a></span>~DevErrorMonitoring()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevErrorMonitoring::~DevErrorMonitoring </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Release owned monitoring state after dependent recorders, attachments and scopes are finished. </p>
+
+</div>
+</div>
+<a id="abeef669e35c98b7abf39276badc0fd54" name="abeef669e35c98b7abf39276badc0fd54"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abeef669e35c98b7abf39276badc0fd54">&#9670;&#160;</a></span>DevErrorMonitoring() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevErrorMonitoring::DevErrorMonitoring </td>
+          <td>(</td>
+          <td class="paramtype">const DevErrorMonitoring &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copying is disabled to preserve ownership and producer identity. </p>
+
+</div>
+</div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="aabaa17edc1c79cf7016bfe14052ff77f" name="aabaa17edc1c79cf7016bfe14052ff77f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aabaa17edc1c79cf7016bfe14052ff77f">&#9670;&#160;</a></span>attachCurrentThread()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">DevErrorThreadAttachment FlowUi::devSystems::DevErrorMonitoring::attachCurrentThread </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>name</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Attach a producer to the calling thread and return its lifetime lease. The name is copied; the monitoring owner must outlive the attachment. </p>
+
+</div>
+</div>
+<a id="a76376da41bfc3e0408916fc19fa4a3ad" name="a76376da41bfc3e0408916fc19fa4a3ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a76376da41bfc3e0408916fc19fa4a3ad">&#9670;&#160;</a></span>breadcrumbDescriptorSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorBreadcrumbDescriptor.html">DevErrorBreadcrumbDescriptor</a> &gt; FlowUi::devSystems::DevErrorMonitoring::breadcrumbDescriptorSnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy registered breadcrumb descriptors; names remain borrowed from registration storage. </p>
+
+</div>
+</div>
+<a id="a6d26719382a1645651691ecdb18bb73c" name="a6d26719382a1645651691ecdb18bb73c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d26719382a1645651691ecdb18bb73c">&#9670;&#160;</a></span>captureDeferredSnapshots()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevErrorMonitoring::captureDeferredSnapshots </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Run queued provider callbacks at a consumer safe point and retain bounded results. The caller must ensure provider owners are safe to inspect. </p>
+
+</div>
+</div>
+<a id="a418a39891d411a934f6bb84533ca7cf8" name="a418a39891d411a934f6bb84533ca7cf8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a418a39891d411a934f6bb84533ca7cf8">&#9670;&#160;</a></span>config()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorConfig.html">DevErrorConfig</a> FlowUi::devSystems::DevErrorMonitoring::config </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return a copy of the current effective configuration. </p>
+
+</div>
+</div>
 <a id="a5eff97b2796278fe7eff803df46d5ae3" name="a5eff97b2796278fe7eff803df46d5ae3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5eff97b2796278fe7eff803df46d5ae3">&#9670;&#160;</a></span>drain_breadcrumbs_into()</h2>
 
@@ -226,6 +374,162 @@ class&#160;</td><td class="memItemRight"><b>DevErrorThreadAttachment</b></td></t
 
 </div>
 </div>
+<a id="ab9060f15efbdebd52a344d49cfc0cac3" name="ab9060f15efbdebd52a344d49cfc0cac3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab9060f15efbdebd52a344d49cfc0cac3">&#9670;&#160;</a></span>drainBreadcrumbs()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorBreadcrumb.html">DevErrorBreadcrumb</a> &gt; FlowUi::devSystems::DevErrorMonitoring::drainBreadcrumbs </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Consume newly produced breadcrumbs into a new owned vector. </p>
+
+</div>
+</div>
+<a id="aff72b49b931a36ee1711408b52cc0ce3" name="aff72b49b931a36ee1711408b52cc0ce3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aff72b49b931a36ee1711408b52cc0ce3">&#9670;&#160;</a></span>drainRecords()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorRecord.html">DevErrorRecord</a> &gt; FlowUi::devSystems::DevErrorMonitoring::drainRecords </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Consume newly produced diagnostic steps into a new owned vector. </p>
+
+</div>
+</div>
+<a id="a9f72279b0367b32980a7258d001d1651" name="a9f72279b0367b32980a7258d001d1651"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9f72279b0367b32980a7258d001d1651">&#9670;&#160;</a></span>drainSnapshots()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSnapshot.html">DevErrorSnapshot</a> &gt; FlowUi::devSystems::DevErrorMonitoring::drainSnapshots </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Consume newly captured snapshots into a new owned vector. </p>
+
+</div>
+</div>
+<a id="abc632cc0b3b45f27d30d54c64fe968c2" name="abc632cc0b3b45f27d30d54c64fe968c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abc632cc0b3b45f27d30d54c64fe968c2">&#9670;&#160;</a></span>fatalCapsuleSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorFatalCapsule.html">DevErrorFatalCapsule</a> &gt; FlowUi::devSystems::DevErrorMonitoring::fatalCapsuleSnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy the most recent fixed fatal capsule, or return empty when none was captured. </p>
+
+</div>
+</div>
+<a id="ae88734cef566be007dd65350ae68e3d0" name="ae88734cef566be007dd65350ae68e3d0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae88734cef566be007dd65350ae68e3d0">&#9670;&#160;</a></span>observeProductionEvent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevErrorMonitoring::observeProductionEvent </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1ErrorEventView.html">ErrorEventView</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>event</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Observe a production error event and append development evidence without changing production resolution or control flow. </p>
+
+</div>
+</div>
+<a id="a6e8cceb32ba4a5dbfe4bfa09adbe751c" name="a6e8cceb32ba4a5dbfe4bfa09adbe751c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6e8cceb32ba4a5dbfe4bfa09adbe751c">&#9670;&#160;</a></span>operator=()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="#ac3767750427e3eac29a2533f82a938cc">DevErrorMonitoring</a> &amp; FlowUi::devSystems::DevErrorMonitoring::operator= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="#ac3767750427e3eac29a2533f82a938cc">DevErrorMonitoring</a> &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copying is disabled to preserve ownership and producer identity. </p>
+
+</div>
+</div>
 <a id="a2d4d87393844377a90248925fbb8d695" name="a2d4d87393844377a90248925fbb8d695"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2d4d87393844377a90248925fbb8d695">&#9670;&#160;</a></span>producer_scope()</h2>
 
@@ -252,6 +556,413 @@ class&#160;</td><td class="memItemRight"><b>DevErrorThreadAttachment</b></td></t
 
 </div>
 </div>
+<a id="a99b0a01d1160cabfe078499afd2b530e" name="a99b0a01d1160cabfe078499afd2b530e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a99b0a01d1160cabfe078499afd2b530e">&#9670;&#160;</a></span>publishFatalSafePoint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevErrorMonitoring::publishFatalSafePoint </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorFatalSafePointSummary.html">DevErrorFatalSafePointSummary</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>summary</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Publish a fixed summary for later allocation-free fatal inspection at a synchronized safe point. </p>
+
+</div>
+</div>
+<a id="ace9dfac6235a5aea4a02c29bd047880f" name="ace9dfac6235a5aea4a02c29bd047880f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ace9dfac6235a5aea4a02c29bd047880f">&#9670;&#160;</a></span>qualitySnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorQualitySnapshot.html">DevErrorQualitySnapshot</a> FlowUi::devSystems::DevErrorMonitoring::qualitySnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return cumulative capture capability and quality counters without consuming records. </p>
+
+</div>
+</div>
+<a id="a20f5efc104596815b04b0b8a3592e027" name="a20f5efc104596815b04b0b8a3592e027"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a20f5efc104596815b04b0b8a3592e027">&#9670;&#160;</a></span>recordBreadcrumb()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevErrorMonitoring::recordBreadcrumb </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorBreadcrumbDescriptor.html">DevErrorBreadcrumbDescriptor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>descriptor</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t</td>          <td class="paramname"><span class="paramname"><em>primaryValue</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0u</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t</td>          <td class="paramname"><span class="paramname"><em>secondaryValue</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0u</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a></td>          <td class="paramname"><span class="paramname"><em>occurrence</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0u</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Append a breadcrumb with exact numeric values and optional occurrence attribution. </p>
+
+</div>
+</div>
+<a id="a71717cf49443cd4667555a09840f29a6" name="a71717cf49443cd4667555a09840f29a6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a71717cf49443cd4667555a09840f29a6">&#9670;&#160;</a></span>recordEvidence()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevErrorMonitoring::recordEvidence </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a></td>          <td class="paramname"><span class="paramname"><em>occurrence</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorEvidenceBlock.html">DevErrorEvidenceBlock</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>evidence</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSourceDescriptor.html">DevErrorSourceDescriptor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>source</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Append a bounded immediate evidence block to an occurrence. </p>
+
+</div>
+</div>
+<a id="a48000685258592fb5a42141c7caa2dc5" name="a48000685258592fb5a42141c7caa2dc5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a48000685258592fb5a42141c7caa2dc5">&#9670;&#160;</a></span>recordProductionEvent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevErrorMonitoring::recordProductionEvent </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a></td>          <td class="paramname"><span class="paramname"><em>occurrence</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1ErrorEventView.html">ErrorEventView</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>event</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSourceDescriptor.html">DevErrorSourceDescriptor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>source</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Append a production boundary event to the specified diagnostic occurrence. </p>
+
+</div>
+</div>
+<a id="abdad17108007803f4a5fdf434daf679d" name="abdad17108007803f4a5fdf434daf679d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abdad17108007803f4a5fdf434daf679d">&#9670;&#160;</a></span>recordRaised()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a> FlowUi::devSystems::DevErrorMonitoring::recordRaised </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a></td>          <td class="paramname"><span class="paramname"><em>error</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSourceDescriptor.html">DevErrorSourceDescriptor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>source</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ac9db518d6de0f11929b6969157862fa1">DevErrorRecordFlag</a></td>          <td class="paramname"><span class="paramname"><em>flags</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="namespaceFlowUi_1_1devSystems.html#ac9db518d6de0f11929b6969157862fa1a6adf97f83acf6453d4a6a4b1070f3754">DevErrorRecordFlag::None</a></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>nativeText</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Begin a diagnostic occurrence and return its identity; native text is copied into bounded record storage. </p>
+
+</div>
+</div>
+<a id="ac9e59c1025a128495ced83bb22880567" name="ac9e59c1025a128495ced83bb22880567"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac9e59c1025a128495ced83bb22880567">&#9670;&#160;</a></span>recordStep()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevErrorMonitoring::recordStep </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a8ca1e07b67954c194fe2c2709cec503a">DevErrorOccurrenceId</a></td>          <td class="paramname"><span class="paramname"><em>occurrence</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a8352f6e25ae802ff815ed08d58e08b79">DevErrorStepKind</a></td>          <td class="paramname"><span class="paramname"><em>kind</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a></td>          <td class="paramname"><span class="paramname"><em>error</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi.html#a94bf9fd3426ebd61a302d6b843d06837">ErrorResolution</a></td>          <td class="paramname"><span class="paramname"><em>resolution</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="namespaceFlowUi.html#a94bf9fd3426ebd61a302d6b843d06837a6adf97f83acf6453d4a6a4b1070f3754">ErrorResolution::None</a></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSourceDescriptor.html">DevErrorSourceDescriptor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>source</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Append one causal step and optional resolution to an existing occurrence. </p>
+
+</div>
+</div>
+<a id="a67e3c53a0bbb0491e37222c477399f46" name="a67e3c53a0bbb0491e37222c477399f46"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a67e3c53a0bbb0491e37222c477399f46">&#9670;&#160;</a></span>registerSnapshotProvider()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevErrorMonitoring::registerSnapshotProvider </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSnapshotProvider.html">DevErrorSnapshotProvider</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>provider</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Register a borrowed nonzero source, owner and noexcept callback. The owner must remain alive until unregistered. Return false for invalid inputs or exhausted capacity. </p>
+
+</div>
+</div>
+<a id="a6a343be0177404341bbba0aee2ef908d" name="a6a343be0177404341bbba0aee2ef908d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6a343be0177404341bbba0aee2ef908d">&#9670;&#160;</a></span>requestSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevErrorMonitoring::requestSnapshot </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSnapshotRequest.html">DevErrorSnapshotRequest</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>request</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Queue deferred capture for a nonzero occurrence/source at StackAndState detail or higher. Return false when disabled, invalid or out of capacity. </p>
+
+</div>
+</div>
+<a id="a5bf87577c36593f7373e8d9c84dc0cd8" name="a5bf87577c36593f7373e8d9c84dc0cd8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5bf87577c36593f7373e8d9c84dc0cd8">&#9670;&#160;</a></span>setConfig()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevErrorMonitoring::setConfig </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorConfig.html">DevErrorConfig</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>config</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Apply monitoring or reporting configuration; retained storage and pending work follow the owning service policy. </p>
+
+</div>
+</div>
+<a id="a546bb80f6183e5984bdd8b70a0c7c0ec" name="a546bb80f6183e5984bdd8b70a0c7c0ec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a546bb80f6183e5984bdd8b70a0c7c0ec">&#9670;&#160;</a></span>sourceSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorSourceDescriptor.html">DevErrorSourceDescriptor</a> &gt; FlowUi::devSystems::DevErrorMonitoring::sourceSnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy registered diagnostic source descriptors; their immutable text remains borrowed from registration storage. </p>
+
+</div>
+</div>
+<a id="a2e392040820096d081f2262e8ab6b2ea" name="a2e392040820096d081f2262e8ab6b2ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e392040820096d081f2262e8ab6b2ea">&#9670;&#160;</a></span>stackSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1DevErrorStackTrace.html">DevErrorStackTrace</a> &gt; FlowUi::devSystems::DevErrorMonitoring::stackSnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy retained raw stack traces into owned storage. </p>
+
+</div>
+</div>
+<a id="ad7d32e7855071158b75f649e07b574d2" name="ad7d32e7855071158b75f649e07b574d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad7d32e7855071158b75f649e07b574d2">&#9670;&#160;</a></span>unregisterSnapshotProvider()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevErrorMonitoring::unregisterSnapshotProvider </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a242f28264f3031574437322a0af26db0">DevErrorSnapshotSourceId</a></td>          <td class="paramname"><span class="paramname"><em>source</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const void *</td>          <td class="paramname"><span class="paramname"><em>owner</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Remove the provider matching source and owner before destroying its borrowed owner. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/errors/<a class="el" href="DevError_8hpp_source.html">DevError.hpp</a></li>
 </ul>
@@ -268,7 +979,7 @@ class&#160;</td><td class="memItemRight"><b>DevErrorThreadAttachment</b></td></t
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1DevErrorMonitoring.html">DevErrorMonitoring</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1DevErrorMonitoring.html">DevErrorMonitoring</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

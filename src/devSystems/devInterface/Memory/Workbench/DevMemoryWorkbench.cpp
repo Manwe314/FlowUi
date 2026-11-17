@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/RadioChoice.hpp"
@@ -72,7 +73,7 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 		return;
 	auto& state = context.params.interfaceState->memory_workbench;
 	const auto& selection = context.params.interfaceState->memory_selection;
-	auto& reporting = context.params.app->devMonitoring().memoryReporting();
+	auto& reporting = FlowUi::ValueOrThrow(context.params.app->devMonitoring()).get().memoryReporting();
 	const auto now = memory_now_ns();
 	update_memory_session(state.analysis, reporting);
 	if (state.analysis.previous_dataset != state.analysis.dataset) {
@@ -180,12 +181,12 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 		auto header = row(32);
 		header.backgroundColor = interface_theme::kDepth2Ink;
 		header.layout.padding = {8, 8, 2, 2};
-		CLAY(context.clayID("header"), header) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("header")), header) {
 			const auto* node = memory_node(selection.selected_node);
 			text(context, node ? node->label : "Overview", interface_theme::kTextCanvas, 13);
 			auto spacer = row(1);
 			spacer.layout.sizing.width = CLAY_SIZING_GROW(0);
-			CLAY(context.clayID("header-spacer"), spacer) {}
+			CLAY(FlowUi::ValueOrThrow(context.clayID("header-spacer")), spacer) {}
 			for (uint64_t choice = 0; choice < 2; ++choice) {
 				FSEL::RadioChoiceParameters parameters{};
 				parameters.choiceValue = choice;
@@ -203,26 +204,26 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 		}
 		auto distribution = column();
 		distribution.layout.sizing.height = CLAY_SIZING_FIT(0);
-		CLAY(context.clayID("distribution"), distribution) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("distribution")), distribution) {
 			text(context,
 				 state.selected_ns ? "Distribution · historical sampled values"
 				 : selected_memory_dataset(state.analysis) ? "Distribution · saved observation"
 														   : "Distribution · live accounting views",
 				 interface_theme::kTextCanvas, 12);
-			CLAY(context.clayID("legend"), row(18)) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("legend")), row(18)) {
 				constexpr std::array<std::string_view, 5> labels = {"Backing", "Active", "Reusable",
 																	"Padding / reserve", "Retired"};
 				for (size_t entry = 0; entry < labels.size(); ++entry) {
 					auto swatch = row(8);
 					swatch.layout.sizing.width = CLAY_SIZING_FIXED(8);
 					swatch.backgroundColor = colors[entry];
-					CLAY(context.clayID(Keyed("legend-swatch", entry)), swatch) {}
+					CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("legend-swatch", entry))), swatch) {}
 					text(context, labels[entry], interface_theme::kTextSecondary, 10);
 				}
 			}
 			auto gauge = row(30);
 			gauge.layout.childGap = 0;
-			CLAY(context.clayID("gauge"), gauge) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("gauge")), gauge) {
 				for (int tick = 0; tick < 3; ++tick) {
 					auto cell = column();
 					cell.layout.sizing.width = CLAY_SIZING_PERCENT(1.0f / 3);
@@ -231,7 +232,7 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 															   : CLAY_ALIGN_X_RIGHT;
 					cell.border = {.color = interface_theme::kBorderVisible,
 								   .width = {1, uint16_t(tick == 2), 0, 1, 0}};
-					CLAY(context.clayID(Keyed("gauge-tick", tick)), cell) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("gauge-tick", tick))), cell) {
 						text(context,
 							 memory_bytes(
 								 uint64_t(static_cast<long double>(state.scale_bytes) * tick / 2),
@@ -243,10 +244,10 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 			scroll.layout.sizing.height = CLAY_SIZING_FIT(0);
 			scroll.layout.childGap = 8;
 			scroll.clip = {.horizontal = true, .vertical = false};
-			const auto scroll_data = Clay_GetScrollContainerData(context.clayID("tracks"));
+			const auto scroll_data = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("tracks")));
 			if (scroll_data.found && scroll_data.scrollPosition)
 				scroll.clip.childOffset = *scroll_data.scrollPosition;
-			CLAY(context.clayID("tracks"), scroll) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("tracks")), scroll) {
 				for (size_t group_begin = 0; group_begin < state.tracks.size();) {
 					size_t group_end = group_begin + 1;
 					while (group_end < state.tracks.size()) {
@@ -267,7 +268,7 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 					group.cornerRadius = CLAY_CORNER_RADIUS(4);
 					group.border = {.color = interface_theme::kBorderPrimary,
 									.width = {1, 1, 1, 1, 0}};
-					CLAY(context.clayID(Keyed("track-group", uint32_t(group_begin))), group) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("track-group", uint32_t(group_begin)))), group) {
 						for (size_t index = group_begin; index < group_end; ++index) {
 							const auto& track = state.tracks[index];
 							auto track_row = column();
@@ -302,11 +303,11 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 								.setDevInternalCapture(true)
 								.construct();
 							{
-								CLAY(context.clayID(Keyed("track-title", uint32_t(index))), row()) {
+								CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("track-title", uint32_t(index)))), row()) {
 									text(context, track.title, interface_theme::kTextCanvas, 12);
 									auto title_spacer = row(1);
 									title_spacer.layout.sizing.width = CLAY_SIZING_GROW(0);
-									CLAY(context.clayID(Keyed("track-spacer", uint32_t(index))),
+									CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("track-spacer", uint32_t(index)))),
 										 title_spacer) {}
 									if (memory_node(track.identity) &&
 										track.identity != selection.selected_node)
@@ -327,7 +328,7 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 									if (track.recipe == MemoryTrackRecipe::Independent)
 										bar.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 									bar.backgroundColor = interface_theme::kDepth0Keel;
-									CLAY(context.clayID(Keyed("track-bar", uint32_t(index))), bar) {
+									CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("track-bar", uint32_t(index)))), bar) {
 										const auto fraction = [&](uint64_t bytes) {
 											return float(double(bytes) / state.scale_bytes);
 										};
@@ -336,7 +337,7 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 													   fraction(track.value.backingAllocatedBytes);
 										const auto previous_bar =
 											Clay_GetElementData(
-												context.clayID(Keyed("track-bar", uint32_t(index))))
+												FlowUi::ValueOrThrow(context.clayID(Keyed("track-bar", uint32_t(index)))))
 												.boundingBox;
 										const auto& input =
 											context.uiManager.getCurrentFrameInput();
@@ -376,14 +377,14 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 															 std::to_string(track.sampled_tick) +
 															 "\n" + track.note;
 										}
-										band(context.clayID(Keyed("active", uint32_t(index))), 0,
+										band(FlowUi::ValueOrThrow(context.clayID(Keyed("active", uint32_t(index)))), 0,
 											 active,
 											 track.recipe == MemoryTrackRecipe::Independent ? 8
 																							: 18,
 											 colors[1]);
 										if (track.recipe == MemoryTrackRecipe::Independent)
-											band(context.clayID(
-													 Keyed("independent-backing", uint32_t(index))),
+											band(FlowUi::ValueOrThrow(context.clayID(
+													 Keyed("independent-backing", uint32_t(index)))),
 												 0, backing, 8, colors[0]);
 										else if (track.recipe != MemoryTrackRecipe::ActiveOnly) {
 											const auto padding_end = std::min(
@@ -391,14 +392,14 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 											const auto reusable_begin = std::max(
 												padding_end,
 												backing - fraction(track.value.reusableBytes));
-											band(context.clayID(Keyed("padding", uint32_t(index))),
+											band(FlowUi::ValueOrThrow(context.clayID(Keyed("padding", uint32_t(index)))),
 												 active, padding_end, 18, colors[3]);
-											band(context.clayID(Keyed("backing", uint32_t(index))),
+											band(FlowUi::ValueOrThrow(context.clayID(Keyed("backing", uint32_t(index)))),
 												 padding_end, reusable_begin, 18,
 												 track.recipe == MemoryTrackRecipe::Resource
 													 ? colors[4]
 													 : colors[0]);
-											band(context.clayID(Keyed("reusable", uint32_t(index))),
+											band(FlowUi::ValueOrThrow(context.clayID(Keyed("reusable", uint32_t(index)))),
 												 reusable_begin, backing, 18, colors[2]);
 										}
 									}
@@ -415,11 +416,11 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 		history.layout.childGap = 0;
 		history.backgroundColor = interface_theme::kDepth1Panel;
 		history.border = {.color = interface_theme::kBorderPrimary, .width = {1, 1, 1, 1, 0}};
-		CLAY(context.clayID("history"), history) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("history")), history) {
 			auto toolbar = row(28);
 			toolbar.layout.padding = {8, 8, 2, 2};
 			toolbar.backgroundColor = interface_theme::kDepth2Ink;
-			CLAY(context.clayID("history-controls"), toolbar) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("history-controls")), toolbar) {
 				text(context, "History", interface_theme::kTextCanvas);
 				if (!compact)
 					text(context,
@@ -427,7 +428,7 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 						 interface_theme::kTextSecondary, 10);
 				auto spacer = row(1);
 				spacer.layout.sizing.width = CLAY_SIZING_GROW(0);
-				CLAY(context.clayID("history-spacer"), spacer) {}
+				CLAY(FlowUi::ValueOrThrow(context.clayID("history-spacer")), spacer) {}
 				static constexpr auto windows = std::to_array<FSEL::ComboBoxOption>(
 					{{0, "1s"}, {1, "5s"}, {2, "30s"}, {3, "All"}});
 				FSEL::ComboBoxParameters window{};
@@ -449,7 +450,7 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 					follow.border = {.color = interface_theme::kAccentCurrent,
 									 .width = {0, 0, 0, 1, 0}};
 				}
-				CLAY(context.clayID("history-follow"), follow) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("history-follow")), follow) {
 					button(context, state, 2, state.following ? "Live" : "Follow live");
 				}
 				memory_ui::button(context, state, 204, "Settings");
@@ -494,7 +495,7 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 									.width = {1, 1, 1, 1, 0}};
 					panel.floating = frame.floating;
 					CLAY(context.uiManager.toClayEID(popup_id), panel) {
-						CLAY(context.clayID("lane-settings-title"), row(24)) {
+						CLAY(FlowUi::ValueOrThrow(context.clayID("lane-settings-title")), row(24)) {
 							text(context, "History lanes", interface_theme::kTextCanvas, 12);
 							memory_ui::button(context, state, 205, "+ Lane", state.lane_count < 3);
 							memory_ui::button(context, state, 206, "Done");
@@ -527,8 +528,8 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 							lane_panel.layout.childGap = 4;
 							lane_panel.layout.padding = {6, 6, 6, 6};
 							lane_panel.backgroundColor = interface_theme::kDepth1Panel;
-							CLAY(context.clayID(Keyed("lane-settings", lane_index)), lane_panel) {
-								CLAY(context.clayID(Keyed("lane-heading", lane_index)), row(22)) {
+							CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("lane-settings", lane_index))), lane_panel) {
+								CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("lane-heading", lane_index))), row(22)) {
 									text(context, "Lane " + std::to_string(lane_index + 1),
 										 interface_theme::kTextCanvas);
 									memory_ui::button(context, state, 210 + uint32_t(lane_index),
@@ -559,7 +560,7 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 										.setDevInternalCapture(true)
 										.draw();
 								}
-								CLAY(context.clayID(Keyed("lane-measurement", lane_index)),
+								CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("lane-measurement", lane_index))),
 									 row(24)) {
 									for (uint64_t metric = 0; metric < 2; ++metric) {
 										FSEL::RadioChoiceParameters radio{};
@@ -599,7 +600,7 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 			}
 			if (now >= state.next_history_ns) {
 				const auto plot_width =
-					Clay_GetElementData(context.clayID("history-image")).boundingBox.width;
+					Clay_GetElementData(FlowUi::ValueOrThrow(context.clayID("history-image"))).boundingBox.width;
 				build_memory_history(state, reporting,
 									 plot_width > 68 ? size_t(plot_width - 68) : 512);
 				state.next_history_ns = now + 100'000'000ull;
@@ -608,10 +609,10 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 			plot.layout.sizing.height =
 				CLAY_SIZING_FIXED(state.lane_count == 1 ? 238 : 18 + float(state.lane_count) * 160);
 			plot.clip = {.horizontal = true, .vertical = true};
-			CLAY(context.clayID("history-plot"), plot) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("history-plot")), plot) {
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 				if (controller)
-					controller->draw(context.uiManager, context.clayID("history-image"), state,
+					controller->draw(context.uiManager, FlowUi::ValueOrThrow(context.clayID("history-image")), state,
 									 reporting);
 #endif
 				if (!controller)
@@ -621,7 +622,7 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 			status.layout.padding = {8, 8, 2, 2};
 			status.backgroundColor = interface_theme::kDepth2Ink;
 			status.clip = {.horizontal = true, .vertical = true};
-			CLAY(context.clayID("history-context"), status) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("history-context")), status) {
 				Clay_Color context_color = interface_theme::kTextSecondary;
 				if (state.range_end_ns > state.range_begin_ns && !state.lanes.empty()) {
 					const auto& range =
@@ -665,7 +666,7 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 												  std::max(panel.y, panel.y + panel.height - 180))};
 			tooltip.floating.zIndex = 100;
 			tooltip.floating.pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_PASSTHROUGH;
-			CLAY(context.clayID("track-tooltip"), tooltip) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("track-tooltip")), tooltip) {
 				text(context, track_tooltip, interface_theme::kTextCanvas);
 			}
 		}

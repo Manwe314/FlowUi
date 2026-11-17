@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -117,26 +117,37 @@ Public Member Functions</h2></td></tr>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a381a709247223335843f480bace39d9b" id="r_a381a709247223335843f480bace39d9b"><td class="memItemLeft"><a id="a381a709247223335843f480bace39d9b" name="a381a709247223335843f480bace39d9b"></a>
 std::array&lt; std::size_t, 3 &gt;&#160;</td><td class="memItemRight"><b>domains</b> {}</td></tr>
+<tr class="memdesc:a381a709247223335843f480bace39d9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Candidate row counts indexed by <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#aa6b06a934f86cdfaf2400763b352e917" title="Independent persisted destination domain in a Changes review.">DevChangesDomain</a>. <br /></td></tr>
 <tr class="memitem:aa31599de0219b50f0f11f397b6773bdd" id="r_aa31599de0219b50f0f11f397b6773bdd"><td class="memItemLeft"><a id="aa31599de0219b50f0f11f397b6773bdd" name="aa31599de0219b50f0f11f397b6773bdd"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>additions</b> = 0</td></tr>
+<tr class="memdesc:aa31599de0219b50f0f11f397b6773bdd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of new persisted destinations. <br /></td></tr>
 <tr class="memitem:abc6394e1f30196afd44ae5598c2be8aa" id="r_abc6394e1f30196afd44ae5598c2be8aa"><td class="memItemLeft"><a id="abc6394e1f30196afd44ae5598c2be8aa" name="abc6394e1f30196afd44ae5598c2be8aa"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>updates</b> = 0</td></tr>
+<tr class="memdesc:abc6394e1f30196afd44ae5598c2be8aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of changed persisted destinations. <br /></td></tr>
 <tr class="memitem:a28b432f23621ee75b2f21701fd65f088" id="r_a28b432f23621ee75b2f21701fd65f088"><td class="memItemLeft"><a id="a28b432f23621ee75b2f21701fd65f088" name="a28b432f23621ee75b2f21701fd65f088"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>removals</b> = 0</td></tr>
+<tr class="memdesc:a28b432f23621ee75b2f21701fd65f088"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of removed persisted destinations. <br /></td></tr>
 <tr class="memitem:a8ac8687987cfe206ca97ac5cf34e109f" id="r_a8ac8687987cfe206ca97ac5cf34e109f"><td class="memItemLeft"><a id="a8ac8687987cfe206ca97ac5cf34e109f" name="a8ac8687987cfe206ca97ac5cf34e109f"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>retained</b> = 0</td></tr>
+<tr class="memdesc:a8ac8687987cfe206ca97ac5cf34e109f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of destinations retained from disk. <br /></td></tr>
 <tr class="memitem:a3c9c19735805db16c3738f369fe21cda" id="r_a3c9c19735805db16c3738f369fe21cda"><td class="memItemLeft"><a id="a3c9c19735805db16c3738f369fe21cda" name="a3c9c19735805db16c3738f369fe21cda"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>omitted</b> = 0</td></tr>
+<tr class="memdesc:a3c9c19735805db16c3738f369fe21cda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of proposals omitted by review decisions. <br /></td></tr>
 <tr class="memitem:ac05ceb3c25e5c7882d2f60694a68fcb2" id="r_ac05ceb3c25e5c7882d2f60694a68fcb2"><td class="memItemLeft"><a id="ac05ceb3c25e5c7882d2f60694a68fcb2" name="ac05ceb3c25e5c7882d2f60694a68fcb2"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>conflicts</b> = 0</td></tr>
+<tr class="memdesc:ac05ceb3c25e5c7882d2f60694a68fcb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of conflicting destinations. <br /></td></tr>
 <tr class="memitem:a5c81cfaf0ecabce92a6a075d2d93d991" id="r_a5c81cfaf0ecabce92a6a075d2d93d991"><td class="memItemLeft"><a id="a5c81cfaf0ecabce92a6a075d2d93d991" name="a5c81cfaf0ecabce92a6a075d2d93d991"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>errors</b> = 0</td></tr>
+<tr class="memdesc:a5c81cfaf0ecabce92a6a075d2d93d991"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of validation errors. <br /></td></tr>
 <tr class="memitem:a76c6a2a5668b3239deaf1b41f817d878" id="r_a76c6a2a5668b3239deaf1b41f817d878"><td class="memItemLeft"><a id="a76c6a2a5668b3239deaf1b41f817d878" name="a76c6a2a5668b3239deaf1b41f817d878"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>warnings</b> = 0</td></tr>
+<tr class="memdesc:a76c6a2a5668b3239deaf1b41f817d878"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of nonblocking warnings. <br /></td></tr>
 <tr class="memitem:a76c90c924844fd03e1a0f95fdc5c3a88" id="r_a76c90c924844fd03e1a0f95fdc5c3a88"><td class="memItemLeft"><a id="a76c90c924844fd03e1a0f95fdc5c3a88" name="a76c90c924844fd03e1a0f95fdc5c3a88"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>live_edits</b> = 0</td></tr>
+<tr class="memdesc:a76c90c924844fd03e1a0f95fdc5c3a88"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of considered live edits. <br /></td></tr>
 <tr class="memitem:ae46727edf5a0169df45eb8cc0f167481" id="r_ae46727edf5a0169df45eb8cc0f167481"><td class="memItemLeft"><a id="ae46727edf5a0169df45eb8cc0f167481" name="ae46727edf5a0169df45eb8cc0f167481"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>prepared_memory</b> = 0</td></tr>
+<tr class="memdesc:ae46727edf5a0169df45eb8cc0f167481"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of staged memory selections. <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Counts derive from the exact candidate output, independent of visible UI filters. </p>
@@ -183,7 +194,7 @@ std::size_t&#160;</td><td class="memItemRight"><b>prepared_memory</b> = 0</td></
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevChangesReviewCounts.html">DevChangesReviewCounts</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevChangesReviewCounts.html">DevChangesReviewCounts</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

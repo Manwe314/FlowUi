@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,20 +106,95 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::TimingCorrelationSummary Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevTimingReporting_8hpp_source.html">DevTimingReporting.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a50a763cf55ddcf120294540c5bf767fb" id="r_a50a763cf55ddcf120294540c5bf767fb"><td class="memItemLeft"><a id="a50a763cf55ddcf120294540c5bf767fb" name="a50a763cf55ddcf120294540c5bf767fb"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1TimingEntityRef.html">TimingEntityRef</a>&#160;</td><td class="memItemRight"><b>entity</b> {}</td></tr>
-<tr class="memitem:a71dc6c014064cd8e4c506d34e2eaf846" id="r_a71dc6c014064cd8e4c506d34e2eaf846"><td class="memItemLeft"><a id="a71dc6c014064cd8e4c506d34e2eaf846" name="a71dc6c014064cd8e4c506d34e2eaf846"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>revision</b> = 0</td></tr>
-<tr class="memitem:ade1d7f6472453d1e5f555e4efe02388f" id="r_ade1d7f6472453d1e5f555e4efe02388f"><td class="memItemLeft"><a id="ade1d7f6472453d1e5f555e4efe02388f" name="ade1d7f6472453d1e5f555e4efe02388f"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>invocation</b> = 0</td></tr>
-<tr class="memitem:a6c8404b4db61c66e44052c7188a47d94" id="r_a6c8404b4db61c66e44052c7188a47d94"><td class="memItemLeft"><a id="a6c8404b4db61c66e44052c7188a47d94" name="a6c8404b4db61c66e44052c7188a47d94"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>zone</b> = 0</td></tr>
-<tr class="memitem:a0c7cf1dbb646ccd29c467d61bda52ad1" id="r_a0c7cf1dbb646ccd29c467d61bda52ad1"><td class="memItemLeft"><a id="a0c7cf1dbb646ccd29c467d61bda52ad1" name="a0c7cf1dbb646ccd29c467d61bda52ad1"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>generation</b> = 0</td></tr>
+<tr class="memitem:a50a763cf55ddcf120294540c5bf767fb" id="r_a50a763cf55ddcf120294540c5bf767fb"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1TimingEntityRef.html">TimingEntityRef</a>&#160;</td><td class="memItemRight"><a class="el" href="#a50a763cf55ddcf120294540c5bf767fb">entity</a> {}</td></tr>
+<tr class="memitem:a71dc6c014064cd8e4c506d34e2eaf846" id="r_a71dc6c014064cd8e4c506d34e2eaf846"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a71dc6c014064cd8e4c506d34e2eaf846">revision</a> = 0</td></tr>
+<tr class="memitem:ade1d7f6472453d1e5f555e4efe02388f" id="r_ade1d7f6472453d1e5f555e4efe02388f"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ade1d7f6472453d1e5f555e4efe02388f">invocation</a> = 0</td></tr>
+<tr class="memitem:a6c8404b4db61c66e44052c7188a47d94" id="r_a6c8404b4db61c66e44052c7188a47d94"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a6c8404b4db61c66e44052c7188a47d94">zone</a> = 0</td></tr>
+<tr class="memitem:a0c7cf1dbb646ccd29c467d61bda52ad1" id="r_a0c7cf1dbb646ccd29c467d61bda52ad1"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a0c7cf1dbb646ccd29c467d61bda52ad1">generation</a> = 0</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Compact copied attribution of a diagnostic sample to a retained timing invocation. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a50a763cf55ddcf120294540c5bf767fb" name="a50a763cf55ddcf120294540c5bf767fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a50a763cf55ddcf120294540c5bf767fb">&#9670;&#160;</a></span>entity</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1TimingEntityRef.html">TimingEntityRef</a> FlowUi::devSystems::TimingCorrelationSummary::entity {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Semantic entity attributed to this timing zone or correlation. </p>
+
+</div>
+</div>
+<a id="a0c7cf1dbb646ccd29c467d61bda52ad1" name="a0c7cf1dbb646ccd29c467d61bda52ad1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c7cf1dbb646ccd29c467d61bda52ad1">&#9670;&#160;</a></span>generation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingCorrelationSummary::generation = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Identity of this capture generation. </p>
+
+</div>
+</div>
+<a id="ade1d7f6472453d1e5f555e4efe02388f" name="ade1d7f6472453d1e5f555e4efe02388f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ade1d7f6472453d1e5f555e4efe02388f">&#9670;&#160;</a></span>invocation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingCorrelationSummary::invocation = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Identity of the containing retained timing invocation. </p>
+
+</div>
+</div>
+<a id="a71dc6c014064cd8e4c506d34e2eaf846" name="a71dc6c014064cd8e4c506d34e2eaf846"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a71dc6c014064cd8e4c506d34e2eaf846">&#9670;&#160;</a></span>revision</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingCorrelationSummary::revision = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Revision identifying the observed metadata, report or safe-point state. </p>
+
+</div>
+</div>
+<a id="a6c8404b4db61c66e44052c7188a47d94" name="a6c8404b4db61c66e44052c7188a47d94"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c8404b4db61c66e44052c7188a47d94">&#9670;&#160;</a></span>zone</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::TimingCorrelationSummary::zone = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Descriptor identity of the containing retained timing invocation. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevTimingReporting_8hpp_source.html">DevTimingReporting.hpp</a></li>
 </ul>
@@ -136,7 +211,7 @@ uint64_t&#160;</td><td class="memItemRight"><b>generation</b> = 0</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1TimingCorrelationSummary.html">TimingCorrelationSummary</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1TimingCorrelationSummary.html">TimingCorrelationSummary</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

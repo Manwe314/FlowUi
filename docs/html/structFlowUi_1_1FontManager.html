@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,7 +107,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Loads font faces and owns the atlas used by FlowUi text rendering.  
+<p>App-shared font-family registration and face resolution.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="FontManager_8hpp_source.html">FontManager.hpp</a>&gt;</code></p>
@@ -115,6 +115,7 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:DevFontView" id="r_DevFontView"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1FontManager_1_1DevFontView.html">DevFontView</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed registered-face metadata; reacquire after font catalog mutation.  <a href="structFlowUi_1_1FontManager_1_1DevFontView.html#details">More...</a><br /></td></tr>
 <tr class="memitem:DevAtlasLayerView" id="r_DevAtlasLayerView"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1FontManager_1_1DevAtlasLayerView.html">DevAtlasLayerView</a></td></tr>
 <tr class="memitem:DevAtlasView" id="r_DevAtlasView"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1FontManager_1_1DevAtlasView.html">DevAtlasView</a></td></tr>
 </table><table class="memberdecls">
@@ -122,15 +123,16 @@ Classes</h2></td></tr>
 Public Types</h2></td></tr>
 <tr class="memitem:a4e77e6d236b7f2a6bcd719bd860ec835" id="r_a4e77e6d236b7f2a6bcd719bd860ec835"><td class="memItemLeft"><a id="a4e77e6d236b7f2a6bcd719bd860ec835" name="a4e77e6d236b7f2a6bcd719bd860ec835"></a>
 using&#160;</td><td class="memItemRight"><b>DevFontVisitor</b> = bool (*)(void*, const <a class="el" href="structFlowUi_1_1FontManager_1_1DevFontView.html">DevFontView</a>&amp;)</td></tr>
+<tr class="memdesc:a4e77e6d236b7f2a6bcd719bd860ec835"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronous observation callback; return false to stop visitation. Arguments are borrowed for the call. <br /></td></tr>
 <tr class="memitem:a1af0e6d63b7adffafe2c898815737f56" id="r_a1af0e6d63b7adffafe2c898815737f56"><td class="memItemLeft"><a id="a1af0e6d63b7adffafe2c898815737f56" name="a1af0e6d63b7adffafe2c898815737f56"></a>
-using&#160;</td><td class="memItemRight"><b>FontId</b> = FlowUi::FontId</td></tr>
-<tr class="memdesc:a1af0e6d63b7adffafe2c898815737f56"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience alias for FlowUi::FontId. <br /></td></tr>
+using&#160;</td><td class="memItemRight"><b>FontId</b> = <a class="el" href="namespaceFlowUi.html#a45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a></td></tr>
+<tr class="memdesc:a1af0e6d63b7adffafe2c898815737f56"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience alias for <a class="el" href="namespaceFlowUi.html#a45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a>. <br /></td></tr>
 <tr class="memitem:a4fe0d70aba49ed33ab3a962a844a2ce1" id="r_a4fe0d70aba49ed33ab3a962a844a2ce1"><td class="memItemLeft"><a id="a4fe0d70aba49ed33ab3a962a844a2ce1" name="a4fe0d70aba49ed33ab3a962a844a2ce1"></a>
-using&#160;</td><td class="memItemRight"><b>FontFamilyId</b> = FlowUi::FontFamilyId</td></tr>
-<tr class="memdesc:a4fe0d70aba49ed33ab3a962a844a2ce1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience alias for FlowUi::FontFamilyId. <br /></td></tr>
+using&#160;</td><td class="memItemRight"><b>FontFamilyId</b> = <a class="el" href="namespaceFlowUi.html#a95598f991c84086ade49a9b22410496a">FlowUi::FontFamilyId</a></td></tr>
+<tr class="memdesc:a4fe0d70aba49ed33ab3a962a844a2ce1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience alias for <a class="el" href="namespaceFlowUi.html#a95598f991c84086ade49a9b22410496a">FlowUi::FontFamilyId</a>. <br /></td></tr>
 <tr class="memitem:a35ab8bc2f811b772c17cdfd93fcdc876" id="r_a35ab8bc2f811b772c17cdfd93fcdc876"><td class="memItemLeft"><a id="a35ab8bc2f811b772c17cdfd93fcdc876" name="a35ab8bc2f811b772c17cdfd93fcdc876"></a>
-using&#160;</td><td class="memItemRight"><b>FontStyle</b> = FlowUi::FontStyle</td></tr>
-<tr class="memdesc:a35ab8bc2f811b772c17cdfd93fcdc876"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience alias for FlowUi::FontStyle. <br /></td></tr>
+using&#160;</td><td class="memItemRight"><b>FontStyle</b> = <a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52e">FlowUi::FontStyle</a></td></tr>
+<tr class="memdesc:a35ab8bc2f811b772c17cdfd93fcdc876"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience alias for <a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52e">FlowUi::FontStyle</a>. <br /></td></tr>
 <tr class="memitem:a781e4f05097ef02aaa08ca7b448915be" id="r_a781e4f05097ef02aaa08ca7b448915be"><td class="memItemLeft"><a id="a781e4f05097ef02aaa08ca7b448915be" name="a781e4f05097ef02aaa08ca7b448915be"></a>
 using&#160;</td><td class="memItemRight"><b>FontFaceCreateInfo</b> = <a class="el" href="structFlowUi_1_1FontFaceCreateInfo.html">FlowUi::FontFaceCreateInfo</a></td></tr>
 <tr class="memdesc:a781e4f05097ef02aaa08ca7b448915be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience alias for <a class="el" href="structFlowUi_1_1FontFaceCreateInfo.html">FlowUi::FontFaceCreateInfo</a>. <br /></td></tr>
@@ -142,37 +144,46 @@ using&#160;</td><td class="memItemRight"><b>FontFamilyCreateInfo</b> = <a class=
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a46e1c8466773b818944f17d586f741e9" id="r_a46e1c8466773b818944f17d586f741e9"><td class="memItemLeft"><a id="a46e1c8466773b818944f17d586f741e9" name="a46e1c8466773b818944f17d586f741e9"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>devRevision</b> () const noexcept</td></tr>
+<tr class="memdesc:a46e1c8466773b818944f17d586f741e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the current development-observation revision; zero when support is disabled. <br /></td></tr>
 <tr class="memitem:aea1366b051a9a0e3333ae93669897737" id="r_aea1366b051a9a0e3333ae93669897737"><td class="memItemLeft"><a id="aea1366b051a9a0e3333ae93669897737" name="aea1366b051a9a0e3333ae93669897737"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>devFontCount</b> () const noexcept</td></tr>
-<tr class="memitem:a77f671f426f8eb426226a1c3ab7f2d86" id="r_a77f671f426f8eb426226a1c3ab7f2d86"><td class="memItemLeft"><a id="a77f671f426f8eb426226a1c3ab7f2d86" name="a77f671f426f8eb426226a1c3ab7f2d86"></a>
-bool&#160;</td><td class="memItemRight"><b>visitDevFonts</b> (void *userData, DevFontVisitor visitor) const</td></tr>
+<tr class="memdesc:aea1366b051a9a0e3333ae93669897737"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of currently published entries in this development catalogue. <br /></td></tr>
+<tr class="memitem:acc192fbfbe908334fd3a7a905068183c" id="r_acc192fbfbe908334fd3a7a905068183c"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#acc192fbfbe908334fd3a7a905068183c">visitDevFonts</a> (void *userData, <a class="el" href="#a4e77e6d236b7f2a6bcd719bd860ec835">DevFontVisitor</a> visitor) const noexcept</td></tr>
+<tr class="memdesc:acc192fbfbe908334fd3a7a905068183c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Observe development catalogue entries without invoking application operations.  <br /></td></tr>
 <tr class="memitem:a69690599bea47f0effad22f535b2f675" id="r_a69690599bea47f0effad22f535b2f675"><td class="memItemLeft"><a id="a69690599bea47f0effad22f535b2f675" name="a69690599bea47f0effad22f535b2f675"></a>
 <a class="el" href="structFlowUi_1_1FontManager_1_1DevAtlasView.html">DevAtlasView</a>&#160;</td><td class="memItemRight"><b>devAtlas</b> () const noexcept</td></tr>
+<tr class="memdesc:a69690599bea47f0effad22f535b2f675"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return current atlas metrics and borrowed first-layer preview; does not transfer ownership. <br /></td></tr>
 <tr class="memitem:aa7a3fa3212f16408eb5ed1701ffda9e7" id="r_aa7a3fa3212f16408eb5ed1701ffda9e7"><td class="memItemLeft">std::span&lt; const <a class="el" href="structFlowUi_1_1FontManager_1_1DevAtlasLayerView.html">DevAtlasLayerView</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aa7a3fa3212f16408eb5ed1701ffda9e7">dev_atlas_layers</a> () const noexcept</td></tr>
-<tr class="memitem:ab7365ed4af41a972eb81050bed9e968d" id="r_ab7365ed4af41a972eb81050bed9e968d"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ab7365ed4af41a972eb81050bed9e968d">createFamily</a> (const <a class="el" href="#a61a06f1d8f5d6804ad9226bbf71bc8e2">FontFamilyCreateInfo</a> &amp;createInfo)</td></tr>
-<tr class="memdesc:ab7365ed4af41a972eb81050bed9e968d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a logical font family and register its initial faces.  <br /></td></tr>
-<tr class="memitem:a016c288e0beb72f9da8c51e5e6ebe8a7" id="r_a016c288e0beb72f9da8c51e5e6ebe8a7"><td class="memItemLeft"><a id="a016c288e0beb72f9da8c51e5e6ebe8a7" name="a016c288e0beb72f9da8c51e5e6ebe8a7"></a>
-<a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a> &gt;&#160;</td><td class="memItemRight"><b>createFamily</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, const <a class="el" href="#a61a06f1d8f5d6804ad9226bbf71bc8e2">FontFamilyCreateInfo</a> &amp;createInfo)</td></tr>
-<tr class="memitem:a829f7e37438eef1eb8fa9981a8d511ec" id="r_a829f7e37438eef1eb8fa9981a8d511ec"><td class="memItemLeft"><a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a829f7e37438eef1eb8fa9981a8d511ec">getFamilyId</a> (std::string_view familyName) const</td></tr>
-<tr class="memdesc:a829f7e37438eef1eb8fa9981a8d511ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a family id by name.  <br /></td></tr>
-<tr class="memitem:a93ba1072f5fadd3636dc114aea316eea" id="r_a93ba1072f5fadd3636dc114aea316eea"><td class="memItemLeft"><a id="a93ba1072f5fadd3636dc114aea316eea" name="a93ba1072f5fadd3636dc114aea316eea"></a>
-<a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a>&#160;</td><td class="memItemRight"><b>getFamilyId</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key) const</td></tr>
-<tr class="memitem:a8d679e647ed5d691aaed635375cde072" id="r_a8d679e647ed5d691aaed635375cde072"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a8d679e647ed5d691aaed635375cde072">addFamilyFace</a> (<a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a> familyId, const <a class="el" href="#a781e4f05097ef02aaa08ca7b448915be">FontFaceCreateInfo</a> &amp;createInfo)</td></tr>
-<tr class="memdesc:a8d679e647ed5d691aaed635375cde072"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a concrete face to an existing family.  <br /></td></tr>
-<tr class="memitem:af5de39f9650179181bf701486df114ab" id="r_af5de39f9650179181bf701486df114ab"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#af5de39f9650179181bf701486df114ab">addFamilyFace</a> (std::string_view familyName, const <a class="el" href="#a781e4f05097ef02aaa08ca7b448915be">FontFaceCreateInfo</a> &amp;createInfo)</td></tr>
-<tr class="memdesc:af5de39f9650179181bf701486df114ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a concrete face to a named family.  <br /></td></tr>
-<tr class="memitem:a3e36f0eb130c25eeeb492e42409df3f5" id="r_a3e36f0eb130c25eeeb492e42409df3f5"><td class="memItemLeft"><a id="a3e36f0eb130c25eeeb492e42409df3f5" name="a3e36f0eb130c25eeeb492e42409df3f5"></a>
-<a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> &gt;&#160;</td><td class="memItemRight"><b>addFamilyFace</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, const <a class="el" href="#a781e4f05097ef02aaa08ca7b448915be">FontFaceCreateInfo</a> &amp;createInfo)</td></tr>
-<tr class="memitem:a39c0eeaed6002691f954b1bcc6eadd83" id="r_a39c0eeaed6002691f954b1bcc6eadd83"><td class="memItemLeft"><a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a39c0eeaed6002691f954b1bcc6eadd83">resolveFont</a> (<a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a> familyId, uint32_t weight=400, <a class="el" href="#a35ab8bc2f811b772c17cdfd93fcdc876">FontStyle</a> style=FontStyle::Normal) const</td></tr>
-<tr class="memdesc:a39c0eeaed6002691f954b1bcc6eadd83"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve a concrete Clay font id for a family, weight, and style.  <br /></td></tr>
-<tr class="memitem:a32e8291f5b08bc0d46d0884b8b4bad12" id="r_a32e8291f5b08bc0d46d0884b8b4bad12"><td class="memItemLeft"><a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a32e8291f5b08bc0d46d0884b8b4bad12">resolveFont</a> (std::string_view familyName, uint32_t weight=400, <a class="el" href="#a35ab8bc2f811b772c17cdfd93fcdc876">FontStyle</a> style=FontStyle::Normal) const</td></tr>
-<tr class="memdesc:a32e8291f5b08bc0d46d0884b8b4bad12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve a concrete Clay font id for a named family, weight, and style.  <br /></td></tr>
-<tr class="memitem:a8d77b86cc74a73b50d2e94e963ef85c8" id="r_a8d77b86cc74a73b50d2e94e963ef85c8"><td class="memItemLeft"><a id="a8d77b86cc74a73b50d2e94e963ef85c8" name="a8d77b86cc74a73b50d2e94e963ef85c8"></a>
-<a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a>&#160;</td><td class="memItemRight"><b>resolveFont</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, uint32_t weight=400, <a class="el" href="#a35ab8bc2f811b772c17cdfd93fcdc876">FontStyle</a> style=FontStyle::Normal) const</td></tr>
-<tr class="memitem:ad67d18ee896d36b0cd0b4567cf79c311" id="r_ad67d18ee896d36b0cd0b4567cf79c311"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1Font_1_1FontFaceData.html">FlowUi::Font::FontFaceData</a> *&#160;</td><td class="memItemRight"><a class="el" href="#ad67d18ee896d36b0cd0b4567cf79c311">getFontById</a> (<a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> fontId) const</td></tr>
-<tr class="memdesc:ad67d18ee896d36b0cd0b4567cf79c311"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return loaded font data by concrete font id.  <br /></td></tr>
-<tr class="memitem:a20dada10a04d85cfb7b46f95c952085e" id="r_a20dada10a04d85cfb7b46f95c952085e"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1Font_1_1AtlasArrayResource.html">FlowUi::Font::AtlasArrayResource</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a20dada10a04d85cfb7b46f95c952085e">getAtlasResource</a> () const</td></tr>
-<tr class="memdesc:a20dada10a04d85cfb7b46f95c952085e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the active Vulkan font atlas array resource.  <br /></td></tr>
+<tr class="memitem:a8e440e04bbf034476869355cc2530e56" id="r_a8e440e04bbf034476869355cc2530e56"><td class="memItemLeft"><a id="a8e440e04bbf034476869355cc2530e56" name="a8e440e04bbf034476869355cc2530e56"></a>
+void&#160;</td><td class="memItemRight"><b>appendDevMemorySamples</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1MemorySampleSink.html">devSystems::MemorySampleSink</a> &amp;sink) const noexcept</td></tr>
+<tr class="memdesc:a8e440e04bbf034476869355cc2530e56"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append observation-only memory accounting to sink without transferring storage ownership. <br /></td></tr>
+<tr class="memitem:a2696633f69938573fe992c34a1e0d15c" id="r_a2696633f69938573fe992c34a1e0d15c"><td class="memItemLeft"><a id="a2696633f69938573fe992c34a1e0d15c" name="a2696633f69938573fe992c34a1e0d15c"></a>
+void&#160;</td><td class="memItemRight"><b>setDevMemoryRecorder</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1DevMemoryRecorder.html">devSystems::DevMemoryRecorder</a> *recorder) noexcept</td></tr>
+<tr class="memdesc:a2696633f69938573fe992c34a1e0d15c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attach a borrowed development memory recorder; null disables recording. <br /></td></tr>
+<tr class="memitem:ae970b07e106b8f45d9ed73507f4d9dd5" id="r_ae970b07e106b8f45d9ed73507f4d9dd5"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ae970b07e106b8f45d9ed73507f4d9dd5">createFamily</a> (const <a class="el" href="#a61a06f1d8f5d6804ad9226bbf71bc8e2">FontFamilyCreateInfo</a> &amp;createInfo) noexcept</td></tr>
+<tr class="memdesc:ae970b07e106b8f45d9ed73507f4d9dd5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a font family and synchronously load its initial faces.  <br /></td></tr>
+<tr class="memitem:a837f6eab8edb55a4afafb7cab7f88aab" id="r_a837f6eab8edb55a4afafb7cab7f88aab"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a837f6eab8edb55a4afafb7cab7f88aab">createFamily</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, const <a class="el" href="#a61a06f1d8f5d6804ad9226bbf71bc8e2">FontFamilyCreateInfo</a> &amp;createInfo) noexcept</td></tr>
+<tr class="memdesc:a837f6eab8edb55a4afafb7cab7f88aab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a font family and synchronously load its initial faces.  <br /></td></tr>
+<tr class="memitem:a45a7719ef7ac5237062c1468e4d8cf0a" id="r_a45a7719ef7ac5237062c1468e4d8cf0a"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a45a7719ef7ac5237062c1468e4d8cf0a">getFamilyId</a> (std::string_view familyName) const noexcept</td></tr>
+<tr class="memdesc:a45a7719ef7ac5237062c1468e4d8cf0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Look up a family ID without loading a font.  <br /></td></tr>
+<tr class="memitem:a3e6b1548f4b51af04fa55d4dc86963f6" id="r_a3e6b1548f4b51af04fa55d4dc86963f6"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a3e6b1548f4b51af04fa55d4dc86963f6">getFamilyId</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key) const noexcept</td></tr>
+<tr class="memdesc:a3e6b1548f4b51af04fa55d4dc86963f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Look up a family ID without loading a font.  <br /></td></tr>
+<tr class="memitem:a107a9718eac7f5efc0c36e69cb1ebfc6" id="r_a107a9718eac7f5efc0c36e69cb1ebfc6"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a107a9718eac7f5efc0c36e69cb1ebfc6">addFamilyFace</a> (<a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a> familyId, const <a class="el" href="#a781e4f05097ef02aaa08ca7b448915be">FontFaceCreateInfo</a> &amp;createInfo) noexcept</td></tr>
+<tr class="memdesc:a107a9718eac7f5efc0c36e69cb1ebfc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronously load and append a face to an existing family.  <br /></td></tr>
+<tr class="memitem:a20cc58e092837cb54884023cfedc90c3" id="r_a20cc58e092837cb54884023cfedc90c3"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a20cc58e092837cb54884023cfedc90c3">addFamilyFace</a> (std::string_view familyName, const <a class="el" href="#a781e4f05097ef02aaa08ca7b448915be">FontFaceCreateInfo</a> &amp;createInfo) noexcept</td></tr>
+<tr class="memdesc:a20cc58e092837cb54884023cfedc90c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronously load and append a face to an existing family.  <br /></td></tr>
+<tr class="memitem:a68486e485b96028966cc40779692e0d2" id="r_a68486e485b96028966cc40779692e0d2"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a68486e485b96028966cc40779692e0d2">addFamilyFace</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, const <a class="el" href="#a781e4f05097ef02aaa08ca7b448915be">FontFaceCreateInfo</a> &amp;createInfo) noexcept</td></tr>
+<tr class="memdesc:a68486e485b96028966cc40779692e0d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronously load and append a face to an existing family.  <br /></td></tr>
+<tr class="memitem:a71f45c8172c1564d7b54127a3469b4de" id="r_a71f45c8172c1564d7b54127a3469b4de"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a71f45c8172c1564d7b54127a3469b4de">resolveFont</a> (<a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a> familyId, uint32_t weight=400, <a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52e">FontStyle</a> style=<a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FontStyle::Normal</a>) const noexcept</td></tr>
+<tr class="memdesc:a71f45c8172c1564d7b54127a3469b4de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Select a registered face for a family, weight, and style.  <br /></td></tr>
+<tr class="memitem:ae5c3b933fb6c598beaae77813006bbf0" id="r_ae5c3b933fb6c598beaae77813006bbf0"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ae5c3b933fb6c598beaae77813006bbf0">resolveFont</a> (std::string_view familyName, uint32_t weight=400, <a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52e">FontStyle</a> style=<a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FontStyle::Normal</a>) const noexcept</td></tr>
+<tr class="memdesc:ae5c3b933fb6c598beaae77813006bbf0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Select a registered face for a family, weight, and style.  <br /></td></tr>
+<tr class="memitem:a5aa865d3a0472a3fec4dcdc8c325eee5" id="r_a5aa865d3a0472a3fec4dcdc8c325eee5"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a5aa865d3a0472a3fec4dcdc8c325eee5">resolveFont</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, uint32_t weight=400, <a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52e">FontStyle</a> style=<a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FontStyle::Normal</a>) const noexcept</td></tr>
+<tr class="memdesc:a5aa865d3a0472a3fec4dcdc8c325eee5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Select a registered face for a family, weight, and style.  <br /></td></tr>
+<tr class="memitem:aba3f4682e51fad1002c7ab9c7d049a9f" id="r_aba3f4682e51fad1002c7ab9c7d049a9f"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1Font_1_1FontFaceData.html">FlowUi::Font::FontFaceData</a> *&#160;</td><td class="memItemRight"><a class="el" href="#aba3f4682e51fad1002c7ab9c7d049a9f">getFontById</a> (<a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> fontId) const noexcept</td></tr>
+<tr class="memdesc:aba3f4682e51fad1002c7ab9c7d049a9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow a loaded face and its metrics.  <br /></td></tr>
+<tr class="memitem:a7b10e52fdcc6507866acc4c36abfcd04" id="r_a7b10e52fdcc6507866acc4c36abfcd04"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::reference_wrapper&lt; const <a class="el" href="structFlowUi_1_1Font_1_1AtlasArrayResource.html">FlowUi::Font::AtlasArrayResource</a> &gt; &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a7b10e52fdcc6507866acc4c36abfcd04">getAtlasResource</a> () const noexcept</td></tr>
+<tr class="memdesc:a7b10e52fdcc6507866acc4c36abfcd04"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrow the current Vulkan font atlas resource.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-attribs" class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
@@ -180,22 +191,13 @@ Static Public Attributes</h2></td></tr>
 <tr class="memdesc:a084d2dcef0e054934ec89cc9e1ef3cbf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of font atlas array layers allocated for the first atlas image.  <br /></td></tr>
 <tr class="memitem:ad90022b983223e1fcdfe28c94ff0c711" id="r_ad90022b983223e1fcdfe28c94ff0c711"><td class="memItemLeft">static constexpr uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#ad90022b983223e1fcdfe28c94ff0c711">kAtlasLayerGrowthStep</a> = 4</td></tr>
 <tr class="memdesc:ad90022b983223e1fcdfe28c94ff0c711"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of atlas array layers added when the font atlas grows.  <br /></td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a4097b3e04a4f8ece21f5abe1b10e6323" id="r_a4097b3e04a4f8ece21f5abe1b10e6323"><td class="memItemLeft"><a id="a4097b3e04a4f8ece21f5abe1b10e6323" name="a4097b3e04a4f8ece21f5abe1b10e6323"></a>
-class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Loads font faces and owns the atlas used by FlowUi text rendering. </p>
-<p><a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a> registers concrete font faces, groups them into logical font families, and resolves a requested family/weight/style into the concrete <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56" title="Convenience alias for FlowUi::FontId.">FontId</a> consumed by Clay text configuration. Applications normally access it through <a class="el" href="classFlowUi_1_1App.html#a1db6aceb22351a9a0c199e1faeb9405a" title="Access the font manager.">App::fonts()</a> after <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> initialization.</p>
-<p>Loaded faces are uploaded into a Vulkan 2D array atlas. Each face occupies one array layer, so the atlas can grow by allocating more layers without changing the page width or height configured by <a class="el" href="structFlowUi_1_1UiConfig.html#a19b1e622e654aa327337dd27489020b9" title="Width and height in pixels of each font atlas page.">UiConfig::fontAtlasSize</a>.</p>
-<div class="fragment"></div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2fonts__and__text.html" title="Fonts and Text">Fonts and Text</a> </dd>
-<dd>
-<a class="el" href="md_docs_2concepts_2managers.html" title="Managers">Managers</a> </dd></dl>
+<div class="textblock"><p>App-shared font-family registration and face resolution. </p>
+<p>Recoverable operations return checked Result/Status values. A successful bool payload may be false; inspect the payload only after checking the <a class="el" href="classFlowUi_1_1Result.html">Result</a>. Obtain App-owned managers through the checked <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> getter and unwrap its reference_wrapper with result-&gt;get(). Returned text, metadata, resource views, and pointers remain borrowed under each operation's documented invalidation rules. </p>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
-<a id="a8d679e647ed5d691aaed635375cde072" name="a8d679e647ed5d691aaed635375cde072"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8d679e647ed5d691aaed635375cde072">&#9670;&#160;</a></span>addFamilyFace() <span class="overload">[1/2]</span></h2>
+<a id="a107a9718eac7f5efc0c36e69cb1ebfc6" name="a107a9718eac7f5efc0c36e69cb1ebfc6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a107a9718eac7f5efc0c36e69cb1ebfc6">&#9670;&#160;</a></span>addFamilyFace() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -216,33 +218,71 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Add a concrete face to an existing family. </p>
-<p>The face is loaded immediately and becomes available to <a class="el" href="#a39c0eeaed6002691f954b1bcc6eadd83" title="Resolve a concrete Clay font id for a family, weight, and style.">resolveFont()</a> for the provided weight and style. Use this overload when the caller already cached a <a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1" title="Convenience alias for FlowUi::FontFamilyId.">FontFamilyId</a>.</p>
-<p>Paths ending in .arfont load baked font assets. Paths to .ttf files only work when FlowUi is built with runtime font baking enabled.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">familyId</td><td>Existing logical family id. </td></tr>
-    <tr><td class="paramname">createInfo</td><td>Concrete face source path, pixel size, weight, style, and optional name. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The loaded font id, or a structured error if the family is absent or the face cannot be loaded. </dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">std::bad_alloc</td><td>if allocating font data fails.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Synchronously load and append a face to an existing family. </p>
+<p>The manager owns loaded bytes. <a class="el" href="structFlowUi_1_1FontFaceCreateInfo.html#a76b869b6b98cab6bebe776336722d336">FontFaceCreateInfo::baked_data</a> is borrowed only for this call; adding faces can invalidate previously borrowed FontFaceData pointers.</p>
+<dl class="section return"><dt>Returns</dt><dd>The value is a concrete <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56" title="Convenience alias for FlowUi::FontId.">FontId</a>; a missing family is FontFamilyNotFound. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1FontFaceCreateInfo.html">FlowUi::FontFaceCreateInfo</a> face{};</div>
+<div class="line">face.<a class="code hl_variable" href="structFlowUi_1_1FontFaceCreateInfo.html#abd1ad940cbd3b2f1e1a1a711d72e8bd5">path</a> = <span class="stringliteral">&quot;assets/fonts/Inter.arfont&quot;</span>;</div>
+<div class="line"><span class="keyword">auto</span> result = manager.addFamilyFace(familyId, face);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> fontId = *result;</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+<div class="ttc" id="astructFlowUi_1_1FontFaceCreateInfo_html"><div class="ttname"><a href="structFlowUi_1_1FontFaceCreateInfo.html">FlowUi::FontFaceCreateInfo</a></div><div class="ttdef"><b>Definition</b> FontTypes.hpp:30</div></div>
+<div class="ttc" id="astructFlowUi_1_1FontFaceCreateInfo_html_abd1ad940cbd3b2f1e1a1a711d72e8bd5"><div class="ttname"><a href="structFlowUi_1_1FontFaceCreateInfo.html#abd1ad940cbd3b2f1e1a1a711d72e8bd5">FlowUi::FontFaceCreateInfo::path</a></div><div class="ttdeci">std::filesystem::path path</div><div class="ttdef"><b>Definition</b> FontTypes.hpp:32</div></div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="af5de39f9650179181bf701486df114ab" name="af5de39f9650179181bf701486df114ab"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af5de39f9650179181bf701486df114ab">&#9670;&#160;</a></span>addFamilyFace() <span class="overload">[2/2]</span></h2>
+<a id="a68486e485b96028966cc40779692e0d2" name="a68486e485b96028966cc40779692e0d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a68486e485b96028966cc40779692e0d2">&#9670;&#160;</a></span>addFamilyFace() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> &gt; FlowUi::FontManager::addFamilyFace </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="#a781e4f05097ef02aaa08ca7b448915be">FontFaceCreateInfo</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>createInfo</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Synchronously load and append a face to an existing family. </p>
+<p>The manager owns loaded bytes. <a class="el" href="structFlowUi_1_1FontFaceCreateInfo.html#a76b869b6b98cab6bebe776336722d336">FontFaceCreateInfo::baked_data</a> is borrowed only for this call; adding faces can invalidate previously borrowed FontFaceData pointers. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<dl class="section return"><dt>Returns</dt><dd>The value is a concrete <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56" title="Convenience alias for FlowUi::FontId.">FontId</a>; a missing family is FontFamilyNotFound. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;Body&quot;</span>};</div>
+<div class="line"><a class="code hl_struct" href="structFlowUi_1_1FontFaceCreateInfo.html">FlowUi::FontFaceCreateInfo</a> face{};</div>
+<div class="line">face.<a class="code hl_variable" href="structFlowUi_1_1FontFaceCreateInfo.html#abd1ad940cbd3b2f1e1a1a711d72e8bd5">path</a> = <span class="stringliteral">&quot;assets/fonts/Inter.arfont&quot;</span>;</div>
+<div class="line"><span class="keyword">auto</span> result = manager.addFamilyFace(key, face);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> fontId = *result;</div>
+<div class="ttc" id="astructFlowUi_1_1ResourceKey_html"><div class="ttname"><a href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a></div><div class="ttdoc">Human-readable logical identity accepted by FlowUi managers.</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:39</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a20cc58e092837cb54884023cfedc90c3" name="a20cc58e092837cb54884023cfedc90c3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a20cc58e092837cb54884023cfedc90c3">&#9670;&#160;</a></span>addFamilyFace() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -263,33 +303,26 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Add a concrete face to a named family. </p>
-<p>The face is loaded immediately and becomes available to <a class="el" href="#a39c0eeaed6002691f954b1bcc6eadd83" title="Resolve a concrete Clay font id for a family, weight, and style.">resolveFont()</a> for the provided weight and style. Use this overload when the caller wants the manager to look up the family by name.</p>
-<p>Paths ending in .arfont load baked font assets. Paths to .ttf files only work when FlowUi is built with runtime font baking enabled.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">familyName</td><td>Existing logical family name. </td></tr>
-    <tr><td class="paramname">createInfo</td><td>Concrete face source path, pixel size, weight, style, and optional name. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The loaded font id, or a structured error if the family is absent or the face cannot be loaded. </dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">std::bad_alloc</td><td>if allocating font data fails.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Synchronously load and append a face to an existing family. </p>
+<p>The manager owns loaded bytes. <a class="el" href="structFlowUi_1_1FontFaceCreateInfo.html#a76b869b6b98cab6bebe776336722d336">FontFaceCreateInfo::baked_data</a> is borrowed only for this call; adding faces can invalidate previously borrowed FontFaceData pointers.</p>
+<dl class="section return"><dt>Returns</dt><dd>The value is a concrete <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56" title="Convenience alias for FlowUi::FontId.">FontId</a>; a missing family is FontFamilyNotFound. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1FontFaceCreateInfo.html">FlowUi::FontFaceCreateInfo</a> face{};</div>
+<div class="line">face.<a class="code hl_variable" href="structFlowUi_1_1FontFaceCreateInfo.html#abd1ad940cbd3b2f1e1a1a711d72e8bd5">path</a> = <span class="stringliteral">&quot;assets/fonts/Inter.arfont&quot;</span>;</div>
+<div class="line"><span class="keyword">auto</span> result = manager.addFamilyFace(<span class="stringliteral">&quot;Body&quot;</span>, face);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> fontId = *result;</div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="ab7365ed4af41a972eb81050bed9e968d" name="ab7365ed4af41a972eb81050bed9e968d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab7365ed4af41a972eb81050bed9e968d">&#9670;&#160;</a></span>createFamily()</h2>
+<a id="ae970b07e106b8f45d9ed73507f4d9dd5" name="ae970b07e106b8f45d9ed73507f4d9dd5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae970b07e106b8f45d9ed73507f4d9dd5">&#9670;&#160;</a></span>createFamily() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -306,30 +339,65 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Create a logical font family and register its initial faces. </p>
-<p>The family name is used for string-based lookup and each face is loaded immediately. If createInfo.name is empty, the family is named "Default". Family ids are stable until <a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a> is destroyed.</p>
-<p>Face paths ending in .arfont load baked font assets. Paths to .ttf files only work when FlowUi is built with runtime font baking enabled.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">createInfo</td><td>Family name and initial concrete faces to load. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The new family id, or a structured error when registration fails. </dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">std::bad_alloc</td><td>if allocating family or font data fails.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section note"><dt>Note</dt><dd>For now Font Family with the name "Default" will be created at init time so its best not to keep createInfo.name empty</dd></dl>
-<div class="fragment"></div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2fonts__and__text.html" title="Fonts and Text">Fonts and Text</a> </dd></dl>
+<p>Create a font family and synchronously load its initial faces. </p>
+<p>Faces accept baked .arfont assets or borrowed baked_data; source-font baking depends on FLOWUI_RUNTIME_FONT_BAKING. Borrowed bytes are consumed during this call. Family and face IDs remain valid for this manager's lifetime.</p>
+<dl class="section return"><dt>Returns</dt><dd>The value is the stable family ID. Duplicate names are FontFamilyAlreadyExists errors. An empty createInfo name uses Default, which startup normally already registered. The <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overload uses its normalized key name instead of createInfo.name. A failed family registration rolls back the candidate family and faces. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1FontFamilyCreateInfo.html">FlowUi::FontFamilyCreateInfo</a> createInfo{};</div>
+<div class="line">createInfo.<a class="code hl_variable" href="structFlowUi_1_1FontFamilyCreateInfo.html#a979e043a307b07b831fd831f7dca6000">name</a> = <span class="stringliteral">&quot;Body&quot;</span>;</div>
+<div class="line"><span class="keyword">auto</span> result = manager.createFamily(createInfo);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> familyId = *result;</div>
+<div class="ttc" id="astructFlowUi_1_1FontFamilyCreateInfo_html"><div class="ttname"><a href="structFlowUi_1_1FontFamilyCreateInfo.html">FlowUi::FontFamilyCreateInfo</a></div><div class="ttdef"><b>Definition</b> FontTypes.hpp:53</div></div>
+<div class="ttc" id="astructFlowUi_1_1FontFamilyCreateInfo_html_a979e043a307b07b831fd831f7dca6000"><div class="ttname"><a href="structFlowUi_1_1FontFamilyCreateInfo.html#a979e043a307b07b831fd831f7dca6000">FlowUi::FontFamilyCreateInfo::name</a></div><div class="ttdeci">std::string name</div><div class="ttdef"><b>Definition</b> FontTypes.hpp:55</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a837f6eab8edb55a4afafb7cab7f88aab" name="a837f6eab8edb55a4afafb7cab7f88aab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a837f6eab8edb55a4afafb7cab7f88aab">&#9670;&#160;</a></span>createFamily() <span class="overload">[2/2]</span></h2>
 
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a> &gt; FlowUi::FontManager::createFamily </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="#a61a06f1d8f5d6804ad9226bbf71bc8e2">FontFamilyCreateInfo</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>createInfo</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create a font family and synchronously load its initial faces. </p>
+<p>Faces accept baked .arfont assets or borrowed baked_data; source-font baking depends on FLOWUI_RUNTIME_FONT_BAKING. Borrowed bytes are consumed during this call. Family and face IDs remain valid for this manager's lifetime. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<dl class="section return"><dt>Returns</dt><dd>The value is the stable family ID. Duplicate names are FontFamilyAlreadyExists errors. An empty createInfo name uses Default, which startup normally already registered. The <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overload uses its normalized key name instead of createInfo.name. A failed family registration rolls back the candidate family and faces. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;Body&quot;</span>};</div>
+<div class="line"><a class="code hl_struct" href="structFlowUi_1_1FontFamilyCreateInfo.html">FlowUi::FontFamilyCreateInfo</a> createInfo{};</div>
+<div class="line">createInfo.<a class="code hl_variable" href="structFlowUi_1_1FontFamilyCreateInfo.html#a979e043a307b07b831fd831f7dca6000">name</a> = <span class="stringliteral">&quot;Body&quot;</span>;</div>
+<div class="line"><span class="keyword">auto</span> result = manager.createFamily(key, createInfo);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> familyId = *result;</div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="aa7a3fa3212f16408eb5ed1701ffda9e7" name="aa7a3fa3212f16408eb5ed1701ffda9e7"></a>
@@ -358,8 +426,8 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 
 </div>
 </div>
-<a id="a20dada10a04d85cfb7b46f95c952085e" name="a20dada10a04d85cfb7b46f95c952085e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a20dada10a04d85cfb7b46f95c952085e">&#9670;&#160;</a></span>getAtlasResource()</h2>
+<a id="a7b10e52fdcc6507866acc4c36abfcd04" name="a7b10e52fdcc6507866acc4c36abfcd04"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b10e52fdcc6507866acc4c36abfcd04">&#9670;&#160;</a></span>getAtlasResource()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -368,7 +436,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="structFlowUi_1_1Font_1_1AtlasArrayResource.html">FlowUi::Font::AtlasArrayResource</a> &amp; FlowUi::FontManager::getAtlasResource </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; std::reference_wrapper&lt; const <a class="el" href="structFlowUi_1_1Font_1_1AtlasArrayResource.html">FlowUi::Font::AtlasArrayResource</a> &gt; &gt; FlowUi::FontManager::getAtlasResource </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
@@ -376,19 +444,25 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return the active Vulkan font atlas array resource. </p>
-<p>Render integrations use this to bind the atlas image view and sampler. The returned reference is owned by <a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a> and remains valid until the font manager is destroyed or reinitialized. Check bindingRevision to know when a descriptor using the atlas should be refreshed.</p>
-<dl class="section return"><dt>Returns</dt><dd>Font atlas image, allocation, image view, sampler, dimensions, layer counts, and binding revision.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Borrow the current Vulkan font atlas resource. </p>
+<p>Unwrap with result-&gt;get() after checking the <a class="el" href="classFlowUi_1_1Result.html">Result</a>. The manager owns the atlas and Vulkan handles; never destroy them. The resource reference lasts until manager destruction/reinitialization, while bindingRevision changes when descriptor bindings need refreshing.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains <span class="tt">std::reference_wrapper&lt;const <a class="el" href="structFlowUi_1_1Font_1_1AtlasArrayResource.html" title="Vulkan resources for the font atlas array.">Font::AtlasArrayResource</a>&gt;</span>; a detached manager returns ObjectNotInitialized. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.getAtlasResource();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1Font_1_1AtlasArrayResource.html">FlowUi::Font::AtlasArrayResource</a>&amp; borrowed = result-&gt;get();</div>
+<div class="ttc" id="astructFlowUi_1_1Font_1_1AtlasArrayResource_html"><div class="ttname"><a href="structFlowUi_1_1Font_1_1AtlasArrayResource.html">FlowUi::Font::AtlasArrayResource</a></div><div class="ttdoc">Vulkan resources for the font atlas array.</div><div class="ttdef"><b>Definition</b> FontAtlas.hpp:21</div></div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a829f7e37438eef1eb8fa9981a8d511ec" name="a829f7e37438eef1eb8fa9981a8d511ec"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a829f7e37438eef1eb8fa9981a8d511ec">&#9670;&#160;</a></span>getFamilyId()</h2>
+<a id="a3e6b1548f4b51af04fa55d4dc86963f6" name="a3e6b1548f4b51af04fa55d4dc86963f6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e6b1548f4b51af04fa55d4dc86963f6">&#9670;&#160;</a></span>getFamilyId() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -397,7 +471,42 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a> FlowUi::FontManager::getFamilyId </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a> &gt; FlowUi::FontManager::getFamilyId </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Look up a family ID without loading a font. </p>
+<p>String family lookup is exact; <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> lookup additionally validates domain and scope. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<dl class="section return"><dt>Returns</dt><dd>A missing family is a successful std::numeric_limits&lt;FontFamilyId&gt;::max() value, not an error. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;Body&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.getFamilyId(key);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> familyId = *result;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a45a7719ef7ac5237062c1468e4d8cf0a" name="a45a7719ef7ac5237062c1468e4d8cf0a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a45a7719ef7ac5237062c1468e4d8cf0a">&#9670;&#160;</a></span>getFamilyId() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a> &gt; FlowUi::FontManager::getFamilyId </td>
           <td>(</td>
           <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>familyName</em></span></td><td>)</td>
           <td> const</td>
@@ -405,25 +514,24 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return a family id by name. </p>
-<p>This lookup lets callers cache a previously registered family id. Name normalization and lookup metadata may allocate. Missing families return std::numeric_limits&lt;FontFamilyId&gt;::max().</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">familyName</td><td>Logical family name passed to <a class="el" href="#ab7365ed4af41a972eb81050bed9e968d" title="Create a logical font family and register its initial faces.">createFamily()</a>. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Matching family id, or UINT32_MAX when no family has that name.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Look up a family ID without loading a font. </p>
+<p>String family lookup is exact; <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> lookup additionally validates domain and scope.</p>
+<dl class="section return"><dt>Returns</dt><dd>A missing family is a successful std::numeric_limits&lt;FontFamilyId&gt;::max() value, not an error. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.getFamilyId(<span class="stringliteral">&quot;Body&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> familyId = *result;</div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="ad67d18ee896d36b0cd0b4567cf79c311" name="ad67d18ee896d36b0cd0b4567cf79c311"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad67d18ee896d36b0cd0b4567cf79c311">&#9670;&#160;</a></span>getFontById()</h2>
+<a id="aba3f4682e51fad1002c7ab9c7d049a9f" name="aba3f4682e51fad1002c7ab9c7d049a9f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba3f4682e51fad1002c7ab9c7d049a9f">&#9670;&#160;</a></span>getFontById()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -440,25 +548,19 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return loaded font data by concrete font id. </p>
-<p>This exposes the baked metrics, glyph table, kerning table, and atlas placement for renderer or layout integrations that need direct access to a registered face. Normal UI code usually only needs <a class="el" href="#a39c0eeaed6002691f954b1bcc6eadd83" title="Resolve a concrete Clay font id for a family, weight, and style.">resolveFont()</a>.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">fontId</td><td>Concrete id returned by <a class="el" href="#ab7365ed4af41a972eb81050bed9e968d" title="Create a logical font family and register its initial faces.">createFamily()</a>, <a class="el" href="#a8d679e647ed5d691aaed635375cde072" title="Add a concrete face to an existing family.">addFamilyFace()</a>, or <a class="el" href="#a39c0eeaed6002691f954b1bcc6eadd83" title="Resolve a concrete Clay font id for a family, weight, and style.">resolveFont()</a>. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Pointer to loaded face data, or nullptr if fontId is unknown.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Borrow a loaded face and its metrics. </p>
+<p>Additional font registrations can reallocate face storage and invalidate the pointer. Reacquire it after loading fonts; do not retain it beyond the manager.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns nullptr when the concrete ID is unknown, including on a detached manager. </dd></dl>
+
 </div>
 </div>
-<a id="a39c0eeaed6002691f954b1bcc6eadd83" name="a39c0eeaed6002691f954b1bcc6eadd83"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a39c0eeaed6002691f954b1bcc6eadd83">&#9670;&#160;</a></span>resolveFont() <span class="overload">[1/2]</span></h2>
+<a id="a71f45c8172c1564d7b54127a3469b4de" name="a71f45c8172c1564d7b54127a3469b4de"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a71f45c8172c1564d7b54127a3469b4de">&#9670;&#160;</a></span>resolveFont() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -467,7 +569,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> FlowUi::FontManager::resolveFont </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> &gt; FlowUi::FontManager::resolveFont </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a></td>          <td class="paramname"><span class="paramname"><em>familyId</em></span>, </td>
         </tr>
@@ -479,33 +581,30 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="#a35ab8bc2f811b772c17cdfd93fcdc876">FontStyle</a></td>          <td class="paramname"><span class="paramname"><em>style</em></span><span class="paramdefsep"> = </span><span class="paramdefval">FontStyle::Normal</span>&#160;) const</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52e">FontStyle</a></td>          <td class="paramname"><span class="paramname"><em>style</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FontStyle::Normal</a></span>&#160;) const</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Resolve a concrete Clay font id for a family, weight, and style. </p>
-<p>Resolution first considers faces with the requested style, then chooses the face whose CSS-style weight is closest to weight. If the family has no matching style, the first registered face in the family is returned as a fallback.</p>
-<dl class="section see"><dt>See also</dt><dd>docs/font-resolution.md for the planned detailed fallthrough resolution rules.</dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">familyId</td><td>Existing logical family id. </td></tr>
-    <tr><td class="paramname">weight</td><td>Requested CSS-style font weight, such as 400 or 700. </td></tr>
-    <tr><td class="paramname">style</td><td>Requested normal or italic style. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Concrete <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56" title="Convenience alias for FlowUi::FontId.">FontId</a> for Clay text, or 0 if the family is invalid or empty.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Select a registered face for a family, weight, and style. </p>
+<p>Defaults are weight 400 and <a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FontStyle::Normal</a>. This query does not load or bake fonts.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains the nearest weight within the requested style (first registered face wins ties); if that style is absent, the first family face is used. A missing or empty family successfully resolves to fallback <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56" title="Convenience alias for FlowUi::FontId.">FontId</a> 0. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.resolveFont(familyId, 400, <a class="code hl_enumvalue" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FlowUi::FontStyle::Normal</a>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> fontId = *result;</div>
+<div class="ttc" id="anamespaceFlowUi_html_af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0"><div class="ttname"><a href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FlowUi::FontStyle::Normal</a></div><div class="ttdeci">@ Normal</div><div class="ttdef"><b>Definition</b> FontTypes.hpp:21</div></div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a32e8291f5b08bc0d46d0884b8b4bad12" name="a32e8291f5b08bc0d46d0884b8b4bad12"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a32e8291f5b08bc0d46d0884b8b4bad12">&#9670;&#160;</a></span>resolveFont() <span class="overload">[2/2]</span></h2>
+<a id="a5aa865d3a0472a3fec4dcdc8c325eee5" name="a5aa865d3a0472a3fec4dcdc8c325eee5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5aa865d3a0472a3fec4dcdc8c325eee5">&#9670;&#160;</a></span>resolveFont() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -514,7 +613,51 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> FlowUi::FontManager::resolveFont </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> &gt; FlowUi::FontManager::resolveFont </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>weight</em></span><span class="paramdefsep"> = </span><span class="paramdefval">400</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52e">FontStyle</a></td>          <td class="paramname"><span class="paramname"><em>style</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FontStyle::Normal</a></span>&#160;) const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Select a registered face for a family, weight, and style. </p>
+<p>Defaults are weight 400 and <a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FontStyle::Normal</a>. This query does not load or bake fonts. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains the nearest weight within the requested style (first registered face wins ties); if that style is absent, the first family face is used. A missing or empty family successfully resolves to fallback <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56" title="Convenience alias for FlowUi::FontId.">FontId</a> 0. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;Body&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.resolveFont(key, 400, <a class="code hl_enumvalue" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FlowUi::FontStyle::Normal</a>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> fontId = *result;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ae5c3b933fb6c598beaae77813006bbf0" name="ae5c3b933fb6c598beaae77813006bbf0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae5c3b933fb6c598beaae77813006bbf0">&#9670;&#160;</a></span>resolveFont() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> &gt; FlowUi::FontManager::resolveFont </td>
           <td>(</td>
           <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>familyName</em></span>, </td>
         </tr>
@@ -526,29 +669,76 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="#a35ab8bc2f811b772c17cdfd93fcdc876">FontStyle</a></td>          <td class="paramname"><span class="paramname"><em>style</em></span><span class="paramdefsep"> = </span><span class="paramdefval">FontStyle::Normal</span>&#160;) const</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52e">FontStyle</a></td>          <td class="paramname"><span class="paramname"><em>style</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FontStyle::Normal</a></span>&#160;) const</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Resolve a concrete Clay font id for a named family, weight, and style. </p>
-<p>Resolution first looks up familyName, then considers faces with the requested style and chooses the face whose CSS-style weight is closest to weight. If the family has no matching style, the first registered face in the family is returned as a fallback.</p>
-<dl class="section see"><dt>See also</dt><dd>docs/font-resolution.md for the planned detailed fallthrough resolution rules.</dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">familyName</td><td>Existing logical family name. </td></tr>
-    <tr><td class="paramname">weight</td><td>Requested CSS-style font weight, such as 400 or 700. </td></tr>
-    <tr><td class="paramname">style</td><td>Requested normal or italic style. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Concrete <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56" title="Convenience alias for FlowUi::FontId.">FontId</a> for Clay text, or 0 if the family is missing or empty.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Select a registered face for a family, weight, and style. </p>
+<p>Defaults are weight 400 and <a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FontStyle::Normal</a>. This query does not load or bake fonts.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains the nearest weight within the requested style (first registered face wins ties); if that style is absent, the first family face is used. A missing or empty family successfully resolves to fallback <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56" title="Convenience alias for FlowUi::FontId.">FontId</a> 0. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.resolveFont(<span class="stringliteral">&quot;Body&quot;</span>, 400, <a class="code hl_enumvalue" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FlowUi::FontStyle::Normal</a>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> fontId = *result;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="acc192fbfbe908334fd3a7a905068183c" name="acc192fbfbe908334fd3a7a905068183c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc192fbfbe908334fd3a7a905068183c">&#9670;&#160;</a></span>visitDevFonts()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::FontManager::visitDevFonts </td>
+          <td>(</td>
+          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>userData</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#a4e77e6d236b7f2a6bcd719bd860ec835">DevFontVisitor</a></td>          <td class="paramname"><span class="paramname"><em>visitor</em></span>&#160;) const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Observe development catalogue entries without invoking application operations. </p>
+<p>Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts loaded face rows; completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>. Earlier callback effects, including the counter, are not rolled back on failure.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a detached manager or null visitor. A failed <a class="el" href="classFlowUi_1_1Result.html">Result</a> is an operational/callback error, not an incomplete-visit bool.</dd></dl>
+<div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line">std::size_t count = 0;</div>
+<div class="line"><span class="keyword">auto</span> result = manager.visitDevFonts(&amp;count,</div>
+<div class="line">    [](<span class="keywordtype">void</span>* target, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FontManager_1_1DevFontView.html">FlowUi::FontManager::DevFontView</a>&amp; face) {</div>
+<div class="line">        <span class="keyword">auto</span>&amp; observedCount = *<span class="keyword">static_cast&lt;</span>std::size_t*<span class="keyword">&gt;</span>(target);</div>
+<div class="line">        <span class="keywordflow">if</span> (face.<a class="code hl_variable" href="structFlowUi_1_1FontManager_1_1DevFontView.html#a664ea49c22b938f898226707157c6fd3">face</a> != <span class="keyword">nullptr</span>) {</div>
+<div class="line">            ++observedCount;</div>
+<div class="line">        }</div>
+<div class="line">        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">    });</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe">completed</a> = *result;</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html_aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe">FlowUi::devSystems::agentic::AgenticInteractionPhase::completed</a></div><div class="ttdeci">@ completed</div><div class="ttdef"><b>Definition</b> AgenticInteraction.hpp:486</div></div>
+<div class="ttc" id="astructFlowUi_1_1FontManager_1_1DevFontView_html"><div class="ttname"><a href="structFlowUi_1_1FontManager_1_1DevFontView.html">FlowUi::FontManager::DevFontView</a></div><div class="ttdoc">Borrowed registered-face metadata; reacquire after font catalog mutation.</div><div class="ttdef"><b>Definition</b> FontManager.hpp:56</div></div>
+<div class="ttc" id="astructFlowUi_1_1FontManager_1_1DevFontView_html_a664ea49c22b938f898226707157c6fd3"><div class="ttname"><a href="structFlowUi_1_1FontManager_1_1DevFontView.html#a664ea49c22b938f898226707157c6fd3">FlowUi::FontManager::DevFontView::face</a></div><div class="ttdeci">const Font::FontFaceData * face</div><div class="ttdoc">Borrowed loaded-face payload; never destroy or retain across catalog mutation.</div><div class="ttdef"><b>Definition</b> FontManager.hpp:68</div></div>
+</div><!-- fragment -->
 </div>
 </div>
 <a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
@@ -573,7 +763,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 </div><div class="memdoc">
 
 <p>Number of atlas array layers added when the font atlas grows. </p>
-<p>When registered faces exceed the current capacity, <a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a> creates a larger atlas image and copies the already-uploaded layers into it. Capacity grows in fixed steps of this many layers to avoid reallocating for every additional face. </p>
+<p>When registered faces exceed the current capacity, <a class="el" href="structFlowUi_1_1FontManager.html" title="App-shared font-family registration and face resolution.">FlowUi::FontManager</a> creates a larger atlas image and copies the already-uploaded layers into it. Capacity grows in fixed steps of this many layers to avoid reallocating for every additional face. </p>
 
 </div>
 </div>
@@ -598,7 +788,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 </div><div class="memdoc">
 
 <p>Number of font atlas array layers allocated for the first atlas image. </p>
-<p>A layer is one square atlas page of <a class="el" href="structFlowUi_1_1UiConfig.html#a19b1e622e654aa327337dd27489020b9" title="Width and height in pixels of each font atlas page.">UiConfig::fontAtlasSize</a> by <a class="el" href="structFlowUi_1_1UiConfig.html#a19b1e622e654aa327337dd27489020b9" title="Width and height in pixels of each font atlas page.">UiConfig::fontAtlasSize</a> pixels. Because each loaded face is uploaded into one layer, this value is the number of faces the initial atlas allocation can hold before storage has to grow. </p>
+<p>A layer is one square atlas page of <a class="el" href="structFlowUi_1_1UiConfig.html#a19b1e622e654aa327337dd27489020b9">UiConfig::fontAtlasSize</a> by <a class="el" href="structFlowUi_1_1UiConfig.html#a19b1e622e654aa327337dd27489020b9">UiConfig::fontAtlasSize</a> pixels. Because each loaded face is uploaded into one layer, this value is the number of faces the initial atlas allocation can hold before storage has to grow. </p>
 
 </div>
 </div>
@@ -618,7 +808,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1FontManager.html">FontManager</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1FontManager.html">FontManager</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

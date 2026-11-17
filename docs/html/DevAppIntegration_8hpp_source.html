@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,56 +107,70 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#pragma once</span></div>
-<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &quot;FlowUi/Public/BuildConfig.hpp&quot;</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span> </div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;span&gt;</span></div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span> </div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &quot;FlowUi/Public/BuildConfig.hpp&quot;</span></div>
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &quot;clay.h&quot;</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="keyword">struct </span>VulkanUiRenderer;</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="keyword">namespace </span>FlowUi::detail::manager_storage {</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="keyword">struct </span>FontFrameView;</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>}</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="keyword">namespace </span>FlowUi::detail::storage {</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="keyword">struct </span>BindingHotRecord;</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>}</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="keyword">namespace </span>FlowUi {</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="keyword">namespace </span>devSystems {</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1devSystems_1_1DevMonitoringAndReporting.html">DevMonitoringAndReporting</a>;</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1PerformanceCaptureSettings.html">PerformanceCaptureSettings</a>;</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1devSystems_1_1DevTooling.html">DevTooling</a>;</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
-<div class="foldopen" id="foldopen00026" data-start="{" data-end="};">
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html">   26</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html">DevUiReplaySource</a> {</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    const ::VulkanUiRenderer* renderer = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    const ::FlowUi::detail::manager_storage::FontFrameView* fontFrameView = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keyword">const</span> Clay_RenderCommandArray* commands = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    std::span&lt;const ::FlowUi::detail::storage::BindingHotRecord&gt; textureBindings{};</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    Clay_BoundingBox sourceRootBounds{};</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    uint64_t requestKey = 0u;</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    uint64_t captureSerial = 0u;</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    uint32_t textureFrameSlot = 0u;</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    <span class="keywordtype">float</span> pointsToPixelsScale = 1.0f;</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    [[nodiscard]] <span class="keyword">explicit</span> <span class="keyword">operator</span> bool() <span class="keyword">const</span> <span class="keyword">noexcept</span> {</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>        <span class="keywordflow">return</span> renderer != <span class="keyword">nullptr</span> &amp;&amp; fontFrameView != <span class="keyword">nullptr</span> &amp;&amp; commands != <span class="keyword">nullptr</span> &amp;&amp;</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>               commands-&gt;length &gt; 0;</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    }</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>};</div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &lt;span&gt;</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#include &quot;clay.h&quot;</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span> </div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="keyword">struct </span>VulkanUiRenderer;</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="keyword">namespace </span>FlowUi::detail::manager_storage {</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">struct </span>FontFrameView;</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>}</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="keyword">namespace </span>FlowUi::detail::storage {</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="keyword">struct </span>BindingHotRecord;</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>}</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi.html">FlowUi</a> {</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi_1_1devSystems.html">devSystems</a> {</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1devSystems_1_1DevMonitoringAndReporting.html">DevMonitoringAndReporting</a>;</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1PerformanceCaptureSettings.html">PerformanceCaptureSettings</a>;</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1devSystems_1_1DevTooling.html">DevTooling</a>;</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span></div>
+<div class="foldopen" id="foldopen00036" data-start="{" data-end="};">
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html">   36</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html">DevUiReplaySource</a> {</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#aa12381997a1ebfef585f757e3361c1c6">   38</a></span>    const ::VulkanUiRenderer* <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#aa12381997a1ebfef585f757e3361c1c6">renderer</a> = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#a857de5a9a930dc5d4b965e44850cc500">   40</a></span>    const ::FlowUi::detail::manager_storage::FontFrameView* <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#a857de5a9a930dc5d4b965e44850cc500">fontFrameView</a> = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#ab7230acacdf7126b3afb8a56c03dfd15">   44</a></span>    <span class="keyword">const</span> Clay_RenderCommandArray* <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#ab7230acacdf7126b3afb8a56c03dfd15">commands</a> = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#a6670b0cf9f566e1d65b3bd9e66bbf768">   46</a></span>    std::span&lt;const ::FlowUi::detail::storage::BindingHotRecord&gt; <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#a6670b0cf9f566e1d65b3bd9e66bbf768">textureBindings</a>{};</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#a418f34f0c415772d3551e367d2e9e3be">   48</a></span>    Clay_BoundingBox <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#a418f34f0c415772d3551e367d2e9e3be">sourceRootBounds</a>{};</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#a5771ef3d7dd1b8a4e6fa48ab72eb136b">   50</a></span>    uint64_t <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#a5771ef3d7dd1b8a4e6fa48ab72eb136b">requestKey</a> = 0u;</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#ab6d5444f495a4c0fbd5209ae33c6e696">   52</a></span>    uint64_t <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#ab6d5444f495a4c0fbd5209ae33c6e696">captureSerial</a> = 0u;</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#a9648d94a4d10b2e42341c99d4efd38f5">   54</a></span>    uint32_t <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#a9648d94a4d10b2e42341c99d4efd38f5">textureFrameSlot</a> = 0u;</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#aea9d45ebd36769581ae341e8e7639356">   56</a></span>    <span class="keywordtype">float</span> <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#aea9d45ebd36769581ae341e8e7639356">pointsToPixelsScale</a> = 1.0f;</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span></div>
+<div class="foldopen" id="foldopen00059" data-start="{" data-end="}">
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#a296f8b5cebbdf3da10e909c8233d6955">   59</a></span>    [[nodiscard]] <span class="keyword">explicit</span> <span class="keyword">operator</span> bool() const noexcept {</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>        <span class="keywordflow">return</span> <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#aa12381997a1ebfef585f757e3361c1c6">renderer</a> != <span class="keyword">nullptr</span> &amp;&amp; <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#a857de5a9a930dc5d4b965e44850cc500">fontFrameView</a> != <span class="keyword">nullptr</span> &amp;&amp; <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#ab7230acacdf7126b3afb8a56c03dfd15">commands</a> != <span class="keyword">nullptr</span> &amp;&amp;</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>               <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#ab7230acacdf7126b3afb8a56c03dfd15">commands</a>-&gt;length &gt; 0;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    }</div>
 </div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>} <span class="comment">// namespace devSystems</span></div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>} <span class="comment">// namespace FlowUi</span></div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1DevMonitoringAndReporting_html"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1DevMonitoringAndReporting.html">FlowUi::devSystems::DevMonitoringAndReporting</a></div><div class="ttdef"><b>Definition</b> DevMonitoringAndReporting.hpp:23</div></div>
-<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1DevTooling_html"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1DevTooling.html">FlowUi::devSystems::DevTooling</a></div><div class="ttdef"><b>Definition</b> DevTooling.hpp:24</div></div>
-<div class="ttc" id="astructFlowUi_1_1devSystems_1_1DevUiReplaySource_html"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html">FlowUi::devSystems::DevUiReplaySource</a></div><div class="ttdef"><b>Definition</b> DevAppIntegration.hpp:26</div></div>
-<div class="ttc" id="astructFlowUi_1_1devSystems_1_1PerformanceCaptureSettings_html"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1PerformanceCaptureSettings.html">FlowUi::devSystems::PerformanceCaptureSettings</a></div><div class="ttdef"><b>Definition</b> DevPerformanceCapture.hpp:30</div></div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>};</div>
+</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>} <span class="comment">// namespace devSystems</span></div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1DevMonitoringAndReporting_html"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1DevMonitoringAndReporting.html">FlowUi::devSystems::DevMonitoringAndReporting</a></div><div class="ttdef"><b>Definition</b> DevMonitoringAndReporting.hpp:27</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1DevTooling_html"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1DevTooling.html">FlowUi::devSystems::DevTooling</a></div><div class="ttdef"><b>Definition</b> DevTooling.hpp:32</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_html"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems.html">FlowUi::devSystems</a></div><div class="ttdoc">Optional development monitoring, reporting and application extension APIs. Available when FLOW_UI_DEV...</div><div class="ttdef"><b>Definition</b> App.hpp:45</div></div>
+<div class="ttc" id="anamespaceFlowUi_html"><div class="ttname"><a href="namespaceFlowUi.html">FlowUi</a></div><div class="ttdef"><b>Definition</b> App.hpp:29</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1DevUiReplaySource_html"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html">FlowUi::devSystems::DevUiReplaySource</a></div><div class="ttdoc">Borrowed completed-frame replay inputs for development previews.</div><div class="ttdef"><b>Definition</b> DevAppIntegration.hpp:36</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1DevUiReplaySource_html_a418f34f0c415772d3551e367d2e9e3be"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#a418f34f0c415772d3551e367d2e9e3be">FlowUi::devSystems::DevUiReplaySource::sourceRootBounds</a></div><div class="ttdeci">Clay_BoundingBox sourceRootBounds</div><div class="ttdoc">Source root bounds in layout points used to transform the replay.</div><div class="ttdef"><b>Definition</b> DevAppIntegration.hpp:48</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1DevUiReplaySource_html_a5771ef3d7dd1b8a4e6fa48ab72eb136b"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#a5771ef3d7dd1b8a4e6fa48ab72eb136b">FlowUi::devSystems::DevUiReplaySource::requestKey</a></div><div class="ttdeci">uint64_t requestKey</div><div class="ttdoc">Caller identity used to distinguish replay requests.</div><div class="ttdef"><b>Definition</b> DevAppIntegration.hpp:50</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1DevUiReplaySource_html_a6670b0cf9f566e1d65b3bd9e66bbf768"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#a6670b0cf9f566e1d65b3bd9e66bbf768">FlowUi::devSystems::DevUiReplaySource::textureBindings</a></div><div class="ttdeci">std::span&lt; const ::FlowUi::detail::storage::BindingHotRecord &gt; textureBindings</div><div class="ttdoc">Borrowed texture records aligned with the source frame publication.</div><div class="ttdef"><b>Definition</b> DevAppIntegration.hpp:46</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1DevUiReplaySource_html_a857de5a9a930dc5d4b965e44850cc500"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#a857de5a9a930dc5d4b965e44850cc500">FlowUi::devSystems::DevUiReplaySource::fontFrameView</a></div><div class="ttdeci">const ::FlowUi::detail::manager_storage::FontFrameView * fontFrameView</div><div class="ttdoc">Borrowed font bindings from the source frame publication.</div><div class="ttdef"><b>Definition</b> DevAppIntegration.hpp:40</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1DevUiReplaySource_html_a9648d94a4d10b2e42341c99d4efd38f5"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#a9648d94a4d10b2e42341c99d4efd38f5">FlowUi::devSystems::DevUiReplaySource::textureFrameSlot</a></div><div class="ttdeci">uint32_t textureFrameSlot</div><div class="ttdoc">Source renderer slot that owns the referenced texture bindings.</div><div class="ttdef"><b>Definition</b> DevAppIntegration.hpp:54</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1DevUiReplaySource_html_aa12381997a1ebfef585f757e3361c1c6"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#aa12381997a1ebfef585f757e3361c1c6">FlowUi::devSystems::DevUiReplaySource::renderer</a></div><div class="ttdeci">const ::VulkanUiRenderer * renderer</div><div class="ttdoc">Borrowed renderer that owns the referenced replay resources.</div><div class="ttdef"><b>Definition</b> DevAppIntegration.hpp:38</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1DevUiReplaySource_html_ab6d5444f495a4c0fbd5209ae33c6e696"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#ab6d5444f495a4c0fbd5209ae33c6e696">FlowUi::devSystems::DevUiReplaySource::captureSerial</a></div><div class="ttdeci">uint64_t captureSerial</div><div class="ttdoc">Serial identifying the captured source publication.</div><div class="ttdef"><b>Definition</b> DevAppIntegration.hpp:52</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1DevUiReplaySource_html_ab7230acacdf7126b3afb8a56c03dfd15"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#ab7230acacdf7126b3afb8a56c03dfd15">FlowUi::devSystems::DevUiReplaySource::commands</a></div><div class="ttdeci">const Clay_RenderCommandArray * commands</div><div class="ttdoc">Borrowed completed Clay render commands; a valid replay requires nonempty commands.</div><div class="ttdef"><b>Definition</b> DevAppIntegration.hpp:44</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1DevUiReplaySource_html_aea9d45ebd36769581ae341e8e7639356"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html#aea9d45ebd36769581ae341e8e7639356">FlowUi::devSystems::DevUiReplaySource::pointsToPixelsScale</a></div><div class="ttdeci">float pointsToPixelsScale</div><div class="ttdoc">Multiplier from layout points to physical replay pixels.</div><div class="ttdef"><b>Definition</b> DevAppIntegration.hpp:56</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1PerformanceCaptureSettings_html"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1PerformanceCaptureSettings.html">FlowUi::devSystems::PerformanceCaptureSettings</a></div><div class="ttdoc">Per-operation performance capture policy copied when capture is armed. Requires FLOW_UI_DEV_MODE....</div><div class="ttdef"><b>Definition</b> DevPerformanceCapture.hpp:58</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

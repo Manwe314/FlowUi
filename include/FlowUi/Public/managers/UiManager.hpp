@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Private/ApiBoundary.hpp"
+
 #include <clay.h>
 #include <cstddef>
 #include <cstdint>
@@ -92,7 +94,9 @@ namespace detail::manager_storage { struct UiManagerState; struct FontFrameView;
  * surface rather than as a standalone runtime object.
  *
  * @code{.cpp}
- * FlowUi::UiManager& ui = app.ui();
+ * auto uiResult = app.ui();
+ * if (!uiResult) throw FlowUi::FlowUiException(uiResult.error());
+ * FlowUi::UiManager& ui = uiResult->get();
  *
  * ui.createElement(FlowUi::kButton, FlowUi::LocalElementName{"save"})
  *     .setParameters(FlowUi::ButtonParameters{.label = "Save"})
@@ -105,6 +109,32 @@ namespace detail::manager_storage { struct UiManagerState; struct FontFrameView;
  */
 class UiManager {
 public:
+	/**
+	 * @brief Return the first latched UI error for this frame, including input-field and popup failure state. Check before committing custom frame composition.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * auto result = ui.frameStatus();
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * @endcode
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
+	[[nodiscard]] Status frameStatus() const noexcept {
+		if (frameError_) return unexpectedError(frameError_);
+		if (const auto status = inputFieldManager_.frameStatus(); !status) return status;
+		return popupManager_.frameStatus();
+	}
+	/**
+	 * @brief Latch the first error for this frame so partially built output cannot be submitted. Later calls preserve the earlier error.
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
+	void recordFrameError(FlowUiError error) const noexcept {
+		if (!frameError_) frameError_ = error;
+	}
 #if FLOW_UI_DEV_MODE
 	/** @brief Append development memory observations without taking ownership of the sink. */
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
@@ -163,139 +193,156 @@ public:
 	}
 #endif
 	/**
-	 * @brief Store a string in the current frame arena and return a Clay string.
+	 * @brief Copy text into current-frame storage and return a Clay_String borrowing that storage. ResourceKey supplies the name text and explicit resource attribution.
 	 *
-	 * Clay stores string data by pointer, so dynamic strings emitted during UI
-	 * construction must live at least until the frame ends. This function copies
-	 * the input into UiManager's active frame arena and returns a Clay_String
-	 * pointing at that copy.
-	 *
-	 * @param s UTF-8/string data to copy into the current frame arena.
-	 * @return Clay string view backed by UiManager frame storage.
-	 *
-	 * @throws FlowUiException with FramePhaseViolation outside an active frame,
-	 * or FrameCapacityExceeded when the configured frame arena is exhausted.
-	 * @throws std::bad_alloc if arena storage allocation has failed earlier.
-	 *
+	 * @par Example
 	 * @code{.cpp}
-	 * CLAY_TEXT(
-	 *     context.uiManager.toClayString(context.params.label),
-	 *     CLAY_TEXT_CONFIG(textConfig));
+	 * const std::string_view text = "Save";
+	 * const Clay_String clayText = ui.toClayString(text);
 	 * @endcode
+	 *
+	 * @throws FlowUiException On a library failure; the first failure is latched for this frame.
+	 * Other operational exceptions propagate after latching frame failure. Abandon the failed frame.
+	 *
+	 * @see docs/api/ui_manager.md
 	 */
 	[[nodiscard]] Clay_String toClayString(std::string_view s);
-	/** @brief Normalize a window-local Ui resource key and copy its name to the active frame arena. */
+	/**
+	 * @brief Copy text into current-frame storage and return a Clay_String borrowing that storage. ResourceKey supplies the name text and explicit resource attribution.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey text{.name = "Save"};
+	 * const Clay_String clayText = ui.toClayString(text);
+	 * @endcode
+	 *
+	 * @throws FlowUiException On a library failure; the first failure is latched for this frame.
+	 * Other operational exceptions propagate after latching frame failure. Abandon the failed frame.
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
 	[[nodiscard]] Clay_String toClayString(ResourceKey key);
 
 	/**
-	 * @brief Store a texture reference for use by Clay image render data.
+	 * @brief Copy a texture reference into current-frame storage and return the pointer used by Clay image configuration. The pointee is valid for this frame only.
 	 *
-	 * Clay image commands carry an opaque pointer. This helper copies TextureRef
-	 * into the current frame arena and returns a pointer suitable for
-	 * Clay_ImageElementConfig::imageData.
-	 *
-	 * @param textureRef Texture request or registered texture handle to store.
-	 * @return Pointer to the frame-arena copy of textureRef.
-	 *
-	 * @throws FlowUiException with FramePhaseViolation outside an active frame,
-	 * or FrameCapacityExceeded when the configured frame arena is exhausted.
-	 * 
-	 * @note This function should be used as .imageData instead of raw variable address
-	 *
+	 * @par Example
 	 * @code{.cpp}
 	 * Clay_ImageElementConfig image{};
-	 * image.imageData = context.uiManager.imageData(textureRef);
+	 * image.imageData = ui.imageData(texture);
 	 * @endcode
+	 *
+	 * @throws FlowUiException On a library failure; the first failure is latched for this frame.
+	 * Other operational exceptions propagate after latching frame failure. Abandon the failed frame.
+	 *
+	 * @see docs/api/ui_manager.md
 	 */
 	[[nodiscard]] TextureRef* imageData(TextureRef textureRef);
 
 	/**
-	 * @brief Create a stable inner input-field content element declaration.
+	 * @brief Return an input-content declaration with growing width and a height derived from the resolved font metrics. Operational failures propagate and latch frame failure; cancel the failed frame.
 	 *
-	 * This helper returns a Clay element declaration intended for the inner
-	 * content node of an input field. The width grows to available space and the
-	 * height is fixed to the resolved font line height for textConfig. Use it
-	 * between the visual/padded outer input box and the Clay text element so an
-	 * empty field keeps a stable layout area for caret rendering.
-	 *
-	 * @param textConfig Clay text configuration that will be used for the field text.
-	 * @return Clay element declaration with grow width and fixed line-height height.
-	 *
+	 * @par Example
 	 * @code{.cpp}
-	 * CLAY(outerId, outer) {
-	 *     CLAY(contentId, context.uiManager.inputContentElement(textConfig)) {
-	 *         CLAY(textId, {}) {
-	 *             CLAY_TEXT(
-	 *                 context.uiManager.toClayString(field.text.copy()),
-	 *                 CLAY_TEXT_CONFIG(textConfig));
-	 *         }
-	 *     }
-	 * }
+	 * const Clay_ElementDeclaration content = ui.inputContentElement(textConfig);
 	 * @endcode
+	 *
+	 * @throws FlowUiException On a library failure; the first failure is latched for this frame.
+	 * Other operational exceptions propagate after latching frame failure. Abandon the failed frame.
+	 *
+	 * @see docs/api/ui_manager.md
 	 */
 	[[nodiscard]] Clay_ElementDeclaration
 	inputContentElement(const Clay_TextElementConfig& textConfig) const;
 
 	/**
-	 * @brief Convert a string id to a Clay string id.
+	 * @brief Copy the supplied string identity into current-frame storage and return its Clay string ID. ResourceKey carries explicit attribution.
 	 *
-	 * This is a convenience wrapper around CLAY_SID using UiManager frame string
-	 * storage. Use it when Clay's string-id path is desired for the current
-	 * frame.
-	 *
-	 * @param s Element id string.
-	 * @return Clay element id generated from s.
-	 *
-	 * @throws FlowUiException with FramePhaseViolation outside a frame or
-	 * FrameCapacityExceeded when the frame arena is exhausted.
-	 *
+	 * @par Example
 	 * @code{.cpp}
-	 * const Clay_ElementId overlayId = ui.toClaySID("overlay/root");
+	 * const std::string_view name = "toolbar/save";
+	 * const Clay_ElementId clayId = ui.toClaySID(name);
 	 * @endcode
+	 *
+	 * @throws FlowUiException On a library failure; the first failure is latched for this frame.
+	 * Other operational exceptions propagate after latching frame failure. Abandon the failed frame.
+	 *
+	 * @see docs/api/ui_manager.md
 	 */
 	[[nodiscard]] Clay_ElementId toClaySID(std::string_view s);
-	/** @brief Normalize a window-local Ui resource key and hash its frame-copied name into a Clay ID. */
+	/**
+	 * @brief Copy the supplied string identity into current-frame storage and return its Clay string ID. ResourceKey carries explicit attribution.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * const FlowUi::ResourceKey name{.name = "toolbar/save"};
+	 * const Clay_ElementId clayId = ui.toClaySID(name);
+	 * @endcode
+	 *
+	 * @throws FlowUiException On a library failure; the first failure is latched for this frame.
+	 * Other operational exceptions propagate after latching frame failure. Abandon the failed frame.
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
 	[[nodiscard]] Clay_ElementId toClaySID(ResourceKey key);
 
 	/**
-	 * @brief Deterministically bridge a strong 64-bit Flow identity to Clay.
+	 * @brief Bridge a strong local, global, or semantic-part identity directly into a Clay ID for this window.
 	 *
-	 * Production builds construct the numeric Clay id without allocating or
-	 * hashing strings. Developer builds attach the ID's diagnostic name when it
-	 * is available. Use toClaySID() for explicitly string-named Clay-only nodes.
-	 *
+	 * @par Example
 	 * @code{.cpp}
-	 * const Clay_ElementId rootId = context.uiManager.toClayEID(context.id);
+	 * const Clay_ElementId clayId = ui.toClayEID(id);
 	 * @endcode
+	 *
+	 * @throws FlowUiException On a library failure; the first failure is latched for this frame.
+	 * Other operational exceptions propagate after latching frame failure. Abandon the failed frame.
+	 *
+	 * @see docs/api/ui_manager.md
 	 */
 	[[nodiscard]] Clay_ElementId toClayEID(FlowElementID id);
-	/** @brief Bridge a globally resolved identity to Clay without changing its Flow address. */
+	/**
+	 * @brief Bridge a strong local, global, or semantic-part identity directly into a Clay ID for this window.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * const Clay_ElementId clayId = ui.toClayEID(id);
+	 * @endcode
+	 *
+	 * @throws FlowUiException On a library failure; the first failure is latched for this frame.
+	 * Other operational exceptions propagate after latching frame failure. Abandon the failed frame.
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
 	[[nodiscard]] Clay_ElementId toClayEID(GlobalFlowID id);
-	/** @brief Bridge a owner-bound semantic part identity to Clay without changing its Flow address. */
+	/**
+	 * @brief Bridge a strong local, global, or semantic-part identity directly into a Clay ID for this window.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * const Clay_ElementId clayId = ui.toClayEID(id);
+	 * @endcode
+	 *
+	 * @throws FlowUiException On a library failure; the first failure is latched for this frame.
+	 * Other operational exceptions propagate after latching frame failure. Abandon the failed frame.
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
 	[[nodiscard]] Clay_ElementId toClayEID(FlowElementPartID id);
 
 	/**
-	 * @brief Create a builder for a typed FlowUi element instance.
+	 * @brief Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.
 	 *
-	 * createElement() is the public entry point for invoking FlowUi element
-	 * definitions. The returned ElementBuilder owns the resolved element ID and parameter
-	 * storage for this invocation until draw() or construct() is called.
+	 * Direct throwing operation: library validation raises FlowUiException and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.
 	 *
-	 * @tparam Element Empty tag type satisfying FlowElement.
-	 * @par Arguments
-	 * - @p localName Name unique among siblings of the same element definition.
-	 * @note Development builds also accept sourceLocation for inspection metadata.
-	 * @return ElementBuilder configured for the passed definition and element id.
-	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
 	 * @code{.cpp}
-	 * app.ui()
-	 *     .createElement(FlowUi::kButton, FlowUi::LocalElementName{"save"})
-	 *     .setParameters(FlowUi::ButtonParameters{.label = "Save"})
+	 * ui.createElement(counter, "counter")
+	 *     .setParameters({.width = 160.0f})
 	 *     .draw();
 	 * @endcode
 	 *
-	 * @see @ref md_docs_2tutorials_2custom__elements "Custom Elements"
-	 * @see @ref md_docs_2tutorials_2developer__mode "Developer Mode"
+	 * @see docs/api/ui_manager.md
 	 */
 	template <FlowElement Element>
 	[[nodiscard]] ElementBuilder<Element>
@@ -304,21 +351,35 @@ public:
 				  ,
 				  std::source_location sourceLocation = std::source_location::current()
 #endif
-	) {
-		const FlowElementID parentId = currentFlowScope();
-		return ElementBuilder<Element>(
-			*this,
-			elements(),
-			windowId(),
-			parentId,
-			resolveLocalElementID(parentId, Element::definitionId, localName)
+	) try {
+		return detail::requireApiValue(createElementBuilder<Element>(
+			[&](FlowElementID parentId) {
+				return resolveLocalElementID(parentId, Element::definitionId, localName);
+			}
 #if FLOW_UI_DEV_MODE
 			, sourceLocation
 #endif
-		);
+		));
+	} catch (...) {
+		recordFrameError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
+		throw;
 	}
 
-	/** @brief Create a local child from a runtime name; the name is borrowed for this invocation. */
+	/**
+	 * @brief Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.
+	 *
+	 * Direct throwing operation: library validation raises FlowUiException and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * ui.createElement(counter, FlowUi::RuntimeName("counter"))
+	 *     .setParameters({.width = 160.0f})
+	 *     .draw();
+	 * @endcode
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
 	template <FlowElement Element>
 	[[nodiscard]] ElementBuilder<Element>
 	createElement(const Element&, RuntimeElementName localName
@@ -326,21 +387,35 @@ public:
 				  ,
 				  std::source_location sourceLocation = std::source_location::current()
 #endif
-	) {
-		const FlowElementID parentId = currentFlowScope();
-		return ElementBuilder<Element>(
-			*this,
-			elements(),
-			windowId(),
-			parentId,
-			resolveLocalElementID(parentId, Element::definitionId, localName)
+	) try {
+		return detail::requireApiValue(createElementBuilder<Element>(
+			[&](FlowElementID parentId) {
+				return resolveLocalElementID(parentId, Element::definitionId, localName);
+			}
 #if FLOW_UI_DEV_MODE
 			, sourceLocation
 #endif
-		);
+		));
+	} catch (...) {
+		recordFrameError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
+		throw;
 	}
 
-	/** Create a repeated child using a positional or stable numeric key. */
+	/**
+	 * @brief Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.
+	 *
+	 * Direct throwing operation: library validation raises FlowUiException and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * ui.createElement(counter, FlowUi::Indexed("counter", 0))
+	 *     .setParameters({.width = 160.0f})
+	 *     .draw();
+	 * @endcode
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
 	template <FlowElement Element>
 	[[nodiscard]] ElementBuilder<Element>
 	createElement(const Element&, IndexedElementName indexedName
@@ -348,25 +423,34 @@ public:
 				  ,
 				  std::source_location sourceLocation = std::source_location::current()
 #endif
-	) {
-		const FlowElementID parentId = currentFlowScope();
-		return ElementBuilder<Element>(
-			*this,
-			elements(),
-			windowId(),
-			parentId,
-			resolveIndexedElementID(parentId, Element::definitionId, indexedName)
+	) try {
+		return detail::requireApiValue(createElementBuilder<Element>(
+			[&](FlowElementID parentId) {
+				return resolveIndexedElementID(parentId, Element::definitionId, indexedName);
+			}
 #if FLOW_UI_DEV_MODE
 			, sourceLocation
 #endif
-		);
+		));
+	} catch (...) {
+		recordFrameError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
+		throw;
 	}
 
 	/**
-	 * Create a positional element identified by this callsite.
+	 * @brief Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.
 	 *
-	 * Automatic IDs are appropriate only for stable static trees. A callsite
-	 * executed repeatedly must use Indexed(), Keyed(), or indexedIDs().next().
+	 * Direct throwing operation: library validation raises FlowUiException and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * ui.createElement(counter, FlowUi::AutoID())
+	 *     .setParameters({.width = 160.0f})
+	 *     .draw();
+	 * @endcode
+	 *
+	 * @see docs/api/ui_manager.md
 	 */
 	template <FlowElement Element>
 	[[nodiscard]] ElementBuilder<Element>
@@ -375,21 +459,35 @@ public:
 									  ,
 				  std::source_location sourceLocation = std::source_location::current()
 #endif
-	) {
-		const FlowElementID parentId = currentFlowScope();
-		return ElementBuilder<Element>(
-			*this,
-			elements(),
-			windowId(),
-			parentId,
-			resolveAutomaticElementID(parentId, Element::definitionId, automaticName)
+	) try {
+		return detail::requireApiValue(createElementBuilder<Element>(
+			[&](FlowElementID parentId) {
+				return resolveAutomaticElementID(parentId, Element::definitionId, automaticName);
+			}
 #if FLOW_UI_DEV_MODE
 			, sourceLocation, true
 #endif
-		);
+		));
+	} catch (...) {
+		recordFrameError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
+		throw;
 	}
 
-	/** Create an explicitly global element without applying the local parent hash. */
+	/**
+	 * @brief Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.
+	 *
+	 * Direct throwing operation: library validation raises FlowUiException and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * ui.createElement(counter, id)
+	 *     .setParameters({.width = 160.0f})
+	 *     .draw();
+	 * @endcode
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
 	template <FlowElement Element>
 	[[nodiscard]] ElementBuilder<Element>
 	createElement(const Element&, GlobalFlowID globalId
@@ -397,23 +495,37 @@ public:
 				  ,
 				  std::source_location sourceLocation = std::source_location::current()
 #endif
-	) {
-		if (!globalId) {
-			throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
-		}
-		return ElementBuilder<Element>(
-			*this,
-			elements(),
-			windowId(),
-			currentFlowScope(),
-			normalizeGlobalElementID(globalId)
+	) try {
+		return detail::requireApiValue(createElementBuilder<Element>(
+			[&](FlowElementID) {
+				if (!globalId)
+					throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
+				return normalizeGlobalElementID(globalId);
+			}
 #if FLOW_UI_DEV_MODE
 			, sourceLocation
 #endif
-		);
+		));
+	} catch (...) {
+		recordFrameError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
+		throw;
 	}
 
-	/** @brief Create a builder using an already resolved nonzero Flow identity without rehashing. */
+	/**
+	 * @brief Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.
+	 *
+	 * Direct throwing operation: library validation raises FlowUiException and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * ui.createElement(counter, id)
+	 *     .setParameters({.width = 160.0f})
+	 *     .draw();
+	 * @endcode
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
 	template <FlowElement Element>
 	[[nodiscard]] ElementBuilder<Element>
 	createElement(const Element&, FlowElementID resolvedId
@@ -421,23 +533,37 @@ public:
 				  ,
 				  std::source_location sourceLocation = std::source_location::current()
 #endif
-	) {
-		if (!resolvedId) {
-			throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
-		}
-		return ElementBuilder<Element>(
-			*this,
-			elements(),
-			windowId(),
-			currentFlowScope(),
-			resolvedId
+	) try {
+		return detail::requireApiValue(createElementBuilder<Element>(
+			[&](FlowElementID) {
+				if (!resolvedId)
+					throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
+				return resolvedId;
+			}
 #if FLOW_UI_DEV_MODE
 			, sourceLocation
 #endif
-		);
+		));
+	} catch (...) {
+		recordFrameError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
+		throw;
 	}
 
-	/** Create an element at a semantic part address already bound to its owner. */
+	/**
+	 * @brief Create a direct typed builder for the active frame. Local/runtime/indexed/automatic names resolve under the captured parent; resolved, global and part IDs use their explicit address.
+	 *
+	 * Direct throwing operation: library validation raises FlowUiException and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * ui.createElement(counter, id)
+	 *     .setParameters({.width = 160.0f})
+	 *     .draw();
+	 * @endcode
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
 	template <FlowElement Element>
 	[[nodiscard]] ElementBuilder<Element>
 	createElement(const Element&, FlowElementPartID partId
@@ -445,54 +571,45 @@ public:
 				  ,
 				  std::source_location sourceLocation = std::source_location::current()
 #endif
-	) {
-		if (!partId) {
-			throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
-		}
-		return ElementBuilder<Element>(
-			*this,
-			elements(),
-			windowId(),
-			currentFlowScope(),
-			normalizePartElementID(partId)
+	) try {
+		return detail::requireApiValue(createElementBuilder<Element>(
+			[&](FlowElementID) {
+				if (!partId)
+					throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
+				return normalizePartElementID(partId);
+			}
 #if FLOW_UI_DEV_MODE
 			, sourceLocation
 #endif
-		);
+		));
+	} catch (...) {
+		recordFrameError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
+		throw;
 	}
 
 	/**
-	 * @brief Close the current element opened by ElementBuilder::construct().
+	 * @brief Close the most recent root opened by ElementBuilder::construct(), including its FlowUi scope and development capture. Each successful construct needs one close.
 	 *
-	 * Call this after emitting child Clay nodes for an element opened through
-	 * createElement(...).construct(). drawConstructed() closes that constructed
-	 * root and ends any active dev-mode capture for it.
+	 * Direct throwing operation: library validation raises FlowUiException and application parameter/callback exceptions propagate. Failure poisons the frame; abandon this builder and cancel the frame before reuse. No successful partial layout should be submitted.
 	 *
-	 * @throws FlowUiException if no constructed element or active Clay context is available.
-	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
 	 * @code{.cpp}
-	 * ui.createElement(kPanel, "settings").construct();
-	 * CLAY(ui.toClaySID("body"), {}) {}
+	 * ui.createElement(counter, "panel").construct();
+	 * ui.createElement(counter, "child").draw();
 	 * ui.drawConstructed();
 	 * @endcode
+	 *
+	 * @see docs/api/ui_manager.md
 	 */
 	void drawConstructed();
 
 	/**
-	 * @brief Return the previous completed frame's interaction snapshot.
+	 * @brief Borrow the previous completed frame interaction snapshot. It remains the stable source for current element pointer callbacks.
 	 *
-	 * Element callbacks use the previous snapshot while constructing the current
-	 * frame so hover, press, hold, and release queries are stable.
-	 *
-	 * @return Interaction data collected when the previous frame ended.
-	 *
-	 * @code{.cpp}
-	 * if (context.uiManager.getPreviousFramesInteraction().isHovered(rootId)) {
-	 *     context.uiManager.requestCursor(FlowUi::CursorType::PointingHand);
-	 * }
-	 * @endcode
+	 * @see docs/api/ui_manager.md
 	 */
-	[[nodiscard]] const InteractionSnapshot& getPreviousFramesInteraction() const;
+	[[nodiscard]] const InteractionSnapshot& getPreviousFramesInteraction() const noexcept;
 #if FLOW_UI_AGENTIC_WORKFLOW
 	/** Observe the just-completed layout; valid only until this window begins its next frame. */
 	[[nodiscard]] const InteractionSnapshot& dev_completed_interaction() const noexcept;
@@ -505,89 +622,86 @@ public:
 #endif
 
 	/**
-	 * @brief Return input for the current layout frame.
+	 * @brief Borrow this frame input in scaled FlowUi layout coordinates; do not retain this reference as an immutable historical snapshot.
 	 *
-	 * Coordinates are in FlowUi layout space after App has applied UI scaling.
-	 *
-	 * @return Current frame input used by UiManager during this layout pass.
-	 *
-	 * @code{.cpp}
-	 * const FrameInput& input = context.uiManager.getCurrentFrameInput();
-	 * const float mouseX = input.mouseX;
-	 * @endcode
+	 * @see docs/api/ui_manager.md
 	 */
-	[[nodiscard]] const FrameInput& getCurrentFrameInput() const;
+	[[nodiscard]] const FrameInput& getCurrentFrameInput() const noexcept;
 
 	/**
-	 * @brief Return input for the previous layout frame.
+	 * @brief Borrow the previous layout-frame input, useful with current input for edge and drag calculations.
 	 *
-	 * Use this with getCurrentFrameInput() for custom edge detection or drag
-	 * calculations.
-	 *
-	 * @return Previous frame input in FlowUi layout space.
-	 *
-	 * @code{.cpp}
-	 * const bool pressed =
-	 *     context.uiManager.getCurrentFrameInput().mouseDown[0] &&
-	 *     !context.uiManager.getPreviousFrameInput().mouseDown[0];
-	 * @endcode
+	 * @see docs/api/ui_manager.md
 	 */
-	[[nodiscard]] const FrameInput& getPreviousFrameInput() const;
+	[[nodiscard]] const FrameInput& getPreviousFrameInput() const noexcept;
 
 	/**
-	 * @brief Access the input field manager.
+	 * @brief Borrow this window InputFieldManager directly; the const overload exposes read-only access.
 	 *
-	 * @return Mutable InputFieldManager owned by this UiManager.
-	 *
-	 * @code{.cpp}
-	 * context.uiManager.inputFields().requestCaret(
-	 *     fieldId,
-	 *     FlowUi::CaretRequestKind::SetPrimary);
-	 * @endcode
+	 * @see docs/api/ui_manager.md
 	 */
 	[[nodiscard]] InputFieldManager& inputFields() noexcept { return inputFieldManager_; }
 
 	/**
-	 * @brief Access the input field manager.
+	 * @brief Borrow this window InputFieldManager directly; the const overload exposes read-only access.
 	 *
-	 * @return Immutable InputFieldManager owned by this UiManager.
+	 * @see docs/api/ui_manager.md
 	 */
 	[[nodiscard]] const InputFieldManager& inputFields() const noexcept {
 		return inputFieldManager_;
 	}
 
 	/**
-	 * @brief Access the shortcut manager.
+	 * @brief Borrow this window ShortcutManager directly; the const overload exposes read-only access.
 	 *
-	 * @return Mutable ShortcutManager owned by this UiManager.
-	 *
-	 * @code{.cpp}
-	 * const FlowUi::ShortcutId id = app.ui().shortcuts().registerShortcut(
-	 *     chord,
-	 *     FlowUi::ShortcutScope::Global,
-	 *     0,
-	 *     callback);
-	 * @endcode
+	 * @see docs/api/ui_manager.md
 	 */
 	[[nodiscard]] ShortcutManager& shortcuts() noexcept { return shortcutManager_; }
 
 	/**
-	 * @brief Access the shortcut manager.
+	 * @brief Borrow this window ShortcutManager directly; the const overload exposes read-only access.
 	 *
-	 * @return Immutable ShortcutManager owned by this UiManager.
+	 * @see docs/api/ui_manager.md
 	 */
 	[[nodiscard]] const ShortcutManager& shortcuts() const noexcept { return shortcutManager_; }
 
-	/** @brief Access this window's mutable popup placement and dismissal service. */
+	/**
+	 * @brief Borrow this window popup placement and dismissal manager directly; the const overload exposes read-only access.
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
 	[[nodiscard]] PopupManager& popups() noexcept { return popupManager_; }
-	/** @brief Access this window's immutable popup placement and dismissal service. */
+	/**
+	 * @brief Borrow this window popup placement and dismissal manager directly; the const overload exposes read-only access.
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
 	[[nodiscard]] const PopupManager& popups() const noexcept { return popupManager_; }
 
-	/** @brief Access the app-wide ActionManager attached to this UI. */
+	/**
+	 * @brief Borrow the attached app-wide action manager directly. A detached UiManager throws FlowUiException.
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
 	[[nodiscard]] ActionManager& actions();
-	/** @brief Access the immutable app-wide ActionManager attached to this UI. */
+	/**
+	 * @brief Borrow the attached app-wide action manager directly. A detached UiManager throws FlowUiException.
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
 	[[nodiscard]] const ActionManager& actions() const;
-	/** @brief Invoke an action from this window's UI context. */
+	/**
+	 * @brief Invoke an action synchronously and return Invoked, Empty, Unbound or Disabled. Arbitrary callback exceptions propagate unchanged; application effects are not rolled back.
+	 *
+	 * @see docs/api/ui_manager.md
+
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * const FlowUi::ActionInvocationStatus outcome = actions.invoke(call);
+	 * const bool invoked = outcome == FlowUi::ActionInvocationStatus::Invoked;
+	 * @endcode
+	 */
 	[[nodiscard]] ActionInvocationStatus invoke(ActionCall call);
 #if FLOW_UI_DEV_MODE
 	/**
@@ -595,130 +709,120 @@ public:
 	 *
 	 * @return Mutable developer tooling configuration.
 	 */
-	[[nodiscard]] DevToolsConfig& devToolsConfig();
+	[[nodiscard]] DevToolsConfig& devToolsConfig() noexcept;
 
 	/**
 	 * @brief Access developer tooling config.
 	 *
 	 * @return Immutable developer tooling configuration.
 	 */
-	[[nodiscard]] const DevToolsConfig& devToolsConfig() const;
+	[[nodiscard]] const DevToolsConfig& devToolsConfig() const noexcept;
 #endif
 
 	/**
-	 * @brief Set clipboard text through the attached platform clipboard service.
+	 * @brief Copy text to the attached platform clipboard. Detached, unsupported, and failed platform operations are returned as errors; check the Status.
 	 *
-	 * Detached managers ignore clipboard writes; service failures are reported.
-	 *
-	 * @param text Text to copy to the system or configured clipboard.
-	 *
+	 * @par Example
 	 * @code{.cpp}
-	 * context.uiManager.setClipboardText("Copied text");
-	 * @endcode
-	 */
-	void setClipboardText(std::string_view text) const;
-
-	/**
-	 * @brief Read clipboard text through the attached platform clipboard service.
-	 *
-	 * @return Clipboard text, or an empty string when detached or a read fails.
-	 *
-	 * @code{.cpp}
-	 * const std::string pasted = context.uiManager.clipboardText();
-	 * @endcode
-	 */
-	[[nodiscard]] std::string clipboardText() const;
-
-	/**
-	 * @brief Return whether the attached window provides immediate clipboard access.
-	 *
-	 * @retval true The attached window supports clipboard reads and writes.
-	 * @retval false The service is detached or clipboard access is unsupported.
-	 *
-	 * @code{.cpp}
-	 * if (context.uiManager.hasClipboardAccess()) {
-	 *     context.uiManager.setClipboardText(selectedText);
+	 * auto result = ui.setClipboardText("Copied text");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
 	 * }
 	 * @endcode
+	 *
+	 * @see docs/api/ui_manager.md
 	 */
-	[[nodiscard]] bool hasClipboardAccess() const;
+	[[nodiscard]] Status setClipboardText(std::string_view text) const noexcept;
 
 	/**
-	 * @brief Request a cursor shape for the current frame.
+	 * @brief Return an owned copy of clipboard text. An empty successful string is valid text; detached/platform failures are errors.
 	 *
-	 * Cursor requests are reset at the beginning of each frame. When multiple
-	 * requests are made in one frame, the request with the highest priority wins;
-	 * equal priority requests may replace earlier requests.
-	 *
-	 * @param cursorType Cursor shape requested by UI code.
-	 * @param priority Ordering priority for this frame's cursor request.
-	 *
+	 * @par Example
 	 * @code{.cpp}
-	 * context.uiManager.requestCursor(FlowUi::CursorType::IBeam, 10);
+	 * auto result = ui.clipboardText();
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const std::string pasted = std::move(*result);
 	 * @endcode
+	 *
+	 * @see docs/api/ui_manager.md
 	 */
-	void requestCursor(CursorType cursorType, uint8_t priority = 0);
+	[[nodiscard]] Result<std::string> clipboardText() const noexcept;
 
 	/**
-	 * @brief Resolve a concrete Clay font id for a family/style request.
+	 * @brief Return whether the attached window currently supports immediate clipboard reads and writes; detached managers return false.
 	 *
-	 * This forwards to FlowUi::FontManager when the App-owned font manager is connected
-	 * to UiManager. It is useful in element callbacks that receive UiManager but
-	 * not FlowUi::FontManager directly.
+	 * @see docs/api/ui_manager.md
+	 */
+	[[nodiscard]] bool hasClipboardAccess() const noexcept;
+
+	/**
+	 * @brief Request this frame cursor shape. Highest priority wins; a later equal-priority request may replace the earlier one. Requests reset at frame start.
 	 *
-	 * @param familyId Existing logical font family id.
-	 * @param weight Requested CSS-style font weight.
-	 * @param style Requested font style.
-	 * @return Concrete FontId for Clay text, or 0 if no font manager is attached
-	 * or the family cannot be resolved.
+	 * @see docs/api/ui_manager.md
+	 */
+	void requestCursor(CursorType cursorType, uint8_t priority = 0) noexcept;
+
+	/**
+	 * @brief Return the resolved concrete font ID from this attached manager's frame view. Zero represents an unresolved font fallback; this lookup does not allocate.
 	 *
+	 * @pre This UiManager remains initialized and attached to its owning window. The frame view is populated during frame preparation.
+	 *
+	 * @par Example
 	 * @code{.cpp}
-	 * textConfig.fontId = context.uiManager.resolveFont(bodyFamily, 700);
+	 * const FlowUi::FontId font = ui.resolveFont(family, 400, FlowUi::FontStyle::Normal);
 	 * @endcode
+	 *
+	 * @see docs/api/ui_manager.md
 	 */
 	[[nodiscard]] FontId resolveFont(FontFamilyId familyId, uint32_t weight = 400,
-									 FontStyle style = FontStyle::Normal) const;
+									 FontStyle style = FontStyle::Normal) const noexcept;
 
 	/**
-	 * @brief Resolve a concrete Clay font id for a named family/style request.
+	 * @brief Return the resolved concrete font ID from this attached manager's frame view. Zero represents an unresolved font fallback; this lookup does not allocate.
 	 *
-	 * This forwards to FlowUi::FontManager when available and returns 0 when the family
-	 * name cannot be resolved.
+	 * @pre This UiManager remains initialized and attached to its owning window. The frame view is populated during frame preparation.
 	 *
-	 * @param familyName Existing logical font family name string.
-	 * @param weight Requested CSS-style font weight.
-	 * @param style Requested font style.
-	 * @return Concrete FontId for Clay text, or 0 if no font manager is attached
-	 * or the family cannot be resolved.
-	 *
+	 * @par Example
 	 * @code{.cpp}
-	 * textConfig.fontId = context.uiManager.resolveFont(
-	 *     "Body",
-	 *     400,
-	 *     FlowUi::FontStyle::Normal);
+	 * const FlowUi::FontId font = ui.resolveFont(family, 400, FlowUi::FontStyle::Normal);
 	 * @endcode
+	 *
+	 * @see docs/api/ui_manager.md
 	 */
 	[[nodiscard]] FontId resolveFont(std::string_view familyName, uint32_t weight = 400,
-									 FontStyle style = FontStyle::Normal) const;
+									 FontStyle style = FontStyle::Normal) const noexcept;
 
 	/**
-	 * @brief Access the active variant for theme type T.
+	 * @brief Borrow the active or explicitly named registered theme through Result<reference_wrapper<const T>>. Active lookup respects a development local theme scope; named lookup bypasses it.
 	 *
-	 * @tparam T Theme struct type.
-	 * @return Const reference to active theme instance of type T.
-	 * @throws FlowUiException if ThemeManager is unavailable or no active theme exists.
-	 * @note A development DevThemeScope may substitute a borrowed local payload;
-	 * references must not outlive that scope or a theme registry mutation.
+	 * Check the Result before result->get(). The wrapper and extracted reference do not own the payload. Reacquire after theme registry changes; a development override also limits the borrow to its enclosing scope.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * auto result = ui.theme<FlowUi::FlowUiTheme>();
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::FlowUiTheme& theme = result->get();
+	 * const float fontSize = theme.fontSizeMedium;
+	 * @endcode
+	 *
+	 * @see docs/api/ui_manager.md
 	 */
 	template <typename T>
-	[[nodiscard]] const T& theme() const {
+	[[nodiscard]] Result<std::reference_wrapper<const T>> theme() const noexcept try {
 #if FLOW_UI_DEV_MODE
 		for (auto* scope = dev_theme_scope_; scope; scope = scope->previous_)
 			if (scope->payload_.type == detail::typeHash<T>() &&
 				scope->payload_.payloadSize == sizeof(T))
-				return *static_cast<const T*>(scope->payload_.payload);
+				return std::cref(*static_cast<const T*>(scope->payload_.payload));
 #endif
 		return appThemes().template getActiveTheme<T>();
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::UiManagerAccessTheme);
+		return unexpectedError(error);
 	}
 
 #if FLOW_UI_DEV_MODE
@@ -769,34 +873,68 @@ public:
 #endif
 
 	/**
-	 * @brief Access a specific named variant for theme type T.
+	 * @brief Borrow the active or explicitly named registered theme through Result<reference_wrapper<const T>>. Active lookup respects a development local theme scope; named lookup bypasses it.
 	 *
-	 * @tparam T Theme struct type.
-	 * @param variantName Name of the theme variant.
-	 * @return Const reference to named theme instance of type T.
-	 * @throws FlowUiException if ThemeManager is unavailable or the variant is absent.
-	 * @note This explicit variant lookup bypasses development local scopes. The
-	 * reference is borrowed; reacquire it after theme registry mutation.
+	 * Check the Result before result->get(). The wrapper and extracted reference do not own the payload. Reacquire after theme registry changes; a development override also limits the borrow to its enclosing scope.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * auto result = ui.theme<FlowUi::FlowUiTheme>("light");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::FlowUiTheme& theme = result->get();
+	 * const float fontSize = theme.fontSizeMedium;
+	 * @endcode
+	 *
+	 * @see docs/api/ui_manager.md
 	 */
 	template <typename T>
-	[[nodiscard]] const T& theme(std::string_view variantName) const {
+	[[nodiscard]] Result<std::reference_wrapper<const T>> theme(std::string_view variantName) const noexcept try {
 		return appThemes().template getTheme<T>(variantName);
+	} catch (...) {
+		const auto error = detail::currentExceptionError(ErrorSite::UiManagerAccessTheme);
+		return unexpectedError(error);
 	}
 
 	/**
-	 * @brief Convenience shortcut for active built-in FlowUiTheme.
+	 * @brief Borrow the active built-in FlowUiTheme through Result<reference_wrapper<const FlowUiTheme>>, including a development local theme scope.
 	 *
-	 * @return Const reference to active FlowUiTheme.
+	 * Check the Result before result->get(). The wrapper and extracted reference do not own the payload. Reacquire after theme registry changes; a development override also limits the borrow to its enclosing scope.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * auto result = ui.flowTheme();
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::FlowUiTheme& theme = result->get();
+	 * const float fontSize = theme.fontSizeMedium;
+	 * @endcode
+	 *
+	 * @see docs/api/ui_manager.md
 	 */
-	[[nodiscard]] const FlowUiTheme& flowTheme() const;
+	[[nodiscard]] Result<std::reference_wrapper<const FlowUiTheme>> flowTheme() const noexcept;
 
-	/** @brief Access the app-owned element state/resource manager. */
+	/**
+	 * @brief Borrow the attached app-wide element manager directly. A detached UiManager throws FlowUiException.
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
 	[[nodiscard]] ElementManager& elements();
 
-	/** @brief Access the app-owned element state/resource manager. */
+	/**
+	 * @brief Borrow the attached app-wide element manager directly. A detached UiManager throws FlowUiException.
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
 	[[nodiscard]] const ElementManager& elements() const;
 
-	/** @brief Return the window whose frame this UI manager builds. */
+	/**
+	 * @brief Return the window whose frame is built by this manager.
+	 *
+	 * @see docs/api/ui_manager.md
+	 */
 	[[nodiscard]] WindowId windowId() const noexcept { return window_; }
 
 #if FLOW_UI_DEV_MODE
@@ -812,6 +950,41 @@ public:
 	}
 #endif
 private:
+	/** Prepare library identity/manager access before constructing arbitrary application parameters. */
+	template <FlowElement Element, typename ResolveIdentity>
+	[[nodiscard]] Result<ElementBuilder<Element>> createElementBuilder(
+		ResolveIdentity&& resolveIdentity
+#if FLOW_UI_DEV_MODE
+		, std::source_location sourceLocation, bool automaticIdentity = false
+#endif
+	) {
+		auto elementManager = detail::catchResult<Result<std::reference_wrapper<ElementManager>>>(
+			ErrorSite::UiManagerAccessElements, [&] { return std::ref(elements()); });
+		if (!elementManager) {
+			recordFrameError(elementManager.error());
+			return unexpectedError(elementManager.error());
+		}
+		const FlowElementID parentId = currentFlowScope();
+		auto resolvedId = detail::catchResult<Result<FlowElementID>>(ErrorSite::UiManagerDefineElement, [&] {
+			return std::forward<ResolveIdentity>(resolveIdentity)(parentId);
+		});
+		if (!resolvedId) {
+			recordFrameError(resolvedId.error());
+			return unexpectedError(resolvedId.error());
+		}
+		try {
+			return ElementBuilder<Element>(*this, elementManager->get(), windowId(), parentId, *resolvedId
+#if FLOW_UI_DEV_MODE
+				, sourceLocation, automaticIdentity
+#endif
+			);
+		} catch (...) {
+			recordFrameError(detail::currentExceptionError(ErrorSite::UiManagerDefineElement));
+			throw;
+		}
+	}
+
+	mutable FlowUiError frameError_{};
 #if FLOW_UI_DEV_MODE
 	devSystems::interface_elements::DevTimelineController* timeline_controller_ = nullptr;
 	devSystems::interface_elements::DevMemoryHistoryController* memory_history_controller_ =

@@ -133,7 +133,11 @@ Result<std::filesystem::path> detail::locate_resource(const std::filesystem::pat
 #endif
 		}
 		if (config.use_build_directory)
-			roots.emplace_back(path_from_utf8(FLOWUI_RESOURCE_BUILD_DIRECTORY));
+			{
+			const auto buildDirectory = path_from_utf8(FLOWUI_RESOURCE_BUILD_DIRECTORY);
+			if (!buildDirectory) return unexpectedError(buildDirectory.error());
+			roots.emplace_back(*buildDirectory);
+		}
 		for (const auto& root : roots) {
 			const auto candidate = root / relative;
 			if (std::filesystem::is_regular_file(candidate, error))

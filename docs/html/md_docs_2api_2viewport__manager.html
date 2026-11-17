@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,237 +106,528 @@ $(function() {
   <div class="headertitle"><div class="title">Viewport Manager API </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1>Enums</h1>
-<h2><b>TextureFitMode</b></h2>
-<h3><span class="tt">enum class TextureFitMode : uint8_t</span></h3>
-<p>Texture layout mode used when drawing viewport textures into UI rectangles. Viewports often use contain or cover depending on preview behavior.</p>
-<h1>Public Structs</h1>
-<h2><b>TextureRef</b></h2>
-<h3><span class="tt">struct TextureRef</span></h3>
-<p>Texture reference returned for viewport images. It points at the current frame viewport target or fallback texture id 0 when unavailable.</p>
-<h2><b>ViewPortVulkanInterop</b></h2>
-<h3><span class="tt">struct ViewPortVulkanInterop</span></h3>
-<p>Shared Vulkan handles exposed for viewport integrations. The handles are owned by FlowUi App and must not be destroyed by user code.</p>
-<h2><b>ViewPortRenderContext</b></h2>
-<h3><span class="tt">struct ViewPortRenderContext</span></h3>
-<p>Per-frame context passed to viewport render callbacks. It contains the begun secondary command buffer, extent, color format, frame index, key, and interop handles.</p>
-<h2><b>ViewPortCreateInfo</b></h2>
-<h3><span class="tt">struct ViewPortCreateInfo</span></h3>
-<p>Creation settings for a viewport render target. It controls color format, clear color, and whether the target clears every frame.</p>
-<h2><b>ViewPort</b></h2>
-<h3><span class="tt">class ViewPort</span></h3>
-<p>Named offscreen render target managed by ViewPortManager. It stores render callback, clear behavior, current size, key, and texture access.</p>
-<h2><b>ViewPortManager</b></h2>
-<h3><span class="tt">class ViewPortManager</span></h3>
-<p>App-owned manager for named offscreen viewports. It creates, tracks, sizes, renders, and exposes viewport textures to the UI renderer.</p>
-<h1>Public API</h1>
+<div class="textblock"><p><a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Public declarations</a> · <a href="include/FlowUi/Public/interop/vulkan/Viewport.hpp">Vulkan interop values</a></p>
+<p>This surface requires <span class="tt">FLOWUI_PUBLIC_VULKAN_INTEROP</span>. Viewports are window-local offscreen render targets with one image per frame slot. New targets start at 1x1; UI image usage drives resizing from the largest displayed area in framebuffer pixels. A callback runs only for frames that reference its viewport texture. Reacquire <span class="tt">TextureRef</span> each frame.</p>
+<p><a class="el" href="namespaceFlowUi.html">FlowUi</a> owns the Vulkan instance/device/queue, viewport targets, and the secondary command buffer. A render callback records compatible commands into the already-begun buffer; <a class="el" href="namespaceFlowUi.html">FlowUi</a> ends/submits it and controls the rendering pass and image transitions. User resources and borrowed captures must outlive all callbacks using them.</p>
+<h1>Acquire the manager</h1>
+<p><span class="tt">App</span> getters return <span class="tt">Result&lt;std::reference_wrapper&lt;T&gt;&gt;</span>. Check the wrapper, then name the borrowed object as a normal reference:</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = app.viewPorts();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1ViewPortManager.html">FlowUi::ViewPortManager</a>&amp; manager = result-&gt;get();</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html">FlowUi::ViewPortManager</a></div><div class="ttdoc">Creates, tracks, renders, and exposes offscreen viewports.</div><div class="ttdef"><b>Definition</b> ViewPortManager.hpp:302</div></div>
+</div><!-- fragment --><p>The reference is borrowed; the App must outlive it, and window-owned managers must also stay within their owning window lifetime. The examples use an already acquired manager reference and existing field/window identities where needed. They choose an application policy of throwing <span class="tt">FlowUiException</span> after a failed Result; returning/reporting the error is equally possible. Include the relevant manager/value headers and <span class="tt"><a class="el" href="Exception_8hpp_source.html">FlowUi/Public/errorManagement/Exception.hpp</a></span>.</p>
+<p>ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<p>For <span class="tt">Result&lt;bool&gt;</span>, <span class="tt">if (!result)</span> tests operational failure; <span class="tt">*result</span> is the separate operation outcome. Never treat a successful <span class="tt">false</span> as an error.</p>
+<h1>ViewPort</h1>
 <h2><b>getKey</b></h2>
-<h3><span class="tt">std::string_view getKey() const</span></h3>
+<h3><span class="tt">[[nodiscard]] std::string_view getKey() const noexcept</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">std::string_view</span></li>
 <li><b>Arguments:</b> none.</li>
 </ul>
-<p>Returns the stable key used to create and look up this viewport. The key is owned by the viewport object.</p>
+<p>Borrow this viewport's registration key. Returns a view of the manager-owned key, or an empty view when detached.</p>
+<p>The view is invalid after removal or manager/window destruction.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">std::string_view viewportKey = viewport-&gt;getKey();</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> key = viewport.getKey();</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
 <h2><b>hasValidSize</b></h2>
-<h3><span class="tt">bool hasValidSize() const</span></h3>
+<h3><span class="tt">[[nodiscard]] bool hasValidSize() const noexcept</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">bool</span></li>
 <li><b>Arguments:</b> none.</li>
 </ul>
-<p>Reports whether the viewport currently has positive width and height. A viewport may be invalid before its texture has been referenced and sized by UI image commands.</p>
+<p>Test whether the current render target has nonzero width and height. Returns false when detached or unsized.</p>
+<p>A newly created viewport normally starts at 1x1; later sizing follows UI image usage.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (viewport-&gt;hasValidSize()) { renderScene(viewport-&gt;getSize()); }</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> validSize = viewport.hasValidSize();</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
 <h2><b>getSize</b></h2>
-<h3><span class="tt">VkExtent2D getSize() const</span></h3>
+<h3><span class="tt">[[nodiscard]] VkExtent2D getSize() const noexcept</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">VkExtent2D</span></li>
 <li><b>Arguments:</b> none.</li>
 </ul>
-<p>Returns the current render target size in pixels. FlowUi derives this from the largest UI image area using the viewport texture.</p>
+<p>Read the current viewport render extent in framebuffer pixels. Returns VkExtent2D; detached/unsized state may contain zero dimensions.</p>
+<p>The largest UI image area referencing this viewport drives resizing, with framebuffer scale and configured hysteresis.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">VkExtent2D extent = viewport-&gt;getSize();</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> size = viewport.getSize();</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
 <h2><b>textureRef</b></h2>
-<h3><span class="tt">TextureRef textureRef() const</span></h3>
+<h3><span class="tt">[[nodiscard]] TextureRef textureRef() const noexcept</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">TextureRef</span></li>
 <li><b>Arguments:</b> none.</li>
 </ul>
-<p>Returns a texture reference for this viewport's current frame image. <span class="tt">ViewPortManager::getTexture()</span> is usually more convenient when drawing by key.</p>
+<p>Read this viewport's current frame-slot TextureRef. Returns an unavailable TextureRef when detached.</p>
+<p>Reacquire per frame and after resizing; ViewPortManager::getTexture() is normally more convenient for keyed UI emission.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> sceneTexture = viewport-&gt;textureRef();</div>
-<div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> TextureRef.hpp:30</div></div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
-<h2><b>setRenderCallback</b> <span class="tt">1/2</span></h2>
-<h3><span class="tt">void setRenderCallback(RenderCallback callback)</span></h3>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> texture = viewport.textureRef();</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<h2><b>setRenderCallback</b></h2>
+<h3><span class="tt">[[nodiscard]] Status setRenderCallback(const RenderCallback&amp; callback)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
-<li><b>Arguments:</b> <span class="tt">callback</span> function invoked for viewport rendering.</li>
+<li><b>Returns:</b> <span class="tt">Status</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">callback</span> retained callable</li>
 </ul>
-<p>Installs a custom render callback for this viewport. FlowUi begins and ends the provided secondary command buffer, so callback code records commands but does not begin or end the buffer.</p>
+<p>Prepare and publish an owned viewport render callback. Status reports detached/phase/configuration validation failures without replacing the previous callback. An empty RenderCallback disables rendering.</p>
+<p><a class="el" href="namespaceFlowUi.html">FlowUi</a> begins/ends the provided secondary command buffer and owns the surrounding pass/transitions. Record commands only; do not begin/end/submit it or destroy App-owned handles. The generic overload constructs an owned std::function before publication. The shared_ptr overload retains its payload until the callback is replaced/cleared and rejects null payloads.</p>
+<p>Exceptions: Application callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">viewport-&gt;setRenderCallback([](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a>&amp; ctx) { recordSceneCommands(ctx); });</div>
-<div class="ttc" id="astructFlowUi_1_1ViewPortRenderContext_html"><div class="ttname"><a href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a></div><div class="ttdoc">Per-frame context passed to a viewport render callback.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:59</div></div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
-<h2><b>setRenderCallback</b> <span class="tt">2/2</span></h2>
-<h3><span class="tt">template &lt;typename T, typename Fn&gt; void setRenderCallback(std::shared_ptr&lt;T&gt; userData, Fn&amp;&amp; callback)</span></h3>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="classFlowUi_1_1ViewPort.html#ad0d76433e868559926ec681a1b608864">FlowUi::ViewPort::RenderCallback</a> callback = [](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a>&amp; context) {</div>
+<div class="line">    VkViewport dynamicViewport{};</div>
+<div class="line">    dynamicViewport.width = <span class="keyword">static_cast&lt;</span><span class="keywordtype">float</span><span class="keyword">&gt;</span>(context.extent.width);</div>
+<div class="line">    dynamicViewport.height = <span class="keyword">static_cast&lt;</span><span class="keywordtype">float</span><span class="keyword">&gt;</span>(context.extent.height);</div>
+<div class="line">    dynamicViewport.maxDepth = 1.0f;</div>
+<div class="line">    vkCmdSetViewport(context.commandBuffer, 0, 1, &amp;dynamicViewport);</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">auto</span> result = viewport.setRenderCallback(callback);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_ad0d76433e868559926ec681a1b608864"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#ad0d76433e868559926ec681a1b608864">FlowUi::ViewPort::RenderCallback</a></div><div class="ttdeci">std::function&lt; void(const ViewPortRenderContext &amp;)&gt; RenderCallback</div><div class="ttdoc">Render callback invoked for a viewport pass.</div><div class="ttdef"><b>Definition</b> ViewPortManager.hpp:79</div></div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortRenderContext_html"><div class="ttname"><a href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a></div><div class="ttdoc">Per-frame context passed to a viewport render callback.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:64</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<h2><b>setRenderCallback</b></h2>
+<h3><span class="tt">template &lt;typename Callback&gt; requires (!std::is_same_v&lt;std::remove_cvref_t&lt;Callback&gt;, RenderCallback&gt;) [[nodiscard]] Status setRenderCallback(Callback&amp;&amp; callback)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
-<li><b>Arguments:</b> <span class="tt">userData</span> retained callback payload, <span class="tt">callback</span> callable invoked with render context and <span class="tt">T&amp;</span>.</li>
-</ul>
-<p>Installs a render callback that keeps typed shared user data alive. This is useful for binding scene renderers or other stateful rendering helpers to a viewport.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line">viewport-&gt;setRenderCallback([](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a>&amp; ctx) { recordSceneCommands(ctx); });</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
-<h2><b>clearRenderCallback</b></h2>
-<h3><span class="tt">void clearRenderCallback()</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
+<li><b>Returns:</b> <span class="tt">requires (construction)</span></li>
 <li><b>Arguments:</b> none.</li>
 </ul>
-<p>Clears the viewport render callback. FlowUi continues to manage the viewport texture, but no custom draw commands are recorded.</p>
+<p>Prepare and publish an owned viewport render callback. Status reports detached/phase/configuration validation failures without replacing the previous callback. An empty RenderCallback disables rendering.</p>
+<p><a class="el" href="namespaceFlowUi.html">FlowUi</a> begins/ends the provided secondary command buffer and owns the surrounding pass/transitions. Record commands only; do not begin/end/submit it or destroy App-owned handles. The generic overload constructs an owned std::function before publication. The shared_ptr overload retains its payload until the callback is replaced/cleared and rejects null payloads.</p>
+<p>Exceptions: Application callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">viewport-&gt;clearRenderCallback();</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = viewport.setRenderCallback([](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a>&amp; context) {</div>
+<div class="line">    VkViewport dynamicViewport{};</div>
+<div class="line">    dynamicViewport.width = <span class="keyword">static_cast&lt;</span><span class="keywordtype">float</span><span class="keyword">&gt;</span>(context.<a class="code hl_variable" href="structFlowUi_1_1ViewPortRenderContext.html#ad2d72fbc27b6d6c9101b3e1d020b1b3b">extent</a>.width);</div>
+<div class="line">    dynamicViewport.height = <span class="keyword">static_cast&lt;</span><span class="keywordtype">float</span><span class="keyword">&gt;</span>(context.<a class="code hl_variable" href="structFlowUi_1_1ViewPortRenderContext.html#ad2d72fbc27b6d6c9101b3e1d020b1b3b">extent</a>.height);</div>
+<div class="line">    dynamicViewport.maxDepth = 1.0f;</div>
+<div class="line">    vkCmdSetViewport(context.<a class="code hl_variable" href="structFlowUi_1_1ViewPortRenderContext.html#a78359f529476829d7f7a84bf81778fd0">commandBuffer</a>, 0, 1, &amp;dynamicViewport);</div>
+<div class="line">});</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortRenderContext_html_a78359f529476829d7f7a84bf81778fd0"><div class="ttname"><a href="structFlowUi_1_1ViewPortRenderContext.html#a78359f529476829d7f7a84bf81778fd0">FlowUi::ViewPortRenderContext::commandBuffer</a></div><div class="ttdeci">VkCommandBuffer commandBuffer</div><div class="ttdoc">Secondary command buffer for viewport rendering.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:71</div></div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortRenderContext_html_ad2d72fbc27b6d6c9101b3e1d020b1b3b"><div class="ttname"><a href="structFlowUi_1_1ViewPortRenderContext.html#ad2d72fbc27b6d6c9101b3e1d020b1b3b">FlowUi::ViewPortRenderContext::extent</a></div><div class="ttdeci">VkExtent2D extent</div><div class="ttdoc">Current viewport render target extent in pixels.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:74</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<h2><b>setRenderCallback</b></h2>
+<h3><span class="tt">template &lt;typename T, typename Fn&gt; [[nodiscard]] Status setRenderCallback(std::shared_ptr&lt;T&gt; userData, Fn&amp;&amp; callback)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Status</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">userData</span> borrowed visitor context, <span class="tt">callback</span> retained callable</li>
+</ul>
+<p>Prepare and publish an owned viewport render callback. Status reports detached/phase/configuration validation failures without replacing the previous callback. An empty RenderCallback disables rendering.</p>
+<p><a class="el" href="namespaceFlowUi.html">FlowUi</a> begins/ends the provided secondary command buffer and owns the surrounding pass/transitions. Record commands only; do not begin/end/submit it or destroy App-owned handles. The generic overload constructs an owned std::function before publication. The shared_ptr overload retains its payload until the callback is replaced/cleared and rejects null payloads.</p>
+<p>Exceptions: Application callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> blendConstants = std::make_shared&lt;std::array&lt;float, 4&gt;&gt;(</div>
+<div class="line">    std::array&lt;float, 4&gt;{1.0f, 1.0f, 1.0f, 1.0f});</div>
+<div class="line"><span class="keyword">auto</span> result = viewport.setRenderCallback(std::move(blendConstants), [](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a>&amp; context, std::array&lt;float, 4&gt;&amp; constants) {</div>
+<div class="line">    vkCmdSetBlendConstants(context.<a class="code hl_variable" href="structFlowUi_1_1ViewPortRenderContext.html#a78359f529476829d7f7a84bf81778fd0">commandBuffer</a>, constants.data());</div>
+<div class="line">});</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<h2><b>clearRenderCallback</b></h2>
+<h3><span class="tt">[[nodiscard]] Status clearRenderCallback()</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Status</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> none.</li>
+</ul>
+<p>Clear the installed viewport render callback. Status reports detached/phase validation failure without replacing the existing callback.</p>
+<p>The texture remains managed and may still be cleared; no custom drawing callback is invoked.</p>
+<p>Exceptions: Application callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = viewport.clearRenderCallback();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
 <h2><b>hasRenderCallback</b></h2>
-<h3><span class="tt">bool hasRenderCallback() const</span></h3>
+<h3><span class="tt">[[nodiscard]] bool hasRenderCallback() const noexcept</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">bool</span></li>
 <li><b>Arguments:</b> none.</li>
 </ul>
-<p>Reports whether a render callback is currently installed. Use this to avoid redundant setup or to display fallback content.</p>
+<p>Test whether this viewport has an installed callback. Returns false when detached or no callback is installed.</p>
+<p>This is a direct noexcept observation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (!viewport-&gt;hasRenderCallback()) { viewport-&gt;setRenderCallback(renderScene); }</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> hasCallback = viewport.hasRenderCallback();</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
 <h2><b>setClearColor</b></h2>
-<h3><span class="tt">void setClearColor(float r, float g, float b, float a)</span></h3>
+<h3><span class="tt">[[nodiscard]] Status setClearColor(float r, float g, float b, float a)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
-<li><b>Arguments:</b> <span class="tt">r</span>, <span class="tt">g</span>, <span class="tt">b</span>, <span class="tt">a</span> clear color channels.</li>
+<li><b>Returns:</b> <span class="tt">Status</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">r</span>, <span class="tt">g</span>, <span class="tt">b</span>, <span class="tt">a</span></li>
 </ul>
-<p>Sets the viewport clear color. The color is used by the viewport render pass when clearing is enabled.</p>
+<p>Publish the RGBA viewport clear color. Status reports detached/phase validation failures without changing the color.</p>
+<p>The four float channels are stored as provided.</p>
+<p>Exceptions: Application callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">viewport-&gt;setClearColor(0.02f, 0.02f, 0.03f, 1.0f);</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = viewport.setClearColor(0.02f, 0.02f, 0.03f, 1.0f);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
 <h2><b>clearColor</b></h2>
-<h3><span class="tt">std::array&lt;float, 4&gt; clearColor() const</span></h3>
+<h3><span class="tt">[[nodiscard]] std::array&lt;float, 4&gt; clearColor() const noexcept</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">std::array&lt;float, 4&gt;</span></li>
 <li><b>Arguments:</b> none.</li>
 </ul>
-<p>Returns the current viewport clear color. The values are RGBA channels.</p>
+<p>Read the viewport's RGBA clear color. Returns a copied <span class="tt">std::array&lt;float, 4&gt;</span>; detached state returns zeros.</p>
+<p>This is a direct noexcept observation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">std::array&lt;float, 4&gt; color = viewport-&gt;clearColor();</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> clearColor = viewport.clearColor();</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
 <h2><b>setClearEveryFrame</b></h2>
-<h3><span class="tt">void setClearEveryFrame(bool enabled)</span></h3>
+<h3><span class="tt">[[nodiscard]] Status setClearEveryFrame(bool enabled)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
-<li><b>Arguments:</b> <span class="tt">enabled</span> true to clear each rendered frame.</li>
+<li><b>Returns:</b> <span class="tt">Status</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">enabled</span></li>
 </ul>
-<p>Controls whether FlowUi clears the viewport image every frame. Disabling clear can be useful for persistent render target effects.</p>
+<p>Choose whether every pass clears the viewport. Status reports detached/phase validation failures without changing the policy.</p>
+<p>false preserves image contents where available after the image's required initialization clear.</p>
+<p>Exceptions: Application callable copy/move/allocation and incidental synchronization exceptions propagate before publication; the previous configuration remains unchanged.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">viewport-&gt;setClearEveryFrame(<span class="keyword">false</span>);</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = viewport.setClearEveryFrame(<span class="keyword">false</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
 <h2><b>clearEveryFrame</b></h2>
-<h3><span class="tt">bool clearEveryFrame() const</span></h3>
+<h3><span class="tt">[[nodiscard]] bool clearEveryFrame() const noexcept</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">bool</span></li>
 <li><b>Arguments:</b> none.</li>
 </ul>
-<p>Reports whether the viewport clears before rendering each frame. When false, FlowUi loads previous image contents after initialization.</p>
+<p>Read the viewport clear policy. Returns the stored policy; detached state returns true.</p>
+<p>false means previous initialized contents can be loaded.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> clears = viewport-&gt;clearEveryFrame();</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> clearsEveryFrame = viewport.clearEveryFrame();</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<h1>Public API</h1>
 <h2><b>create</b></h2>
-<h3><span class="tt">Result&lt;bool&gt; create(std::string_view key, const ViewPortCreateInfo&amp; createInfo = {})</span></h3>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; create(std::string_view key, const ViewPortCreateInfo&amp; createInfo = {}) noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before reading the value, and use <span class="tt">.error()</span> on failure.</li>
-<li><b>Arguments:</b> <span class="tt">key</span> viewport key, <span class="tt">createInfo</span> initial format and clear settings.</li>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity, <span class="tt">createInfo</span> family or target configuration</li>
 </ul>
-<p>Creates a named offscreen viewport. Newly created viewports resize automatically when their texture is referenced by UI image commands.</p>
+<p>Create a window-local viewport and its initial 1x1 render targets. Success currently contains true. A duplicate key returns ViewportKeyCollision, not a successful false value. Invalid configuration/manager/key and allocation/GPU resource failures are errors.</p>
+<p>The viewport resizes from the largest referenced UI image area, scaled to framebuffer pixels. colorFormat == VK_FORMAT_UNDEFINED selects VK_FORMAT_R8G8B8A8_UNORM; createInfo defaults to {}.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> registered = app.viewPorts().create(<span class="stringliteral">&quot;scene&quot;</span>, {.clearColor = {0.02f, 0.02f, 0.03f, 1.0f}});</div>
-<div class="line"><span class="keywordflow">if</span> (!registered) {</div>
-<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(registered.error());</div>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#a481bdc86c3c7c6b8d4204ee88cdd1f7f">create</a>(<span class="stringliteral">&quot;scene&quot;</span>, <a class="code hl_struct" href="structFlowUi_1_1ViewPortCreateInfo.html">FlowUi::ViewPortCreateInfo</a>{});</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
 <div class="line">}</div>
-<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> created = *result;</div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html_a481bdc86c3c7c6b8d4204ee88cdd1f7f"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html#a481bdc86c3c7c6b8d4204ee88cdd1f7f">FlowUi::ViewPortManager::create</a></div><div class="ttdeci">Result&lt; bool &gt; create(std::string_view key, const ViewPortCreateInfo &amp;createInfo={}) noexcept</div><div class="ttdoc">Create a window-local viewport and its initial 1x1 render targets.</div></div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortCreateInfo_html"><div class="ttname"><a href="structFlowUi_1_1ViewPortCreateInfo.html">FlowUi::ViewPortCreateInfo</a></div><div class="ttdoc">Creation settings for a viewport render target.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:96</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<h2><b>create</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; create(ResourceKey key, const ViewPortCreateInfo&amp; createInfo = {}) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity, <span class="tt">createInfo</span> family or target configuration</li>
+</ul>
+<p>Create a window-local viewport and its initial 1x1 render targets. Success currently contains true. A duplicate key returns ViewportKeyCollision, not a successful false value. Invalid configuration/manager/key and allocation/GPU resource failures are errors.</p>
+<p>The viewport resizes from the largest referenced UI image area, scaled to framebuffer pixels. colorFormat == VK_FORMAT_UNDEFINED selects VK_FORMAT_R8G8B8A8_UNORM; createInfo defaults to {}. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;scene&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#a481bdc86c3c7c6b8d4204ee88cdd1f7f">create</a>(key, <a class="code hl_struct" href="structFlowUi_1_1ViewPortCreateInfo.html">FlowUi::ViewPortCreateInfo</a>{});</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> created = *result;</div>
+<div class="ttc" id="astructFlowUi_1_1ResourceKey_html"><div class="ttname"><a href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a></div><div class="ttdoc">Human-readable logical identity accepted by FlowUi managers.</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:39</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
 <h2><b>remove</b></h2>
-<h3><span class="tt">Result&lt;bool&gt; remove(std::string_view key)</span></h3>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; remove(std::string_view key) noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before reading the value, and use <span class="tt">.error()</span> on failure.</li>
-<li><b>Arguments:</b> <span class="tt">key</span> viewport key.</li>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity</li>
 </ul>
-<p>Removes a viewport and retires its per-frame resources after their recorded submissions complete. The successful result contains <span class="tt">false</span> when the key is absent.</p>
+<p>Remove a viewport and retire its per-frame targets. Success contains true if removed or false if absent.</p>
+<p>Borrowed ViewPort pointers and their key views become invalid immediately; GPU targets retire after their recorded texture uses complete.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removal = app.viewPorts().remove(<span class="stringliteral">&quot;scene&quot;</span>);</div>
-<div class="line"><span class="keywordflow">if</span> (!removal) {</div>
-<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(removal.error());</div>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#a76e9933c61eeedba48c7cdbbb3a3f8be">remove</a>(<span class="stringliteral">&quot;scene&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
 <div class="line">}</div>
-<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = *removal;</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = *result;</div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html_a76e9933c61eeedba48c7cdbbb3a3f8be"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html#a76e9933c61eeedba48c7cdbbb3a3f8be">FlowUi::ViewPortManager::remove</a></div><div class="ttdeci">Result&lt; bool &gt; remove(std::string_view key) noexcept</div><div class="ttdoc">Remove a viewport and retire its per-frame targets.</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<h2><b>remove</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; remove(ResourceKey key) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity</li>
+</ul>
+<p>Remove a viewport and retire its per-frame targets. Success contains true if removed or false if absent.</p>
+<p>Borrowed ViewPort pointers and their key views become invalid immediately; GPU targets retire after their recorded texture uses complete. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;scene&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#a76e9933c61eeedba48c7cdbbb3a3f8be">remove</a>(key);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = *result;</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
 <h2><b>contains</b></h2>
-<h3><span class="tt">bool contains(std::string_view key) const</span></h3>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; contains(std::string_view key) const noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">bool</span></li>
-<li><b>Arguments:</b> <span class="tt">key</span> viewport key.</li>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity</li>
 </ul>
-<p>Checks whether a viewport exists for the key. This is a lightweight lookup with no rendering side effects.</p>
+<p>Test whether a viewport is registered in this window. Success contains true if present or false if absent.</p>
+<p>Key normalization/initialization errors are distinct from an absent key.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (!app.viewPorts().contains(<span class="stringliteral">&quot;scene&quot;</span>)) {</div>
-<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span> created = app.viewPorts().create(<span class="stringliteral">&quot;scene&quot;</span>);</div>
-<div class="line">    <span class="keywordflow">if</span> (!created) {</div>
-<div class="line">        <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(created.error());</div>
-<div class="line">    }</div>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#ab44d30edb3eb80fb744221bd99a2ce98">contains</a>(<span class="stringliteral">&quot;scene&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
 <div class="line">}</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
-<h2><b>getViewPort</b> <span class="tt">1/2</span></h2>
-<h3><span class="tt">ViewPort* getViewPort(std::string_view key)</span></h3>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> registered = *result;</div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html_ab44d30edb3eb80fb744221bd99a2ce98"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html#ab44d30edb3eb80fb744221bd99a2ce98">FlowUi::ViewPortManager::contains</a></div><div class="ttdeci">Result&lt; bool &gt; contains(std::string_view key) const noexcept</div><div class="ttdoc">Test whether a viewport is registered in this window.</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<h2><b>contains</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; contains(ResourceKey key) const noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">ViewPort*</span></li>
-<li><b>Arguments:</b> <span class="tt">key</span> viewport key.</li>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity</li>
 </ul>
-<p>Returns a mutable viewport pointer, or <span class="tt">nullptr</span> when missing. Use this to set callbacks, clear color, or persistent clear behavior.</p>
+<p>Test whether a viewport is registered in this window. Success contains true if present or false if absent.</p>
+<p>Key normalization/initialization errors are distinct from an absent key. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* scene = app.viewPorts().getViewPort(<span class="stringliteral">&quot;scene&quot;</span>);</div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPort_html"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a></div><div class="ttdoc">Offscreen render target that can be sampled by the FlowUi renderer.</div><div class="ttdef"><b>Definition</b> ViewPortManager.hpp:74</div></div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
-<h2><b>getViewPort</b> <span class="tt">2/2</span></h2>
-<h3><span class="tt">const ViewPort* getViewPort(std::string_view key) const</span></h3>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;scene&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#ab44d30edb3eb80fb744221bd99a2ce98">contains</a>(key);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> registered = *result;</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<h2><b>getViewPort</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;ViewPort*&gt; getViewPort(std::string_view key) noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">const ViewPort*</span></li>
-<li><b>Arguments:</b> <span class="tt">key</span> viewport key.</li>
+<li><b>Returns:</b> <span class="tt">Result&lt;ViewPort*&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity</li>
 </ul>
-<p>Returns an immutable viewport pointer, or <span class="tt">nullptr</span> when missing. Use this for read-only viewport inspection.</p>
+<p>Borrow a viewport facade by key. Success contains a borrowed pointer, which is nullptr for a missing key. Check both the Result and its contained pointer before dereferencing.</p>
+<p>The mutable and const manager overloads return ViewPort* and const ViewPort* respectively. The pointer lasts until that viewport is removed or the manager/window is destroyed; do not retain it across removal/recreation.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* scene = app.viewPorts().getViewPort(<span class="stringliteral">&quot;scene&quot;</span>);</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#a4b08896893dbd9ae751241e4307f1bc3">getViewPort</a>(<span class="stringliteral">&quot;scene&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* viewport = *result;</div>
+<div class="line"><span class="keywordflow">if</span> (viewport != <span class="keyword">nullptr</span>) {</div>
+<div class="line">    <span class="keyword">const</span> <span class="keywordtype">bool</span> sized = viewport-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#a5f2cac10eb5a33309f1900921530e5dc">hasValidSize</a>();</div>
+<div class="line">}</div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html_a4b08896893dbd9ae751241e4307f1bc3"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html#a4b08896893dbd9ae751241e4307f1bc3">FlowUi::ViewPortManager::getViewPort</a></div><div class="ttdeci">Result&lt; ViewPort * &gt; getViewPort(std::string_view key) noexcept</div><div class="ttdoc">Borrow a viewport facade by key.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPort_html"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a></div><div class="ttdoc">Offscreen render target that can be sampled by the FlowUi renderer.</div><div class="ttdef"><b>Definition</b> ViewPortManager.hpp:76</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPort_html_a5f2cac10eb5a33309f1900921530e5dc"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html#a5f2cac10eb5a33309f1900921530e5dc">FlowUi::ViewPort::hasValidSize</a></div><div class="ttdeci">bool hasValidSize() const noexcept</div><div class="ttdoc">Test whether the current render target has nonzero width and height.</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<h2><b>getViewPort</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;ViewPort*&gt; getViewPort(ResourceKey key) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;ViewPort*&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity</li>
+</ul>
+<p>Borrow a viewport facade by key. Success contains a borrowed pointer, which is nullptr for a missing key. Check both the Result and its contained pointer before dereferencing.</p>
+<p>The mutable and const manager overloads return ViewPort* and const ViewPort* respectively. The pointer lasts until that viewport is removed or the manager/window is destroyed; do not retain it across removal/recreation. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;scene&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#a4b08896893dbd9ae751241e4307f1bc3">getViewPort</a>(key);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* viewport = *result;</div>
+<div class="line"><span class="keywordflow">if</span> (viewport != <span class="keyword">nullptr</span>) {</div>
+<div class="line">    <span class="keyword">const</span> <span class="keywordtype">bool</span> sized = viewport-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#a5f2cac10eb5a33309f1900921530e5dc">hasValidSize</a>();</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<h2><b>getViewPort</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;const ViewPort*&gt; getViewPort(std::string_view key) const noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;const ViewPort*&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity</li>
+</ul>
+<p>Borrow a viewport facade by key. Success contains a borrowed pointer, which is nullptr for a missing key. Check both the Result and its contained pointer before dereferencing.</p>
+<p>The mutable and const manager overloads return ViewPort* and const ViewPort* respectively. The pointer lasts until that viewport is removed or the manager/window is destroyed; do not retain it across removal/recreation.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#a4b08896893dbd9ae751241e4307f1bc3">getViewPort</a>(<span class="stringliteral">&quot;scene&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* viewport = *result;</div>
+<div class="line"><span class="keywordflow">if</span> (viewport != <span class="keyword">nullptr</span>) {</div>
+<div class="line">    <span class="keyword">const</span> <span class="keywordtype">bool</span> sized = viewport-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#a5f2cac10eb5a33309f1900921530e5dc">hasValidSize</a>();</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<h2><b>getViewPort</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;const ViewPort*&gt; getViewPort(ResourceKey key) const noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;const ViewPort*&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity</li>
+</ul>
+<p>Borrow a viewport facade by key. Success contains a borrowed pointer, which is nullptr for a missing key. Check both the Result and its contained pointer before dereferencing.</p>
+<p>The mutable and const manager overloads return ViewPort* and const ViewPort* respectively. The pointer lasts until that viewport is removed or the manager/window is destroyed; do not retain it across removal/recreation. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;scene&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#a4b08896893dbd9ae751241e4307f1bc3">getViewPort</a>(key);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* viewport = *result;</div>
+<div class="line"><span class="keywordflow">if</span> (viewport != <span class="keyword">nullptr</span>) {</div>
+<div class="line">    <span class="keyword">const</span> <span class="keywordtype">bool</span> sized = viewport-&gt;<a class="code hl_function" href="classFlowUi_1_1ViewPort.html#a5f2cac10eb5a33309f1900921530e5dc">hasValidSize</a>();</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
 <h2><b>getTexture</b></h2>
-<h3><span class="tt">TextureRef getTexture(std::string_view key) const</span></h3>
+<h3><span class="tt">[[nodiscard]] Result&lt;TextureRef&gt; getTexture(std::string_view key) const noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">TextureRef</span></li>
-<li><b>Arguments:</b> <span class="tt">key</span> viewport key.</li>
+<li><b>Returns:</b> <span class="tt">Result&lt;TextureRef&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity</li>
 </ul>
-<p>Returns a texture reference for the current frame's viewport image. Missing keys return fallback texture id <span class="tt">0</span> and log a warning once.</p>
+<p>Acquire the viewport texture reference for the current frame slot. Missing keys are successful unavailable references, with an invalid handle and a once-per-key diagnostic. SkipVisual omits the visual; the fallback policy uses the renderer fallback.</p>
+<p>Reacquire each frame because frame-slot images change. The TextureRef conveys a generation-checked borrowed resource identity, not ownership.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> sceneTexture = app.viewPorts().getTexture(<span class="stringliteral">&quot;scene&quot;</span>);</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
-<h2><b>getVulkanInterop</b></h2>
-<h3><span class="tt">const ViewPortVulkanInterop&amp; getVulkanInterop() const</span></h3>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#ad99e9430b7dc3394e7f870906ae8fbb3">getTexture</a>(<span class="stringliteral">&quot;scene&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> texture = *result;</div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html_ad99e9430b7dc3394e7f870906ae8fbb3"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html#ad99e9430b7dc3394e7f870906ae8fbb3">FlowUi::ViewPortManager::getTexture</a></div><div class="ttdeci">Result&lt; TextureRef &gt; getTexture(std::string_view key) const noexcept</div><div class="ttdoc">Acquire the viewport texture reference for the current frame slot.</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<h2><b>getTexture</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;TextureRef&gt; getTexture(ResourceKey key) const noexcept</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">const ViewPortVulkanInterop&amp;</span></li>
+<li><b>Returns:</b> <span class="tt">Result&lt;TextureRef&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity</li>
+</ul>
+<p>Acquire the viewport texture reference for the current frame slot. Missing keys are successful unavailable references, with an invalid handle and a once-per-key diagnostic. SkipVisual omits the visual; the fallback policy uses the renderer fallback.</p>
+<p>Reacquire each frame because frame-slot images change. The TextureRef conveys a generation-checked borrowed resource identity, not ownership. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;scene&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#ad99e9430b7dc3394e7f870906ae8fbb3">getTexture</a>(key);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> texture = *result;</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<h2><b>getVulkanInterop</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;std::reference_wrapper&lt;const ViewPortVulkanInterop&gt;&gt; getVulkanInterop() const noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;std::reference_wrapper&lt;const ViewPortVulkanInterop&gt;&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
 <li><b>Arguments:</b> none.</li>
 </ul>
-<p>Returns shared Vulkan handles owned by the FlowUi app. Use these handles only to create compatible resources or record viewport work; do not destroy them.</p>
+<p>Borrow the App-owned Vulkan interop bundle. Success contains <span class="tt">std::reference_wrapper&lt;const ViewPortVulkanInterop&gt;</span>; detached state returns ObjectNotInitialized.</p>
+<p>Unwrap result-&gt;get() after checking. Keep the borrowed bundle within the App/window lifetime; never destroy its instance/device/allocator/queue handles. This API requires FLOWUI_PUBLIC_VULKAN_INTEROP.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortVulkanInterop.html">FlowUi::ViewPortVulkanInterop</a>&amp; vk = app.viewPorts().getVulkanInterop();</div>
-<div class="ttc" id="astructFlowUi_1_1ViewPortVulkanInterop_html"><div class="ttname"><a href="structFlowUi_1_1ViewPortVulkanInterop.html">FlowUi::ViewPortVulkanInterop</a></div><div class="ttdoc">Vulkan handles exposed to viewport render callbacks.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:29</div></div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>. </p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#aba1812e36fb6cd1ddb8b1bf11d881c28">getVulkanInterop</a>();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortVulkanInterop.html">FlowUi::ViewPortVulkanInterop</a>&amp; borrowed = result-&gt;get();</div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html_aba1812e36fb6cd1ddb8b1bf11d881c28"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html#aba1812e36fb6cd1ddb8b1bf11d881c28">FlowUi::ViewPortManager::getVulkanInterop</a></div><div class="ttdeci">Result&lt; std::reference_wrapper&lt; const ViewPortVulkanInterop &gt; &gt; getVulkanInterop() const noexcept</div><div class="ttdoc">Borrow the App-owned Vulkan interop bundle.</div></div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortVulkanInterop_html"><div class="ttname"><a href="structFlowUi_1_1ViewPortVulkanInterop.html">FlowUi::ViewPortVulkanInterop</a></div><div class="ttdoc">Vulkan handles exposed to viewport render callbacks.</div><div class="ttdef"><b>Definition</b> Viewport.hpp:32</div></div>
+</div><!-- fragment --><h1>Build-gated development hooks</h1>
+<p><span class="tt">FLOW_UI_DEV_MODE</span> and the development memory-level macros expose additional inspection/recording hooks in the header. They are development infrastructure, not the application API described here. Their existing build gates and signatures are unchanged.</p>
+<h1>Vulkan interop values</h1>
+<p>The value types are declared in <a href="include/FlowUi/Public/interop/vulkan/Viewport.hpp">interop/vulkan/Viewport.hpp</a> under the same <span class="tt">FLOWUI_PUBLIC_VULKAN_INTEROP</span> gate.</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Type  </th><th class="markdownTableHeadNone">Fields and contract  </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">ViewPortCreateInfo</span>  </td><td class="markdownTableBodyNone"><span class="tt">colorFormat</span> defaults to <span class="tt">VK_FORMAT_R8G8B8A8_UNORM</span> (undefined also selects that format); transparent <span class="tt">clearColor</span>; <span class="tt">clearEveryFrame = true</span>; <span class="tt">resizeHysteresisPixels = 4</span>. Runtime hysteresis is at least its default. Size is driven by UI usage.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">ViewPortVulkanInterop</span>  </td><td class="markdownTableBodyNone">Borrowed <span class="tt">instance</span>, <span class="tt">physicalDevice</span>, <span class="tt">device</span>, VMA <span class="tt">allocator</span>, and <span class="tt">graphicsQueue</span>; <span class="tt">graphicsQueueFamily</span> identifies the graphics family; <span class="tt">framesInFlight</span> is the viewport resource-slot count. Neither copying the bundle nor unwrapping its reference transfers ownership.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">ViewPortRenderContext</span>  </td><td class="markdownTableBodyNone">Synchronously borrowed <span class="tt">commandBuffer</span>, current pixel <span class="tt">extent</span>, <span class="tt">colorFormat</span>, <span class="tt">frameIndex</span>, key view, and nullable <span class="tt">vulkan</span> pointer. Use only during that callback. The command buffer is already begun and is ended/submitted by <a class="el" href="namespaceFlowUi.html">FlowUi</a>.  </td></tr>
+</table>
+<p>The <span class="tt">shared_ptr</span> callback overload retains only its supplied payload. It does not make separately borrowed pointers/references in that payload safe; keep those resources alive for all uses. Validate <span class="tt">context.vulkan != nullptr</span> before reading the optional bundle pointer.</p>
+<h1>Checked development inspection examples</h1>
+<p>These hooks require <span class="tt">FLOW_UI_DEV_MODE</span>; viewport hooks also require <span class="tt">FLOWUI_PUBLIC_VULKAN_INTEROP</span>. They are observation/tooling APIs. A visitor returns <span class="tt">true</span> to continue; a successful returned <span class="tt">false</span> is distinct from a failed <span class="tt">Result</span>. Callback arguments and their resource views are borrowed. The examples use the already acquired manager for the owning App/window.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<h2><b>visitDevViewports</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;bool&gt; visitDevViewports(void* target, DevViewportVisitor visitor) const noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+</ul>
+<p>Observe development catalogue entries without invoking application operations. Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a detached manager or null visitor. A failed Result is an operational/callback error, not an incomplete-visit bool.</p>
+<p>Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts sized viewport registrations; completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to FlowUiError. Earlier callback effects, including the counter, are not rolled back on failure. This does not schedule rendering or capture; capture_texture is an observation-cache binding and must not be retained as ownership.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE &amp;&amp; FLOWUI_PUBLIC_VULKAN_INTEROP</span></div>
+<div class="line">std::size_t count = 0;</div>
+<div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#a54784bf6288f2a7544a9a6ad62179bee">visitDevViewports</a>(&amp;count,</div>
+<div class="line">    [](<span class="keywordtype">void</span>* target, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortManager_1_1DevViewportView.html">FlowUi::ViewPortManager::DevViewportView</a>&amp; viewport) {</div>
+<div class="line">        <span class="keyword">auto</span>&amp; observedCount = *<span class="keyword">static_cast&lt;</span>std::size_t*<span class="keyword">&gt;</span>(target);</div>
+<div class="line">        <span class="keywordflow">if</span> (viewport.<a class="code hl_variable" href="structFlowUi_1_1ViewPortManager_1_1DevViewportView.html#aa1f3c493083d388a441a61647fdec02f">width</a> != 0 &amp;&amp; viewport.<a class="code hl_variable" href="structFlowUi_1_1ViewPortManager_1_1DevViewportView.html#a1fb8ce280dc308b4ed590938dd5c979e">height</a> != 0) {</div>
+<div class="line">            ++observedCount;</div>
+<div class="line">        }</div>
+<div class="line">        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">    });</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe">completed</a> = *result;</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html_a54784bf6288f2a7544a9a6ad62179bee"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html#a54784bf6288f2a7544a9a6ad62179bee">FlowUi::ViewPortManager::visitDevViewports</a></div><div class="ttdeci">Result&lt; bool &gt; visitDevViewports(void *target, DevViewportVisitor visitor) const noexcept</div><div class="ttdoc">Observe development catalogue entries without invoking application operations.</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html_aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe">FlowUi::devSystems::agentic::AgenticInteractionPhase::completed</a></div><div class="ttdeci">@ completed</div><div class="ttdef"><b>Definition</b> AgenticInteraction.hpp:486</div></div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortManager_1_1DevViewportView_html"><div class="ttname"><a href="structFlowUi_1_1ViewPortManager_1_1DevViewportView.html">FlowUi::ViewPortManager::DevViewportView</a></div><div class="ttdoc">Borrowed viewport and immutable-capture metadata; observation does not schedule rendering.</div><div class="ttdef"><b>Definition</b> ViewPortManager.hpp:306</div></div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortManager_1_1DevViewportView_html_a1fb8ce280dc308b4ed590938dd5c979e"><div class="ttname"><a href="structFlowUi_1_1ViewPortManager_1_1DevViewportView.html#a1fb8ce280dc308b4ed590938dd5c979e">FlowUi::ViewPortManager::DevViewportView::height</a></div><div class="ttdeci">uint32_t height</div><div class="ttdoc">Current source dimensions in pixels and numeric Vulkan format.</div><div class="ttdef"><b>Definition</b> ViewPortManager.hpp:334</div></div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortManager_1_1DevViewportView_html_aa1f3c493083d388a441a61647fdec02f"><div class="ttname"><a href="structFlowUi_1_1ViewPortManager_1_1DevViewportView.html#aa1f3c493083d388a441a61647fdec02f">FlowUi::ViewPortManager::DevViewportView::width</a></div><div class="ttdeci">uint32_t width</div><div class="ttdoc">Current source width in pixels.</div><div class="ttdef"><b>Definition</b> ViewPortManager.hpp:334</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<h2><b>request_dev_capture</b></h2>
+<h3><span class="tt">[[nodiscard]] Status request_dev_capture(std::string_view key) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Status</span>; check for failure before continuing.</li>
+</ul>
+<p>Request one immutable development copy on a later natural viewport render. Success when requested; ObjectNotInitialized, ViewportNotFound, unsupported-format ViewportConfigurationInvalid, capacity, storage, or allocation failure otherwise.</p>
+<p>The example expects scene to exist. Successful submission only schedules a request: it does not force rendering or mean the GPU copy has completed. Poll visitDevViewports() for capture_pending/capture_failed and a nonempty capture_texture. Capture is format checked and bounded to 16 active observation caches. No exception escapes.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE &amp;&amp; FLOWUI_PUBLIC_VULKAN_INTEROP</span></div>
+<div class="line"><span class="keyword">auto</span> status = viewports.request_dev_capture(<span class="stringliteral">&quot;scene&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!status) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(status.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>.</p>
+<h2><b>retain_dev_capture</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;TextureHandle&gt; retain_dev_capture(std::string_view key, TextureHandle expected_capture) noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;TextureHandle&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+</ul>
+<p>Create an independent texture binding for an exact completed development capture. A retained TextureHandle, or initialization, missing-viewport, stale/incomplete-handle, storage, or allocation failure.</p>
+<p>Pass the exact capture_texture observed for the same key by visitDevViewports(); incomplete or replaced captures are ResourceHandleInvalid. The image is shared without another copy. This retained logical binding must later be released through the owning App::release_dev_viewport_capture_texture(); release_dev_capture(key) only releases the observation cache. Keep the owning App alive. No exception escapes.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE &amp;&amp; FLOWUI_PUBLIC_VULKAN_INTEROP</span></div>
+<div class="line"><span class="keyword">auto</span> result = viewports.retain_dev_capture(<span class="stringliteral">&quot;scene&quot;</span>, observedCapture);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1TextureHandle.html">FlowUi::TextureHandle</a> retained = *result;</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="astructFlowUi_1_1TextureHandle_html"><div class="ttname"><a href="structFlowUi_1_1TextureHandle.html">FlowUi::TextureHandle</a></div><div class="ttdef"><b>Definition</b> TextureHandle.hpp:9</div></div>
+</div><!-- fragment --><p>Release every successful retained binding with checked <span class="tt">App::release_dev_viewport_capture_texture(retained)</span> when finished; <a class="el" href="md_docs_2api_2app.html" title="App API">the App capture API</a> gives that release example. Releasing only the manager observation cache does not release an independent retained binding.</p>
+<p>See: <a href="include/FlowUi/Public/managers/ViewPortManager.hpp">Owning header</a>. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

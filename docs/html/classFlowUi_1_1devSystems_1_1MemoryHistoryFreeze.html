@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,27 +111,170 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a7d40db40de29162b984575469f2a5322" id="r_a7d40db40de29162b984575469f2a5322"><td class="memItemLeft"><a id="a7d40db40de29162b984575469f2a5322" name="a7d40db40de29162b984575469f2a5322"></a>
-&#160;</td><td class="memItemRight"><b>MemoryHistoryFreeze</b> (MemoryHistoryFreeze &amp;&amp;other) noexcept</td></tr>
-<tr class="memitem:a668028bc023046e4faf9448b7e8811a7" id="r_a668028bc023046e4faf9448b7e8811a7"><td class="memItemLeft"><a id="a668028bc023046e4faf9448b7e8811a7" name="a668028bc023046e4faf9448b7e8811a7"></a>
-MemoryHistoryFreeze &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (MemoryHistoryFreeze &amp;&amp;other) noexcept</td></tr>
+<tr class="memitem:a4a109f1f95cc4e11ba8b3c690625ced4" id="r_a4a109f1f95cc4e11ba8b3c690625ced4"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a4a109f1f95cc4e11ba8b3c690625ced4">MemoryHistoryFreeze</a> () noexcept=default</td></tr>
+<tr class="memitem:a5f53e1c984a0bd479b810ee5d54f4992" id="r_a5f53e1c984a0bd479b810ee5d54f4992"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a5f53e1c984a0bd479b810ee5d54f4992">~MemoryHistoryFreeze</a> ()</td></tr>
+<tr class="memitem:a7d40db40de29162b984575469f2a5322" id="r_a7d40db40de29162b984575469f2a5322"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a7d40db40de29162b984575469f2a5322">MemoryHistoryFreeze</a> (MemoryHistoryFreeze &amp;&amp;other) noexcept</td></tr>
+<tr class="memitem:a668028bc023046e4faf9448b7e8811a7" id="r_a668028bc023046e4faf9448b7e8811a7"><td class="memItemLeft"><a class="el" href="#a4a109f1f95cc4e11ba8b3c690625ced4">MemoryHistoryFreeze</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a668028bc023046e4faf9448b7e8811a7">operator=</a> (<a class="el" href="#a4a109f1f95cc4e11ba8b3c690625ced4">MemoryHistoryFreeze</a> &amp;&amp;other) noexcept</td></tr>
 <tr class="memitem:a85ac0d31f10e7938cb79aed63fbfc4bc" id="r_a85ac0d31f10e7938cb79aed63fbfc4bc"><td class="memItemLeft"><a id="a85ac0d31f10e7938cb79aed63fbfc4bc" name="a85ac0d31f10e7938cb79aed63fbfc4bc"></a>
 &#160;</td><td class="memItemRight"><b>MemoryHistoryFreeze</b> (const MemoryHistoryFreeze &amp;)=delete</td></tr>
 <tr class="memitem:a9c5cbf11bc2687829cf2f87ea7473c3e" id="r_a9c5cbf11bc2687829cf2f87ea7473c3e"><td class="memItemLeft"><a id="a9c5cbf11bc2687829cf2f87ea7473c3e" name="a9c5cbf11bc2687829cf2f87ea7473c3e"></a>
-MemoryHistoryFreeze &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const MemoryHistoryFreeze &amp;)=delete</td></tr>
-<tr class="memitem:a5ec704e09f8936ccee4c9d339eb42307" id="r_a5ec704e09f8936ccee4c9d339eb42307"><td class="memItemLeft"><a id="a5ec704e09f8936ccee4c9d339eb42307" name="a5ec704e09f8936ccee4c9d339eb42307"></a>
-void&#160;</td><td class="memItemRight"><b>reset</b> () noexcept</td></tr>
-<tr class="memitem:a834c596444e6b0cc10ce3c9faafaef32" id="r_a834c596444e6b0cc10ce3c9faafaef32"><td class="memItemLeft"><a id="a834c596444e6b0cc10ce3c9faafaef32" name="a834c596444e6b0cc10ce3c9faafaef32"></a>
-&#160;</td><td class="memItemRight"><b>operator bool</b> () const noexcept</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a59350605ab29e68c4ac27083523d6373" id="r_a59350605ab29e68c4ac27083523d6373"><td class="memItemLeft"><a id="a59350605ab29e68c4ac27083523d6373" name="a59350605ab29e68c4ac27083523d6373"></a>
-class&#160;</td><td class="memItemRight"><b>DevMemoryReporting</b></td></tr>
+<a class="el" href="#a4a109f1f95cc4e11ba8b3c690625ced4">MemoryHistoryFreeze</a> &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const <a class="el" href="#a4a109f1f95cc4e11ba8b3c690625ced4">MemoryHistoryFreeze</a> &amp;)=delete</td></tr>
+<tr class="memitem:a5ec704e09f8936ccee4c9d339eb42307" id="r_a5ec704e09f8936ccee4c9d339eb42307"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a5ec704e09f8936ccee4c9d339eb42307">reset</a> () noexcept</td></tr>
+<tr class="memitem:a834c596444e6b0cc10ce3c9faafaef32" id="r_a834c596444e6b0cc10ce3c9faafaef32"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a834c596444e6b0cc10ce3c9faafaef32">operator bool</a> () const noexcept</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Move-only request that pauses application-wide retention while live reporting continues. The reporting service must outlive its handles. </p>
-</div><hr/>The documentation for this class was generated from the following file:<ul>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a4a109f1f95cc4e11ba8b3c690625ced4" name="a4a109f1f95cc4e11ba8b3c690625ced4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a109f1f95cc4e11ba8b3c690625ced4">&#9670;&#160;</a></span>MemoryHistoryFreeze() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::MemoryHistoryFreeze::MemoryHistoryFreeze </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel default">default</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Construct an inactive history-pause handle. </p>
+
+</div>
+</div>
+<a id="a5f53e1c984a0bd479b810ee5d54f4992" name="a5f53e1c984a0bd479b810ee5d54f4992"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f53e1c984a0bd479b810ee5d54f4992">&#9670;&#160;</a></span>~MemoryHistoryFreeze()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::MemoryHistoryFreeze::~MemoryHistoryFreeze </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Release this handle's pause request. </p>
+
+</div>
+</div>
+<a id="a7d40db40de29162b984575469f2a5322" name="a7d40db40de29162b984575469f2a5322"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d40db40de29162b984575469f2a5322">&#9670;&#160;</a></span>MemoryHistoryFreeze() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::MemoryHistoryFreeze::MemoryHistoryFreeze </td>
+          <td>(</td>
+          <td class="paramtype">MemoryHistoryFreeze &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>other</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Transfer a pause request; other becomes inactive. </p>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a834c596444e6b0cc10ce3c9faafaef32" name="a834c596444e6b0cc10ce3c9faafaef32"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a834c596444e6b0cc10ce3c9faafaef32">&#9670;&#160;</a></span>operator bool()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::MemoryHistoryFreeze::operator bool </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel explicit">explicit</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return whether this handle currently owns a pause request. </p>
+
+</div>
+</div>
+<a id="a668028bc023046e4faf9448b7e8811a7" name="a668028bc023046e4faf9448b7e8811a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a668028bc023046e4faf9448b7e8811a7">&#9670;&#160;</a></span>operator=()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="#a4a109f1f95cc4e11ba8b3c690625ced4">MemoryHistoryFreeze</a> &amp; FlowUi::devSystems::MemoryHistoryFreeze::operator= </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#a4a109f1f95cc4e11ba8b3c690625ced4">MemoryHistoryFreeze</a> &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>other</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Release any current pause and transfer the request from other. </p>
+
+</div>
+</div>
+<a id="a5ec704e09f8936ccee4c9d339eb42307" name="a5ec704e09f8936ccee4c9d339eb42307"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ec704e09f8936ccee4c9d339eb42307">&#9670;&#160;</a></span>reset()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::MemoryHistoryFreeze::reset </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Release the pause request once; safe on an inactive handle. </p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevMemoryReporting_8hpp_source.html">DevMemoryReporting.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -147,7 +290,7 @@ class&#160;</td><td class="memItemRight"><b>DevMemoryReporting</b></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1MemoryHistoryFreeze.html">MemoryHistoryFreeze</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1MemoryHistoryFreeze.html">MemoryHistoryFreeze</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

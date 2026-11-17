@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,33 +106,51 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevCapturedElement Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Ranges of owned parameter, state, and resource field values for one invocation.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevOverrideTypes_8hpp_source.html">DevOverrideTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a16daa79ff89a9f6489250c8d3265976b" id="r_a16daa79ff89a9f6489250c8d3265976b"><td class="memItemLeft"><a id="a16daa79ff89a9f6489250c8d3265976b" name="a16daa79ff89a9f6489250c8d3265976b"></a>
 <a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a>&#160;</td><td class="memItemRight"><b>definition</b> {}</td></tr>
+<tr class="memdesc:a16daa79ff89a9f6489250c8d3265976b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Captured element definition identity. <br /></td></tr>
 <tr class="memitem:a392ce495b6fe1ec9e5f0ad9f1e52983a" id="r_a392ce495b6fe1ec9e5f0ad9f1e52983a"><td class="memItemLeft"><a id="a392ce495b6fe1ec9e5f0ad9f1e52983a" name="a392ce495b6fe1ec9e5f0ad9f1e52983a"></a>
-WindowId&#160;</td><td class="memItemRight"><b>window</b> = InvalidWindowId</td></tr>
+<a class="el" href="namespaceFlowUi.html#a2213190865e0806b881be5624c2f3ef6">WindowId</a>&#160;</td><td class="memItemRight"><b>window</b> = <a class="el" href="namespaceFlowUi.html#a65e7297ae6a14e81eec9af6a4fa9912c">InvalidWindowId</a></td></tr>
+<tr class="memdesc:a392ce495b6fe1ec9e5f0ad9f1e52983a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Application window owning the invocation. <br /></td></tr>
 <tr class="memitem:a7abb40e846920d59c412efa0a5366962" id="r_a7abb40e846920d59c412efa0a5366962"><td class="memItemLeft"><a id="a7abb40e846920d59c412efa0a5366962" name="a7abb40e846920d59c412efa0a5366962"></a>
 ::FlowUi::detail::element::ElementInstanceKey&#160;</td><td class="memItemRight"><b>instance</b> {}</td></tr>
+<tr class="memdesc:a7abb40e846920d59c412efa0a5366962"><td class="mdescLeft">&#160;</td><td class="mdescRight">Captured stable instance identity. <br /></td></tr>
 <tr class="memitem:ac0df9f05582ab22d802be6b4bcbc3eb9" id="r_ac0df9f05582ab22d802be6b4bcbc3eb9"><td class="memItemLeft"><a id="ac0df9f05582ab22d802be6b4bcbc3eb9" name="ac0df9f05582ab22d802be6b4bcbc3eb9"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>flowNode</b> = 0</td></tr>
+<tr class="memdesc:ac0df9f05582ab22d802be6b4bcbc3eb9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Node index in the associated completed Flow tree. <br /></td></tr>
 <tr class="memitem:a529a3a5609a39c632a8ccaeeacdf9b26" id="r_a529a3a5609a39c632a8ccaeeacdf9b26"><td class="memItemLeft"><a id="a529a3a5609a39c632a8ccaeeacdf9b26" name="a529a3a5609a39c632a8ccaeeacdf9b26"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>firstField</b> = 0</td></tr>
+<tr class="memdesc:a529a3a5609a39c632a8ccaeeacdf9b26"><td class="mdescLeft">&#160;</td><td class="mdescRight">First parameter-field index in the snapshot field array. <br /></td></tr>
 <tr class="memitem:a128ca75c3d71684dd2f7b5e7025d58cb" id="r_a128ca75c3d71684dd2f7b5e7025d58cb"><td class="memItemLeft"><a id="a128ca75c3d71684dd2f7b5e7025d58cb" name="a128ca75c3d71684dd2f7b5e7025d58cb"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>fieldCount</b> = 0</td></tr>
+<tr class="memdesc:a128ca75c3d71684dd2f7b5e7025d58cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of captured parameter fields. <br /></td></tr>
 <tr class="memitem:ac4e8589398c4a91313bf8fea1b44667d" id="r_ac4e8589398c4a91313bf8fea1b44667d"><td class="memItemLeft"><a id="ac4e8589398c4a91313bf8fea1b44667d" name="ac4e8589398c4a91313bf8fea1b44667d"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>firstStateField</b> = 0</td></tr>
+<tr class="memdesc:ac4e8589398c4a91313bf8fea1b44667d"><td class="mdescLeft">&#160;</td><td class="mdescRight">First state-field index in the snapshot field array. <br /></td></tr>
 <tr class="memitem:ab6a577ca88fe826a9de932040e817923" id="r_ab6a577ca88fe826a9de932040e817923"><td class="memItemLeft"><a id="ab6a577ca88fe826a9de932040e817923" name="ab6a577ca88fe826a9de932040e817923"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>stateFieldCount</b> = 0</td></tr>
+<tr class="memdesc:ab6a577ca88fe826a9de932040e817923"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of captured state fields. <br /></td></tr>
 <tr class="memitem:ab469019d975d6725f107a1b79459bfb9" id="r_ab469019d975d6725f107a1b79459bfb9"><td class="memItemLeft"><a id="ab469019d975d6725f107a1b79459bfb9" name="ab469019d975d6725f107a1b79459bfb9"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>firstResourceField</b> = 0</td></tr>
+<tr class="memdesc:ab469019d975d6725f107a1b79459bfb9"><td class="mdescLeft">&#160;</td><td class="mdescRight">First resource-field index in the snapshot field array. <br /></td></tr>
 <tr class="memitem:a99925ef881977601a63199b0b3f7bff6" id="r_a99925ef881977601a63199b0b3f7bff6"><td class="memItemLeft"><a id="a99925ef881977601a63199b0b3f7bff6" name="a99925ef881977601a63199b0b3f7bff6"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>resourceFieldCount</b> = 0</td></tr>
+<tr class="memdesc:a99925ef881977601a63199b0b3f7bff6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of captured resource fields. <br /></td></tr>
 <tr class="memitem:abeb910964f06d4ad4f7d0e4c9a1ac7e9" id="r_abeb910964f06d4ad4f7d0e4c9a1ac7e9"><td class="memItemLeft"><a id="abeb910964f06d4ad4f7d0e4c9a1ac7e9" name="abeb910964f06d4ad4f7d0e4c9a1ac7e9"></a>
 bool&#160;</td><td class="memItemRight"><b>isDevInternal</b> = false</td></tr>
+<tr class="memdesc:abeb910964f06d4ad4f7d0e4c9a1ac7e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the invocation belongs to protected developer UI. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Ranges of owned parameter, state, and resource field values for one invocation. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/override/<a class="el" href="DevOverrideTypes_8hpp_source.html">DevOverrideTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -148,7 +166,7 @@ bool&#160;</td><td class="memItemRight"><b>isDevInternal</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCapturedElement.html">DevCapturedElement</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCapturedElement.html">DevCapturedElement</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

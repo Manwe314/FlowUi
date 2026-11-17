@@ -1,3 +1,4 @@
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticInteractionTargets.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
 #include "FlowUi/Public/App.hpp"
@@ -137,7 +138,7 @@ AgenticInteractionTargetRegistry::resolve(App& application, WindowId window,
 			return resolve_error(AgenticError::invalid_scope);
 		auto scoped = selector;
 		scoped.window_id = window;
-		const auto& ui = application.ui(window);
+		const auto& ui = FlowUi::detail::requireApiValue(application.ui(window)).get();
 		if (selector.kind != AgenticTargetKind::coordinates &&
 			selector.kind != AgenticTargetKind::custom_region &&
 			(ui.devTreeSnapshot().frameNumber != ui.dev_completed_window_frame() ||
@@ -166,7 +167,7 @@ AgenticInteractionTargetRegistry::resolve(App& application, WindowId window,
 		}
 		return resolved;
 	} catch (...) {
-		return resolve_error(AgenticError::unavailable);
+		return unexpectedError(FlowUi::detail::currentExceptionError(ErrorSite::AgenticSnapshot));
 	}
 }
 Result<AgenticResolvedInteractionTarget> AgenticInteractionTargetRegistry::resolve(
@@ -381,7 +382,7 @@ Result<Json> AgenticInteractionTargetRegistry::discover(App& application, Window
 	try {
 		if (!application.hasWindow(window) || !limit || limit > 4096)
 			return unexpectedError(agentic_error(AgenticError::invalid_request));
-		const auto& tree = application.ui(window).devTreeSnapshot();
+		const auto& tree = FlowUi::detail::requireApiValue(application.ui(window)).get().devTreeSnapshot();
 		Json rows = Json::make_array();
 		bool truncated = false;
 #if FLOW_UI_DEV_CAPTURE_CLAY
@@ -397,6 +398,11 @@ Result<Json> AgenticInteractionTargetRegistry::discover(App& application, Window
 			auto target = resolve(application, window, selector, scale);
 			if (target)
 				rows.array.emplace_back(describe(*target));
+			else if (target.error().code != ErrorCode::AgenticUnavailable &&
+					 target.error().code != ErrorCode::AgenticInvalidScope &&
+					 target.error().code != ErrorCode::AgenticInvalidRequest &&
+					 target.error().code != ErrorCode::AgenticStaleGeneration)
+				return unexpectedError(target.error());
 		}
 #endif
 		for (const auto& custom : targets_)
@@ -412,13 +418,20 @@ Result<Json> AgenticInteractionTargetRegistry::discover(App& application, Window
 				auto target = resolve(application, window, selector, scale);
 				if (target)
 					rows.array.emplace_back(describe(*target));
+				else if (target.error().code != ErrorCode::AgenticUnavailable &&
+						 target.error().code != ErrorCode::AgenticInvalidScope &&
+						 target.error().code != ErrorCode::AgenticInvalidRequest &&
+						 target.error().code != ErrorCode::AgenticStaleGeneration)
+					return unexpectedError(target.error());
 			}
 		return Json::make_object(
 			{{"targets", std::move(rows)},
 			 {"tree_generation", decimal(tree.generation)},
 			 {"layout_revision", decimal(tree.frameNumber)},
 			 {"truncated", truncated},
-			 {"geometry_available", tree.stats.complete && !tree.stats.truncated}});
+			 {"geometry_available", tree.stats.complete && !tree.stats.truncated &&
+				tree.frameNumber == FlowUi::detail::requireApiValue(application.ui(window)).get().dev_completed_window_frame() &&
+				tree.app_tick == FlowUi::detail::requireApiValue(application.ui(window)).get().dev_completed_app_tick()}});
 	} catch (...) {
 		return unexpectedError(agentic_error(AgenticError::budget_exhausted));
 	}

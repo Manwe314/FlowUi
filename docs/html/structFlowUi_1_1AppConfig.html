@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,9 +107,6 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Top-level configuration used to initialize a FlowUi app.  
- <a href="#details">More...</a></p>
-
 <p><code>#include &lt;<a class="el" href="AppConfig_8hpp_source.html">AppConfig.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
@@ -128,11 +125,26 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:aa8736374a34956ee3dca1114e68f6fe4" id="r_aa8736374a34956ee3dca1114e68f6fe4"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1ErrorContract.html">ErrorContract</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa8736374a34956ee3dca1114e68f6fe4">errors</a> {}</td></tr>
 <tr class="memitem:a125d002104cf364c3cb283fd0121e028" id="r_a125d002104cf364c3cb283fd0121e028"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a>&#160;</td><td class="memItemRight"><a class="el" href="#a125d002104cf364c3cb283fd0121e028">dev</a> {}</td></tr>
 <tr class="memdesc:a125d002104cf364c3cb283fd0121e028"><td class="mdescLeft">&#160;</td><td class="mdescRight">Developer tooling and capture defaults.  <br /></td></tr>
+<tr class="memitem:a5c890f23c26a13846c2614a5d6bc14b8" id="r_a5c890f23c26a13846c2614a5d6bc14b8"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticWorkflowConfig.html">devSystems::agentic::AgenticWorkflowConfig</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5c890f23c26a13846c2614a5d6bc14b8">agentic_workflow</a> {}</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Top-level configuration used to initialize a FlowUi app. </p>
-<p>This struct groups the subsystem-specific configuration blocks passed through app startup. </p>
+<div class="textblock"><p>Startup configuration copied by <a class="el" href="group__flowui__app.html#gac333afcb2ea79328646bb4410e459233" title="Create a running FlowUi application from configuration.">makeApplication()</a>. Change these values before app creation; editing the caller's copy later does not reconfigure a running app. Secondary windows inherit the app's Vulkan and UI defaults and supply their own native-window settings. </p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a5c890f23c26a13846c2614a5d6bc14b8" name="a5c890f23c26a13846c2614a5d6bc14b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5c890f23c26a13846c2614a5d6bc14b8">&#9670;&#160;</a></span>agentic_workflow</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticWorkflowConfig.html">devSystems::agentic::AgenticWorkflowConfig</a> FlowUi::AppConfig::agentic_workflow {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Explicit, dormant-by-default agentic evidence and local attachment policy. </p>
+
+</div>
+</div>
 <a id="a125d002104cf364c3cb283fd0121e028" name="a125d002104cf364c3cb283fd0121e028"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a125d002104cf364c3cb283fd0121e028">&#9670;&#160;</a></span>dev</h2>
 
@@ -146,7 +158,7 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Developer tooling and capture defaults. </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="structFlowUi_1_1DevToolsConfig.html" title="Configures FlowUi developer tooling and capture behavior.">FlowUi::DevToolsConfig</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structFlowUi_1_1DevToolsConfig.html">FlowUi::DevToolsConfig</a> </dd></dl>
 
 </div>
 </div>
@@ -178,7 +190,7 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>SVG icon rasterization and atlas cache defaults. </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="structFlowUi_1_1IconManagerConfig.html" title="Configures SVG icon rasterization, caching, and atlas storage.">FlowUi::IconManagerConfig</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structFlowUi_1_1IconManagerConfig.html">FlowUi::IconManagerConfig</a> </dd></dl>
 
 </div>
 </div>
@@ -193,7 +205,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Optional profiled startup capacities; zero fields preserve library defaults. </p>
+<p>Startup storage/container reserves and storage growth policy; may be handwritten or profiled. </p>
 
 </div>
 </div>
@@ -208,7 +220,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Present compiled capacities override caller hints before any owner is created. </p>
+<p>Let available baked capacities override caller hints before storage and managers are created. </p>
 
 </div>
 </div>
@@ -240,7 +252,7 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Layout, text, and UI resource defaults. </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="structFlowUi_1_1UiConfig.html" title="Configures FlowUi layout, text, and UI resource defaults.">FlowUi::UiConfig</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structFlowUi_1_1UiConfig.html">FlowUi::UiConfig</a> </dd></dl>
 
 </div>
 </div>
@@ -257,7 +269,7 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Vulkan device, swapchain, and frame scheduling defaults. </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="structFlowUi_1_1VulkanConfig.html" title="Configures Vulkan device, swapchain, and frame scheduling defaults.">FlowUi::VulkanConfig</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structFlowUi_1_1VulkanConfig.html">FlowUi::VulkanConfig</a> </dd></dl>
 
 </div>
 </div>
@@ -274,7 +286,7 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Initial native-window configuration for the semantic main window. </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="structFlowUi_1_1WindowConfig.html" title="Describes a native application window.">FlowUi::WindowConfig</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structFlowUi_1_1WindowConfig.html">FlowUi::WindowConfig</a> </dd></dl>
 
 </div>
 </div>
@@ -294,7 +306,7 @@ Public Attributes</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1AppConfig.html">AppConfig</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1AppConfig.html">AppConfig</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

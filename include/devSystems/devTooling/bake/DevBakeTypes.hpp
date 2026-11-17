@@ -44,6 +44,8 @@ enum class DevBakeDiagnosticCode : std::uint16_t {
 	ManifestInvalid,
 	/** @brief Candidate manifest could not be written. */
 	ManifestWriteFailed,
+	/** @brief A live assignment failed and its retained value is evidence rather than an effective edit. */
+	AssignmentFailed,
 };
 
 /** @brief Owned authorship metadata preserved with a persisted reflected assignment. */

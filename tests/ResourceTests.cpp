@@ -34,11 +34,20 @@ int main() {
 	};
 	const auto found = locate_resource(unicode_name, config);
 	check(found && *found == first / unicode_name, "Explicit resource root precedence failed");
-	check(path_from_utf8(path_to_utf8(unicode_name)) == unicode_name,
+	const auto encodedName = path_to_utf8(unicode_name);
+	const auto decodedName = encodedName ? path_from_utf8(*encodedName)
+		: Result<std::filesystem::path>{unexpectedError(encodedName.error())};
+	check(decodedName && *decodedName == unicode_name,
 		  "UTF-8 path round trip failed");
 	const auto bytes = read_file_bytes(first / unicode_name);
 	check(bytes && std::string(bytes->begin(), bytes->end()) == "font-data",
 		  "Native Unicode file loading failed");
+	const auto emptyFile = first / "empty.bin";
+	std::ofstream(emptyFile, std::ios::binary).close();
+	const auto emptyBytes = read_file_bytes(emptyFile);
+	check(emptyBytes && emptyBytes->empty(), "Empty file was not a successful empty read");
+	const auto directoryRead = read_file_bytes(first);
+	check(!directoryRead, "Directory was accepted as file bytes");
 	check(!locate_resource("../escape", config), "Parent traversal accepted");
 	check(!locate_resource("missing", config), "Missing resource accepted");
 	check(!read_file_bytes(first / "missing"), "Missing file accepted");

@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
@@ -612,8 +613,8 @@ void DevTimelineController::prepare(const ::FlowUi::detail::manager_storage::Fon
 	impl_->texture_slot = texture_slot;
 	for (auto& surface : impl_->surfaces) {
 		if (!surface->seen) {
-			if (auto* viewport = impl_->viewports->getViewPort(surface->key))
-				viewport->setRenderCallback({});
+			if (auto* viewport = FlowUi::ValueOrThrow(impl_->viewports->getViewPort(surface->key)))
+				FlowUi::ValueOrThrow(viewport->setRenderCallback({}));
 			const auto removed = impl_->viewports->remove(surface->key);
 			if (!removed)
 				surface->available = false;
@@ -671,8 +672,8 @@ void DevTimelineController::submitted(uint64_t serial) {
 void DevTimelineController::destroy_drained() {
 	if (impl_->viewports)
 		for (const auto& surface : impl_->surfaces)
-			if (auto* viewport = impl_->viewports->getViewPort(surface->key))
-				viewport->setRenderCallback({});
+			if (auto* viewport = FlowUi::ValueOrThrow(impl_->viewports->getViewPort(surface->key)))
+				FlowUi::ValueOrThrow(viewport->setRenderCallback({}));
 	impl_->surfaces.clear();
 	impl_->retired.clear();
 }
@@ -737,8 +738,8 @@ void DevTimelineController::draw(UiManager& manager, Clay_ElementId id, Clay_Ele
 				CLAY_TEXT_CONFIG(text));
 			return;
 		}
-		if (auto* viewport = impl_->viewports->getViewPort(key))
-			viewport->setRenderCallback([controller = impl_.get(), identity = surface->identity](
+		if (auto* viewport = FlowUi::ValueOrThrow(impl_->viewports->getViewPort(key)))
+			FlowUi::ValueOrThrow(viewport->setRenderCallback([controller = impl_.get(), identity = surface->identity](
 											const ViewPortRenderContext& context) {
 				try {
 					controller->record(context, identity);
@@ -749,7 +750,7 @@ void DevTimelineController::draw(UiManager& manager, Clay_ElementId id, Clay_Ele
 							entry->failed = true;
 						}
 				}
-			});
+			}));
 		impl_->surfaces.emplace_back(std::move(surface));
 		found = std::prev(impl_->surfaces.end());
 	}
@@ -841,7 +842,7 @@ void DevTimelineController::draw(UiManager& manager, Clay_ElementId id, Clay_Ele
 			image.floating.clipTo = CLAY_CLIP_TO_ATTACHED_PARENT;
 			image.floating.offset.y = offset;
 			image.floating.pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_PASSTHROUGH;
-			auto texture = impl_->viewports->getTexture(key);
+			auto texture = FlowUi::ValueOrThrow(impl_->viewports->getTexture(key));
 			texture.fitMode = TextureFitMode::Stretch;
 			image.image.imageData = manager.imageData(texture);
 			CLAY(surface.image_id, image);

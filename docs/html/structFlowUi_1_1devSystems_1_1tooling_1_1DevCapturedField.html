@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,23 +106,35 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevCapturedField Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Owned effective/authored values for one reflected field at a capture stage.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevOverrideTypes_8hpp_source.html">DevOverrideTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a25e376e87add7445d6fc79c04e831e87" id="r_a25e376e87add7445d6fc79c04e831e87"><td class="memItemLeft"><a id="a25e376e87add7445d6fc79c04e831e87" name="a25e376e87add7445d6fc79c04e831e87"></a>
 <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOwnedValue.html">DevOwnedValue</a>&#160;</td><td class="memItemRight"><b>value</b> {}</td></tr>
+<tr class="memdesc:a25e376e87add7445d6fc79c04e831e87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Owned effective value observed after overrides. <br /></td></tr>
 <tr class="memitem:a09102d4e8fce103b680b1f61c119e1b9" id="r_a09102d4e8fce103b680b1f61c119e1b9"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevOwnedValue.html">DevOwnedValue</a>&#160;</td><td class="memItemRight"><a class="el" href="#a09102d4e8fce103b680b1f61c119e1b9">authoredValue</a> {}</td></tr>
 <tr class="memitem:ae7178dfd0583760773d974a820fdd309" id="r_ae7178dfd0583760773d974a820fdd309"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevFieldIndex.html">tooling::DevFieldIndex</a>&#160;</td><td class="memItemRight"><a class="el" href="#ae7178dfd0583760773d974a820fdd309">field</a> {}</td></tr>
 <tr class="memitem:aaa32cab8817ba693bd5776b1f7501b55" id="r_aaa32cab8817ba693bd5776b1f7501b55"><td class="memItemLeft"><a id="aaa32cab8817ba693bd5776b1f7501b55" name="aaa32cab8817ba693bd5776b1f7501b55"></a>
-DevOverrideLayer&#160;</td><td class="memItemRight"><b>winningLayer</b> = DevOverrideLayer::LiveDefinition</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a871f5f866ab44b836ae012fabafece58">DevOverrideLayer</a>&#160;</td><td class="memItemRight"><b>winningLayer</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#a871f5f866ab44b836ae012fabafece58ab5c02d9f13bd73b3b84285d46a7711e5">DevOverrideLayer::LiveDefinition</a></td></tr>
+<tr class="memdesc:aaa32cab8817ba693bd5776b1f7501b55"><td class="mdescLeft">&#160;</td><td class="mdescRight">Highest-precedence contributing layer when overridden is true. <br /></td></tr>
 <tr class="memitem:a19bff99334aabef265301f4a59ccf22b" id="r_a19bff99334aabef265301f4a59ccf22b"><td class="memItemLeft"><a id="a19bff99334aabef265301f4a59ccf22b" name="a19bff99334aabef265301f4a59ccf22b"></a>
-DevValueCaptureStatus&#160;</td><td class="memItemRight"><b>captureStatus</b> = DevValueCaptureStatus::Unavailable</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#af7bdd4d45c65dc2d100b8a41981546a0">DevValueCaptureStatus</a>&#160;</td><td class="memItemRight"><b>captureStatus</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#af7bdd4d45c65dc2d100b8a41981546a0a453e6aa38d87b28ccae545967c53004f">DevValueCaptureStatus::Unavailable</a></td></tr>
+<tr class="memdesc:a19bff99334aabef265301f4a59ccf22b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the effective value was captured or why it was unavailable. <br /></td></tr>
 <tr class="memitem:a2f951c5333eab2479d8880c3ffffe2e9" id="r_a2f951c5333eab2479d8880c3ffffe2e9"><td class="memItemLeft"><a id="a2f951c5333eab2479d8880c3ffffe2e9" name="a2f951c5333eab2479d8880c3ffffe2e9"></a>
-DevValueCaptureStatus&#160;</td><td class="memItemRight"><b>authoredStatus</b> = DevValueCaptureStatus::Unavailable</td></tr>
+<a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#af7bdd4d45c65dc2d100b8a41981546a0">DevValueCaptureStatus</a>&#160;</td><td class="memItemRight"><b>authoredStatus</b> = <a class="el" href="namespaceFlowUi_1_1devSystems_1_1tooling.html#af7bdd4d45c65dc2d100b8a41981546a0a453e6aa38d87b28ccae545967c53004f">DevValueCaptureStatus::Unavailable</a></td></tr>
+<tr class="memdesc:a2f951c5333eab2479d8880c3ffffe2e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the authored baseline was captured or why it was unavailable. <br /></td></tr>
 <tr class="memitem:ae01d2fc7893f2ae1e7d146870816e745" id="r_ae01d2fc7893f2ae1e7d146870816e745"><td class="memItemLeft"><a id="ae01d2fc7893f2ae1e7d146870816e745" name="ae01d2fc7893f2ae1e7d146870816e745"></a>
 bool&#160;</td><td class="memItemRight"><b>overridden</b> = false</td></tr>
+<tr class="memdesc:ae01d2fc7893f2ae1e7d146870816e745"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether a retained assignment contributed to this effective value. <br /></td></tr>
 </table>
-<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Owned effective/authored values for one reflected field at a capture stage. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a09102d4e8fce103b680b1f61c119e1b9" name="a09102d4e8fce103b680b1f61c119e1b9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a09102d4e8fce103b680b1f61c119e1b9">&#9670;&#160;</a></span>authoredValue</h2>
 
@@ -149,7 +161,7 @@ bool&#160;</td><td class="memItemRight"><b>overridden</b> = false</td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>One-based index into DevSchemaGeneration::fields. </p>
+<p>One-based index into <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaGeneration.html#a37cb4c657b45de8a68958203e878b6f0" title="Contiguous member records, including the invalid sentinel.">DevSchemaGeneration::fields</a>. </p>
 
 </div>
 </div>
@@ -169,7 +181,7 @@ bool&#160;</td><td class="memItemRight"><b>overridden</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCapturedField.html">DevCapturedField</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCapturedField.html">DevCapturedField</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

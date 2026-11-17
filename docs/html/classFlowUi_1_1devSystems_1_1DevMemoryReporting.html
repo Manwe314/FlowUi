@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,68 +106,97 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevMemoryReporting Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevMemoryReporting_8hpp_source.html">DevMemoryReporting.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a96e76fc1862ecee121f37ca1cfc120d9" id="r_a96e76fc1862ecee121f37ca1cfc120d9"><td class="memItemLeft"><a id="a96e76fc1862ecee121f37ca1cfc120d9" name="a96e76fc1862ecee121f37ca1cfc120d9"></a>
-&#160;</td><td class="memItemRight"><b>DevMemoryReporting</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1DevMemory.html">DevMemory</a> &amp;memory, <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryReportingConfig.html">MemoryReportingConfig</a> config={})</td></tr>
+<tr class="memitem:a96e76fc1862ecee121f37ca1cfc120d9" id="r_a96e76fc1862ecee121f37ca1cfc120d9"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a96e76fc1862ecee121f37ca1cfc120d9">DevMemoryReporting</a> (<a class="el" href="classFlowUi_1_1devSystems_1_1DevMemory.html">DevMemory</a> &amp;memory, <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryReportingConfig.html">MemoryReportingConfig</a> <a class="el" href="#a748789c2e2aac163be983b365fe8600a">config</a>={})</td></tr>
+<tr class="memitem:a69dc5da41416897a0f4110187a047345" id="r_a69dc5da41416897a0f4110187a047345"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a69dc5da41416897a0f4110187a047345">~DevMemoryReporting</a> ()</td></tr>
 <tr class="memitem:a9792b6f33429456d2f58e14bcce4c428" id="r_a9792b6f33429456d2f58e14bcce4c428"><td class="memItemLeft"><a id="a9792b6f33429456d2f58e14bcce4c428" name="a9792b6f33429456d2f58e14bcce4c428"></a>
 &#160;</td><td class="memItemRight"><b>DevMemoryReporting</b> (const DevMemoryReporting &amp;)=delete</td></tr>
 <tr class="memitem:a5321735c6204ace8017f65e9fd623191" id="r_a5321735c6204ace8017f65e9fd623191"><td class="memItemLeft"><a id="a5321735c6204ace8017f65e9fd623191" name="a5321735c6204ace8017f65e9fd623191"></a>
-DevMemoryReporting &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const DevMemoryReporting &amp;)=delete</td></tr>
-<tr class="memitem:a15bb857b6a598c1934dc0a20f3debd73" id="r_a15bb857b6a598c1934dc0a20f3debd73"><td class="memItemLeft"><a id="a15bb857b6a598c1934dc0a20f3debd73" name="a15bb857b6a598c1934dc0a20f3debd73"></a>
-bool&#160;</td><td class="memItemRight"><b>setConfig</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryReportingConfig.html">MemoryReportingConfig</a> &amp;config)</td></tr>
+<a class="el" href="#a96e76fc1862ecee121f37ca1cfc120d9">DevMemoryReporting</a> &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const <a class="el" href="#a96e76fc1862ecee121f37ca1cfc120d9">DevMemoryReporting</a> &amp;)=delete</td></tr>
+<tr class="memitem:a15bb857b6a598c1934dc0a20f3debd73" id="r_a15bb857b6a598c1934dc0a20f3debd73"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a15bb857b6a598c1934dc0a20f3debd73">setConfig</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryReportingConfig.html">MemoryReportingConfig</a> &amp;<a class="el" href="#a748789c2e2aac163be983b365fe8600a">config</a>)</td></tr>
 <tr class="memitem:a08ea137381b747f2deaa3266747f45f8" id="r_a08ea137381b747f2deaa3266747f45f8"><td class="memItemLeft">MemoryHistoryFreeze&#160;</td><td class="memItemRight"><a class="el" href="#a08ea137381b747f2deaa3266747f45f8">freeze_history</a> () noexcept</td></tr>
 <tr class="memitem:a9f064dac87cc18db38c54a014d1ed36a" id="r_a9f064dac87cc18db38c54a014d1ed36a"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a9f064dac87cc18db38c54a014d1ed36a">visit_history</a> (const std::function&lt; void(const <a class="el" href="structFlowUi_1_1devSystems_1_1MemorySampleSegment.html">MemorySampleSegment</a> &amp;)&gt; &amp;visitor) const</td></tr>
 <tr class="memitem:aa63e80332026c8b5166a83ff36a5d6c7" id="r_aa63e80332026c8b5166a83ff36a5d6c7"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aa63e80332026c8b5166a83ff36a5d6c7">read_history</a> (const std::function&lt; void(std::span&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1MemorySampleSegment.html">MemorySampleSegment</a> &gt;, std::span&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1MemorySampleSegment.html">MemorySampleSegment</a> &gt;, const <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryReportingStatus.html">MemoryReportingStatus</a> &amp;)&gt; &amp;visitor)</td></tr>
 <tr class="memitem:af818c7fa487bc52a690d9b3446f2febf" id="r_af818c7fa487bc52a690d9b3446f2febf"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#af818c7fa487bc52a690d9b3446f2febf">visit_history_chunks</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryReportingStatus.html">MemoryReportingStatus</a> &amp;snapshot, const std::function&lt; void(std::span&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1MemorySampleSegment.html">MemorySampleSegment</a> &gt;)&gt; &amp;visitor, size_t maximum_records=2048)</td></tr>
-<tr class="memitem:a370df3e0aeedbea2862023a9c5675dff" id="r_a370df3e0aeedbea2862023a9c5675dff"><td class="memItemLeft"><a id="a370df3e0aeedbea2862023a9c5675dff" name="a370df3e0aeedbea2862023a9c5675dff"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1MemoryLiveRead.html">MemoryLiveRead</a>&#160;</td><td class="memItemRight"><b>read_live</b> () const</td></tr>
+<tr class="memitem:a370df3e0aeedbea2862023a9c5675dff" id="r_a370df3e0aeedbea2862023a9c5675dff"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryLiveRead.html">MemoryLiveRead</a>&#160;</td><td class="memItemRight"><a class="el" href="#a370df3e0aeedbea2862023a9c5675dff">read_live</a> () const</td></tr>
 <tr class="memitem:a22c36632e2527480ed0e06b12cdde8b1" id="r_a22c36632e2527480ed0e06b12cdde8b1"><td class="memItemLeft">std::optional&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryLiveStatistics.html">MemoryLiveStatistics</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a22c36632e2527480ed0e06b12cdde8b1">live_statistics</a> (<a class="el" href="structFlowUi_1_1devSystems_1_1MemorySourceKey.html">MemorySourceKey</a> key) const</td></tr>
-<tr class="memitem:a748789c2e2aac163be983b365fe8600a" id="r_a748789c2e2aac163be983b365fe8600a"><td class="memItemLeft"><a id="a748789c2e2aac163be983b365fe8600a" name="a748789c2e2aac163be983b365fe8600a"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1MemoryReportingConfig.html">MemoryReportingConfig</a>&#160;</td><td class="memItemRight"><b>config</b> () const</td></tr>
+<tr class="memitem:a748789c2e2aac163be983b365fe8600a" id="r_a748789c2e2aac163be983b365fe8600a"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryReportingConfig.html">MemoryReportingConfig</a>&#160;</td><td class="memItemRight"><a class="el" href="#a748789c2e2aac163be983b365fe8600a">config</a> () const</td></tr>
 <tr class="memitem:af980585543eb201b8987e2311df3a7e1" id="r_af980585543eb201b8987e2311df3a7e1"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#af980585543eb201b8987e2311df3a7e1">set_capacity_baseline</a> (const <a class="el" href="structFlowUi_1_1MemoryCapacityProfile.html">MemoryCapacityProfile</a> &amp;profile)</td></tr>
-<tr class="memitem:a2fd952a7a77b1b6ae6398314471a9b4d" id="r_a2fd952a7a77b1b6ae6398314471a9b4d"><td class="memItemLeft"><a id="a2fd952a7a77b1b6ae6398314471a9b4d" name="a2fd952a7a77b1b6ae6398314471a9b4d"></a>
-void&#160;</td><td class="memItemRight"><b>consume</b> (AppTickId appTick) noexcept</td></tr>
-<tr class="memitem:a7b05b6193d3dde2a7d9c9eb0a94024b9" id="r_a7b05b6193d3dde2a7d9c9eb0a94024b9"><td class="memItemLeft"><a id="a7b05b6193d3dde2a7d9c9eb0a94024b9" name="a7b05b6193d3dde2a7d9c9eb0a94024b9"></a>
-void&#160;</td><td class="memItemRight"><b>requestEnvironmentCheckpoint</b> () noexcept</td></tr>
-<tr class="memitem:a4a2b63d9f08a14b40a3e502bde05fefc" id="r_a4a2b63d9f08a14b40a3e502bde05fefc"><td class="memItemLeft"><a id="a4a2b63d9f08a14b40a3e502bde05fefc" name="a4a2b63d9f08a14b40a3e502bde05fefc"></a>
-MemoryCaptureId&#160;</td><td class="memItemRight"><b>beginCapture</b> (std::string_view name, uint64_t warmUpTicks=0u)</td></tr>
-<tr class="memitem:a0b761716cabc5002829cabdd472cc3f6" id="r_a0b761716cabc5002829cabdd472cc3f6"><td class="memItemLeft"><a id="a0b761716cabc5002829cabdd472cc3f6" name="a0b761716cabc5002829cabdd472cc3f6"></a>
-bool&#160;</td><td class="memItemRight"><b>endCapture</b> (MemoryCaptureId capture) noexcept</td></tr>
-<tr class="memitem:ab5f0461b2ddeaa954fab432ce0fd9655" id="r_ab5f0461b2ddeaa954fab432ce0fd9655"><td class="memItemLeft"><a id="ab5f0461b2ddeaa954fab432ce0fd9655" name="ab5f0461b2ddeaa954fab432ce0fd9655"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryCaptureInfo.html">MemoryCaptureInfo</a> &gt;&#160;</td><td class="memItemRight"><b>captureSnapshot</b> () const</td></tr>
-<tr class="memitem:a38134a541e8999b524467083708db415" id="r_a38134a541e8999b524467083708db415"><td class="memItemLeft"><a id="a38134a541e8999b524467083708db415" name="a38134a541e8999b524467083708db415"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1MemoryReportingStatus.html">MemoryReportingStatus</a>&#160;</td><td class="memItemRight"><b>status</b> () const noexcept</td></tr>
-<tr class="memitem:a97832f1cb8d7abfab055f8da1993b235" id="r_a97832f1cb8d7abfab055f8da1993b235"><td class="memItemLeft"><a id="a97832f1cb8d7abfab055f8da1993b235" name="a97832f1cb8d7abfab055f8da1993b235"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemorySourceDescriptor.html">MemorySourceDescriptor</a> &gt;&#160;</td><td class="memItemRight"><b>descriptorSnapshot</b> () const</td></tr>
-<tr class="memitem:a0759ebbfa0975c36c038ebab66f7bf7c" id="r_a0759ebbfa0975c36c038ebab66f7bf7c"><td class="memItemLeft"><a id="a0759ebbfa0975c36c038ebab66f7bf7c" name="a0759ebbfa0975c36c038ebab66f7bf7c"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryTuningTargetDescriptor.html">MemoryTuningTargetDescriptor</a> &gt;&#160;</td><td class="memItemRight"><b>tuningTargetSnapshot</b> () const</td></tr>
+<tr class="memitem:a2fd952a7a77b1b6ae6398314471a9b4d" id="r_a2fd952a7a77b1b6ae6398314471a9b4d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a2fd952a7a77b1b6ae6398314471a9b4d">consume</a> (<a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> appTick) noexcept</td></tr>
+<tr class="memitem:a7b05b6193d3dde2a7d9c9eb0a94024b9" id="r_a7b05b6193d3dde2a7d9c9eb0a94024b9"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a7b05b6193d3dde2a7d9c9eb0a94024b9">requestEnvironmentCheckpoint</a> () noexcept</td></tr>
+<tr class="memitem:a4a2b63d9f08a14b40a3e502bde05fefc" id="r_a4a2b63d9f08a14b40a3e502bde05fefc"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a0e69379e77ebdfe113122d30e102b684">MemoryCaptureId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4a2b63d9f08a14b40a3e502bde05fefc">beginCapture</a> (std::string_view name, uint64_t warmUpTicks=0u)</td></tr>
+<tr class="memitem:a0b761716cabc5002829cabdd472cc3f6" id="r_a0b761716cabc5002829cabdd472cc3f6"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a0b761716cabc5002829cabdd472cc3f6">endCapture</a> (<a class="el" href="namespaceFlowUi_1_1devSystems.html#a0e69379e77ebdfe113122d30e102b684">MemoryCaptureId</a> capture) noexcept</td></tr>
+<tr class="memitem:ab5f0461b2ddeaa954fab432ce0fd9655" id="r_ab5f0461b2ddeaa954fab432ce0fd9655"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryCaptureInfo.html">MemoryCaptureInfo</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ab5f0461b2ddeaa954fab432ce0fd9655">captureSnapshot</a> () const</td></tr>
+<tr class="memitem:a38134a541e8999b524467083708db415" id="r_a38134a541e8999b524467083708db415"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryReportingStatus.html">MemoryReportingStatus</a>&#160;</td><td class="memItemRight"><a class="el" href="#a38134a541e8999b524467083708db415">status</a> () const noexcept</td></tr>
+<tr class="memitem:a97832f1cb8d7abfab055f8da1993b235" id="r_a97832f1cb8d7abfab055f8da1993b235"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemorySourceDescriptor.html">MemorySourceDescriptor</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a97832f1cb8d7abfab055f8da1993b235">descriptorSnapshot</a> () const</td></tr>
+<tr class="memitem:a0759ebbfa0975c36c038ebab66f7bf7c" id="r_a0759ebbfa0975c36c038ebab66f7bf7c"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryTuningTargetDescriptor.html">MemoryTuningTargetDescriptor</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a0759ebbfa0975c36c038ebab66f7bf7c">tuningTargetSnapshot</a> () const</td></tr>
 <tr class="memitem:a1ae002c29df37ce419cc801f521af450" id="r_a1ae002c29df37ce419cc801f521af450"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryCorrelationWork.html">MemoryCorrelationWork</a>&#160;</td><td class="memItemRight"><a class="el" href="#a1ae002c29df37ce419cc801f521af450">correlate_errors</a> (std::span&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryCorrelationQuery.html">MemoryCorrelationQuery</a> &gt; queries) const noexcept</td></tr>
-<tr class="memitem:a35f426dfaf0223aeeed0d28cf3e4b140" id="r_a35f426dfaf0223aeeed0d28cf3e4b140"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryEventRead.html">MemoryEventRead</a>&#160;</td><td class="memItemRight"><a class="el" href="#a35f426dfaf0223aeeed0d28cf3e4b140">append_event_range</a> (uint64_t generation, uint64_t cursor, AppTickId first_tick, AppTickId last_tick, size_t maximum_events, std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1RetainedMemoryEvent.html">RetainedMemoryEvent</a> &gt; &amp;destination) const</td></tr>
+<tr class="memitem:a35f426dfaf0223aeeed0d28cf3e4b140" id="r_a35f426dfaf0223aeeed0d28cf3e4b140"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryEventRead.html">MemoryEventRead</a>&#160;</td><td class="memItemRight"><a class="el" href="#a35f426dfaf0223aeeed0d28cf3e4b140">append_event_range</a> (uint64_t generation, uint64_t cursor, <a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> first_tick, <a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> last_tick, size_t maximum_events, std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1RetainedMemoryEvent.html">RetainedMemoryEvent</a> &gt; &amp;destination) const</td></tr>
 <tr class="memitem:a6c494a6a1ccb9b23c3e73028178e7fb8" id="r_a6c494a6a1ccb9b23c3e73028178e7fb8"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a6c494a6a1ccb9b23c3e73028178e7fb8">current_backing_bytes</a> () const noexcept</td></tr>
-<tr class="memitem:abb9d80216ea2d29b23f67f53bba8f96d" id="r_abb9d80216ea2d29b23f67f53bba8f96d"><td class="memItemLeft"><a id="abb9d80216ea2d29b23f67f53bba8f96d" name="abb9d80216ea2d29b23f67f53bba8f96d"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryCurrentSource.html">MemoryCurrentSource</a> &gt;&#160;</td><td class="memItemRight"><b>currentSourceSnapshot</b> () const</td></tr>
-<tr class="memitem:aee0b2efa257c83c399ae337f5f0ba53e" id="r_aee0b2efa257c83c399ae337f5f0ba53e"><td class="memItemLeft"><a id="aee0b2efa257c83c399ae337f5f0ba53e" name="aee0b2efa257c83c399ae337f5f0ba53e"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemorySampleSegment.html">MemorySampleSegment</a> &gt;&#160;</td><td class="memItemRight"><b>segmentSnapshot</b> () const</td></tr>
-<tr class="memitem:a6bdd3e0162dd79363ff2ba6af3d4dc80" id="r_a6bdd3e0162dd79363ff2ba6af3d4dc80"><td class="memItemLeft"><a id="a6bdd3e0162dd79363ff2ba6af3d4dc80" name="a6bdd3e0162dd79363ff2ba6af3d4dc80"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1RetainedMemoryEvent.html">RetainedMemoryEvent</a> &gt;&#160;</td><td class="memItemRight"><b>eventSnapshot</b> () const</td></tr>
-<tr class="memitem:a7a79c7b4645b0084f2b288b9fbf31d4f" id="r_a7a79c7b4645b0084f2b288b9fbf31d4f"><td class="memItemLeft"><a id="a7a79c7b4645b0084f2b288b9fbf31d4f" name="a7a79c7b4645b0084f2b288b9fbf31d4f"></a>
-std::optional&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryStatistics.html">MemoryStatistics</a> &gt;&#160;</td><td class="memItemRight"><b>statistics</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryStatisticsQuery.html">MemoryStatisticsQuery</a> &amp;query) const</td></tr>
-<tr class="memitem:af60dd1b1c3dfd0ae6a635301c29af077" id="r_af60dd1b1c3dfd0ae6a635301c29af077"><td class="memItemLeft"><a id="af60dd1b1c3dfd0ae6a635301c29af077" name="af60dd1b1c3dfd0ae6a635301c29af077"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1MemoryCapacityPreview.html">MemoryCapacityPreview</a>&#160;</td><td class="memItemRight"><b>previewCapacityProfile</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1CapacityProfileRequest.html">CapacityProfileRequest</a> &amp;request) const</td></tr>
-<tr class="memitem:a3f27ce985f154dcf40a37d7b5511edbf" id="r_a3f27ce985f154dcf40a37d7b5511edbf"><td class="memItemLeft"><a id="a3f27ce985f154dcf40a37d7b5511edbf" name="a3f27ce985f154dcf40a37d7b5511edbf"></a>
-std::optional&lt;::FlowUi::detail::storage::StorageMemorySnapshot &gt;&#160;</td><td class="memItemRight"><b>storageSnapshot</b> () const</td></tr>
-<tr class="memitem:a3aa104b9f162ad3352edc95e4b35b971" id="r_a3aa104b9f162ad3352edc95e4b35b971"><td class="memItemLeft"><a id="a3aa104b9f162ad3352edc95e4b35b971" name="a3aa104b9f162ad3352edc95e4b35b971"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryValueSample.html">MemoryValueSample</a> &gt;&#160;</td><td class="memItemRight"><b>managerSamples</b> () const</td></tr>
-<tr class="memitem:a089d349090565f43bad82630f4b2ec6f" id="r_a089d349090565f43bad82630f4b2ec6f"><td class="memItemLeft"><a id="a089d349090565f43bad82630f4b2ec6f" name="a089d349090565f43bad82630f4b2ec6f"></a>
-std::optional&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryEnvironmentSnapshot.html">MemoryEnvironmentSnapshot</a> &gt;&#160;</td><td class="memItemRight"><b>environmentSnapshot</b> () const</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a0a9627e577469f7ec10dcd11ca54f89f" id="r_a0a9627e577469f7ec10dcd11ca54f89f"><td class="memItemLeft"><a id="a0a9627e577469f7ec10dcd11ca54f89f" name="a0a9627e577469f7ec10dcd11ca54f89f"></a>
-class&#160;</td><td class="memItemRight"><b>MemoryHistoryFreeze</b></td></tr>
+<tr class="memitem:abb9d80216ea2d29b23f67f53bba8f96d" id="r_abb9d80216ea2d29b23f67f53bba8f96d"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryCurrentSource.html">MemoryCurrentSource</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#abb9d80216ea2d29b23f67f53bba8f96d">currentSourceSnapshot</a> () const</td></tr>
+<tr class="memitem:aee0b2efa257c83c399ae337f5f0ba53e" id="r_aee0b2efa257c83c399ae337f5f0ba53e"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemorySampleSegment.html">MemorySampleSegment</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aee0b2efa257c83c399ae337f5f0ba53e">segmentSnapshot</a> () const</td></tr>
+<tr class="memitem:a6bdd3e0162dd79363ff2ba6af3d4dc80" id="r_a6bdd3e0162dd79363ff2ba6af3d4dc80"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1RetainedMemoryEvent.html">RetainedMemoryEvent</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a6bdd3e0162dd79363ff2ba6af3d4dc80">eventSnapshot</a> () const</td></tr>
+<tr class="memitem:a7a79c7b4645b0084f2b288b9fbf31d4f" id="r_a7a79c7b4645b0084f2b288b9fbf31d4f"><td class="memItemLeft">std::optional&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryStatistics.html">MemoryStatistics</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a7a79c7b4645b0084f2b288b9fbf31d4f">statistics</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryStatisticsQuery.html">MemoryStatisticsQuery</a> &amp;query) const</td></tr>
+<tr class="memitem:af60dd1b1c3dfd0ae6a635301c29af077" id="r_af60dd1b1c3dfd0ae6a635301c29af077"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryCapacityPreview.html">MemoryCapacityPreview</a>&#160;</td><td class="memItemRight"><a class="el" href="#af60dd1b1c3dfd0ae6a635301c29af077">previewCapacityProfile</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1CapacityProfileRequest.html">CapacityProfileRequest</a> &amp;request) const</td></tr>
+<tr class="memitem:a3f27ce985f154dcf40a37d7b5511edbf" id="r_a3f27ce985f154dcf40a37d7b5511edbf"><td class="memItemLeft">std::optional&lt;::FlowUi::detail::storage::StorageMemorySnapshot &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a3f27ce985f154dcf40a37d7b5511edbf">storageSnapshot</a> () const</td></tr>
+<tr class="memitem:a3aa104b9f162ad3352edc95e4b35b971" id="r_a3aa104b9f162ad3352edc95e4b35b971"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryValueSample.html">MemoryValueSample</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a3aa104b9f162ad3352edc95e4b35b971">managerSamples</a> () const</td></tr>
+<tr class="memitem:a089d349090565f43bad82630f4b2ec6f" id="r_a089d349090565f43bad82630f4b2ec6f"><td class="memItemLeft">std::optional&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryEnvironmentSnapshot.html">MemoryEnvironmentSnapshot</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a089d349090565f43bad82630f4b2ec6f">environmentSnapshot</a> () const</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Owns bounded memory history and coherent live snapshots. The borrowed <a class="el" href="classFlowUi_1_1devSystems_1_1DevMemory.html">DevMemory</a> service must outlive this reporting service; callbacks execute synchronously and must obey their documented reentry restrictions. </p>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a96e76fc1862ecee121f37ca1cfc120d9" name="a96e76fc1862ecee121f37ca1cfc120d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a96e76fc1862ecee121f37ca1cfc120d9">&#9670;&#160;</a></span>DevMemoryReporting()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevMemoryReporting::DevMemoryReporting </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classFlowUi_1_1devSystems_1_1DevMemory.html">DevMemory</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>memory</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryReportingConfig.html">MemoryReportingConfig</a></td>          <td class="paramname"><span class="paramname"><em>config</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel explicit">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create bounded reporting histories attached to borrowed memory. </p>
+
+</div>
+</div>
+<a id="a69dc5da41416897a0f4110187a047345" name="a69dc5da41416897a0f4110187a047345"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a69dc5da41416897a0f4110187a047345">&#9670;&#160;</a></span>~DevMemoryReporting()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevMemoryReporting::~DevMemoryReporting </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Destroy retained history; all <a class="el" href="classFlowUi_1_1devSystems_1_1MemoryHistoryFreeze.html">MemoryHistoryFreeze</a> handles must already be released. </p>
+
+</div>
+</div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="a35f426dfaf0223aeeed0d28cf3e4b140" name="a35f426dfaf0223aeeed0d28cf3e4b140"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a35f426dfaf0223aeeed0d28cf3e4b140">&#9670;&#160;</a></span>append_event_range()</h2>
@@ -191,12 +220,12 @@ class&#160;</td><td class="memItemRight"><b>MemoryHistoryFreeze</b></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">AppTickId</td>          <td class="paramname"><span class="paramname"><em>first_tick</em></span>, </td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a></td>          <td class="paramname"><span class="paramname"><em>first_tick</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">AppTickId</td>          <td class="paramname"><span class="paramname"><em>last_tick</em></span>, </td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a></td>          <td class="paramname"><span class="paramname"><em>last_tick</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -216,6 +245,114 @@ class&#160;</td><td class="memItemRight"><b>MemoryHistoryFreeze</b></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Append only events newer than cursor. Use UINT64_MAX generation for the initial read. A reset never mixes generations in destination. The caller owns destination; maximum_events bounds its total retained size. </p>
+
+</div>
+</div>
+<a id="a4a2b63d9f08a14b40a3e502bde05fefc" name="a4a2b63d9f08a14b40a3e502bde05fefc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a2b63d9f08a14b40a3e502bde05fefc">&#9670;&#160;</a></span>beginCapture()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a0e69379e77ebdfe113122d30e102b684">MemoryCaptureId</a> FlowUi::devSystems::DevMemoryReporting::beginCapture </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t</td>          <td class="paramname"><span class="paramname"><em>warmUpTicks</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0u</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy name and begin a capture at the next tick, excluding warmUpTicks from measurements; returns zero while history is frozen. </p>
+
+</div>
+</div>
+<a id="ab5f0461b2ddeaa954fab432ce0fd9655" name="ab5f0461b2ddeaa954fab432ce0fd9655"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab5f0461b2ddeaa954fab432ce0fd9655">&#9670;&#160;</a></span>captureSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryCaptureInfo.html">MemoryCaptureInfo</a> &gt; FlowUi::devSystems::DevMemoryReporting::captureSnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy all capture metadata without extending retained-ring history. </p>
+
+</div>
+</div>
+<a id="a748789c2e2aac163be983b365fe8600a" name="a748789c2e2aac163be983b365fe8600a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a748789c2e2aac163be983b365fe8600a">&#9670;&#160;</a></span>config()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryReportingConfig.html">MemoryReportingConfig</a> FlowUi::devSystems::DevMemoryReporting::config </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy normalized reporting configuration. </p>
+
+</div>
+</div>
+<a id="a2fd952a7a77b1b6ae6398314471a9b4d" name="a2fd952a7a77b1b6ae6398314471a9b4d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2fd952a7a77b1b6ae6398314471a9b4d">&#9670;&#160;</a></span>consume()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevMemoryReporting::consume </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a></td>          <td class="paramname"><span class="paramname"><em>appTick</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Drain producer events and publish source/checkpoint samples for appTick; failures increment quality counters instead of escaping. </p>
 
 </div>
 </div>
@@ -271,6 +408,136 @@ class&#160;</td><td class="memItemRight"><b>MemoryHistoryFreeze</b></td></tr>
 
 </div>
 </div>
+<a id="abb9d80216ea2d29b23f67f53bba8f96d" name="abb9d80216ea2d29b23f67f53bba8f96d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abb9d80216ea2d29b23f67f53bba8f96d">&#9670;&#160;</a></span>currentSourceSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryCurrentSource.html">MemoryCurrentSource</a> &gt; FlowUi::devSystems::DevMemoryReporting::currentSourceSnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy live source measurements and session peaks. </p>
+
+</div>
+</div>
+<a id="a97832f1cb8d7abfab055f8da1993b235" name="a97832f1cb8d7abfab055f8da1993b235"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a97832f1cb8d7abfab055f8da1993b235">&#9670;&#160;</a></span>descriptorSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemorySourceDescriptor.html">MemorySourceDescriptor</a> &gt; FlowUi::devSystems::DevMemoryReporting::descriptorSnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy registered source metadata into owned storage. </p>
+
+</div>
+</div>
+<a id="a0b761716cabc5002829cabdd472cc3f6" name="a0b761716cabc5002829cabdd472cc3f6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b761716cabc5002829cabdd472cc3f6">&#9670;&#160;</a></span>endCapture()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevMemoryReporting::endCapture </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a0e69379e77ebdfe113122d30e102b684">MemoryCaptureId</a></td>          <td class="paramname"><span class="paramname"><em>capture</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>End an active capture and assess retained-evidence completeness; false means the ID is unknown or already ended. </p>
+
+</div>
+</div>
+<a id="a089d349090565f43bad82630f4b2ec6f" name="a089d349090565f43bad82630f4b2ec6f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a089d349090565f43bad82630f4b2ec6f">&#9670;&#160;</a></span>environmentSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryEnvironmentSnapshot.html">MemoryEnvironmentSnapshot</a> &gt; FlowUi::devSystems::DevMemoryReporting::environmentSnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy the most recent process/GPU checkpoint, or nullopt when unavailable. </p>
+
+</div>
+</div>
+<a id="a6bdd3e0162dd79363ff2ba6af3d4dc80" name="a6bdd3e0162dd79363ff2ba6af3d4dc80"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6bdd3e0162dd79363ff2ba6af3d4dc80">&#9670;&#160;</a></span>eventSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1RetainedMemoryEvent.html">RetainedMemoryEvent</a> &gt; FlowUi::devSystems::DevMemoryReporting::eventSnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy currently retained operation events in chronological order. </p>
+
+</div>
+</div>
 <a id="a08ea137381b747f2deaa3266747f45f8" name="a08ea137381b747f2deaa3266747f45f8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a08ea137381b747f2deaa3266747f45f8">&#9670;&#160;</a></span>freeze_history()</h2>
 
@@ -323,6 +590,58 @@ class&#160;</td><td class="memItemRight"><b>MemoryHistoryFreeze</b></td></tr>
 
 </div>
 </div>
+<a id="a3aa104b9f162ad3352edc95e4b35b971" name="a3aa104b9f162ad3352edc95e4b35b971"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3aa104b9f162ad3352edc95e4b35b971">&#9670;&#160;</a></span>managerSamples()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryValueSample.html">MemoryValueSample</a> &gt; FlowUi::devSystems::DevMemoryReporting::managerSamples </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy the current manager probe samples. </p>
+
+</div>
+</div>
+<a id="af60dd1b1c3dfd0ae6a635301c29af077" name="af60dd1b1c3dfd0ae6a635301c29af077"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af60dd1b1c3dfd0ae6a635301c29af077">&#9670;&#160;</a></span>previewCapacityProfile()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryCapacityPreview.html">MemoryCapacityPreview</a> FlowUi::devSystems::DevMemoryReporting::previewCapacityProfile </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1CapacityProfileRequest.html">CapacityProfileRequest</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>request</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Calculate proposed initial capacities and growth coverage without applying changes. Inspect flags and recommendation evidence before using the profile. </p>
+
+</div>
+</div>
 <a id="aa63e80332026c8b5166a83ff36a5d6c7" name="aa63e80332026c8b5166a83ff36a5d6c7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa63e80332026c8b5166a83ff36a5d6c7">&#9670;&#160;</a></span>read_history()</h2>
 
@@ -341,6 +660,84 @@ class&#160;</td><td class="memItemRight"><b>MemoryHistoryFreeze</b></td></tr>
 
 </div>
 </div>
+<a id="a370df3e0aeedbea2862023a9c5675dff" name="a370df3e0aeedbea2862023a9c5675dff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a370df3e0aeedbea2862023a9c5675dff">&#9670;&#160;</a></span>read_live()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryLiveRead.html">MemoryLiveRead</a> FlowUi::devSystems::DevMemoryReporting::read_live </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy all current live inputs coherently under the service lock; no retained history is copied. </p>
+
+</div>
+</div>
+<a id="a7b05b6193d3dde2a7d9c9eb0a94024b9" name="a7b05b6193d3dde2a7d9c9eb0a94024b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b05b6193d3dde2a7d9c9eb0a94024b9">&#9670;&#160;</a></span>requestEnvironmentCheckpoint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevMemoryReporting::requestEnvironmentCheckpoint </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Request a process/GPU checkpoint on the next consume pass. </p>
+
+</div>
+</div>
+<a id="aee0b2efa257c83c399ae337f5f0ba53e" name="aee0b2efa257c83c399ae337f5f0ba53e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aee0b2efa257c83c399ae337f5f0ba53e">&#9670;&#160;</a></span>segmentSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemorySampleSegment.html">MemorySampleSegment</a> &gt; FlowUi::devSystems::DevMemoryReporting::segmentSnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy currently retained segments in chronological order. </p>
+
+</div>
+</div>
 <a id="af980585543eb201b8987e2311df3a7e1" name="af980585543eb201b8987e2311df3a7e1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af980585543eb201b8987e2311df3a7e1">&#9670;&#160;</a></span>set_capacity_baseline()</h2>
 
@@ -356,6 +753,136 @@ class&#160;</td><td class="memItemRight"><b>MemoryHistoryFreeze</b></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Capture resolved startup hints before owners are created. </p>
+
+</div>
+</div>
+<a id="a15bb857b6a598c1934dc0a20f3debd73" name="a15bb857b6a598c1934dc0a20f3debd73"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15bb857b6a598c1934dc0a20f3debd73">&#9670;&#160;</a></span>setConfig()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevMemoryReporting::setConfig </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryReportingConfig.html">MemoryReportingConfig</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>config</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Apply normalized retention controls. Returns false while history is frozen; changing capacities resets affected rings and marks captures incomplete. </p>
+
+</div>
+</div>
+<a id="a7a79c7b4645b0084f2b288b9fbf31d4f" name="a7a79c7b4645b0084f2b288b9fbf31d4f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7a79c7b4645b0084f2b288b9fbf31d4f">&#9670;&#160;</a></span>statistics()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryStatistics.html">MemoryStatistics</a> &gt; FlowUi::devSystems::DevMemoryReporting::statistics </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryStatisticsQuery.html">MemoryStatisticsQuery</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>query</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Compute owned weighted statistics from retained evidence; nullopt means no usable observations. Inspect flags for incomplete coverage. </p>
+
+</div>
+</div>
+<a id="a38134a541e8999b524467083708db415" name="a38134a541e8999b524467083708db415"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a38134a541e8999b524467083708db415">&#9670;&#160;</a></span>status()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryReportingStatus.html">MemoryReportingStatus</a> FlowUi::devSystems::DevMemoryReporting::status </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy current reporting and retention quality state. </p>
+
+</div>
+</div>
+<a id="a3f27ce985f154dcf40a37d7b5511edbf" name="a3f27ce985f154dcf40a37d7b5511edbf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f27ce985f154dcf40a37d7b5511edbf">&#9670;&#160;</a></span>storageSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;::FlowUi::detail::storage::StorageMemorySnapshot &gt; FlowUi::devSystems::DevMemoryReporting::storageSnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy the most recent storage checkpoint, or nullopt before one is available. </p>
+
+</div>
+</div>
+<a id="a0759ebbfa0975c36c038ebab66f7bf7c" name="a0759ebbfa0975c36c038ebab66f7bf7c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0759ebbfa0975c36c038ebab66f7bf7c">&#9670;&#160;</a></span>tuningTargetSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryTuningTargetDescriptor.html">MemoryTuningTargetDescriptor</a> &gt; FlowUi::devSystems::DevMemoryReporting::tuningTargetSnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy registered capacity target metadata into owned storage. </p>
 
 </div>
 </div>
@@ -408,7 +935,7 @@ class&#160;</td><td class="memItemRight"><b>MemoryHistoryFreeze</b></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Read all live inputs under one service lock. Traverse a stable sequence prefix in bounded locked slices. Caller clips mutable tails to snapshot.last_consumed_ns. False means reset/eviction prevented a complete read. </p>
+<p>Traverse a stable sequence prefix in bounded locked slices. Caller clips mutable tails to snapshot.last_consumed_ns. False means reset/eviction prevented a complete read. </p>
 
 </div>
 </div>
@@ -428,7 +955,7 @@ class&#160;</td><td class="memItemRight"><b>MemoryHistoryFreeze</b></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1DevMemoryReporting.html">DevMemoryReporting</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1DevMemoryReporting.html">DevMemoryReporting</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

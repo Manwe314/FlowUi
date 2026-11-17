@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,27 +106,199 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::DevTimingThreadAttachment Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevTiming_8hpp_source.html">DevTiming.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:afb8322c858a010a0e31ecae91de0d9b7" id="r_afb8322c858a010a0e31ecae91de0d9b7"><td class="memItemLeft"><a id="afb8322c858a010a0e31ecae91de0d9b7" name="afb8322c858a010a0e31ecae91de0d9b7"></a>
-&#160;</td><td class="memItemRight"><b>DevTimingThreadAttachment</b> (const DevTimingThreadAttachment &amp;)=delete</td></tr>
+<tr class="memitem:ad7349a75a1f13974ca86f011b185da23" id="r_ad7349a75a1f13974ca86f011b185da23"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ad7349a75a1f13974ca86f011b185da23">DevTimingThreadAttachment</a> () noexcept=default</td></tr>
+<tr class="memitem:a841d7c98cd58b0f311dddd5a06d6095d" id="r_a841d7c98cd58b0f311dddd5a06d6095d"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a841d7c98cd58b0f311dddd5a06d6095d">~DevTimingThreadAttachment</a> ()</td></tr>
+<tr class="memitem:afb8322c858a010a0e31ecae91de0d9b7" id="r_afb8322c858a010a0e31ecae91de0d9b7"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#afb8322c858a010a0e31ecae91de0d9b7">DevTimingThreadAttachment</a> (const DevTimingThreadAttachment &amp;)=delete</td></tr>
 <tr class="memitem:aba3c686c0ceb62d523efa900857d8bdf" id="r_aba3c686c0ceb62d523efa900857d8bdf"><td class="memItemLeft"><a id="aba3c686c0ceb62d523efa900857d8bdf" name="aba3c686c0ceb62d523efa900857d8bdf"></a>
-DevTimingThreadAttachment &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const DevTimingThreadAttachment &amp;)=delete</td></tr>
-<tr class="memitem:a6dd01d46f5eb104a021c635c4de97874" id="r_a6dd01d46f5eb104a021c635c4de97874"><td class="memItemLeft"><a id="a6dd01d46f5eb104a021c635c4de97874" name="a6dd01d46f5eb104a021c635c4de97874"></a>
-&#160;</td><td class="memItemRight"><b>DevTimingThreadAttachment</b> (DevTimingThreadAttachment &amp;&amp;other) noexcept</td></tr>
-<tr class="memitem:a962ce1dd5bdb0861ab8f0eec0d1ad0cd" id="r_a962ce1dd5bdb0861ab8f0eec0d1ad0cd"><td class="memItemLeft"><a id="a962ce1dd5bdb0861ab8f0eec0d1ad0cd" name="a962ce1dd5bdb0861ab8f0eec0d1ad0cd"></a>
-DevTimingThreadAttachment &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (DevTimingThreadAttachment &amp;&amp;other) noexcept</td></tr>
-<tr class="memitem:a67cec71846a878dee32172c91412fb3a" id="r_a67cec71846a878dee32172c91412fb3a"><td class="memItemLeft"><a id="a67cec71846a878dee32172c91412fb3a" name="a67cec71846a878dee32172c91412fb3a"></a>
-&#160;</td><td class="memItemRight"><b>operator bool</b> () const noexcept</td></tr>
-<tr class="memitem:a604c6165e10089e669aa78bdfec47eba" id="r_a604c6165e10089e669aa78bdfec47eba"><td class="memItemLeft"><a id="a604c6165e10089e669aa78bdfec47eba" name="a604c6165e10089e669aa78bdfec47eba"></a>
-<a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> &amp;&#160;</td><td class="memItemRight"><b>recorder</b> () const noexcept</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a5c653935e9e860f9f61646a02cef6339" id="r_a5c653935e9e860f9f61646a02cef6339"><td class="memItemLeft"><a id="a5c653935e9e860f9f61646a02cef6339" name="a5c653935e9e860f9f61646a02cef6339"></a>
-class&#160;</td><td class="memItemRight"><b>DevTiming</b></td></tr>
+<a class="el" href="#ad7349a75a1f13974ca86f011b185da23">DevTimingThreadAttachment</a> &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const <a class="el" href="#ad7349a75a1f13974ca86f011b185da23">DevTimingThreadAttachment</a> &amp;)=delete</td></tr>
+<tr class="memitem:a6dd01d46f5eb104a021c635c4de97874" id="r_a6dd01d46f5eb104a021c635c4de97874"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a6dd01d46f5eb104a021c635c4de97874">DevTimingThreadAttachment</a> (DevTimingThreadAttachment &amp;&amp;other) noexcept</td></tr>
+<tr class="memitem:a962ce1dd5bdb0861ab8f0eec0d1ad0cd" id="r_a962ce1dd5bdb0861ab8f0eec0d1ad0cd"><td class="memItemLeft"><a class="el" href="#ad7349a75a1f13974ca86f011b185da23">DevTimingThreadAttachment</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a962ce1dd5bdb0861ab8f0eec0d1ad0cd">operator=</a> (<a class="el" href="#ad7349a75a1f13974ca86f011b185da23">DevTimingThreadAttachment</a> &amp;&amp;other) noexcept</td></tr>
+<tr class="memitem:a67cec71846a878dee32172c91412fb3a" id="r_a67cec71846a878dee32172c91412fb3a"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a67cec71846a878dee32172c91412fb3a">operator bool</a> () const noexcept</td></tr>
+<tr class="memitem:a604c6165e10089e669aa78bdfec47eba" id="r_a604c6165e10089e669aa78bdfec47eba"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a604c6165e10089e669aa78bdfec47eba">recorder</a> () const noexcept</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Move-only lease attaching one CPU timing recorder to the current thread. Destroy it on that thread before its <a class="el" href="classFlowUi_1_1devSystems_1_1DevTiming.html">DevTiming</a> owner. </p>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="ad7349a75a1f13974ca86f011b185da23" name="ad7349a75a1f13974ca86f011b185da23"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad7349a75a1f13974ca86f011b185da23">&#9670;&#160;</a></span>DevTimingThreadAttachment() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevTimingThreadAttachment::DevTimingThreadAttachment </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel default">default</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Construct an empty inactive handle. </p>
+
+</div>
+</div>
+<a id="a841d7c98cd58b0f311dddd5a06d6095d" name="a841d7c98cd58b0f311dddd5a06d6095d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a841d7c98cd58b0f311dddd5a06d6095d">&#9670;&#160;</a></span>~DevTimingThreadAttachment()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevTimingThreadAttachment::~DevTimingThreadAttachment </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Detach the current thread recorder; its monitoring owner must still be alive. </p>
+
+</div>
+</div>
+<a id="afb8322c858a010a0e31ecae91de0d9b7" name="afb8322c858a010a0e31ecae91de0d9b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afb8322c858a010a0e31ecae91de0d9b7">&#9670;&#160;</a></span>DevTimingThreadAttachment() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevTimingThreadAttachment::DevTimingThreadAttachment </td>
+          <td>(</td>
+          <td class="paramtype">const DevTimingThreadAttachment &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel delete">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copying is disabled to preserve ownership and producer identity. </p>
+
+</div>
+</div>
+<a id="a6dd01d46f5eb104a021c635c4de97874" name="a6dd01d46f5eb104a021c635c4de97874"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6dd01d46f5eb104a021c635c4de97874">&#9670;&#160;</a></span>DevTimingThreadAttachment() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevTimingThreadAttachment::DevTimingThreadAttachment </td>
+          <td>(</td>
+          <td class="paramtype">DevTimingThreadAttachment &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>other</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Transfer ownership of the thread attachment from other; the moved-from attachment becomes empty. </p>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a67cec71846a878dee32172c91412fb3a" name="a67cec71846a878dee32172c91412fb3a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a67cec71846a878dee32172c91412fb3a">&#9670;&#160;</a></span>operator bool()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevTimingThreadAttachment::operator bool </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel explicit">explicit</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return whether this frame, token or thread attachment is valid and active. </p>
+
+</div>
+</div>
+<a id="a962ce1dd5bdb0861ab8f0eec0d1ad0cd" name="a962ce1dd5bdb0861ab8f0eec0d1ad0cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a962ce1dd5bdb0861ab8f0eec0d1ad0cd">&#9670;&#160;</a></span>operator=()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="#ad7349a75a1f13974ca86f011b185da23">DevTimingThreadAttachment</a> &amp; FlowUi::devSystems::DevTimingThreadAttachment::operator= </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#ad7349a75a1f13974ca86f011b185da23">DevTimingThreadAttachment</a> &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>other</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Detach this lease, then take other's recorder; other becomes empty. </p>
+
+</div>
+</div>
+<a id="a604c6165e10089e669aa78bdfec47eba" name="a604c6165e10089e669aa78bdfec47eba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a604c6165e10089e669aa78bdfec47eba">&#9670;&#160;</a></span>recorder()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a> &amp; FlowUi::devSystems::DevTimingThreadAttachment::recorder </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Borrow the attached producer. The attachment must be nonempty and its monitoring owner must still exist. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/timing/<a class="el" href="DevTiming_8hpp_source.html">DevTiming.hpp</a></li>
 </ul>
@@ -143,7 +315,7 @@ class&#160;</td><td class="memItemRight"><b>DevTiming</b></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1DevTimingThreadAttachment.html">DevTimingThreadAttachment</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1DevTimingThreadAttachment.html">DevTimingThreadAttachment</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

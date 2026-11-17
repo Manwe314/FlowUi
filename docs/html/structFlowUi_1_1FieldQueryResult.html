@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,7 +107,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p><a class="el" href="classFlowUi_1_1Result.html">Result</a> returned from an input field request.  
+<p><a class="el" href="classFlowUi_1_1Result.html">Result</a> returned from an input field request.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="InputFieldTypes_8hpp_source.html">InputFieldTypes.hpp</a>&gt;</code></p>
@@ -124,14 +124,14 @@ Public Attributes</h2></td></tr>
 std::span&lt; const <a class="el" href="structFlowUi_1_1FieldEditTransaction.html">FieldEditTransaction</a> &gt;&#160;</td><td class="memItemRight"><b>transactions</b> {}</td></tr>
 <tr class="memdesc:ac5994c8bf0bdcb772934753c104b104f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Successful edits published for this field during the current frame. <br /></td></tr>
 <tr class="memitem:ae59139de63e12eca30e27fd930fa1ca2" id="r_ae59139de63e12eca30e27fd930fa1ca2"><td class="memItemLeft"><a id="ae59139de63e12eca30e27fd930fa1ca2" name="ae59139de63e12eca30e27fd930fa1ca2"></a>
-std::span&lt; const FieldCommandRequest &gt;&#160;</td><td class="memItemRight"><b>commandRequests</b> {}</td></tr>
+std::span&lt; const <a class="el" href="group__flowui__input__field__manager.html#ga66f3400fb677fed49ba710ebb03efd21">FieldCommandRequest</a> &gt;&#160;</td><td class="memItemRight"><b>commandRequests</b> {}</td></tr>
 <tr class="memdesc:ae59139de63e12eca30e27fd930fa1ca2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Undo, redo, submit, or cancel requests from this frame. <br /></td></tr>
 <tr class="memitem:a0e70fc2a4a60ae1d4bf5b859422e2867" id="r_a0e70fc2a4a60ae1d4bf5b859422e2867"><td class="memItemLeft"><a id="a0e70fc2a4a60ae1d4bf5b859422e2867" name="a0e70fc2a4a60ae1d4bf5b859422e2867"></a>
 uint64_t&#160;</td><td class="memItemRight"><b>revision</b> = 0</td></tr>
 <tr class="memdesc:a0e70fc2a4a60ae1d4bf5b859422e2867"><td class="mdescLeft">&#160;</td><td class="mdescRight">Monotonic revision incremented once per successful atomic edit. <br /></td></tr>
 <tr class="memitem:a9f0e2e70d52065594bc06c541fbf3013" id="r_a9f0e2e70d52065594bc06c541fbf3013"><td class="memItemLeft">Clay_Vector2&#160;</td><td class="memItemRight"><a class="el" href="#a9f0e2e70d52065594bc06c541fbf3013">scrollOffset</a> {}</td></tr>
 <tr class="memitem:a8968ed059aa59f2e5902807117d9b680" id="r_a8968ed059aa59f2e5902807117d9b680"><td class="memItemLeft"><a id="a8968ed059aa59f2e5902807117d9b680" name="a8968ed059aa59f2e5902807117d9b680"></a>
-TextFieldMode&#160;</td><td class="memItemRight"><b>mode</b> = TextFieldMode::SingleLine</td></tr>
+<a class="el" href="group__flowui__input__field__manager.html#ga45d425b2fd21c934a3f16050cdc4cccb">TextFieldMode</a>&#160;</td><td class="memItemRight"><b>mode</b> = <a class="el" href="group__flowui__input__field__manager.html#gga45d425b2fd21c934a3f16050cdc4cccba3e5c1fb76b6543ac61af54b185f02af9">TextFieldMode::SingleLine</a></td></tr>
 <tr class="memdesc:a8968ed059aa59f2e5902807117d9b680"><td class="mdescLeft">&#160;</td><td class="mdescRight">Actual retained mode after applying the requested mode migration. <br /></td></tr>
 <tr class="memitem:a709ed7b6c876afef22153d4057b39817" id="r_a709ed7b6c876afef22153d4057b39817"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a709ed7b6c876afef22153d4057b39817">modeChangeRejected</a> = false</td></tr>
 <tr class="memitem:adc1df1e3983f22b4afd71ecadbf6d945" id="r_adc1df1e3983f22b4afd71ecadbf6d945"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#adc1df1e3983f22b4afd71ecadbf6d945">hasPrimaryCaret</a> = false</td></tr>
@@ -141,7 +141,7 @@ TextFieldMode&#160;</td><td class="memItemRight"><b>mode</b> = TextFieldMode::Si
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="classFlowUi_1_1Result.html">Result</a> returned from an input field request. </p>
-<p><a class="el" href="structFlowUi_1_1FieldQueryResult.html" title="Result returned from an input field request.">FieldQueryResult</a> describes the current manager-owned state for the field that was just requested. Element code typically renders text and runs change detection from this result. </p>
+<p><a class="el" href="structFlowUi_1_1FieldQueryResult.html" title="Result returned from an input field request.">FieldQueryResult</a> describes the current manager-owned state for the field that was just requested. Element code typically renders text and runs change detection from this result. Arrays and their nested views are valid only during the current frame and may be invalidated by further field mutations; copy any data that must survive. </p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="adc1df1e3983f22b4afd71ecadbf6d945" name="adc1df1e3983f22b4afd71ecadbf6d945"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#adc1df1e3983f22b4afd71ecadbf6d945">&#9670;&#160;</a></span>hasPrimaryCaret</h2>
@@ -255,7 +255,7 @@ TextFieldMode&#160;</td><td class="memItemRight"><b>mode</b> = TextFieldMode::Si
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1FieldQueryResult.html">FieldQueryResult</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1FieldQueryResult.html">FieldQueryResult</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

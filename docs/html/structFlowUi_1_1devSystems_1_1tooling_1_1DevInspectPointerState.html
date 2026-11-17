@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -113,16 +113,22 @@ $(function() {
 Public Attributes</h2></td></tr>
 <tr class="memitem:a9c560dcda0f7bd9c91992f88d0959133" id="r_a9c560dcda0f7bd9c91992f88d0959133"><td class="memItemLeft"><a id="a9c560dcda0f7bd9c91992f88d0959133" name="a9c560dcda0f7bd9c91992f88d0959133"></a>
 float&#160;</td><td class="memItemRight"><b>pointer_x</b> = 0.0f</td></tr>
+<tr class="memdesc:a9c560dcda0f7bd9c91992f88d0959133"><td class="mdescLeft">&#160;</td><td class="mdescRight">Last raw pointer X coordinate in layout space. <br /></td></tr>
 <tr class="memitem:af00b31dd9a64fc4bcc4cb3b11d45dba8" id="r_af00b31dd9a64fc4bcc4cb3b11d45dba8"><td class="memItemLeft"><a id="af00b31dd9a64fc4bcc4cb3b11d45dba8" name="af00b31dd9a64fc4bcc4cb3b11d45dba8"></a>
 float&#160;</td><td class="memItemRight"><b>pointer_y</b> = 0.0f</td></tr>
+<tr class="memdesc:af00b31dd9a64fc4bcc4cb3b11d45dba8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Last raw pointer Y coordinate in layout space. <br /></td></tr>
 <tr class="memitem:a67b0bb01294a8c46aa387790b5b23a40" id="r_a67b0bb01294a8c46aa387790b5b23a40"><td class="memItemLeft"><a id="a67b0bb01294a8c46aa387790b5b23a40" name="a67b0bb01294a8c46aa387790b5b23a40"></a>
 bool&#160;</td><td class="memItemRight"><b>pointer_inside</b> = false</td></tr>
+<tr class="memdesc:a67b0bb01294a8c46aa387790b5b23a40"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the pointer is inside this application window. <br /></td></tr>
 <tr class="memitem:aeb01b6ce95bf3e74b19aad18d93a23cf" id="r_aeb01b6ce95bf3e74b19aad18d93a23cf"><td class="memItemLeft"><a id="aeb01b6ce95bf3e74b19aad18d93a23cf" name="aeb01b6ce95bf3e74b19aad18d93a23cf"></a>
 bool&#160;</td><td class="memItemRight"><b>previous_down</b> = false</td></tr>
+<tr class="memdesc:aeb01b6ce95bf3e74b19aad18d93a23cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Raw primary-button state from the prior input sample. <br /></td></tr>
 <tr class="memitem:a5803e6f72332d4f6fb8d23bd549ea564" id="r_a5803e6f72332d4f6fb8d23bd549ea564"><td class="memItemLeft"><a id="a5803e6f72332d4f6fb8d23bd549ea564" name="a5803e6f72332d4f6fb8d23bd549ea564"></a>
 bool&#160;</td><td class="memItemRight"><b>observed_release</b> = false</td></tr>
+<tr class="memdesc:a5803e6f72332d4f6fb8d23bd549ea564"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether a raw button release has been observed. <br /></td></tr>
 <tr class="memitem:a41ac0e9d1c256f6a6b64231fb5a34166" id="r_a41ac0e9d1c256f6a6b64231fb5a34166"><td class="memItemLeft"><a id="a41ac0e9d1c256f6a6b64231fb5a34166" name="a41ac0e9d1c256f6a6b64231fb5a34166"></a>
 bool&#160;</td><td class="memItemRight"><b>consume_until_release</b> = false</td></tr>
+<tr class="memdesc:a41ac0e9d1c256f6a6b64231fb5a34166"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether application pointer input remains suppressed for an active pick. <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Raw pointer history belongs to each application window, including consumed releases. </p>
@@ -142,7 +148,7 @@ bool&#160;</td><td class="memItemRight"><b>consume_until_release</b> = false</td
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevInspectPointerState.html">DevInspectPointerState</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevInspectPointerState.html">DevInspectPointerState</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,12 +106,47 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::ShortcutManagerConfig Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="ShortcutManagerConfig_8hpp_source.html">ShortcutManagerConfig.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:ad49497334ce0cb1fde78d40836a56b63" id="r_ad49497334ce0cb1fde78d40836a56b63"><td class="memItemLeft"><a id="ad49497334ce0cb1fde78d40836a56b63" name="ad49497334ce0cb1fde78d40836a56b63"></a>
-<a class="el" href="structFlowUi_1_1DefaultTextShortcutConfig.html">DefaultTextShortcutConfig</a>&#160;</td><td class="memItemRight"><b>textEditing</b> {}</td></tr>
+<tr class="memitem:ad49497334ce0cb1fde78d40836a56b63" id="r_ad49497334ce0cb1fde78d40836a56b63"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1DefaultTextShortcutConfig.html">DefaultTextShortcutConfig</a>&#160;</td><td class="memItemRight"><a class="el" href="#ad49497334ce0cb1fde78d40836a56b63">textEditing</a> {}</td></tr>
+<tr class="memitem:abd27c03935108704d284f0fa5c638a7d" id="r_abd27c03935108704d284f0fa5c638a7d"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1DefaultWindowShortcutConfig.html">DefaultWindowShortcutConfig</a>&#160;</td><td class="memItemRight"><a class="el" href="#abd27c03935108704d284f0fa5c638a7d">window</a> {}</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Configuration for complete default input-field and native-window shortcuts. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="ad49497334ce0cb1fde78d40836a56b63" name="ad49497334ce0cb1fde78d40836a56b63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad49497334ce0cb1fde78d40836a56b63">&#9670;&#160;</a></span>textEditing</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1DefaultTextShortcutConfig.html">DefaultTextShortcutConfig</a> FlowUi::ShortcutManagerConfig::textEditing {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Focused-input command registrations and dispatch defaults. </p>
+
+</div>
+</div>
+<a id="abd27c03935108704d284f0fa5c638a7d" name="abd27c03935108704d284f0fa5c638a7d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abd27c03935108704d284f0fa5c638a7d">&#9670;&#160;</a></span>window</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1DefaultWindowShortcutConfig.html">DefaultWindowShortcutConfig</a> FlowUi::ShortcutManagerConfig::window {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Native-window command registrations; initially disabled. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/configurationStructs/<a class="el" href="ShortcutManagerConfig_8hpp_source.html">ShortcutManagerConfig.hpp</a></li>
 </ul>
@@ -128,7 +163,7 @@ Public Attributes</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1ShortcutManagerConfig.html">ShortcutManagerConfig</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1ShortcutManagerConfig.html">ShortcutManagerConfig</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

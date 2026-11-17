@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -109,22 +109,31 @@ $(function() {
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#pragma once</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &lt;string_view&gt;</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="keyword">namespace </span>FlowUi {</div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="keyword">using </span>MemoryCapacityTargetId = uint64_t;</div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span>[[nodiscard]] <span class="keyword">constexpr</span> MemoryCapacityTargetId</div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span>memory_capacity_target_id(std::string_view name) <span class="keyword">noexcept</span> {</div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>    uint64_t hash = 14695981039346656037ull;</div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>    <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keywordtype">char</span> character : name) {</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>        hash ^= <span class="keyword">static_cast&lt;</span><span class="keywordtype">unsigned</span> <span class="keywordtype">char</span><span class="keyword">&gt;</span>(character);</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>        hash *= 1099511628211ull;</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    }</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    <span class="keywordflow">return</span> hash == 0 ? 1 : hash;</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>}</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>[[nodiscard]] <span class="keyword">consteval</span> MemoryCapacityTargetId</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>makeMemoryCapacityTargetId(std::string_view name) <span class="keyword">noexcept</span> {</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    <span class="keywordflow">return</span> memory_capacity_target_id(name);</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>}</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi.html">FlowUi</a> {</div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a33b226da4cc27c9bca76038b57183669">    6</a></span><span class="keyword">using </span><a class="code hl_typedef" href="namespaceFlowUi.html#a33b226da4cc27c9bca76038b57183669">MemoryCapacityTargetId</a> = uint64_t;</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>[[nodiscard]] <span class="keyword">constexpr</span> <a class="code hl_typedef" href="namespaceFlowUi.html#a33b226da4cc27c9bca76038b57183669">MemoryCapacityTargetId</a></div>
+<div class="foldopen" id="foldopen00022" data-start="{" data-end="}">
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#ab7975a40dc1f3ecbad0a32d6d5a171ed">   22</a></span><a class="code hl_function" href="namespaceFlowUi.html#ab7975a40dc1f3ecbad0a32d6d5a171ed">memory_capacity_target_id</a>(std::string_view name) <span class="keyword">noexcept</span> {</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    uint64_t hash = 14695981039346656037ull;</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keywordtype">char</span> character : name) {</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>        hash ^= <span class="keyword">static_cast&lt;</span><span class="keywordtype">unsigned</span> <span class="keywordtype">char</span><span class="keyword">&gt;</span>(character);</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>        hash *= 1099511628211ull;</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    }</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    <span class="keywordflow">return</span> hash == 0 ? 1 : hash;</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>}</div>
+</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>[[nodiscard]] <span class="keyword">consteval</span> <a class="code hl_typedef" href="namespaceFlowUi.html#a33b226da4cc27c9bca76038b57183669">MemoryCapacityTargetId</a></div>
+<div class="foldopen" id="foldopen00042" data-start="{" data-end="}">
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="namespaceFlowUi.html#a25676ff755ea08f6531120b1a0120124">   42</a></span><a class="code hl_function" href="namespaceFlowUi.html#a25676ff755ea08f6531120b1a0120124">makeMemoryCapacityTargetId</a>(std::string_view name) <span class="keyword">noexcept</span> {</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceFlowUi.html#ab7975a40dc1f3ecbad0a32d6d5a171ed">memory_capacity_target_id</a>(name);</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>}</div>
+</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="ttc" id="anamespaceFlowUi_html"><div class="ttname"><a href="namespaceFlowUi.html">FlowUi</a></div><div class="ttdef"><b>Definition</b> App.hpp:29</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a25676ff755ea08f6531120b1a0120124"><div class="ttname"><a href="namespaceFlowUi.html#a25676ff755ea08f6531120b1a0120124">FlowUi::makeMemoryCapacityTargetId</a></div><div class="ttdeci">consteval MemoryCapacityTargetId makeMemoryCapacityTargetId(std::string_view name) noexcept</div><div class="ttdef"><b>Definition</b> MemoryCapacityTargets.hpp:42</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a33b226da4cc27c9bca76038b57183669"><div class="ttname"><a href="namespaceFlowUi.html#a33b226da4cc27c9bca76038b57183669">FlowUi::MemoryCapacityTargetId</a></div><div class="ttdeci">uint64_t MemoryCapacityTargetId</div><div class="ttdef"><b>Definition</b> MemoryCapacityTargets.hpp:6</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_ab7975a40dc1f3ecbad0a32d6d5a171ed"><div class="ttname"><a href="namespaceFlowUi.html#ab7975a40dc1f3ecbad0a32d6d5a171ed">FlowUi::memory_capacity_target_id</a></div><div class="ttdeci">constexpr MemoryCapacityTargetId memory_capacity_target_id(std::string_view name) noexcept</div><div class="ttdef"><b>Definition</b> MemoryCapacityTargets.hpp:22</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

@@ -57,16 +57,22 @@ struct Button {
 	static constexpr std::string_view debugName = "Button";
 
 	/** Return whether the element and its action are available. */
-	[[nodiscard]] static bool isEnabled(const InteractionContext& context) {
-		return context.params.enabled &&
-			context.actionAvailability(context.params.onActivate).enabled;
+	[[nodiscard]] static bool isEnabled(const InteractionContext& context) noexcept {
+		if (!context.params.enabled)
+			return false;
+		const auto availability = context.actionAvailability(context.params.onActivate);
+		if (!availability) {
+			context.uiManager.recordFrameError(availability.error());
+			return false;
+		}
+		return availability->enabled;
 	}
 
 	/**
 	 * ElementBuilder hover hook; requests the enabled control cursor. @param context Borrowed
 	 * context valid for this callback only.
 	 */
-	static void onHovered(InteractionContext& context) {
+	static void onHovered(InteractionContext& context) noexcept {
 		if (isEnabled(context)) {
 			context.uiManager.requestCursor(CursorType::PointingHand);
 		}
@@ -85,10 +91,14 @@ struct Button {
 	/**
 	 * ElementBuilder draw hook; emits this control and its children for the active frame. @param
 	 * context Borrowed context valid for this callback only.
+	 * Library authoring failures propagate and latch frame failure; abandon the failed frame.
 	 */
 	static void buildElement(BuildContext& context) {
+		const auto& actions = context.uiManager.actions();
+		const auto rootId = context.clayID();
+		const auto label = context.uiManager.toClayString(context.params.label);
 		const bool enabled = context.params.enabled &&
-			context.uiManager.actions().availability(context.params.onActivate).enabled;
+			actions.availability(context.params.onActivate).enabled;
 		Clay_ElementDeclaration root{};
 		root.layout.sizing = context.params.sizing;
 		root.layout.padding = context.params.padding;
@@ -114,9 +124,9 @@ struct Button {
 		text.wrapMode = CLAY_TEXT_WRAP_NONE;
 		text.textAlignment = CLAY_TEXT_ALIGN_CENTER;
 
-		CLAY(context.clayID(), root) {
+		CLAY(rootId, root) {
 			CLAY_TEXT(
-				context.uiManager.toClayString(context.params.label),
+				label,
 				CLAY_TEXT_CONFIG(text));
 		}
 	}

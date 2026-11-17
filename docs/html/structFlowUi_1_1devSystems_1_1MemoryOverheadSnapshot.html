@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,24 +106,127 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::MemoryOverheadSnapshot Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevMemoryReporting_8hpp_source.html">DevMemoryReporting.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a19643f004a10138679a255524c640331" id="r_a19643f004a10138679a255524c640331"><td class="memItemLeft"><a id="a19643f004a10138679a255524c640331" name="a19643f004a10138679a255524c640331"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>retainedCapacityBytes</b> = 0u</td></tr>
-<tr class="memitem:a4390d46943af2d326f7e876414445b14" id="r_a4390d46943af2d326f7e876414445b14"><td class="memItemLeft"><a id="a4390d46943af2d326f7e876414445b14" name="a4390d46943af2d326f7e876414445b14"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>currentTableEstimatedBytes</b> = 0u</td></tr>
-<tr class="memitem:a172dd5e5fe993513a9077794ef13db46" id="r_a172dd5e5fe993513a9077794ef13db46"><td class="memItemLeft"><a id="a172dd5e5fe993513a9077794ef13db46" name="a172dd5e5fe993513a9077794ef13db46"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>lastConsumeDurationNs</b> = 0u</td></tr>
-<tr class="memitem:a7b4fbf1d257207903f3acf0c21e16b67" id="r_a7b4fbf1d257207903f3acf0c21e16b67"><td class="memItemLeft"><a id="a7b4fbf1d257207903f3acf0c21e16b67" name="a7b4fbf1d257207903f3acf0c21e16b67"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>maximumConsumeDurationNs</b> = 0u</td></tr>
-<tr class="memitem:a0e3e33893ef9ec133a3ed37efe5dc0bd" id="r_a0e3e33893ef9ec133a3ed37efe5dc0bd"><td class="memItemLeft"><a id="a0e3e33893ef9ec133a3ed37efe5dc0bd" name="a0e3e33893ef9ec133a3ed37efe5dc0bd"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>storageProbeDurationNs</b> = 0u</td></tr>
-<tr class="memitem:abb9cf93683fb06dac881836fcd5fff5b" id="r_abb9cf93683fb06dac881836fcd5fff5b"><td class="memItemLeft"><a id="abb9cf93683fb06dac881836fcd5fff5b" name="abb9cf93683fb06dac881836fcd5fff5b"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>processProbeDurationNs</b> = 0u</td></tr>
-<tr class="memitem:ae25d647a01954ef8b79ba5f450daf863" id="r_ae25d647a01954ef8b79ba5f450daf863"><td class="memItemLeft"><a id="ae25d647a01954ef8b79ba5f450daf863" name="ae25d647a01954ef8b79ba5f450daf863"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>gpuProbeDurationNs</b> = 0u</td></tr>
+<tr class="memitem:a19643f004a10138679a255524c640331" id="r_a19643f004a10138679a255524c640331"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a19643f004a10138679a255524c640331">retainedCapacityBytes</a> = 0u</td></tr>
+<tr class="memitem:a4390d46943af2d326f7e876414445b14" id="r_a4390d46943af2d326f7e876414445b14"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a4390d46943af2d326f7e876414445b14">currentTableEstimatedBytes</a> = 0u</td></tr>
+<tr class="memitem:a172dd5e5fe993513a9077794ef13db46" id="r_a172dd5e5fe993513a9077794ef13db46"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a172dd5e5fe993513a9077794ef13db46">lastConsumeDurationNs</a> = 0u</td></tr>
+<tr class="memitem:a7b4fbf1d257207903f3acf0c21e16b67" id="r_a7b4fbf1d257207903f3acf0c21e16b67"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a7b4fbf1d257207903f3acf0c21e16b67">maximumConsumeDurationNs</a> = 0u</td></tr>
+<tr class="memitem:a0e3e33893ef9ec133a3ed37efe5dc0bd" id="r_a0e3e33893ef9ec133a3ed37efe5dc0bd"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a0e3e33893ef9ec133a3ed37efe5dc0bd">storageProbeDurationNs</a> = 0u</td></tr>
+<tr class="memitem:abb9cf93683fb06dac881836fcd5fff5b" id="r_abb9cf93683fb06dac881836fcd5fff5b"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#abb9cf93683fb06dac881836fcd5fff5b">processProbeDurationNs</a> = 0u</td></tr>
+<tr class="memitem:ae25d647a01954ef8b79ba5f450daf863" id="r_ae25d647a01954ef8b79ba5f450daf863"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ae25d647a01954ef8b79ba5f450daf863">gpuProbeDurationNs</a> = 0u</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Observed memory and sampling-time cost of the memory reporting service. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a4390d46943af2d326f7e876414445b14" name="a4390d46943af2d326f7e876414445b14"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4390d46943af2d326f7e876414445b14">&#9670;&#160;</a></span>currentTableEstimatedBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryOverheadSnapshot::currentTableEstimatedBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Estimated backing bytes of the live source table. </p>
+
+</div>
+</div>
+<a id="ae25d647a01954ef8b79ba5f450daf863" name="ae25d647a01954ef8b79ba5f450daf863"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae25d647a01954ef8b79ba5f450daf863">&#9670;&#160;</a></span>gpuProbeDurationNs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryOverheadSnapshot::gpuProbeDurationNs = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Latest GPU sampling duration in nanoseconds. </p>
+
+</div>
+</div>
+<a id="a172dd5e5fe993513a9077794ef13db46" name="a172dd5e5fe993513a9077794ef13db46"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a172dd5e5fe993513a9077794ef13db46">&#9670;&#160;</a></span>lastConsumeDurationNs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryOverheadSnapshot::lastConsumeDurationNs = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Duration of the last consume pass in nanoseconds. </p>
+
+</div>
+</div>
+<a id="a7b4fbf1d257207903f3acf0c21e16b67" name="a7b4fbf1d257207903f3acf0c21e16b67"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b4fbf1d257207903f3acf0c21e16b67">&#9670;&#160;</a></span>maximumConsumeDurationNs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryOverheadSnapshot::maximumConsumeDurationNs = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Largest observed consume duration in nanoseconds. </p>
+
+</div>
+</div>
+<a id="abb9cf93683fb06dac881836fcd5fff5b" name="abb9cf93683fb06dac881836fcd5fff5b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abb9cf93683fb06dac881836fcd5fff5b">&#9670;&#160;</a></span>processProbeDurationNs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryOverheadSnapshot::processProbeDurationNs = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Latest process sampling duration in nanoseconds. </p>
+
+</div>
+</div>
+<a id="a19643f004a10138679a255524c640331" name="a19643f004a10138679a255524c640331"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a19643f004a10138679a255524c640331">&#9670;&#160;</a></span>retainedCapacityBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryOverheadSnapshot::retainedCapacityBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Allocated byte capacity of retained histories. </p>
+
+</div>
+</div>
+<a id="a0e3e33893ef9ec133a3ed37efe5dc0bd" name="a0e3e33893ef9ec133a3ed37efe5dc0bd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e3e33893ef9ec133a3ed37efe5dc0bd">&#9670;&#160;</a></span>storageProbeDurationNs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::MemoryOverheadSnapshot::storageProbeDurationNs = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Latest storage checkpoint sampling duration in nanoseconds. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/reporting/<a class="el" href="DevMemoryReporting_8hpp_source.html">DevMemoryReporting.hpp</a></li>
 </ul>
@@ -140,7 +243,7 @@ uint64_t&#160;</td><td class="memItemRight"><b>gpuProbeDurationNs</b> = 0u</td><
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1MemoryOverheadSnapshot.html">MemoryOverheadSnapshot</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1MemoryOverheadSnapshot.html">MemoryOverheadSnapshot</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

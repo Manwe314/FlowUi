@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,20 +106,111 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::FontFaceCreateInfo Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="FontTypes_8hpp_source.html">FontTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:abd1ad940cbd3b2f1e1a1a711d72e8bd5" id="r_abd1ad940cbd3b2f1e1a1a711d72e8bd5"><td class="memItemLeft"><a id="abd1ad940cbd3b2f1e1a1a711d72e8bd5" name="abd1ad940cbd3b2f1e1a1a711d72e8bd5"></a>
-std::filesystem::path&#160;</td><td class="memItemRight"><b>path</b> {}</td></tr>
-<tr class="memitem:a8ac080ea869a908b0f3c74fe2a0ee6de" id="r_a8ac080ea869a908b0f3c74fe2a0ee6de"><td class="memItemLeft"><a id="a8ac080ea869a908b0f3c74fe2a0ee6de" name="a8ac080ea869a908b0f3c74fe2a0ee6de"></a>
-float&#160;</td><td class="memItemRight"><b>pixelSize</b> = 18.0f</td></tr>
-<tr class="memitem:ad0c101c4bb3693e5c513ea01cb9501e2" id="r_ad0c101c4bb3693e5c513ea01cb9501e2"><td class="memItemLeft"><a id="ad0c101c4bb3693e5c513ea01cb9501e2" name="ad0c101c4bb3693e5c513ea01cb9501e2"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>weight</b> = 400</td></tr>
-<tr class="memitem:a5fd2d512f5a79b9a1e068761a77391fb" id="r_a5fd2d512f5a79b9a1e068761a77391fb"><td class="memItemLeft"><a id="a5fd2d512f5a79b9a1e068761a77391fb" name="a5fd2d512f5a79b9a1e068761a77391fb"></a>
-FontStyle&#160;</td><td class="memItemRight"><b>style</b> = FontStyle::Normal</td></tr>
-<tr class="memitem:a6abf248d60c7222a0fe456a87456c019" id="r_a6abf248d60c7222a0fe456a87456c019"><td class="memItemLeft"><a id="a6abf248d60c7222a0fe456a87456c019" name="a6abf248d60c7222a0fe456a87456c019"></a>
-std::string&#160;</td><td class="memItemRight"><b>name</b> {}</td></tr>
+<tr class="memitem:abd1ad940cbd3b2f1e1a1a711d72e8bd5" id="r_abd1ad940cbd3b2f1e1a1a711d72e8bd5"><td class="memItemLeft">std::filesystem::path&#160;</td><td class="memItemRight"><a class="el" href="#abd1ad940cbd3b2f1e1a1a711d72e8bd5">path</a> {}</td></tr>
+<tr class="memitem:a8ac080ea869a908b0f3c74fe2a0ee6de" id="r_a8ac080ea869a908b0f3c74fe2a0ee6de"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#a8ac080ea869a908b0f3c74fe2a0ee6de">pixelSize</a> = 18.0f</td></tr>
+<tr class="memitem:ad0c101c4bb3693e5c513ea01cb9501e2" id="r_ad0c101c4bb3693e5c513ea01cb9501e2"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#ad0c101c4bb3693e5c513ea01cb9501e2">weight</a> = 400</td></tr>
+<tr class="memitem:a5fd2d512f5a79b9a1e068761a77391fb" id="r_a5fd2d512f5a79b9a1e068761a77391fb"><td class="memItemLeft"><a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52e">FontStyle</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5fd2d512f5a79b9a1e068761a77391fb">style</a> = <a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FontStyle::Normal</a></td></tr>
+<tr class="memitem:a6abf248d60c7222a0fe456a87456c019" id="r_a6abf248d60c7222a0fe456a87456c019"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a6abf248d60c7222a0fe456a87456c019">name</a> {}</td></tr>
+<tr class="memitem:a76b869b6b98cab6bebe776336722d336" id="r_a76b869b6b98cab6bebe776336722d336"><td class="memItemLeft">std::span&lt; const std::byte &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a76b869b6b98cab6bebe776336722d336">baked_data</a> {}</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Font-face registration request for a baked .arfont asset or a source font. Source fonts require runtime font baking support; baked assets use their authored metrics. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a76b869b6b98cab6bebe776336722d336" name="a76b869b6b98cab6bebe776336722d336"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a76b869b6b98cab6bebe776336722d336">&#9670;&#160;</a></span>baked_data</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::span&lt;const std::byte&gt; FlowUi::FontFaceCreateInfo::baked_data {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Optional borrowed .arfont bytes, consumed synchronously during family/face registration. Nonempty data takes precedence over path; its storage need only outlive the registration call. If retained in <a class="el" href="structFlowUi_1_1UiConfig.html">UiConfig</a>, keep the bytes alive until application initialization completes. </p>
+
+</div>
+</div>
+<a id="a6abf248d60c7222a0fe456a87456c019" name="a6abf248d60c7222a0fe456a87456c019"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6abf248d60c7222a0fe456a87456c019">&#9670;&#160;</a></span>name</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string FlowUi::FontFaceCreateInfo::name {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Optional explicit face name; empty lets loading derive one. </p>
+
+</div>
+</div>
+<a id="abd1ad940cbd3b2f1e1a1a711d72e8bd5" name="abd1ad940cbd3b2f1e1a1a711d72e8bd5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abd1ad940cbd3b2f1e1a1a711d72e8bd5">&#9670;&#160;</a></span>path</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::filesystem::path FlowUi::FontFaceCreateInfo::path {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Source font asset path resolved by the resource configuration. </p>
+
+</div>
+</div>
+<a id="a8ac080ea869a908b0f3c74fe2a0ee6de" name="a8ac080ea869a908b0f3c74fe2a0ee6de"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ac080ea869a908b0f3c74fe2a0ee6de">&#9670;&#160;</a></span>pixelSize</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float FlowUi::FontFaceCreateInfo::pixelSize = 18.0f</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Requested bake size in pixels for runtime source fonts; baked assets retain their authored metrics. </p>
+
+</div>
+</div>
+<a id="a5fd2d512f5a79b9a1e068761a77391fb" name="a5fd2d512f5a79b9a1e068761a77391fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5fd2d512f5a79b9a1e068761a77391fb">&#9670;&#160;</a></span>style</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52e">FontStyle</a> FlowUi::FontFaceCreateInfo::style = <a class="el" href="namespaceFlowUi.html#af7e7d0763efe0b722c07ea3892e9a52ea960b44c579bc2f6818d2daaf9e4c16f0">FontStyle::Normal</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Style used to select this face. </p>
+
+</div>
+</div>
+<a id="ad0c101c4bb3693e5c513ea01cb9501e2" name="ad0c101c4bb3693e5c513ea01cb9501e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad0c101c4bb3693e5c513ea01cb9501e2">&#9670;&#160;</a></span>weight</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::FontFaceCreateInfo::weight = 400</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Weight used to select this face, commonly 400 for regular and 700 for bold. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="FontTypes_8hpp_source.html">FontTypes.hpp</a></li>
 </ul>
@@ -136,7 +227,7 @@ std::string&#160;</td><td class="memItemRight"><b>name</b> {}</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1FontFaceCreateInfo.html">FontFaceCreateInfo</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1FontFaceCreateInfo.html">FontFaceCreateInfo</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

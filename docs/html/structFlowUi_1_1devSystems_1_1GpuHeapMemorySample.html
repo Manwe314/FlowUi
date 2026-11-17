@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,32 +106,191 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::GpuHeapMemorySample Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevMemoryTypes_8hpp_source.html">DevMemoryTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a7f76c6794fe8a15a18788ce5353971e8" id="r_a7f76c6794fe8a15a18788ce5353971e8"><td class="memItemLeft"><a id="a7f76c6794fe8a15a18788ce5353971e8" name="a7f76c6794fe8a15a18788ce5353971e8"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>heapIndex</b> = 0u</td></tr>
-<tr class="memitem:ac9c37113b93a39097b52d33544f1400d" id="r_ac9c37113b93a39097b52d33544f1400d"><td class="memItemLeft"><a id="ac9c37113b93a39097b52d33544f1400d" name="ac9c37113b93a39097b52d33544f1400d"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>heapFlags</b> = 0u</td></tr>
-<tr class="memitem:ade1c1a04eccc47a58580783dc9469532" id="r_ade1c1a04eccc47a58580783dc9469532"><td class="memItemLeft"><a id="ade1c1a04eccc47a58580783dc9469532" name="ade1c1a04eccc47a58580783dc9469532"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>heapSizeBytes</b> = 0u</td></tr>
-<tr class="memitem:ac205031262098f4f13f2ed1d609012bd" id="r_ac205031262098f4f13f2ed1d609012bd"><td class="memItemLeft"><a id="ac205031262098f4f13f2ed1d609012bd" name="ac205031262098f4f13f2ed1d609012bd"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>allocatorUsageBytes</b> = 0u</td></tr>
-<tr class="memitem:a92a4bf21828b1c7e227dcc020dbffc5f" id="r_a92a4bf21828b1c7e227dcc020dbffc5f"><td class="memItemLeft"><a id="a92a4bf21828b1c7e227dcc020dbffc5f" name="a92a4bf21828b1c7e227dcc020dbffc5f"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>allocatorBudgetBytes</b> = 0u</td></tr>
-<tr class="memitem:a671b599234f6a771b243f77d693ce6e7" id="r_a671b599234f6a771b243f77d693ce6e7"><td class="memItemLeft"><a id="a671b599234f6a771b243f77d693ce6e7" name="a671b599234f6a771b243f77d693ce6e7"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>allocationBytes</b> = 0u</td></tr>
-<tr class="memitem:a9c03c9602491e4f78f099ae6a9f115cd" id="r_a9c03c9602491e4f78f099ae6a9f115cd"><td class="memItemLeft"><a id="a9c03c9602491e4f78f099ae6a9f115cd" name="a9c03c9602491e4f78f099ae6a9f115cd"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>blockBytes</b> = 0u</td></tr>
-<tr class="memitem:ac9f5f13393f1840a46565f08e0e0a597" id="r_ac9f5f13393f1840a46565f08e0e0a597"><td class="memItemLeft"><a id="ac9f5f13393f1840a46565f08e0e0a597" name="ac9f5f13393f1840a46565f08e0e0a597"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>allocationCount</b> = 0u</td></tr>
-<tr class="memitem:a423c3f75bb6228d2e1ad154a01dc4eef" id="r_a423c3f75bb6228d2e1ad154a01dc4eef"><td class="memItemLeft"><a id="a423c3f75bb6228d2e1ad154a01dc4eef" name="a423c3f75bb6228d2e1ad154a01dc4eef"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>blockCount</b> = 0u</td></tr>
-<tr class="memitem:a44baa092c1990e8945dac1f422b3435e" id="r_a44baa092c1990e8945dac1f422b3435e"><td class="memItemLeft"><a id="a44baa092c1990e8945dac1f422b3435e" name="a44baa092c1990e8945dac1f422b3435e"></a>
-GpuHeapClass&#160;</td><td class="memItemRight"><b>classification</b> = GpuHeapClass::Unknown</td></tr>
-<tr class="memitem:a7cbfd201ac15d3376d0936ce1bf92f7a" id="r_a7cbfd201ac15d3376d0936ce1bf92f7a"><td class="memItemLeft"><a id="a7cbfd201ac15d3376d0936ce1bf92f7a" name="a7cbfd201ac15d3376d0936ce1bf92f7a"></a>
-MemorySampleFlag&#160;</td><td class="memItemRight"><b>flags</b> = MemorySampleFlag::None</td></tr>
+<tr class="memitem:a7f76c6794fe8a15a18788ce5353971e8" id="r_a7f76c6794fe8a15a18788ce5353971e8"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a7f76c6794fe8a15a18788ce5353971e8">heapIndex</a> = 0u</td></tr>
+<tr class="memitem:ac9c37113b93a39097b52d33544f1400d" id="r_ac9c37113b93a39097b52d33544f1400d"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#ac9c37113b93a39097b52d33544f1400d">heapFlags</a> = 0u</td></tr>
+<tr class="memitem:ade1c1a04eccc47a58580783dc9469532" id="r_ade1c1a04eccc47a58580783dc9469532"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ade1c1a04eccc47a58580783dc9469532">heapSizeBytes</a> = 0u</td></tr>
+<tr class="memitem:ac205031262098f4f13f2ed1d609012bd" id="r_ac205031262098f4f13f2ed1d609012bd"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#ac205031262098f4f13f2ed1d609012bd">allocatorUsageBytes</a> = 0u</td></tr>
+<tr class="memitem:a92a4bf21828b1c7e227dcc020dbffc5f" id="r_a92a4bf21828b1c7e227dcc020dbffc5f"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a92a4bf21828b1c7e227dcc020dbffc5f">allocatorBudgetBytes</a> = 0u</td></tr>
+<tr class="memitem:a671b599234f6a771b243f77d693ce6e7" id="r_a671b599234f6a771b243f77d693ce6e7"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a671b599234f6a771b243f77d693ce6e7">allocationBytes</a> = 0u</td></tr>
+<tr class="memitem:a9c03c9602491e4f78f099ae6a9f115cd" id="r_a9c03c9602491e4f78f099ae6a9f115cd"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a9c03c9602491e4f78f099ae6a9f115cd">blockBytes</a> = 0u</td></tr>
+<tr class="memitem:ac9f5f13393f1840a46565f08e0e0a597" id="r_ac9f5f13393f1840a46565f08e0e0a597"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#ac9f5f13393f1840a46565f08e0e0a597">allocationCount</a> = 0u</td></tr>
+<tr class="memitem:a423c3f75bb6228d2e1ad154a01dc4eef" id="r_a423c3f75bb6228d2e1ad154a01dc4eef"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a423c3f75bb6228d2e1ad154a01dc4eef">blockCount</a> = 0u</td></tr>
+<tr class="memitem:a44baa092c1990e8945dac1f422b3435e" id="r_a44baa092c1990e8945dac1f422b3435e"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a9f905715265e8642c79d624476b3e672">GpuHeapClass</a>&#160;</td><td class="memItemRight"><a class="el" href="#a44baa092c1990e8945dac1f422b3435e">classification</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a9f905715265e8642c79d624476b3e672a88183b946cc5f0e8c96b2e66e1c74a7e">GpuHeapClass::Unknown</a></td></tr>
+<tr class="memitem:a7cbfd201ac15d3376d0936ce1bf92f7a" id="r_a7cbfd201ac15d3376d0936ce1bf92f7a"><td class="memItemLeft"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a211f6ef27eb50d8223611d793550d034">MemorySampleFlag</a>&#160;</td><td class="memItemRight"><a class="el" href="#a7cbfd201ac15d3376d0936ce1bf92f7a">flags</a> = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a211f6ef27eb50d8223611d793550d034a6adf97f83acf6453d4a6a4b1070f3754">MemorySampleFlag::None</a></td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Vulkan/VMA accounting for one memory heap. Heap classification and overlap flags prevent summing shared physical memory twice. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a671b599234f6a771b243f77d693ce6e7" name="a671b599234f6a771b243f77d693ce6e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a671b599234f6a771b243f77d693ce6e7">&#9670;&#160;</a></span>allocationBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuHeapMemorySample::allocationBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Bytes requested by tracked VMA allocations. </p>
+
+</div>
+</div>
+<a id="ac9f5f13393f1840a46565f08e0e0a597" name="ac9f5f13393f1840a46565f08e0e0a597"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac9f5f13393f1840a46565f08e0e0a597">&#9670;&#160;</a></span>allocationCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::GpuHeapMemorySample::allocationCount = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of tracked VMA allocations. </p>
+
+</div>
+</div>
+<a id="a92a4bf21828b1c7e227dcc020dbffc5f" name="a92a4bf21828b1c7e227dcc020dbffc5f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a92a4bf21828b1c7e227dcc020dbffc5f">&#9670;&#160;</a></span>allocatorBudgetBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuHeapMemorySample::allocatorBudgetBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>VMA-reported heap budget in bytes. </p>
+
+</div>
+</div>
+<a id="ac205031262098f4f13f2ed1d609012bd" name="ac205031262098f4f13f2ed1d609012bd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac205031262098f4f13f2ed1d609012bd">&#9670;&#160;</a></span>allocatorUsageBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuHeapMemorySample::allocatorUsageBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>VMA-reported heap usage in bytes. </p>
+
+</div>
+</div>
+<a id="a9c03c9602491e4f78f099ae6a9f115cd" name="a9c03c9602491e4f78f099ae6a9f115cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9c03c9602491e4f78f099ae6a9f115cd">&#9670;&#160;</a></span>blockBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuHeapMemorySample::blockBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Bytes in VMA backing blocks. </p>
+
+</div>
+</div>
+<a id="a423c3f75bb6228d2e1ad154a01dc4eef" name="a423c3f75bb6228d2e1ad154a01dc4eef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a423c3f75bb6228d2e1ad154a01dc4eef">&#9670;&#160;</a></span>blockCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::GpuHeapMemorySample::blockCount = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of VMA backing blocks. </p>
+
+</div>
+</div>
+<a id="a44baa092c1990e8945dac1f422b3435e" name="a44baa092c1990e8945dac1f422b3435e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a44baa092c1990e8945dac1f422b3435e">&#9670;&#160;</a></span>classification</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a9f905715265e8642c79d624476b3e672">GpuHeapClass</a> FlowUi::devSystems::GpuHeapMemorySample::classification = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a9f905715265e8642c79d624476b3e672a88183b946cc5f0e8c96b2e66e1c74a7e">GpuHeapClass::Unknown</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Shared/dedicated/host-like interpretation of this heap. </p>
+
+</div>
+</div>
+<a id="a7cbfd201ac15d3376d0936ce1bf92f7a" name="a7cbfd201ac15d3376d0936ce1bf92f7a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7cbfd201ac15d3376d0936ce1bf92f7a">&#9670;&#160;</a></span>flags</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a211f6ef27eb50d8223611d793550d034">MemorySampleFlag</a> FlowUi::devSystems::GpuHeapMemorySample::flags = <a class="el" href="namespaceFlowUi_1_1devSystems.html#a211f6ef27eb50d8223611d793550d034a6adf97f83acf6453d4a6a4b1070f3754">MemorySampleFlag::None</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Accuracy, completeness, and overlap qualifiers. </p>
+
+</div>
+</div>
+<a id="ac9c37113b93a39097b52d33544f1400d" name="ac9c37113b93a39097b52d33544f1400d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac9c37113b93a39097b52d33544f1400d">&#9670;&#160;</a></span>heapFlags</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::GpuHeapMemorySample::heapFlags = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Native VkMemoryHeapFlagBits value. </p>
+
+</div>
+</div>
+<a id="a7f76c6794fe8a15a18788ce5353971e8" name="a7f76c6794fe8a15a18788ce5353971e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f76c6794fe8a15a18788ce5353971e8">&#9670;&#160;</a></span>heapIndex</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::GpuHeapMemorySample::heapIndex = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Vulkan physical-device memory heap index. </p>
+
+</div>
+</div>
+<a id="ade1c1a04eccc47a58580783dc9469532" name="ade1c1a04eccc47a58580783dc9469532"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ade1c1a04eccc47a58580783dc9469532">&#9670;&#160;</a></span>heapSizeBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuHeapMemorySample::heapSizeBytes = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Physical heap size reported by Vulkan. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/memory/<a class="el" href="DevMemoryTypes_8hpp_source.html">DevMemoryTypes.hpp</a></li>
 </ul>
@@ -148,7 +307,7 @@ MemorySampleFlag&#160;</td><td class="memItemRight"><b>flags</b> = MemorySampleF
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1GpuHeapMemorySample.html">GpuHeapMemorySample</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1GpuHeapMemorySample.html">GpuHeapMemorySample</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

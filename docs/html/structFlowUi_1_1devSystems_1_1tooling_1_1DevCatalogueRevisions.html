@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,19 +106,30 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevCatalogueRevisions Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Source revisions used to determine whether borrowed catalogue caches need refresh.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevCatalogTypes_8hpp_source.html">DevCatalogTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a3d65f55a9746ef5ef0df1c4b13637778" id="r_a3d65f55a9746ef5ef0df1c4b13637778"><td class="memItemLeft"><a id="a3d65f55a9746ef5ef0df1c4b13637778" name="a3d65f55a9746ef5ef0df1c4b13637778"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>storageRevision</b> = 0</td></tr>
+<tr class="memdesc:a3d65f55a9746ef5ef0df1c4b13637778"><td class="mdescLeft">&#160;</td><td class="mdescRight">Last observed resource-storage publication revision. <br /></td></tr>
 <tr class="memitem:a971750ebbb9cfaa15f23afbbc089d07a" id="r_a971750ebbb9cfaa15f23afbbc089d07a"><td class="memItemLeft"><a id="a971750ebbb9cfaa15f23afbbc089d07a" name="a971750ebbb9cfaa15f23afbbc089d07a"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>fontRevision</b> = 0</td></tr>
+<tr class="memdesc:a971750ebbb9cfaa15f23afbbc089d07a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Last observed font catalogue revision. <br /></td></tr>
 <tr class="memitem:a7c90a9a60200833a0f5e365c4419d25a" id="r_a7c90a9a60200833a0f5e365c4419d25a"><td class="memItemLeft"><a id="a7c90a9a60200833a0f5e365c4419d25a" name="a7c90a9a60200833a0f5e365c4419d25a"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>schemaRevision</b> = 0</td></tr>
+<tr class="memdesc:a7c90a9a60200833a0f5e365c4419d25a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Last observed reflected-schema generation. <br /></td></tr>
 <tr class="memitem:a26364895e842e72f10b1ba54439791e2" id="r_a26364895e842e72f10b1ba54439791e2"><td class="memItemLeft"><a id="a26364895e842e72f10b1ba54439791e2" name="a26364895e842e72f10b1ba54439791e2"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>treeRevision</b> = 0</td></tr>
+<tr class="memdesc:a26364895e842e72f10b1ba54439791e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Last observed completed UI tree generation. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Source revisions used to determine whether borrowed catalogue caches need refresh. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/catalogue/<a class="el" href="DevCatalogTypes_8hpp_source.html">DevCatalogTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -134,7 +145,7 @@ std::uint64_t&#160;</td><td class="memItemRight"><b>treeRevision</b> = 0</td></t
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCatalogueRevisions.html">DevCatalogueRevisions</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCatalogueRevisions.html">DevCatalogueRevisions</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

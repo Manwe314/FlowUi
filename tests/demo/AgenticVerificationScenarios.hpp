@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #pragma once
 
 #if FLOW_UI_AGENTIC_WORKFLOW && FLOW_UI_DEV_MODE
@@ -14,7 +15,7 @@ struct DemoAgenticVerificationHarness {
 
 /* Resolve the developer window through application metadata, without assuming an identity. */
 [[nodiscard]] WindowId demo_agentic_interface_window(const App& application) {
-	for (const auto& window : application.devWindowSnapshot())
+	for (const auto& window : ::FlowUi::test::requireValue(application.devWindowSnapshot()))
 		if (window.title == "FlowUi Developer Interface")
 			return window.id;
 	return InvalidWindowId;
@@ -24,7 +25,7 @@ struct DemoAgenticVerificationHarness {
 [[nodiscard]] Result<agentic::Json> demo_agentic_interface_click(App& application, WindowId window,
 																 std::string_view suffix) noexcept {
 	try {
-		const auto& tree = application.ui(window).devTreeSnapshot();
+		const auto& tree = ::FlowUi::test::requireValue(application.ui(window)).get().devTreeSnapshot();
 		std::uint64_t instance_id = 0;
 		for (const auto& node : tree.flow.nodes) {
 			if (node.definition != FSEL::RadioChoice::definitionId ||
@@ -91,14 +92,14 @@ register_demo_agentic_verification_scenario(App& application,
 					harness.interface_window = demo_agentic_interface_window(application);
 					if (harness.interface_window != InvalidWindowId)
 						harness.opening_frame =
-							application.ui(harness.interface_window).dev_completed_window_frame();
+							::FlowUi::test::requireValue(application.ui(harness.interface_window)).get().dev_completed_window_frame();
 					harness.opening_requested = true;
 					application.request_dev_interface_toggle();
 					return agentic::AgenticScenarioProgress::pending;
 				}
 				harness.interface_window = demo_agentic_interface_window(application);
 				if (harness.interface_window == InvalidWindowId ||
-					application.ui(harness.interface_window).dev_completed_window_frame() <=
+					::FlowUi::test::requireValue(application.ui(harness.interface_window)).get().dev_completed_window_frame() <=
 						harness.opening_frame)
 					return agentic::AgenticScenarioProgress::pending;
 				return agentic::AgenticScenarioProgress::complete;
@@ -112,13 +113,13 @@ register_demo_agentic_verification_scenario(App& application,
 															 "/tab-catalogue");
 					if (!plan)
 						return unexpectedError(plan.error());
-					auto started = application.agentic_workflow().start_interaction(*plan);
+					auto started = ::FlowUi::test::requireValue(application.agentic_workflow()).get().start_interaction(*plan);
 					if (!started)
 						return unexpectedError(started.error());
 					harness.click_job_id = *started;
 				}
 				const auto result =
-					application.agentic_workflow().query_interaction(harness.click_job_id);
+					::FlowUi::test::requireValue(application.agentic_workflow()).get().query_interaction(harness.click_job_id);
 				if (!result)
 					return unexpectedError(result.error());
 				if (result->phase == agentic::AgenticInteractionPhase::failed ||
@@ -134,10 +135,10 @@ register_demo_agentic_verification_scenario(App& application,
 			return run_demo_scenario_step([&]() -> Result<agentic::AgenticScenarioProgress> {
 				auto& application = *context.application;
 				const auto result =
-					application.agentic_workflow().query_interaction(harness.click_job_id);
+					::FlowUi::test::requireValue(application.agentic_workflow()).get().query_interaction(harness.click_job_id);
 				if (!result)
 					return unexpectedError(result.error());
-				const auto& tree = application.ui(harness.interface_window).devTreeSnapshot();
+				const auto& tree = ::FlowUi::test::requireValue(application.ui(harness.interface_window)).get().devTreeSnapshot();
 				const auto contains_definition = [&](FlowDefinitionID identity) {
 					return std::ranges::any_of(tree.flow.nodes, [&](const auto& node) {
 						return node.definition == identity;
@@ -146,7 +147,7 @@ register_demo_agentic_verification_scenario(App& application,
 				const bool complete_layout =
 					contains_definition(DefinitionID("flowui.dev_interface.catalogue.selector")) &&
 					contains_definition(DefinitionID("flowui.dev_interface.catalogue.workbench"));
-				const auto capabilities = application.agentic_workflow().capabilities();
+				const auto capabilities = ::FlowUi::test::requireValue(application.agentic_workflow()).get().capabilities();
 				if (!capabilities)
 					return unexpectedError(capabilities.error());
 				for (const auto& [identity, passed] :
@@ -185,13 +186,13 @@ register_demo_agentic_verification_scenario(App& application,
 															 "/tab-inspect");
 					if (!plan)
 						return unexpectedError(plan.error());
-					auto started = application.agentic_workflow().start_interaction(*plan);
+					auto started = ::FlowUi::test::requireValue(application.agentic_workflow()).get().start_interaction(*plan);
 					if (!started)
 						return unexpectedError(started.error());
 					harness.cleanup_job_id = *started;
 				}
 				const auto result =
-					application.agentic_workflow().query_interaction(harness.cleanup_job_id);
+					::FlowUi::test::requireValue(application.agentic_workflow()).get().query_interaction(harness.cleanup_job_id);
 				if (!result)
 					return unexpectedError(result.error());
 				if (result->phase == agentic::AgenticInteractionPhase::failed ||
@@ -209,7 +210,7 @@ register_demo_agentic_verification_scenario(App& application,
 				return agentic::AgenticScenarioProgress::complete;
 			});
 		};
-		return application.agentic_workflow().register_scenario(std::move(scenario));
+		return ::FlowUi::test::requireValue(application.agentic_workflow()).get().register_scenario(std::move(scenario));
 	} catch (...) {
 		return unexpectedError(makeError(ErrorCode::AllocationFailed, ErrorSite::AgenticScenario));
 	}

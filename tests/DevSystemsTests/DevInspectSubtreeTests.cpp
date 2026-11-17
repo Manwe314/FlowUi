@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #include <cstdlib>
 #include <iostream>
 
@@ -20,7 +21,7 @@ struct DelegatingRoot {
 	static void buildElement(BuildContext& context) {
 		Clay_ElementDeclaration child{};
 		child.layout.sizing = {CLAY_SIZING_FIXED(100), CLAY_SIZING_FIXED(100)};
-		CLAY(context.clayID("child"), child);
+		CLAY(::FlowUi::test::requireValue(context.clayID("child")), child);
 	}
 };
 inline constexpr DelegatingRoot delegating_root{};
@@ -32,8 +33,8 @@ int main() {
 	config.window.width = 320;
 	config.window.height = 240;
 	config.vk.enableValidation = false;
-	auto app = FlowUi::makeApplication(config);
-	auto& ui = app.ui();
+	auto app = ::FlowUi::test::requireValue(FlowUi::makeApplication(config));
+	auto& ui = ::FlowUi::test::requireValue(app.ui()).get();
 	require(app.beginFrame(), "Initial frame must begin");
 	ui.createElement(delegating_root, "root").draw();
 	require(app.endFrame(), "Initial frame must end");

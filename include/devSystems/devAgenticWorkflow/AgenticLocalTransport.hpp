@@ -35,7 +35,8 @@ struct AgenticLocalEndpoint {
 /** Handlers may wait concurrently on eight transport workers; mutations run at a safe point. */
 using AgenticLocalHandler = std::function<Json(const Json&)>;
 
-/** Bounded owner-private local command server, independent of MCP and application stdout. */
+/** Bounded owner-private local command server, independent of MCP and application stdout.
+ * The owning thread serializes start/stop/destruction; handlers execute on borrowed workers. */
 class AgenticLocalServer {
 public:
 	/** @brief Construct a dormant server; call start() to create an endpoint. */
@@ -50,8 +51,9 @@ public:
 	[[nodiscard]] Status start(const AgenticLocalEndpoint& endpoint,
 							   AgenticLocalHandler handler) noexcept;
 	/** Stop admission, interrupt pending input and join every worker before releasing its handler.
-	 */
-	void stop() noexcept;
+	 * A handler cannot join its own worker: that call returns Busy and the owner must stop the
+	 * server after the handler returns. The server must outlive all handler calls. */
+	[[nodiscard]] Status stop() noexcept;
 	/** Return whether this server is accepting connections. */
 	[[nodiscard]] bool running() const noexcept;
 
@@ -60,7 +62,10 @@ private:
 	std::unique_ptr<Impl> impl_;
 };
 
-/** Authenticate the selected run and execute a bounded command over local IPC. */
+/** Authenticate the selected run and send exactly once over local IPC.
+ * A transport error or timeout after sending does not establish that the command was not
+ * executed. Inspect its job/receipt, or retry with the same explicit idempotency key where
+ * supported; this transport never redispatches automatically. */
 [[nodiscard]] Result<Json> send_local_command(const AgenticLocalEndpoint& endpoint,
 											  const Json& request) noexcept;
 

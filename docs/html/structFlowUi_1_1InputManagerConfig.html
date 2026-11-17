@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,9 +107,6 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Configures input field editing visuals.  
- <a href="#details">More...</a></p>
-
 <p><code>#include &lt;<a class="el" href="InputConfig_8hpp_source.html">InputConfig.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
@@ -117,12 +114,8 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:ad73a5bfe3556cb3eed227d2dafd2ce4e" id="r_ad73a5bfe3556cb3eed227d2dafd2ce4e"><td class="memItemLeft"><a id="ad73a5bfe3556cb3eed227d2dafd2ce4e" name="ad73a5bfe3556cb3eed227d2dafd2ce4e"></a>
 float&#160;</td><td class="memItemRight"><b>caretWidthPx</b> = 2.0f</td></tr>
 <tr class="memdesc:ad73a5bfe3556cb3eed227d2dafd2ce4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Caret width in pixels. <br /></td></tr>
-<tr class="memitem:ac717e88eba6d8ce219fc23f1d2be7fc9" id="r_ac717e88eba6d8ce219fc23f1d2be7fc9"><td class="memItemLeft"><a id="ac717e88eba6d8ce219fc23f1d2be7fc9" name="ac717e88eba6d8ce219fc23f1d2be7fc9"></a>
-float&#160;</td><td class="memItemRight"><b>caretHeightOverflowTopPx</b> = 1.0f</td></tr>
-<tr class="memdesc:ac717e88eba6d8ce219fc23f1d2be7fc9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extra caret height above the text bounds. <br /></td></tr>
-<tr class="memitem:a68563b7b794d4f8650333ace3d35a0ef" id="r_a68563b7b794d4f8650333ace3d35a0ef"><td class="memItemLeft"><a id="a68563b7b794d4f8650333ace3d35a0ef" name="a68563b7b794d4f8650333ace3d35a0ef"></a>
-float&#160;</td><td class="memItemRight"><b>caretHeightOverflowBottomPx</b> = 1.0f</td></tr>
-<tr class="memdesc:a68563b7b794d4f8650333ace3d35a0ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extra caret height below the text bounds. <br /></td></tr>
+<tr class="memitem:ac717e88eba6d8ce219fc23f1d2be7fc9" id="r_ac717e88eba6d8ce219fc23f1d2be7fc9"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#ac717e88eba6d8ce219fc23f1d2be7fc9">caretHeightOverflowTopPx</a> = 1.0f</td></tr>
+<tr class="memitem:a68563b7b794d4f8650333ace3d35a0ef" id="r_a68563b7b794d4f8650333ace3d35a0ef"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#a68563b7b794d4f8650333ace3d35a0ef">caretHeightOverflowBottomPx</a> = 1.0f</td></tr>
 <tr class="memitem:a6468d4e07d6eab72354220b6f83db046" id="r_a6468d4e07d6eab72354220b6f83db046"><td class="memItemLeft"><a id="a6468d4e07d6eab72354220b6f83db046" name="a6468d4e07d6eab72354220b6f83db046"></a>
 Clay_Color&#160;</td><td class="memItemRight"><b>caretColor</b> = Clay_Color{255.0f, 255.0f, 255.0f, 255.0f}</td></tr>
 <tr class="memdesc:a6468d4e07d6eab72354220b6f83db046"><td class="mdescLeft">&#160;</td><td class="mdescRight">Caret color. <br /></td></tr>
@@ -134,9 +127,39 @@ Clay_Color&#160;</td><td class="memItemRight"><b>highlightedTextColor</b> = Clay
 <tr class="memdesc:a7f6b15e14cb64bb7c713eb185e4ef6da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Text color used for selected text. <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Configures input field editing visuals. </p>
-<p>These values control caret and selection rendering for FlowUi text input fields; they do not affect low-level window input behavior. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<div class="textblock"><p>Text-field caret and selection appearance; dimensions are pixels and colors are RGBA, 0–255. Window event behavior is configured separately by <a class="el" href="structFlowUi_1_1WindowInputConfig.html">WindowInputConfig</a>. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a68563b7b794d4f8650333ace3d35a0ef" name="a68563b7b794d4f8650333ace3d35a0ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a68563b7b794d4f8650333ace3d35a0ef">&#9670;&#160;</a></span>caretHeightOverflowBottomPx</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float FlowUi::InputManagerConfig::caretHeightOverflowBottomPx = 1.0f</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Extra caret height below the text bounds, in pixels. </p>
+
+</div>
+</div>
+<a id="ac717e88eba6d8ce219fc23f1d2be7fc9" name="ac717e88eba6d8ce219fc23f1d2be7fc9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac717e88eba6d8ce219fc23f1d2be7fc9">&#9670;&#160;</a></span>caretHeightOverflowTopPx</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float FlowUi::InputManagerConfig::caretHeightOverflowTopPx = 1.0f</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Extra caret height above the text bounds, in pixels. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/configurationStructs/<a class="el" href="InputConfig_8hpp_source.html">InputConfig.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -152,7 +175,7 @@ Clay_Color&#160;</td><td class="memItemRight"><b>highlightedTextColor</b> = Clay
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1InputManagerConfig.html">InputManagerConfig</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1InputManagerConfig.html">InputManagerConfig</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

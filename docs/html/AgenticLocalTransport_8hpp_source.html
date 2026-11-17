@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,52 +107,74 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#pragma once</span></div>
-<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="preprocessor">#include &quot;FlowUi/Public/BuildConfig.hpp&quot;</span></div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#if FLOW_UI_AGENTIC_WORKFLOW</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span> </div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &quot;devSystems/devAgenticWorkflow/AgenticJson.hpp&quot;</span></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span> </div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;cstddef&gt;</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;functional&gt;</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &lt;memory&gt;</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &lt;string&gt;</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="keyword">namespace </span>FlowUi::devSystems::agentic {</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span></div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="keyword">struct </span>AgenticLocalEndpoint {</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    std::string endpoint{};</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    std::string run_id{};</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    std::string nonce{};</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    std::uint64_t timeout_ms = 2000;</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    std::size_t maximum_message_bytes = 1024u * 1024u;</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>};</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span></div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="keyword">using </span>AgenticLocalHandler = std::function&lt;Json(<span class="keyword">const</span> Json&amp;)&gt;;</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span></div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">class </span>AgenticLocalServer {</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    AgenticLocalServer();</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    ~AgenticLocalServer();</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    AgenticLocalServer(<span class="keyword">const</span> AgenticLocalServer&amp;) = <span class="keyword">delete</span>;</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    AgenticLocalServer&amp; operator=(<span class="keyword">const</span> AgenticLocalServer&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &quot;FlowUi/Public/BuildConfig.hpp&quot;</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#if FLOW_UI_AGENTIC_WORKFLOW</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &quot;devSystems/devAgenticWorkflow/AgenticJson.hpp&quot;</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &lt;cstddef&gt;</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#include &lt;functional&gt;</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="preprocessor">#include &lt;memory&gt;</span></div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="preprocessor">#include &lt;string&gt;</span></div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span> </div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceFlowUi_1_1devSystems_1_1agentic.html">FlowUi::devSystems::agentic</a> {</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span></div>
+<div class="foldopen" id="foldopen00020" data-start="{" data-end="};">
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html">   20</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html">AgenticLocalEndpoint</a> {</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html#abdea3a115c6a6321a7243832e3563893">   22</a></span>    std::string <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html#abdea3a115c6a6321a7243832e3563893">endpoint</a>{};</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html#ac917ea7895a2b539a76c1be2db320a39">   26</a></span>    std::string <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html#ac917ea7895a2b539a76c1be2db320a39">run_id</a>{};</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html#ace7318692f1499176653f146ff1aa851">   28</a></span>    std::string <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html#ace7318692f1499176653f146ff1aa851">nonce</a>{};</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html#ae79aeaa22c136dd85eb2300d37f7ff07">   30</a></span>    std::uint64_t <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html#ae79aeaa22c136dd85eb2300d37f7ff07">timeout_ms</a> = 2000;</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno"><a class="line" href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html#a00ef1e9ff12bfb6f604df3c1db58ba34">   32</a></span>    std::size_t <a class="code hl_variable" href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html#a00ef1e9ff12bfb6f604df3c1db58ba34">maximum_message_bytes</a> = 1024u * 1024u;</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>};</div>
+</div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span></div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    [[nodiscard]] Status start(<span class="keyword">const</span> AgenticLocalEndpoint&amp; endpoint,</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>                               AgenticLocalHandler handler) <span class="keyword">noexcept</span>;</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    <span class="keywordtype">void</span> stop() noexcept;</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    [[nodiscard]] <span class="keywordtype">bool</span> running() const noexcept;</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>private:</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    struct Impl;</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    std::unique_ptr&lt;Impl&gt; impl_;</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>};</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span></div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>[[nodiscard]] Result&lt;Json&gt; send_local_command(const AgenticLocalEndpoint&amp; endpoint,</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>                                              const Json&amp; request) noexcept;</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>} <span class="comment">// namespace FlowUi::devSystems::agentic</span></div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span><span class="preprocessor">#endif </span><span class="comment">// FLOW_UI_AGENTIC_WORKFLOW</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno"><a class="line" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a0185755a7ad76ef9a09ba2f98bb664a6">   36</a></span><span class="keyword">using </span><a class="code hl_typedef" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a0185755a7ad76ef9a09ba2f98bb664a6">AgenticLocalHandler</a> = std::function&lt;<a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1agentic_1_1Json.html">Json</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1agentic_1_1Json.html">Json</a>&amp;)&gt;;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span></div>
+<div class="foldopen" id="foldopen00040" data-start="{" data-end="};">
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html">   40</a></span><span class="keyword">class </span><a class="code hl_function" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#a359a0def09b7586e9b8bcd26f3a595e1">AgenticLocalServer</a> {</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#a359a0def09b7586e9b8bcd26f3a595e1">   43</a></span>    <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#a359a0def09b7586e9b8bcd26f3a595e1">AgenticLocalServer</a>();</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#af073b23679a131c5380411d8eaa0ff0b">   45</a></span>    <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#af073b23679a131c5380411d8eaa0ff0b">~AgenticLocalServer</a>();</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#a359a0def09b7586e9b8bcd26f3a595e1">AgenticLocalServer</a>(<span class="keyword">const</span> <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#a359a0def09b7586e9b8bcd26f3a595e1">AgenticLocalServer</a>&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#a359a0def09b7586e9b8bcd26f3a595e1">AgenticLocalServer</a>&amp; operator=(<span class="keyword">const</span> <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#a359a0def09b7586e9b8bcd26f3a595e1">AgenticLocalServer</a>&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span></div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#a19c245e599b569e5b252014870125ddd">   51</a></span>    [[nodiscard]] <a class="code hl_typedef" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#a19c245e599b569e5b252014870125ddd">start</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html">AgenticLocalEndpoint</a>&amp; endpoint,</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>                               <a class="code hl_typedef" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a0185755a7ad76ef9a09ba2f98bb664a6">AgenticLocalHandler</a> handler) <span class="keyword">noexcept</span>;</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#a65735eba0b56d2b7cc16fb86b5ce12fe">   56</a></span>    [[nodiscard]] <a class="code hl_typedef" href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">Status</a> <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#a65735eba0b56d2b7cc16fb86b5ce12fe">stop</a>() noexcept;</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno"><a class="line" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#a53c928321f467422e9a5aa1115880792">   58</a></span>    [[nodiscard]] <span class="keywordtype">bool</span> <a class="code hl_function" href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#a53c928321f467422e9a5aa1115880792">running</a>() const noexcept;</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>private:</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    struct Impl;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    std::unique_ptr&lt;Impl&gt; impl_;</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>};</div>
+</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span></div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno"><a class="line" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a4619727df4b00a165088792c93daabc2">   69</a></span>[[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1Result.html">Result</a>&lt;<a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1agentic_1_1Json.html">Json</a>&gt; <a class="code hl_function" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a4619727df4b00a165088792c93daabc2">send_local_command</a>(const <a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html">AgenticLocalEndpoint</a>&amp; endpoint,</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>                                              const <a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1agentic_1_1Json.html">Json</a>&amp; request) noexcept;</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>} <span class="comment">// namespace FlowUi::devSystems::agentic</span></div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span><span class="preprocessor">#endif </span><span class="comment">// FLOW_UI_AGENTIC_WORKFLOW</span></div>
+<div class="ttc" id="aclassFlowUi_1_1Result_html"><div class="ttname"><a href="classFlowUi_1_1Result.html">FlowUi::Result</a></div><div class="ttdef"><b>Definition</b> Result.hpp:77</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer_html_a19c245e599b569e5b252014870125ddd"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#a19c245e599b569e5b252014870125ddd">FlowUi::devSystems::agentic::AgenticLocalServer::start</a></div><div class="ttdeci">Status start(const AgenticLocalEndpoint &amp;endpoint, AgenticLocalHandler handler) noexcept</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer_html_a359a0def09b7586e9b8bcd26f3a595e1"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#a359a0def09b7586e9b8bcd26f3a595e1">FlowUi::devSystems::agentic::AgenticLocalServer::AgenticLocalServer</a></div><div class="ttdeci">AgenticLocalServer()</div><div class="ttdoc">Construct a dormant server; call start() to create an endpoint.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer_html_a53c928321f467422e9a5aa1115880792"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#a53c928321f467422e9a5aa1115880792">FlowUi::devSystems::agentic::AgenticLocalServer::running</a></div><div class="ttdeci">bool running() const noexcept</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer_html_a65735eba0b56d2b7cc16fb86b5ce12fe"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#a65735eba0b56d2b7cc16fb86b5ce12fe">FlowUi::devSystems::agentic::AgenticLocalServer::stop</a></div><div class="ttdeci">Status stop() noexcept</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer_html_af073b23679a131c5380411d8eaa0ff0b"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalServer.html#af073b23679a131c5380411d8eaa0ff0b">FlowUi::devSystems::agentic::AgenticLocalServer::~AgenticLocalServer</a></div><div class="ttdeci">~AgenticLocalServer()</div><div class="ttdoc">Stop admission and join worker threads before releasing callbacks.</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html">FlowUi::devSystems::agentic</a></div><div class="ttdoc">Bounded capture, application-declared scenarios and owned evidence APIs. Available when FLOW_UI_AGENT...</div><div class="ttdef"><b>Definition</b> App.hpp:45</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html_a0185755a7ad76ef9a09ba2f98bb664a6"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a0185755a7ad76ef9a09ba2f98bb664a6">FlowUi::devSystems::agentic::AgenticLocalHandler</a></div><div class="ttdeci">std::function&lt; Json(const Json &amp;)&gt; AgenticLocalHandler</div><div class="ttdef"><b>Definition</b> AgenticLocalTransport.hpp:36</div></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html_a4619727df4b00a165088792c93daabc2"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html#a4619727df4b00a165088792c93daabc2">FlowUi::devSystems::agentic::send_local_command</a></div><div class="ttdeci">Result&lt; Json &gt; send_local_command(const AgenticLocalEndpoint &amp;endpoint, const Json &amp;request) noexcept</div></div>
+<div class="ttc" id="anamespaceFlowUi_html_a5af3d554790b4adcde01b5b90a54fb4d"><div class="ttname"><a href="namespaceFlowUi.html#a5af3d554790b4adcde01b5b90a54fb4d">FlowUi::Status</a></div><div class="ttdeci">Result&lt; void &gt; Status</div><div class="ttdef"><b>Definition</b> Result.hpp:446</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint_html"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html">FlowUi::devSystems::agentic::AgenticLocalEndpoint</a></div><div class="ttdef"><b>Definition</b> AgenticLocalTransport.hpp:20</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint_html_a00ef1e9ff12bfb6f604df3c1db58ba34"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html#a00ef1e9ff12bfb6f604df3c1db58ba34">FlowUi::devSystems::agentic::AgenticLocalEndpoint::maximum_message_bytes</a></div><div class="ttdeci">std::size_t maximum_message_bytes</div><div class="ttdoc">Maximum local request or response message size, in bytes.</div><div class="ttdef"><b>Definition</b> AgenticLocalTransport.hpp:32</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint_html_abdea3a115c6a6321a7243832e3563893"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html#abdea3a115c6a6321a7243832e3563893">FlowUi::devSystems::agentic::AgenticLocalEndpoint::endpoint</a></div><div class="ttdeci">std::string endpoint</div><div class="ttdoc">Local socket or named-pipe address for exactly one application run.</div><div class="ttdef"><b>Definition</b> AgenticLocalTransport.hpp:22</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint_html_ac917ea7895a2b539a76c1be2db320a39"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html#ac917ea7895a2b539a76c1be2db320a39">FlowUi::devSystems::agentic::AgenticLocalEndpoint::run_id</a></div><div class="ttdeci">std::string run_id</div><div class="ttdoc">Immutable application run identity, separate from job and capture identities.</div><div class="ttdef"><b>Definition</b> AgenticLocalTransport.hpp:26</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint_html_ace7318692f1499176653f146ff1aa851"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html#ace7318692f1499176653f146ff1aa851">FlowUi::devSystems::agentic::AgenticLocalEndpoint::nonce</a></div><div class="ttdeci">std::string nonce</div><div class="ttdoc">Owner-private authentication nonce bound to exactly one application run.</div><div class="ttdef"><b>Definition</b> AgenticLocalTransport.hpp:28</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint_html_ae79aeaa22c136dd85eb2300d37f7ff07"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1agentic_1_1AgenticLocalEndpoint.html#ae79aeaa22c136dd85eb2300d37f7ff07">FlowUi::devSystems::agentic::AgenticLocalEndpoint::timeout_ms</a></div><div class="ttdeci">std::uint64_t timeout_ms</div><div class="ttdoc">Bounded command transport wait, in milliseconds.</div><div class="ttdef"><b>Definition</b> AgenticLocalTransport.hpp:30</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1agentic_1_1Json_html"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1agentic_1_1Json.html">FlowUi::devSystems::agentic::Json</a></div><div class="ttdef"><b>Definition</b> AgenticJson.hpp:21</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

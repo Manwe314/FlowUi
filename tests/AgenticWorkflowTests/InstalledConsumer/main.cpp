@@ -1,3 +1,4 @@
+#include "../../TestHarness.hpp"
 #include "FlowUi/Public/Flow.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticWorkflow.hpp"
 #include <chrono>
@@ -31,7 +32,7 @@ int main(int argument_count, char** arguments) {
 						   {"configuration", FLOWUI_CONSUMER_BUILD_TYPE},
 						   {"flags", FLOWUI_CONSUMER_FLAGS}}));
 	try {
-		auto application = makeApplication(configuration);
+		auto application = ::FlowUi::test::requireValue(makeApplication(configuration));
 		AgenticScenario scenario;
 		scenario.descriptor.scenario_id = "consumer.solid_frame";
 		scenario.descriptor.revision = "1";
@@ -67,10 +68,10 @@ int main(int argument_count, char** arguments) {
 			measured_steps = 0;
 			return AgenticScenarioProgress::complete;
 		};
-		auto registered = application.agentic_workflow().register_scenario(std::move(scenario));
+		auto registered = ::FlowUi::test::requireValue(application.agentic_workflow()).get().register_scenario(std::move(scenario));
 		if (!registered)
 			return 3;
-		auto capabilities = application.agentic_workflow().capabilities();
+		auto capabilities = ::FlowUi::test::requireValue(application.agentic_workflow()).get().capabilities();
 		if (!capabilities)
 			return 3;
 		AgenticCaptureRequest request;
@@ -89,7 +90,7 @@ int main(int argument_count, char** arguments) {
 		auto compiled = compile_interaction_plan(input_plan);
 		if (!compiled || compiled->frame_count != 2)
 			return 4;
-		auto job = application.agentic_workflow().start_interaction(to_json(input_plan),
+		auto job = ::FlowUi::test::requireValue(application.agentic_workflow()).get().start_interaction(to_json(input_plan),
 																	"installed-neutral-input");
 		if (!job)
 			return 4;
@@ -105,7 +106,7 @@ int main(int argument_count, char** arguments) {
 			CLAY(CLAY_ID("installed-consumer-root"), background) {}
 			if (!application.endFrame() || !application.drawFrame())
 				return 4;
-			auto status = application.agentic_workflow().query_job(*job);
+			auto status = ::FlowUi::test::requireValue(application.agentic_workflow()).get().query_job(*job);
 			if (!status)
 				return 4;
 			if (status->phase == JobPhase::failed) {
@@ -114,11 +115,11 @@ int main(int argument_count, char** arguments) {
 			}
 			if (status->phase == JobPhase::sealed) {
 				if (!interaction_verified) {
-					const auto result = application.agentic_workflow().query_interaction(*job);
+					const auto result = ::FlowUi::test::requireValue(application.agentic_workflow()).get().query_interaction(*job);
 					if (!result || !result->execution_succeeded || !result->cleanup_complete ||
 						result->coverage.consumed != 2)
 						return 6;
-					job = application.agentic_workflow().request_capture(request);
+					job = ::FlowUi::test::requireValue(application.agentic_workflow()).get().request_capture(request);
 					if (!job)
 						return 4;
 					interaction_verified = true;

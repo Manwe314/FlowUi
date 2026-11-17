@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Memory/Selector/DevMemorySelector.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.hpp"
@@ -26,12 +27,12 @@ void section(Context& context, LocalElementName identity, std::string_view label
 	declaration.backgroundColor = interface_theme::kDepth2Ink;
 	declaration.border = {.color = interface_theme::kBorderPrimary,
 						  .width = Clay_BorderWidth{0, 0, 0, 1, 0}};
-	CLAY(context.clayID(identity), declaration) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(identity)), declaration) {
 		draw_text(context, label, interface_theme::kTextCanvas);
 	}
 }
 void update_windows(Context& context, DevMemorySelection& selection) {
-	auto windows = context.params.app->devWindowSnapshot();
+	auto windows = FlowUi::ValueOrThrow(context.params.app->devWindowSnapshot());
 	if (const auto* saved = interface_elements::selected_memory_dataset(context.params.interfaceState->memory_workbench.analysis)) {
 		windows.clear();
 		for (const auto& source : saved->live.sources) if (source.key.window && !std::ranges::any_of(windows, [&](const auto& window) { return window.id == source.key.window; }))
@@ -157,7 +158,7 @@ void DevMemorySelector::buildElement(BuildContext& context) {
 		auto& selection = context.params.interfaceState->memory_selection;
 		update_windows(context, selection);
 		const auto* dataset = selected_memory_dataset(context.params.interfaceState->memory_workbench.analysis);
-		const auto environment = dataset ? dataset->live.environment : context.params.app->devMonitoring().memoryReporting().environmentSnapshot();
+		const auto environment = dataset ? dataset->live.environment : FlowUi::ValueOrThrow(context.params.app->devMonitoring()).get().memoryReporting().environmentSnapshot();
 		const bool valid_heap =
 			selection.selected_node >= memory_heap_node_base && environment &&
 			environment->gpu.available &&
@@ -173,7 +174,7 @@ void DevMemorySelector::buildElement(BuildContext& context) {
 		Clay_ElementDeclaration controls{};
 		controls.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(42)};
 		controls.layout.padding = Clay_Padding{8, 8, 7, 7};
-		CLAY(context.clayID("scope-control"), controls) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("scope-control")), controls) {
 			FSEL::ComboBoxParameters parameters{};
 			parameters.options = context.state().window_options;
 			parameters.selectedValue = &selection.window_scope;
@@ -189,7 +190,7 @@ void DevMemorySelector::buildElement(BuildContext& context) {
 		content.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
 		content.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		content.backgroundColor = interface_theme::kDepth0Keel;
-		const auto scroll_id = context.clayID("memory-tree-scroll");
+		const auto scroll_id = FlowUi::ValueOrThrow(context.clayID("memory-tree-scroll"));
 		const auto scroll = Clay_GetScrollContainerData(scroll_id);
 		content.clip = {.vertical = true,
 						.childOffset = scroll.found && scroll.scrollPosition
@@ -199,7 +200,7 @@ void DevMemorySelector::buildElement(BuildContext& context) {
 			Clay_ElementDeclaration rows{};
 			rows.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
 			rows.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
-			CLAY(context.clayID("rows"), rows) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("rows")), rows) {
 				draw_tree(context, selection, environment);
 			}
 		}
@@ -213,7 +214,7 @@ void DevMemorySelector::buildElement(BuildContext& context) {
 				: std::string(selection.selected_node ? "Window scope · " : "Overview · ") +
 					  (selection.window_scope ? "Window " + std::to_string(selection.window_scope)
 											  : "All Windows");
-		CLAY(context.clayID("selection-context"), status) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("selection-context")), status) {
 			draw_text(context, label);
 		}
 	}

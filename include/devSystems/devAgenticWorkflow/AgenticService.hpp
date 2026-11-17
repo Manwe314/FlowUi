@@ -90,7 +90,13 @@ public:
 	~AgenticWorkflowService();
 	AgenticWorkflowService(const AgenticWorkflowService&) = delete;
 	AgenticWorkflowService& operator=(const AgenticWorkflowService&) = delete;
-	/** Resolve one launch handoff; explicit configuration takes precedence over environment. */
+	/** Resolve one launch handoff; explicit configuration takes precedence over environment.
+	 * Initial setup failure leaves admission disabled and releases partially started local
+	 * endpoints. A reserved run is retained with failed session status; retry uses a fresh run ID.
+	 * Filesystem failure can prevent the failure marker from being published. Existing runs are
+	 * never removed or reused after a failed attempt.
+	 * Reconfiguring an already configured service is rejected without changing it.
+	 */
 	[[nodiscard]] Status configure(const AgenticWorkflowConfig& configuration) noexcept;
 	/** Validate, copy and enqueue without calling application producers or writing artifacts. */
 	[[nodiscard]] Result<AgenticJobId>
@@ -137,7 +143,7 @@ public:
 	/** Observe completed UI facts before the next layout replaces their storage. */
 	void observe_interaction(const EvidenceFrameKey& key) noexcept;
 	/** Test whether ordinary development input filters must yield to the execution lease. */
-	[[nodiscard]] bool interaction_controls_window(std::uint64_t window_id) const noexcept;
+	[[nodiscard]] Result<bool> interaction_controls_window(std::uint64_t window_id) const noexcept;
 	/** Admit queued commands and move each active job through its bounded lifecycle. */
 	void advance_safe_point(const AgenticSafePoint& safe_point) noexcept;
 	/** Append an App-stamped cadence observation; no file or producer access occurs here. */
@@ -152,28 +158,37 @@ public:
 	[[nodiscard]] Status accept_completed_image(AgenticCompletedImage image) noexcept;
 	/** Copy a selected published tree while its App frame still owns the publication. */
 	void observe_tree(std::uint64_t window_id) noexcept;
-	/** Used by manual capture admission to arbitrate the same application capture lease. */
-	[[nodiscard]] bool capture_lease_active() const noexcept;
+	/** Used by manual capture admission to arbitrate the same application capture lease.
+	 * Failure must reject admission rather than assume that the lease is free. */
+	[[nodiscard]] Result<bool> capture_lease_active() const noexcept;
 	/**
 	 * @brief Return whether active admitted jobs request optional live evidence collection.
 	 */
-	[[nodiscard]] bool optional_collection_enabled() const noexcept;
+	[[nodiscard]] Result<bool> optional_collection_enabled() const noexcept;
 	/** Apply the active policy to a newly constructed window and remember its prior state. */
 	void prepare_window_collection(std::uint64_t window_id) noexcept;
 	/** @brief Return whether effective service policy enables image capture resources. */
-	[[nodiscard]] bool visual_capture_enabled() const noexcept;
-	/** Estimated owned queue/snapshot bytes, excluding thread stacks and encoder temporaries. */
+	[[nodiscard]] Result<bool> visual_capture_enabled() const noexcept;
+	/** Estimated owned queue/snapshot bytes, excluding thread stacks and encoder temporaries.
+	 * Best-effort sampling returns zero on collection failure and increments the observable
+	 * capabilities.details.observation_failures counter; zero alone does not establish no storage. */
 	[[nodiscard]] std::uint64_t owned_memory_bytes() const noexcept;
-	/** Transport entry point: executes through the platform queue with a bounded wait. */
+	/** Transport entry point: executes through the platform queue with a bounded wait.
+	 * Timeout does not retract queued or dispatched work. Retrieve the resulting job using its
+	 * explicit idempotency key where supported; no automatic redispatch occurs. */
 	[[nodiscard]] Result<Json> submit_command(const AgenticCommandRequest& request) noexcept;
-	/** Stop new local commands before draining renderer resources. */
-	void stop_admission() noexcept;
+	/** Stop new local commands before draining renderer resources.
+	 * Admission closes before fallible queue/transport cleanup; cleanup failure remains explicit. */
+	[[nodiscard]] Status stop_admission() noexcept;
 	/**
 	 * @brief Stop admission, finish bounded CPU publication and release service work using the
 	 * supplied partial-publication policy.
 	 */
 	[[nodiscard]] Status shutdown(const AgenticShutdownPolicy& policy = {}) noexcept;
-	/** Keep scenario/App references valid when the movable public App wrapper moves. */
+	/** Keep scenario/App references valid when the movable public App wrapper moves.
+	 * Requires the platform thread and a quiescent App: no frame, scenario callback or other
+	 * concurrent access to either App wrapper may overlap the move. Transport workers retain
+	 * service identity and do not read the borrowed App pointer. */
 	void rebind_application(App& application) noexcept;
 
 private:

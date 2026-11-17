@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,27 +106,48 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevOverrideStats Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Copied transaction, capture, and retained-storage accounting.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevOverrideTypes_8hpp_source.html">DevOverrideTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a60a6b0e3c068fd351be5582fa3287060" id="r_a60a6b0e3c068fd351be5582fa3287060"><td class="memItemLeft"><a id="a60a6b0e3c068fd351be5582fa3287060" name="a60a6b0e3c068fd351be5582fa3287060"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>committedTransactions</b> = 0</td></tr>
+<tr class="memdesc:a60a6b0e3c068fd351be5582fa3287060"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cumulative successfully committed change sets. <br /></td></tr>
 <tr class="memitem:a11812fd39b4b77794d493d454b1a06a9" id="r_a11812fd39b4b77794d493d454b1a06a9"><td class="memItemLeft"><a id="a11812fd39b4b77794d493d454b1a06a9" name="a11812fd39b4b77794d493d454b1a06a9"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>rejectedTransactions</b> = 0</td></tr>
+<tr class="memdesc:a11812fd39b4b77794d493d454b1a06a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cumulative rejected change sets. <br /></td></tr>
 <tr class="memitem:aa63529c5a7892889828702615baa15b3" id="r_aa63529c5a7892889828702615baa15b3"><td class="memItemLeft"><a id="aa63529c5a7892889828702615baa15b3" name="aa63529c5a7892889828702615baa15b3"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>appliedElementFields</b> = 0</td></tr>
+<tr class="memdesc:aa63529c5a7892889828702615baa15b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cumulative reflected assignments applied to element drafts. <br /></td></tr>
 <tr class="memitem:ac5bfbe67cb8579c03ef47eb87c2b206e" id="r_ac5bfbe67cb8579c03ef47eb87c2b206e"><td class="memItemLeft"><a id="ac5bfbe67cb8579c03ef47eb87c2b206e" name="ac5bfbe67cb8579c03ef47eb87c2b206e"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>capturedElementFields</b> = 0</td></tr>
+<tr class="memdesc:ac5bfbe67cb8579c03ef47eb87c2b206e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cumulative captured element field values. <br /></td></tr>
 <tr class="memitem:a5a1835e4ae97da129ec2f390401a73b3" id="r_a5a1835e4ae97da129ec2f390401a73b3"><td class="memItemLeft"><a id="a5a1835e4ae97da129ec2f390401a73b3" name="a5a1835e4ae97da129ec2f390401a73b3"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>capturedThemeFields</b> = 0</td></tr>
+<tr class="memdesc:a5a1835e4ae97da129ec2f390401a73b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cumulative captured theme field values. <br /></td></tr>
+<tr class="memitem:a1830bb4c57ffe71cdd1ef4eed9f4095c" id="r_a1830bb4c57ffe71cdd1ef4eed9f4095c"><td class="memItemLeft"><a id="a1830bb4c57ffe71cdd1ef4eed9f4095c" name="a1830bb4c57ffe71cdd1ef4eed9f4095c"></a>
+std::uint64_t&#160;</td><td class="memItemRight"><b>droppedElementCaptures</b> = 0</td></tr>
+<tr class="memdesc:a1830bb4c57ffe71cdd1ef4eed9f4095c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cumulative element observations omitted after collection failure. <br /></td></tr>
+<tr class="memitem:a3ef74ed21a13e065ad007542fa2628fb" id="r_a3ef74ed21a13e065ad007542fa2628fb"><td class="memItemLeft"><a id="a3ef74ed21a13e065ad007542fa2628fb" name="a3ef74ed21a13e065ad007542fa2628fb"></a>
+std::uint64_t&#160;</td><td class="memItemRight"><b>failedThemeCaptures</b> = 0</td></tr>
+<tr class="memdesc:a3ef74ed21a13e065ad007542fa2628fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cumulative theme publications retained after collection failure. <br /></td></tr>
 <tr class="memitem:a8ff01897312bb29bf5e9c296917ca75a" id="r_a8ff01897312bb29bf5e9c296917ca75a"><td class="memItemLeft"><a id="a8ff01897312bb29bf5e9c296917ca75a" name="a8ff01897312bb29bf5e9c296917ca75a"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>activeElementOverrides</b> = 0</td></tr>
+<tr class="memdesc:a8ff01897312bb29bf5e9c296917ca75a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current retained element assignments. <br /></td></tr>
 <tr class="memitem:a8f2567136a1d58ed8a6152595cab3081" id="r_a8f2567136a1d58ed8a6152595cab3081"><td class="memItemLeft"><a id="a8f2567136a1d58ed8a6152595cab3081" name="a8f2567136a1d58ed8a6152595cab3081"></a>
 std::uint32_t&#160;</td><td class="memItemRight"><b>activeThemeOverrides</b> = 0</td></tr>
+<tr class="memdesc:a8f2567136a1d58ed8a6152595cab3081"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current retained theme assignments. <br /></td></tr>
 <tr class="memitem:a8928817bb579c4a4aa5ccd6ee728af09" id="r_a8928817bb579c4a4aa5ccd6ee728af09"><td class="memItemLeft"><a id="a8928817bb579c4a4aa5ccd6ee728af09" name="a8928817bb579c4a4aa5ccd6ee728af09"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>memoryFootprintBytes</b> = 0</td></tr>
+<tr class="memdesc:a8928817bb579c4a4aa5ccd6ee728af09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Observed retained override/capture backing storage in bytes. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Copied transaction, capture, and retained-storage accounting. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/override/<a class="el" href="DevOverrideTypes_8hpp_source.html">DevOverrideTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -142,7 +163,7 @@ std::size_t&#160;</td><td class="memItemRight"><b>memoryFootprintBytes</b> = 0</
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideStats.html">DevOverrideStats</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideStats.html">DevOverrideStats</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

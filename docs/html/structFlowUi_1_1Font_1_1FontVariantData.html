@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,22 +107,20 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>One baked variant of a font face.  
+<p>One baked variant of a font face.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="FontTypes_8hpp_source.html">FontTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a4464d6512f5c1f1845fe8803c95a34e6" id="r_a4464d6512f5c1f1845fe8803c95a34e6"><td class="memItemLeft"><a id="a4464d6512f5c1f1845fe8803c95a34e6" name="a4464d6512f5c1f1845fe8803c95a34e6"></a>
-float&#160;</td><td class="memItemRight"><b>kerningAdvance</b> (uint32_t leftCodepoint, uint32_t rightCodepoint) const noexcept</td></tr>
-<tr class="memdesc:a4464d6512f5c1f1845fe8803c95a34e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return kerning advance for a codepoint pair. <br /></td></tr>
+<tr class="memitem:a4464d6512f5c1f1845fe8803c95a34e6" id="r_a4464d6512f5c1f1845fe8803c95a34e6"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#a4464d6512f5c1f1845fe8803c95a34e6">kerningAdvance</a> (uint32_t leftCodepoint, uint32_t rightCodepoint) const noexcept</td></tr>
+<tr class="memdesc:a4464d6512f5c1f1845fe8803c95a34e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the stored horizontal kerning adjustment.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-methods" class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a1bd3d5a33200280271ef25d523b78b2b" id="r_a1bd3d5a33200280271ef25d523b78b2b"><td class="memItemLeft"><a id="a1bd3d5a33200280271ef25d523b78b2b" name="a1bd3d5a33200280271ef25d523b78b2b"></a>
-static constexpr uint64_t&#160;</td><td class="memItemRight"><b>kerningKey</b> (uint32_t leftCodepoint, uint32_t rightCodepoint) noexcept</td></tr>
-<tr class="memdesc:a1bd3d5a33200280271ef25d523b78b2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pack two codepoints into the kerning lookup key. <br /></td></tr>
+<tr class="memitem:a1bd3d5a33200280271ef25d523b78b2b" id="r_a1bd3d5a33200280271ef25d523b78b2b"><td class="memItemLeft">static constexpr uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a1bd3d5a33200280271ef25d523b78b2b">kerningKey</a> (uint32_t leftCodepoint, uint32_t rightCodepoint) noexcept</td></tr>
+<tr class="memdesc:a1bd3d5a33200280271ef25d523b78b2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pack two codepoints into the kerning-table key.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -181,7 +179,77 @@ std::unordered_map&lt; uint64_t, float &gt;&#160;</td><td class="memItemRight"><
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>One baked variant of a font face. </p>
 <p>A variant stores metrics, glyphs, and kerning for one loaded font face variant. <a class="el" href="structFlowUi_1_1Font_1_1FontFaceData.html" title="Loaded font face and its baked variants.">FontFaceData</a> selects one variant as the default for layout. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a4464d6512f5c1f1845fe8803c95a34e6" name="a4464d6512f5c1f1845fe8803c95a34e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4464d6512f5c1f1845fe8803c95a34e6">&#9670;&#160;</a></span>kerningAdvance()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">float FlowUi::Font::FontVariantData::kerningAdvance </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>leftCodepoint</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>rightCodepoint</em></span>&#160;) const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Read the stored horizontal kerning adjustment. </p>
+<p>The adjustment is in this variant's metric units; this lookup neither scales nor synthesizes kerning.</p>
+<dl class="section return"><dt>Returns</dt><dd>Returns zero when the codepoint pair is absent.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> advance = value.kerningAdvance(<span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(U<span class="charliteral">&#39;A&#39;</span>), <span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(U<span class="charliteral">&#39;V&#39;</span>));</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a1bd3d5a33200280271ef25d523b78b2b" name="a1bd3d5a33200280271ef25d523b78b2b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1bd3d5a33200280271ef25d523b78b2b">&#9670;&#160;</a></span>kerningKey()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr uint64_t FlowUi::Font::FontVariantData::kerningKey </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>leftCodepoint</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>rightCodepoint</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Pack two codepoints into the kerning-table key. </p>
+<p>This constexpr/noexcept helper does not validate Unicode scalar values.</p>
+<dl class="section return"><dt>Returns</dt><dd>The left codepoint occupies the high 32 bits and the right occupies the low 32 bits.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> <a class="code hl_function" href="#a1bd3d5a33200280271ef25d523b78b2b">kerningKey</a> = <a class="code hl_function" href="#a1bd3d5a33200280271ef25d523b78b2b">FlowUi::Font::FontVariantData::kerningKey</a>(<span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(U<span class="charliteral">&#39;A&#39;</span>), <span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(U<span class="charliteral">&#39;V&#39;</span>));</div>
+<div class="ttc" id="astructFlowUi_1_1Font_1_1FontVariantData_html_a1bd3d5a33200280271ef25d523b78b2b"><div class="ttname"><a href="#a1bd3d5a33200280271ef25d523b78b2b">FlowUi::Font::FontVariantData::kerningKey</a></div><div class="ttdeci">static constexpr uint64_t kerningKey(uint32_t leftCodepoint, uint32_t rightCodepoint) noexcept</div><div class="ttdoc">Pack two codepoints into the kerning-table key.</div><div class="ttdef"><b>Definition</b> FontTypes.hpp:161</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="FontTypes_8hpp_source.html">FontTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -197,7 +265,7 @@ std::unordered_map&lt; uint64_t, float &gt;&#160;</td><td class="memItemRight"><
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>Font</b></li><li class="navelem"><a href="structFlowUi_1_1Font_1_1FontVariantData.html">FontVariantData</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><b>Font</b></li><li class="navelem"><a href="structFlowUi_1_1Font_1_1FontVariantData.html">FontVariantData</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

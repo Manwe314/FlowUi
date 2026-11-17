@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -111,30 +111,243 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:acc0df77768a1bec03f82acd9ebf04de5" id="r_acc0df77768a1bec03f82acd9ebf04de5"><td class="memItemLeft"><a id="acc0df77768a1bec03f82acd9ebf04de5" name="acc0df77768a1bec03f82acd9ebf04de5"></a>
-&#160;</td><td class="memItemRight"><b>DevMemoryRecorder</b> (uint32_t capacity=8192u)</td></tr>
+<tr class="memitem:acc0df77768a1bec03f82acd9ebf04de5" id="r_acc0df77768a1bec03f82acd9ebf04de5"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#acc0df77768a1bec03f82acd9ebf04de5">DevMemoryRecorder</a> (uint32_t <a class="el" href="#a270c45726e81d14c66a4511a6d4534ee">capacity</a>=8192u)</td></tr>
+<tr class="memitem:a6793379ca02f143cb7d193247d47b85f" id="r_a6793379ca02f143cb7d193247d47b85f"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a6793379ca02f143cb7d193247d47b85f">~DevMemoryRecorder</a> ()</td></tr>
 <tr class="memitem:a03064fdb5e5e4512599061c04a32fb51" id="r_a03064fdb5e5e4512599061c04a32fb51"><td class="memItemLeft"><a id="a03064fdb5e5e4512599061c04a32fb51" name="a03064fdb5e5e4512599061c04a32fb51"></a>
 &#160;</td><td class="memItemRight"><b>DevMemoryRecorder</b> (const DevMemoryRecorder &amp;)=delete</td></tr>
 <tr class="memitem:ad0fd9249f7c150683f61430a83722cdc" id="r_ad0fd9249f7c150683f61430a83722cdc"><td class="memItemLeft"><a id="ad0fd9249f7c150683f61430a83722cdc" name="ad0fd9249f7c150683f61430a83722cdc"></a>
-DevMemoryRecorder &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const DevMemoryRecorder &amp;)=delete</td></tr>
-<tr class="memitem:a27a90b8d34bf4be64a94a0764705a488" id="r_a27a90b8d34bf4be64a94a0764705a488"><td class="memItemLeft"><a id="a27a90b8d34bf4be64a94a0764705a488" name="a27a90b8d34bf4be64a94a0764705a488"></a>
-bool&#160;</td><td class="memItemRight"><b>tryRecord</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryOperationRecord.html">MemoryOperationRecord</a> &amp;record) noexcept</td></tr>
-<tr class="memitem:aa76d7cbbcc49be7fbc06470ee685032f" id="r_aa76d7cbbcc49be7fbc06470ee685032f"><td class="memItemLeft"><a id="aa76d7cbbcc49be7fbc06470ee685032f" name="aa76d7cbbcc49be7fbc06470ee685032f"></a>
-void&#160;</td><td class="memItemRight"><b>setAppTickContext</b> (AppTickId appTick) noexcept</td></tr>
-<tr class="memitem:a74b98e7d8e7a9055733b8a5a06d38994" id="r_a74b98e7d8e7a9055733b8a5a06d38994"><td class="memItemLeft"><a id="a74b98e7d8e7a9055733b8a5a06d38994" name="a74b98e7d8e7a9055733b8a5a06d38994"></a>
-void&#160;</td><td class="memItemRight"><b>setLevel</b> (MemoryMonitoringLevel level) noexcept</td></tr>
-<tr class="memitem:acffe3bfc0120a2d6e2fb99988da81369" id="r_acffe3bfc0120a2d6e2fb99988da81369"><td class="memItemLeft"><a id="acffe3bfc0120a2d6e2fb99988da81369" name="acffe3bfc0120a2d6e2fb99988da81369"></a>
-void&#160;</td><td class="memItemRight"><b>noteSuppressed</b> () noexcept</td></tr>
-<tr class="memitem:a5edc1a25cce8710db36b931360763533" id="r_a5edc1a25cce8710db36b931360763533"><td class="memItemLeft"><a id="a5edc1a25cce8710db36b931360763533" name="a5edc1a25cce8710db36b931360763533"></a>
-void&#160;</td><td class="memItemRight"><b>drainInto</b> (std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryOperationRecord.html">MemoryOperationRecord</a> &gt; &amp;destination)</td></tr>
-<tr class="memitem:a5f5b4488aaf0cefc9a4af70d231016ba" id="r_a5f5b4488aaf0cefc9a4af70d231016ba"><td class="memItemLeft"><a id="a5f5b4488aaf0cefc9a4af70d231016ba" name="a5f5b4488aaf0cefc9a4af70d231016ba"></a>
-<a class="el" href="structFlowUi_1_1devSystems_1_1MemoryQualitySnapshot.html">MemoryQualitySnapshot</a>&#160;</td><td class="memItemRight"><b>qualitySnapshot</b> () const noexcept</td></tr>
-<tr class="memitem:a270c45726e81d14c66a4511a6d4534ee" id="r_a270c45726e81d14c66a4511a6d4534ee"><td class="memItemLeft"><a id="a270c45726e81d14c66a4511a6d4534ee" name="a270c45726e81d14c66a4511a6d4534ee"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>capacity</b> () const noexcept</td></tr>
+<a class="el" href="#acc0df77768a1bec03f82acd9ebf04de5">DevMemoryRecorder</a> &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const <a class="el" href="#acc0df77768a1bec03f82acd9ebf04de5">DevMemoryRecorder</a> &amp;)=delete</td></tr>
+<tr class="memitem:a27a90b8d34bf4be64a94a0764705a488" id="r_a27a90b8d34bf4be64a94a0764705a488"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a27a90b8d34bf4be64a94a0764705a488">tryRecord</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryOperationRecord.html">MemoryOperationRecord</a> &amp;record) noexcept</td></tr>
+<tr class="memitem:aa76d7cbbcc49be7fbc06470ee685032f" id="r_aa76d7cbbcc49be7fbc06470ee685032f"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aa76d7cbbcc49be7fbc06470ee685032f">setAppTickContext</a> (<a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a> appTick) noexcept</td></tr>
+<tr class="memitem:a74b98e7d8e7a9055733b8a5a06d38994" id="r_a74b98e7d8e7a9055733b8a5a06d38994"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a74b98e7d8e7a9055733b8a5a06d38994">setLevel</a> (<a class="el" href="namespaceFlowUi_1_1devSystems.html#af60e0aba3f190e3820e8ef9eebef04d5">MemoryMonitoringLevel</a> level) noexcept</td></tr>
+<tr class="memitem:acffe3bfc0120a2d6e2fb99988da81369" id="r_acffe3bfc0120a2d6e2fb99988da81369"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#acffe3bfc0120a2d6e2fb99988da81369">noteSuppressed</a> () noexcept</td></tr>
+<tr class="memitem:a5edc1a25cce8710db36b931360763533" id="r_a5edc1a25cce8710db36b931360763533"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a5edc1a25cce8710db36b931360763533">drainInto</a> (std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryOperationRecord.html">MemoryOperationRecord</a> &gt; &amp;destination)</td></tr>
+<tr class="memitem:a5f5b4488aaf0cefc9a4af70d231016ba" id="r_a5f5b4488aaf0cefc9a4af70d231016ba"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryQualitySnapshot.html">MemoryQualitySnapshot</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5f5b4488aaf0cefc9a4af70d231016ba">qualitySnapshot</a> () const noexcept</td></tr>
+<tr class="memitem:a270c45726e81d14c66a4511a6d4534ee" id="r_a270c45726e81d14c66a4511a6d4534ee"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a270c45726e81d14c66a4511a6d4534ee">capacity</a> () const noexcept</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Bounded, allocation-free-on-append memory operation producer. </p>
-</div><hr/>The documentation for this class was generated from the following file:<ul>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="acc0df77768a1bec03f82acd9ebf04de5" name="acc0df77768a1bec03f82acd9ebf04de5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc0df77768a1bec03f82acd9ebf04de5">&#9670;&#160;</a></span>DevMemoryRecorder()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevMemoryRecorder::DevMemoryRecorder </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>capacity</em></span><span class="paramdefsep"> = </span><span class="paramdefval">8192u</span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel explicit">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Allocate the bounded producer buffer once; subsequent <a class="el" href="#a27a90b8d34bf4be64a94a0764705a488">tryRecord()</a> calls do not reallocate. </p>
+
+</div>
+</div>
+<a id="a6793379ca02f143cb7d193247d47b85f" name="a6793379ca02f143cb7d193247d47b85f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6793379ca02f143cb7d193247d47b85f">&#9670;&#160;</a></span>~DevMemoryRecorder()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::devSystems::DevMemoryRecorder::~DevMemoryRecorder </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Destroy the producer buffer and its retained records. </p>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a270c45726e81d14c66a4511a6d4534ee" name="a270c45726e81d14c66a4511a6d4534ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a270c45726e81d14c66a4511a6d4534ee">&#9670;&#160;</a></span>capacity()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t FlowUi::devSystems::DevMemoryRecorder::capacity </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return the fixed number of producer event slots. </p>
+
+</div>
+</div>
+<a id="a5edc1a25cce8710db36b931360763533" name="a5edc1a25cce8710db36b931360763533"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5edc1a25cce8710db36b931360763533">&#9670;&#160;</a></span>drainInto()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevMemoryRecorder::drainInto </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryOperationRecord.html">MemoryOperationRecord</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>destination</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Append retained records in producer order to caller-owned destination, then empty the buffer. May allocate in destination. </p>
+
+</div>
+</div>
+<a id="acffe3bfc0120a2d6e2fb99988da81369" name="acffe3bfc0120a2d6e2fb99988da81369"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acffe3bfc0120a2d6e2fb99988da81369">&#9670;&#160;</a></span>noteSuppressed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevMemoryRecorder::noteSuppressed </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Increment the suppressed-operation counter without storing an event. </p>
+
+</div>
+</div>
+<a id="a5f5b4488aaf0cefc9a4af70d231016ba" name="a5f5b4488aaf0cefc9a4af70d231016ba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f5b4488aaf0cefc9a4af70d231016ba">&#9670;&#160;</a></span>qualitySnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1MemoryQualitySnapshot.html">MemoryQualitySnapshot</a> FlowUi::devSystems::DevMemoryRecorder::qualitySnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Copy cumulative recorded, suppressed, and dropped counters. </p>
+
+</div>
+</div>
+<a id="aa76d7cbbcc49be7fbc06470ee685032f" name="aa76d7cbbcc49be7fbc06470ee685032f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa76d7cbbcc49be7fbc06470ee685032f">&#9670;&#160;</a></span>setAppTickContext()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevMemoryRecorder::setAppTickContext </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#a300834cfe49700e4fa82b599976629c7">AppTickId</a></td>          <td class="paramname"><span class="paramname"><em>appTick</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Set the tick used to enrich operations without explicit tick attribution. </p>
+
+</div>
+</div>
+<a id="a74b98e7d8e7a9055733b8a5a06d38994" name="a74b98e7d8e7a9055733b8a5a06d38994"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a74b98e7d8e7a9055733b8a5a06d38994">&#9670;&#160;</a></span>setLevel()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::devSystems::DevMemoryRecorder::setLevel </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceFlowUi_1_1devSystems.html#af60e0aba3f190e3820e8ef9eebef04d5">MemoryMonitoringLevel</a></td>          <td class="paramname"><span class="paramname"><em>level</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Set the runtime threshold used to suppress operation detail. </p>
+
+</div>
+</div>
+<a id="a27a90b8d34bf4be64a94a0764705a488" name="a27a90b8d34bf4be64a94a0764705a488"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a27a90b8d34bf4be64a94a0764705a488">&#9670;&#160;</a></span>tryRecord()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::DevMemoryRecorder::tryRecord </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1MemoryOperationRecord.html">MemoryOperationRecord</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>record</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Record one operation if its detail level is enabled and buffer capacity is available; false records suppression/drop quality rather than throwing. </p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/memory/<a class="el" href="DevMemoryRecorder_8hpp_source.html">DevMemoryRecorder.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -150,7 +363,7 @@ uint32_t&#160;</td><td class="memItemRight"><b>capacity</b> () const noexcept</t
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1DevMemoryRecorder.html">DevMemoryRecorder</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1DevMemoryRecorder.html">DevMemoryRecorder</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

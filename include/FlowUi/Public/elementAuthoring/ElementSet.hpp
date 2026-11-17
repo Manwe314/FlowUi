@@ -12,10 +12,9 @@ template <FlowElement... Elements>
 class ElementSet {};
 
 /**
- * @brief Deduce a reusable element-type catalog from definition objects.
+ * @brief Deduce a zero-data catalog of element definition types. Definition objects and their addresses are not retained.
  *
- * The arguments participate only in type deduction; ElementSet stores no
- * object addresses or runtime data.
+ * @see docs/api/elements.md
  */
 template <typename... Elements>
 	requires ((FlowElement<std::remove_cvref_t<Elements>>) && ...)

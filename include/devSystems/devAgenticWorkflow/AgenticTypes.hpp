@@ -45,6 +45,7 @@ enum class AgenticError : std::uint8_t {
 /**
  * @brief Return prefix, an underscore, and 32 random hexadecimal characters; prefix must be a
  * valid identifier of at most 64 characters. Failures return a structured error.
+ * Allocation failures remain distinct from exceptions raised by the entropy source.
  */
 [[nodiscard]] Result<std::string> make_identifier(std::string_view prefix) noexcept;
 /**

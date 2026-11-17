@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include <cstdint>
 #include <optional>
 #include <string_view>
@@ -85,7 +87,7 @@ struct PopupSurface {
 	 */
 	static Clay_ElementDeclaration constructElement(BuildContext& context) {
 		const FSELPopupSurfaceTheme& theme =
-			context.uiManager.theme<FSELTheme>().popupSurfaceTheme;
+			FlowUi::ValueOrThrow(context.uiManager.theme<FSELTheme>()).get().popupSurfaceTheme;
 		const PopupFrame frame = context.uiManager.popups().request(
 			context.id, context.params.popupRequest).value_or(PopupFrame{});
 

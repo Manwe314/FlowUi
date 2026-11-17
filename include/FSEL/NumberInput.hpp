@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -166,20 +168,29 @@ struct NumberInputResources {
 	/** Borrowed cached decrement icon texture; empty if the semantic key was unavailable. */
 	TextureRef decrementIcon{};
 
-	/** Construct empty icon references. */
+	/** Construct empty icon references.
+	 * @par Example
+	 * @code{.cpp}
+	 * FlowUi::FSEL::NumberInputResources artwork{};
+	 * @endcode
+	 */
 	NumberInputResources() = default;
 	/**
 	 * Resolve available standard icons from the app; missing icons remain empty. @param app Owning
 	 * application whose icon resources outlive these references.
+	 * @par Example
+	 * @code{.cpp}
+	 * FlowUi::FSEL::NumberInputResources artwork{application};
+	 * @endcode
 	 */
 	explicit NumberInputResources(App& app) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
-		IconManager& icons = app.icons();
-		if (icons.contains(standard_icons::kIncrementKey)) {
-			incrementIcon = icons.textureRef(standard_icons::kIncrementKey);
+		IconManager& icons = FlowUi::ValueOrThrow(app.icons()).get();
+		if (FlowUi::ValueOrThrow(icons.contains(standard_icons::kIncrementKey))) {
+			incrementIcon = FlowUi::ValueOrThrow(icons.textureRef(standard_icons::kIncrementKey));
 		}
-		if (icons.contains(standard_icons::kDecrementKey)) {
-			decrementIcon = icons.textureRef(standard_icons::kDecrementKey);
+		if (FlowUi::ValueOrThrow(icons.contains(standard_icons::kDecrementKey))) {
+			decrementIcon = FlowUi::ValueOrThrow(icons.textureRef(standard_icons::kDecrementKey));
 		}
 #else
 		(void)app;
@@ -271,10 +282,10 @@ struct NumberInput {
 			return;
 		}
 		const FSELNumberInputTheme& theme =
-			context.uiManager.template theme<FSELTheme>().numberInputTheme;
+			FlowUi::ValueOrThrow(context.uiManager.template theme<FSELTheme>()).get().numberInputTheme;
 		const bool overStepButton = hasStepButtons(context.params) &&
-			(context.previousInteraction.isHovered(context.part(Parts::increment)) ||
-			 context.previousInteraction.isHovered(context.part(Parts::decrement)));
+			(context.previousInteraction.isHovered(FlowUi::ValueOrThrow(context.part(Parts::increment))) ||
+			 context.previousInteraction.isHovered(FlowUi::ValueOrThrow(context.part(Parts::decrement))));
 		const detail::numeric::Bounds<T> bounds = detail::numeric::resolveBounds(
 			context.params.minimum,
 			context.params.maximum);
@@ -300,9 +311,9 @@ struct NumberInput {
 			return;
 		}
 		const bool increment = context.previousInteraction.isPressed(
-			context.part(Parts::increment));
+			FlowUi::ValueOrThrow(context.part(Parts::increment)));
 		const bool decrement = context.previousInteraction.isPressed(
-			context.part(Parts::decrement));
+			FlowUi::ValueOrThrow(context.part(Parts::decrement)));
 		if (increment == decrement) {
 			return;
 		}
@@ -315,7 +326,7 @@ struct NumberInput {
 	 */
 	static void buildElement(BuildContext& context) {
 		const FSELNumberInputTheme& numberTheme =
-			context.uiManager.template theme<FSELTheme>().numberInputTheme;
+			FlowUi::ValueOrThrow(context.uiManager.template theme<FSELTheme>()).get().numberInputTheme;
 		const FSELTextFieldTheme& theme = numberTheme.field;
 		auto& state = context.state();
 		auto& manager = context.uiManager.inputFields();
@@ -330,15 +341,15 @@ struct NumberInput {
 		}
 
 		const Clay_ElementId contentId = context.uiManager.toClayEID(
-			context.part(Parts::content));
+			FlowUi::ValueOrThrow(context.part(Parts::content)));
 		const Clay_ElementId textId = context.uiManager.toClayEID(
-			context.part(Parts::text));
+			FlowUi::ValueOrThrow(context.part(Parts::text)));
 		const Clay_ElementId placeholderId = context.uiManager.toClayEID(
-			context.part(Parts::placeholder));
+			FlowUi::ValueOrThrow(context.part(Parts::placeholder)));
 		const Clay_ElementId decrementId = context.uiManager.toClayEID(
-			context.part(Parts::decrement));
+			FlowUi::ValueOrThrow(context.part(Parts::decrement)));
 		const Clay_ElementId incrementId = context.uiManager.toClayEID(
-			context.part(Parts::increment));
+			FlowUi::ValueOrThrow(context.part(Parts::increment)));
 		const std::array<Clay_ElementId, 2> focusRetentionIds{
 			decrementId,
 			incrementId,
@@ -401,7 +412,7 @@ struct NumberInput {
 				return transaction.origin != EditOrigin::Programmatic;
 			});
 		if (editable && userTextChanged) {
-			const std::string fieldText = field.text.copy();
+			const std::string fieldText = FlowUi::ValueOrThrow(field.text.copy());
 			const std::string sanitized = detail::numeric_text::sanitize<T>(
 				fieldText,
 				context.params.format.allowScientificInput);
@@ -423,7 +434,7 @@ struct NumberInput {
 
 		const detail::numeric_text::ClassifiedValue<T> classified =
 			detail::numeric_text::classify(
-				detail::numeric_text::parse<T>(field.text.copy()),
+				detail::numeric_text::parse<T>(FlowUi::ValueOrThrow(field.text.copy())),
 				bounds);
 		const std::optional<T> candidate = classified.candidate;
 		state.textStatus = classified.status;
@@ -733,7 +744,7 @@ private:
 				}
 			}
 			if (buttonsVisible) {
-				CLAY(context.clayID("step-buttons"), stepContainer) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("step-buttons")), stepContainer) {
 					drawStepButton(
 						context,
 						incrementId,
@@ -813,8 +824,8 @@ private:
 				};
 				CLAY(
 					increment
-						? context.clayID("increment-icon")
-						: context.clayID("decrement-icon"),
+						? FlowUi::ValueOrThrow(context.clayID("increment-icon"))
+						: FlowUi::ValueOrThrow(context.clayID("decrement-icon")),
 					iconDeclaration);
 			} else {
 				Clay_TextElementConfig fallbackText{};

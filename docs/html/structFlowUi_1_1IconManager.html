@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -107,7 +107,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Registers SVG icons and resolves them to atlas-backed texture references.  
+<p>App-shared SVG registration and lazy frame-size rasterization.
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="IconManager_8hpp_source.html">IconManager.hpp</a>&gt;</code></p>
@@ -115,66 +115,75 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:DevIconView" id="r_DevIconView"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1IconManager_1_1DevIconView.html">DevIconView</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed SVG raster metadata; reacquire after icon cache mutation.  <a href="structFlowUi_1_1IconManager_1_1DevIconView.html#details">More...</a><br /></td></tr>
 <tr class="memitem:DevAtlasView" id="r_DevAtlasView"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1IconManager_1_1DevAtlasView.html">DevAtlasView</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Borrowed SVG atlas-page allocation metrics.  <a href="structFlowUi_1_1IconManager_1_1DevAtlasView.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-types" class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
 <tr class="memitem:a68da84ac0480b2055ee679f0c2682d1e" id="r_a68da84ac0480b2055ee679f0c2682d1e"><td class="memItemLeft"><a id="a68da84ac0480b2055ee679f0c2682d1e" name="a68da84ac0480b2055ee679f0c2682d1e"></a>
 using&#160;</td><td class="memItemRight"><b>DevIconVisitor</b> = bool (*)(void*, const <a class="el" href="structFlowUi_1_1IconManager_1_1DevIconView.html">DevIconView</a>&amp;)</td></tr>
+<tr class="memdesc:a68da84ac0480b2055ee679f0c2682d1e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronous observation callback; return false to stop visitation. Arguments are borrowed for the call. <br /></td></tr>
 <tr class="memitem:a59ecaffb155eeea64c6206d7776e48da" id="r_a59ecaffb155eeea64c6206d7776e48da"><td class="memItemLeft"><a id="a59ecaffb155eeea64c6206d7776e48da" name="a59ecaffb155eeea64c6206d7776e48da"></a>
 using&#160;</td><td class="memItemRight"><b>DevAtlasVisitor</b> = bool (*)(void*, const <a class="el" href="structFlowUi_1_1IconManager_1_1DevAtlasView.html">DevAtlasView</a>&amp;)</td></tr>
+<tr class="memdesc:a59ecaffb155eeea64c6206d7776e48da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronous observation callback; return false to stop visitation. Arguments are borrowed for the call. <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a39b4794725523f6454b9f98f22fc2019" id="r_a39b4794725523f6454b9f98f22fc2019"><td class="memItemLeft"><a id="a39b4794725523f6454b9f98f22fc2019" name="a39b4794725523f6454b9f98f22fc2019"></a>
 std::uint64_t&#160;</td><td class="memItemRight"><b>devRevision</b> () const noexcept</td></tr>
+<tr class="memdesc:a39b4794725523f6454b9f98f22fc2019"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the current development-observation revision; zero when support is disabled. <br /></td></tr>
 <tr class="memitem:a7e53d759c3b9c5a7a531c8942a676707" id="r_a7e53d759c3b9c5a7a531c8942a676707"><td class="memItemLeft"><a id="a7e53d759c3b9c5a7a531c8942a676707" name="a7e53d759c3b9c5a7a531c8942a676707"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>devIconCount</b> () const noexcept</td></tr>
+<tr class="memdesc:a7e53d759c3b9c5a7a531c8942a676707"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of currently published entries in this development catalogue. <br /></td></tr>
 <tr class="memitem:a98c0c7681e0c831a8762e89df6c0b06d" id="r_a98c0c7681e0c831a8762e89df6c0b06d"><td class="memItemLeft"><a id="a98c0c7681e0c831a8762e89df6c0b06d" name="a98c0c7681e0c831a8762e89df6c0b06d"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>devAtlasCount</b> () const noexcept</td></tr>
-<tr class="memitem:ae4a422aa84e9217ba04837e93a8f6f47" id="r_ae4a422aa84e9217ba04837e93a8f6f47"><td class="memItemLeft"><a id="ae4a422aa84e9217ba04837e93a8f6f47" name="ae4a422aa84e9217ba04837e93a8f6f47"></a>
-bool&#160;</td><td class="memItemRight"><b>visitDevIcons</b> (void *userData, DevIconVisitor visitor) const</td></tr>
-<tr class="memitem:ad2b0a68f6109d7569618edbb74f907d6" id="r_ad2b0a68f6109d7569618edbb74f907d6"><td class="memItemLeft"><a id="ad2b0a68f6109d7569618edbb74f907d6" name="ad2b0a68f6109d7569618edbb74f907d6"></a>
-bool&#160;</td><td class="memItemRight"><b>visitDevAtlases</b> (void *userData, DevAtlasVisitor visitor) const</td></tr>
+<tr class="memdesc:a98c0c7681e0c831a8762e89df6c0b06d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of currently published entries in this development catalogue. <br /></td></tr>
+<tr class="memitem:aa90dbb4de193fbf3f7b4490dfab12d0f" id="r_aa90dbb4de193fbf3f7b4490dfab12d0f"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aa90dbb4de193fbf3f7b4490dfab12d0f">visitDevIcons</a> (void *userData, <a class="el" href="#a68da84ac0480b2055ee679f0c2682d1e">DevIconVisitor</a> visitor) const noexcept</td></tr>
+<tr class="memdesc:aa90dbb4de193fbf3f7b4490dfab12d0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Observe development catalogue entries without invoking application operations.  <br /></td></tr>
+<tr class="memitem:a8a56630c33ee9c4b7e9fd5083606b50a" id="r_a8a56630c33ee9c4b7e9fd5083606b50a"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a8a56630c33ee9c4b7e9fd5083606b50a">visitDevAtlases</a> (void *userData, <a class="el" href="#a59ecaffb155eeea64c6206d7776e48da">DevAtlasVisitor</a> visitor) const noexcept</td></tr>
+<tr class="memdesc:a8a56630c33ee9c4b7e9fd5083606b50a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Observe development catalogue entries without invoking application operations.  <br /></td></tr>
 <tr class="memitem:afb6f76da1cd72d45a87d9d96c1bc413f" id="r_afb6f76da1cd72d45a87d9d96c1bc413f"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1IconManager_1_1DevIconView.html">DevIconView</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#afb6f76da1cd72d45a87d9d96c1bc413f">devRasterize</a> (std::string_view key, uint32_t width, uint32_t height) noexcept</td></tr>
+<tr class="memdesc:afb6f76da1cd72d45a87d9d96c1bc413f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Materialize or reuse one exact development SVG raster.  <br /></td></tr>
 <tr class="memitem:a8253f208aa0923779afdd9ecc9cc0414" id="r_a8253f208aa0923779afdd9ecc9cc0414"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a8253f208aa0923779afdd9ecc9cc0414">devRemoveRaster</a> (<a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a> texture) noexcept</td></tr>
-<tr class="memitem:a1837d4321d4ded52b031a233c39f4bfb" id="r_a1837d4321d4ded52b031a233c39f4bfb"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a1837d4321d4ded52b031a233c39f4bfb">registerSvg</a> (std::string_view key, std::string_view svgSource)</td></tr>
-<tr class="memdesc:a1837d4321d4ded52b031a233c39f4bfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register an SVG document from source text.  <br /></td></tr>
-<tr class="memitem:acc4d8727f99f457b4103ef53c0d34ce6" id="r_acc4d8727f99f457b4103ef53c0d34ce6"><td class="memItemLeft"><a id="acc4d8727f99f457b4103ef53c0d34ce6" name="acc4d8727f99f457b4103ef53c0d34ce6"></a>
-<a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><b>registerSvg</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, std::string_view svgSource)</td></tr>
-<tr class="memitem:af091f3b10d4bc8a163f8cb2be3b523a7" id="r_af091f3b10d4bc8a163f8cb2be3b523a7"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#af091f3b10d4bc8a163f8cb2be3b523a7">registerFromFile</a> (std::string_view key, std::string_view filePath)</td></tr>
-<tr class="memdesc:af091f3b10d4bc8a163f8cb2be3b523a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register an SVG document from a file path.  <br /></td></tr>
-<tr class="memitem:a88d870c1b8b3307659ff78de7dc9a3ac" id="r_a88d870c1b8b3307659ff78de7dc9a3ac"><td class="memItemLeft"><a id="a88d870c1b8b3307659ff78de7dc9a3ac" name="a88d870c1b8b3307659ff78de7dc9a3ac"></a>
-<a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><b>registerFromFile</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, std::string_view filePath)</td></tr>
-<tr class="memitem:a2890d0905a6e04cc5e647a6458ec2a23" id="r_a2890d0905a6e04cc5e647a6458ec2a23"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a2890d0905a6e04cc5e647a6458ec2a23">register_file</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, const std::filesystem::path &amp;file_path)</td></tr>
-<tr class="memitem:ab929823db6b3f38def8c4722f2368645" id="r_ab929823db6b3f38def8c4722f2368645"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ab929823db6b3f38def8c4722f2368645">register_file</a> (std::string_view key, const std::filesystem::path &amp;file_path)</td></tr>
-<tr class="memitem:a1357e128da8bb6d832dfbf9b26e0ddd2" id="r_a1357e128da8bb6d832dfbf9b26e0ddd2"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a1357e128da8bb6d832dfbf9b26e0ddd2">remove</a> (std::string_view key)</td></tr>
-<tr class="memdesc:a1357e128da8bb6d832dfbf9b26e0ddd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a registered SVG document by key.  <br /></td></tr>
-<tr class="memitem:a254e3c4d7f210bf290486252eae00fe5" id="r_a254e3c4d7f210bf290486252eae00fe5"><td class="memItemLeft"><a id="a254e3c4d7f210bf290486252eae00fe5" name="a254e3c4d7f210bf290486252eae00fe5"></a>
-<a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><b>remove</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key)</td></tr>
-<tr class="memitem:aacefdec239a3b1fcd8aadae4eec05516" id="r_aacefdec239a3b1fcd8aadae4eec05516"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#aacefdec239a3b1fcd8aadae4eec05516">contains</a> (std::string_view key) const</td></tr>
-<tr class="memdesc:aacefdec239a3b1fcd8aadae4eec05516"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether an SVG key is registered.  <br /></td></tr>
-<tr class="memitem:aeac28f294981ae55b4c83667897fa8ee" id="r_aeac28f294981ae55b4c83667897fa8ee"><td class="memItemLeft"><a id="aeac28f294981ae55b4c83667897fa8ee" name="aeac28f294981ae55b4c83667897fa8ee"></a>
-bool&#160;</td><td class="memItemRight"><b>contains</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key) const</td></tr>
-<tr class="memitem:a0de1a60d027cd3b9985f73aebf128f48" id="r_a0de1a60d027cd3b9985f73aebf128f48"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a>&#160;</td><td class="memItemRight"><a class="el" href="#a0de1a60d027cd3b9985f73aebf128f48">textureRef</a> (std::string_view key)</td></tr>
-<tr class="memdesc:a0de1a60d027cd3b9985f73aebf128f48"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a texture request reference for a registered icon key.  <br /></td></tr>
-<tr class="memitem:aa24c9f599e3337be1fc5f4e106d47de3" id="r_aa24c9f599e3337be1fc5f4e106d47de3"><td class="memItemLeft"><a id="aa24c9f599e3337be1fc5f4e106d47de3" name="aa24c9f599e3337be1fc5f4e106d47de3"></a>
-<a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a>&#160;</td><td class="memItemRight"><b>textureRef</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key)</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a4097b3e04a4f8ece21f5abe1b10e6323" id="r_a4097b3e04a4f8ece21f5abe1b10e6323"><td class="memItemLeft"><a id="a4097b3e04a4f8ece21f5abe1b10e6323" name="a4097b3e04a4f8ece21f5abe1b10e6323"></a>
-class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
+<tr class="memdesc:a8253f208aa0923779afdd9ecc9cc0414"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retire only the exact development raster texture generation.  <br /></td></tr>
+<tr class="memitem:a5448113b4f826cc1ea27ca6d1aea6693" id="r_a5448113b4f826cc1ea27ca6d1aea6693"><td class="memItemLeft"><a id="a5448113b4f826cc1ea27ca6d1aea6693" name="a5448113b4f826cc1ea27ca6d1aea6693"></a>
+void&#160;</td><td class="memItemRight"><b>appendDevMemorySamples</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1MemorySampleSink.html">devSystems::MemorySampleSink</a> &amp;sink) const noexcept</td></tr>
+<tr class="memdesc:a5448113b4f826cc1ea27ca6d1aea6693"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append observation-only memory accounting to sink without transferring storage ownership. <br /></td></tr>
+<tr class="memitem:a0f24e5a33ad24b6167dbe124d5731fd5" id="r_a0f24e5a33ad24b6167dbe124d5731fd5"><td class="memItemLeft"><a id="a0f24e5a33ad24b6167dbe124d5731fd5" name="a0f24e5a33ad24b6167dbe124d5731fd5"></a>
+void&#160;</td><td class="memItemRight"><b>setDevMemoryRecorder</b> (<a class="el" href="classFlowUi_1_1devSystems_1_1DevMemoryRecorder.html">devSystems::DevMemoryRecorder</a> *recorder) noexcept</td></tr>
+<tr class="memdesc:a0f24e5a33ad24b6167dbe124d5731fd5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attach a borrowed development memory recorder; null disables recording. <br /></td></tr>
+<tr class="memitem:a534903943084047c080d68be43105ec2" id="r_a534903943084047c080d68be43105ec2"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a534903943084047c080d68be43105ec2">registerSvg</a> (std::string_view key, std::string_view svgSource) noexcept</td></tr>
+<tr class="memdesc:a534903943084047c080d68be43105ec2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse and register SVG source for lazy rasterization.  <br /></td></tr>
+<tr class="memitem:a69d746545558958af936d74259818222" id="r_a69d746545558958af936d74259818222"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a69d746545558958af936d74259818222">registerSvg</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, std::string_view svgSource) noexcept</td></tr>
+<tr class="memdesc:a69d746545558958af936d74259818222"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse and register SVG source for lazy rasterization.  <br /></td></tr>
+<tr class="memitem:ac4fb99b7a0794abffd1af94d0c2f1088" id="r_ac4fb99b7a0794abffd1af94d0c2f1088"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ac4fb99b7a0794abffd1af94d0c2f1088">registerFromFile</a> (std::string_view key, std::string_view filePath) noexcept</td></tr>
+<tr class="memdesc:ac4fb99b7a0794abffd1af94d0c2f1088"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read, parse, and register an SVG file from a UTF-8 path.  <br /></td></tr>
+<tr class="memitem:a5033ed73b9f65ca3b242321298d37c72" id="r_a5033ed73b9f65ca3b242321298d37c72"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a5033ed73b9f65ca3b242321298d37c72">registerFromFile</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, std::string_view filePath) noexcept</td></tr>
+<tr class="memdesc:a5033ed73b9f65ca3b242321298d37c72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read, parse, and register an SVG file from a UTF-8 path.  <br /></td></tr>
+<tr class="memitem:a41a5e4465b669e624c8c98ec65e71300" id="r_a41a5e4465b669e624c8c98ec65e71300"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a41a5e4465b669e624c8c98ec65e71300">register_file</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, const std::filesystem::path &amp;file_path) noexcept</td></tr>
+<tr class="memdesc:a41a5e4465b669e624c8c98ec65e71300"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read and register an SVG from a native filesystem path.  <br /></td></tr>
+<tr class="memitem:a2a6592daf97a0c47778287fe1d3bd30b" id="r_a2a6592daf97a0c47778287fe1d3bd30b"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a2a6592daf97a0c47778287fe1d3bd30b">register_file</a> (std::string_view key, const std::filesystem::path &amp;file_path) noexcept</td></tr>
+<tr class="memdesc:a2a6592daf97a0c47778287fe1d3bd30b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read and register an SVG from a native filesystem path.  <br /></td></tr>
+<tr class="memitem:a62eb6bc8f23d0837a79d098c567a023f" id="r_a62eb6bc8f23d0837a79d098c567a023f"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a62eb6bc8f23d0837a79d098c567a023f">remove</a> (std::string_view key) noexcept</td></tr>
+<tr class="memdesc:a62eb6bc8f23d0837a79d098c567a023f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove an SVG document and retire its cached raster generations.  <br /></td></tr>
+<tr class="memitem:adac525fe89b69cfe54c84dd8c610ccd0" id="r_adac525fe89b69cfe54c84dd8c610ccd0"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#adac525fe89b69cfe54c84dd8c610ccd0">remove</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key) noexcept</td></tr>
+<tr class="memdesc:adac525fe89b69cfe54c84dd8c610ccd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove an SVG document and retire its cached raster generations.  <br /></td></tr>
+<tr class="memitem:a403664172e0a98470dd66fdff0d6fa21" id="r_a403664172e0a98470dd66fdff0d6fa21"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a403664172e0a98470dd66fdff0d6fa21">contains</a> (std::string_view key) const noexcept</td></tr>
+<tr class="memdesc:a403664172e0a98470dd66fdff0d6fa21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test whether an SVG key is registered.  <br /></td></tr>
+<tr class="memitem:a7f6f0a455f165eb02e2d86e907ae12cb" id="r_a7f6f0a455f165eb02e2d86e907ae12cb"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a7f6f0a455f165eb02e2d86e907ae12cb">contains</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key) const noexcept</td></tr>
+<tr class="memdesc:a7f6f0a455f165eb02e2d86e907ae12cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test whether an SVG key is registered.  <br /></td></tr>
+<tr class="memitem:a5997178bc80d7aa8d3f7c1c7bfa8cd5c" id="r_a5997178bc80d7aa8d3f7c1c7bfa8cd5c"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a5997178bc80d7aa8d3f7c1c7bfa8cd5c">textureRef</a> (std::string_view key) noexcept</td></tr>
+<tr class="memdesc:a5997178bc80d7aa8d3f7c1c7bfa8cd5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve an SVG key to a request <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> for UI rendering.  <br /></td></tr>
+<tr class="memitem:af036f5ed97d6f6ccb370fc24feed1cf8" id="r_af036f5ed97d6f6ccb370fc24feed1cf8"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#af036f5ed97d6f6ccb370fc24feed1cf8">textureRef</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key) noexcept</td></tr>
+<tr class="memdesc:af036f5ed97d6f6ccb370fc24feed1cf8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve an SVG key to a request <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> for UI rendering.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Registers SVG icons and resolves them to atlas-backed texture references. </p>
-<p><a class="el" href="structFlowUi_1_1IconManager.html" title="Registers SVG icons and resolves them to atlas-backed texture references.">IconManager</a> is available only when FlowUi is built with FLOWUI_INCLUDE_ICON_MANAGER enabled. When enabled, it stores parsed SVG documents by application-defined keys and returns <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> request handles that FlowUi resolves into cached atlas variants at the size required by the current frame.</p>
-<div class="fragment"></div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2images__icons__textures.html" title="Images, Icons, and Texture References">Images, Icons, and Texture References</a> </dd>
-<dd>
-<a class="el" href="md_docs_2concepts_2managers.html" title="Managers">Managers</a> </dd></dl>
+<div class="textblock"><p>App-shared SVG registration and lazy frame-size rasterization. </p>
+<p>Recoverable operations return checked Result/Status values. A successful bool payload may be false; inspect the payload only after checking the <a class="el" href="classFlowUi_1_1Result.html">Result</a>. Obtain App-owned managers through the checked <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> getter and unwrap its reference_wrapper with result-&gt;get(). Returned text, metadata, resource views, and pointers remain borrowed under each operation's documented invalidation rules. </p>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
-<a id="aacefdec239a3b1fcd8aadae4eec05516" name="aacefdec239a3b1fcd8aadae4eec05516"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aacefdec239a3b1fcd8aadae4eec05516">&#9670;&#160;</a></span>contains()</h2>
+<a id="a7f6f0a455f165eb02e2d86e907ae12cb" name="a7f6f0a455f165eb02e2d86e907ae12cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f6f0a455f165eb02e2d86e907ae12cb">&#9670;&#160;</a></span>contains() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -183,7 +192,44 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool FlowUi::IconManager::contains </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::IconManager::contains </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Test whether an SVG key is registered. </p>
+<p>This does not trigger rasterization. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true for a registered document or false for absence. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;status/check&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.contains(key);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> registered = *result;</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+<div class="ttc" id="astructFlowUi_1_1ResourceKey_html"><div class="ttname"><a href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a></div><div class="ttdoc">Human-readable logical identity accepted by FlowUi managers.</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:39</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a403664172e0a98470dd66fdff0d6fa21" name="a403664172e0a98470dd66fdff0d6fa21"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a403664172e0a98470dd66fdff0d6fa21">&#9670;&#160;</a></span>contains() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::IconManager::contains </td>
           <td>(</td>
           <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
           <td> const</td>
@@ -191,27 +237,20 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return whether an SVG key is registered. </p>
-<p>This lookup does not force rasterization or atlas allocation. Resource-key normalization and lookup metadata may allocate.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td>Application-defined icon key to test. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">true</td><td>key is registered. </td></tr>
-    <tr><td class="paramname">false</td><td>key is not registered.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Test whether an SVG key is registered. </p>
+<p>This does not trigger rasterization.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true for a registered document or false for absence. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.contains(<span class="stringliteral">&quot;status/check&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> registered = *result;</div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="afb6f76da1cd72d45a87d9d96c1bc413f" name="afb6f76da1cd72d45a87d9d96c1bc413f"></a>
@@ -245,8 +284,19 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Materialize one exact raster at an explicit development-tool request. </p>
 
+<p>Materialize or reuse one exact development SVG raster. </p>
+<p>The key must name a registered SVG; width and height must be in [1, 512]. The example expects status/check to be registered. The returned <a class="el" href="structFlowUi_1_1IconManager_1_1DevIconView.html" title="Borrowed SVG raster metadata; reacquire after icon cache mutation.">DevIconView</a> and texture identity are borrowed and invalidated by raster/document removal or manager destruction. newlyRasterized distinguishes a new cached raster from a reused one. No exception escapes. With icon support disabled, return UnsupportedBuildFeature.</p>
+<dl class="section return"><dt>Returns</dt><dd>A checked raster view, or initialization, IconRasterInvalid, IconNotFound, publication, allocation, or storage failure.</dd></dl>
+<div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><span class="keyword">auto</span> result = icons.devRasterize(<span class="stringliteral">&quot;status/check&quot;</span>, 32, 32);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> newlyRasterized = result-&gt;newlyRasterized;</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> retained = result-&gt;texture;</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a8253f208aa0923779afdd9ecc9cc0414" name="a8253f208aa0923779afdd9ecc9cc0414"></a>
@@ -271,12 +321,22 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Retire only the exact cached texture generation; the SVG registration remains. </p>
 
+<p>Retire only the exact development raster texture generation. </p>
+<p>The SVG registration remains. A removed raster can be regenerated by later UI usage or <a class="el" href="#afb6f76da1cd72d45a87d9d96c1bc413f" title="Materialize or reuse one exact development SVG raster.">devRasterize()</a>. Its previous borrowed texture identity must be discarded; backing allocations retire after their recorded uses. No exception escapes. With icon support disabled, return UnsupportedBuildFeature.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true when a cached raster was removed or false when the texture did not match any cached raster; initialization/storage/allocation failures are errors.</dd></dl>
+<div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><span class="keyword">auto</span> result = icons.devRemoveRaster(raster);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = *result;</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a2890d0905a6e04cc5e647a6458ec2a23" name="a2890d0905a6e04cc5e647a6458ec2a23"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2890d0905a6e04cc5e647a6458ec2a23">&#9670;&#160;</a></span>register_file() <span class="overload">[1/2]</span></h2>
+<a id="a41a5e4465b669e624c8c98ec65e71300" name="a41a5e4465b669e624c8c98ec65e71300"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a41a5e4465b669e624c8c98ec65e71300">&#9670;&#160;</a></span>register_file() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -297,16 +357,26 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Load SVG source through a native filesystem path. </p>
 
+<p>Read and register an SVG from a native filesystem path. </p>
+<p>Use native filesystem paths where platform path encoding matters; rasterization remains lazy. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true for insertion or false for an existing unchanged key. File/path/read/parse failures are errors. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;status/check&quot;</span>};</div>
+<div class="line"><span class="keyword">const</span> std::filesystem::path assetPath{<span class="stringliteral">&quot;assets/icons/check.svg&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.register_file(key, assetPath);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> inserted = *result;</div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="ab929823db6b3f38def8c4722f2368645" name="ab929823db6b3f38def8c4722f2368645"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab929823db6b3f38def8c4722f2368645">&#9670;&#160;</a></span>register_file() <span class="overload">[2/2]</span></h2>
+<a id="a2a6592daf97a0c47778287fe1d3bd30b" name="a2a6592daf97a0c47778287fe1d3bd30b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a6592daf97a0c47778287fe1d3bd30b">&#9670;&#160;</a></span>register_file() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -327,16 +397,64 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Load SVG source through a native filesystem path under a string key. </p>
 
+<p>Read and register an SVG from a native filesystem path. </p>
+<p>Use native filesystem paths where platform path encoding matters; rasterization remains lazy.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true for insertion or false for an existing unchanged key. File/path/read/parse failures are errors. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> std::filesystem::path assetPath{<span class="stringliteral">&quot;assets/icons/check.svg&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.register_file(<span class="stringliteral">&quot;status/check&quot;</span>, assetPath);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> inserted = *result;</div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="af091f3b10d4bc8a163f8cb2be3b523a7" name="af091f3b10d4bc8a163f8cb2be3b523a7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af091f3b10d4bc8a163f8cb2be3b523a7">&#9670;&#160;</a></span>registerFromFile()</h2>
+<a id="a5033ed73b9f65ca3b242321298d37c72" name="a5033ed73b9f65ca3b242321298d37c72"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5033ed73b9f65ca3b242321298d37c72">&#9670;&#160;</a></span>registerFromFile() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::IconManager::registerFromFile </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>filePath</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Read, parse, and register an SVG file from a UTF-8 path. </p>
+<p>The file path and bytes are consumed synchronously. Registration does not rasterize the SVG. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true for insertion or false for an existing unchanged key. File/path/read/parse failures are errors. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;status/check&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.registerFromFile(key, <span class="stringliteral">&quot;assets/icons/check.svg&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> inserted = *result;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ac4fb99b7a0794abffd1af94d0c2f1088" name="ac4fb99b7a0794abffd1af94d0c2f1088"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac4fb99b7a0794abffd1af94d0c2f1088">&#9670;&#160;</a></span>registerFromFile() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -357,32 +475,64 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Register an SVG document from a file path. </p>
-<p>The key is the stable string name used later with <a class="el" href="#aacefdec239a3b1fcd8aadae4eec05516" title="Return whether an SVG key is registered.">contains()</a>, <a class="el" href="#a1357e128da8bb6d832dfbf9b26e0ddd2" title="Remove a registered SVG document by key.">remove()</a>, and <a class="el" href="#a0de1a60d027cd3b9985f73aebf128f48" title="Return a texture request reference for a registered icon key.">textureRef()</a>. The file is parsed immediately; raster variants are created lazily when the icon is rendered.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td>string icon key. </td></tr>
-    <tr><td class="paramname">filePath</td><td>Path to an SVG file on disk. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A result containing true when registered or false when the key already exists. Initialization, key, file, parse, and storage failures are returned as structured errors. </dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">std::bad_alloc</td><td>if allocating SVG or registration data fails.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Read, parse, and register an SVG file from a UTF-8 path. </p>
+<p>The file path and bytes are consumed synchronously. Registration does not rasterize the SVG.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true for insertion or false for an existing unchanged key. File/path/read/parse failures are errors. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.registerFromFile(<span class="stringliteral">&quot;status/check&quot;</span>, <span class="stringliteral">&quot;assets/icons/check.svg&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> inserted = *result;</div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a1837d4321d4ded52b031a233c39f4bfb" name="a1837d4321d4ded52b031a233c39f4bfb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1837d4321d4ded52b031a233c39f4bfb">&#9670;&#160;</a></span>registerSvg()</h2>
+<a id="a69d746545558958af936d74259818222" name="a69d746545558958af936d74259818222"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a69d746545558958af936d74259818222">&#9670;&#160;</a></span>registerSvg() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::IconManager::registerSvg </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>svgSource</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Parse and register SVG source for lazy rasterization. </p>
+<p>Source bytes are consumed/copied during registration; rasterization occurs later at rendered size and cached variants are reused. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true for insertion or false when the key already exists; a duplicate preserves the original document. Invalid SVG is an error. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;status/check&quot;</span>};</div>
+<div class="line"><span class="keyword">constexpr</span> std::string_view svgSource = R<span class="stringliteral">&quot;svg(&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 16 16&quot;&gt;&lt;path d=&quot;M2 8l4 4 8-8&quot; fill=&quot;none&quot; stroke=&quot;#fff&quot;/&gt;&lt;/svg&gt;)svg&quot;;</span></div>
+<div class="line"><span class="stringliteral"></span><span class="keyword">auto</span> result = manager.registerSvg(key, svgSource);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> inserted = *result;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a534903943084047c080d68be43105ec2" name="a534903943084047c080d68be43105ec2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a534903943084047c080d68be43105ec2">&#9670;&#160;</a></span>registerSvg() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -403,32 +553,60 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Register an SVG document from source text. </p>
-<p>The key is the stable string name used later with <a class="el" href="#aacefdec239a3b1fcd8aadae4eec05516" title="Return whether an SVG key is registered.">contains()</a>, <a class="el" href="#a1357e128da8bb6d832dfbf9b26e0ddd2" title="Remove a registered SVG document by key.">remove()</a>, and <a class="el" href="#a0de1a60d027cd3b9985f73aebf128f48" title="Return a texture request reference for a registered icon key.">textureRef()</a>. The SVG source is parsed immediately; raster variants are created lazily when the icon is rendered.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td>string icon key. </td></tr>
-    <tr><td class="paramname">svgSource</td><td>Complete SVG document source text. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A result containing true when registered or false when the key already exists. Invalid source, key, initialization, and storage failures are returned as structured errors. </dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">std::bad_alloc</td><td>if allocating SVG or registration data fails.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Parse and register SVG source for lazy rasterization. </p>
+<p>Source bytes are consumed/copied during registration; rasterization occurs later at rendered size and cached variants are reused.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true for insertion or false when the key already exists; a duplicate preserves the original document. Invalid SVG is an error. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">constexpr</span> std::string_view svgSource = R<span class="stringliteral">&quot;svg(&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 16 16&quot;&gt;&lt;path d=&quot;M2 8l4 4 8-8&quot; fill=&quot;none&quot; stroke=&quot;#fff&quot;/&gt;&lt;/svg&gt;)svg&quot;;</span></div>
+<div class="line"><span class="stringliteral"></span><span class="keyword">auto</span> result = manager.registerSvg(<span class="stringliteral">&quot;status/check&quot;</span>, svgSource);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> inserted = *result;</div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a1357e128da8bb6d832dfbf9b26e0ddd2" name="a1357e128da8bb6d832dfbf9b26e0ddd2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1357e128da8bb6d832dfbf9b26e0ddd2">&#9670;&#160;</a></span>remove()</h2>
+<a id="adac525fe89b69cfe54c84dd8c610ccd0" name="adac525fe89b69cfe54c84dd8c610ccd0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adac525fe89b69cfe54c84dd8c610ccd0">&#9670;&#160;</a></span>remove() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::IconManager::remove </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Remove an SVG document and retire its cached raster generations. </p>
+<p>Previously returned request/cached texture generations are invalid after removal. Reacquire after registration; actual GPU allocations retire when recorded uses finish. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true if removed and false if absent. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;status/check&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.remove(key);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = *result;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a62eb6bc8f23d0837a79d098c567a023f" name="a62eb6bc8f23d0837a79d098c567a023f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a62eb6bc8f23d0837a79d098c567a023f">&#9670;&#160;</a></span>remove() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -445,25 +623,24 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Remove a registered SVG document by key. </p>
-<p>Removing an icon also removes its request texture id and cached atlas variants. <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> values previously returned for the key should be treated as invalid after removal.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td>Application-defined icon key to remove. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A result containing true when removed or false when the key is absent. Initialization and storage failures are structured errors.</dd></dl>
-<div class="fragment"></div><!-- fragment --> 
+<p>Remove an SVG document and retire its cached raster generations. </p>
+<p>Previously returned request/cached texture generations are invalid after removal. Reacquire after registration; actual GPU allocations retire when recorded uses finish.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true if removed and false if absent. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.remove(<span class="stringliteral">&quot;status/check&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = *result;</div>
+</div><!-- fragment -->
 </div>
 </div>
-<a id="a0de1a60d027cd3b9985f73aebf128f48" name="a0de1a60d027cd3b9985f73aebf128f48"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0de1a60d027cd3b9985f73aebf128f48">&#9670;&#160;</a></span>textureRef()</h2>
+<a id="af036f5ed97d6f6ccb370fc24feed1cf8" name="af036f5ed97d6f6ccb370fc24feed1cf8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af036f5ed97d6f6ccb370fc24feed1cf8">&#9670;&#160;</a></span>textureRef() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -472,7 +649,42 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a> FlowUi::IconManager::textureRef </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a> &gt; FlowUi::IconManager::textureRef </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Resolve an SVG key to a request <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> for UI rendering. </p>
+<p>This non-const query may publish a request texture; final size-dependent rasterization occurs during frame preparation. sourceKey is borrowed App-owned metadata. Do not overwrite manager-owned handle/UV fields. Reacquire after removal and keep borrowed metadata within the <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> lifetime. <a class="el" href="structFlowUi_1_1ResourceKey.html" title="Human-readable logical identity accepted by FlowUi managers.">ResourceKey</a> overloads infer the manager's resource domain when unspecified and require app-shared scope; incompatible explicit domains/scopes are errors. String keys use that default domain and scope.</p>
+<dl class="section return"><dt>Returns</dt><dd>Missing keys return IconNotFound under <a class="el" href="namespaceFlowUi.html#aad5959c752865996fd9c8799c8aa4b9aa5edd20860058924c2d4642804898e678">IconGenerationFailurePolicy::FailRequest</a>. Other policies successfully return an unavailable reference requesting a fallback or omission, with a once-per-key diagnostic. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;status/check&quot;</span>};</div>
+<div class="line"><span class="keyword">auto</span> result = manager.textureRef(key);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> texture = *result;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a5997178bc80d7aa8d3f7c1c7bfa8cd5c" name="a5997178bc80d7aa8d3f7c1c7bfa8cd5c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5997178bc80d7aa8d3f7c1c7bfa8cd5c">&#9670;&#160;</a></span>textureRef() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a> &gt; FlowUi::IconManager::textureRef </td>
           <td>(</td>
           <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
           <td></td>
@@ -480,29 +692,122 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return a texture request reference for a registered icon key. </p>
-<p>The returned <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> is a request handle, not necessarily the final atlas variant. During frame preparation, FlowUi inspects image commands using this id, rasterizes the SVG at the requested draw size, caches it in an atlas page, and rewrites the command to the cached atlas region.</p>
-<p>Application code may adjust <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> fields such as fitMode and tintEnabled before passing it to image drawing code. Manager-owned id and UV fields should be left unchanged.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td>Registered application-defined icon key. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> request handle for the icon.</dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname"><a class="el" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a></td><td>if the manager or key is invalid, or if a missing icon is requested with the FailRequest policy. Other missing-icon policies return a fallback or skipped reference. Native atlas invariants are fatal.</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"></div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2images__icons__textures.html" title="Images, Icons, and Texture References">Images, Icons, and Texture References</a> </dd></dl>
+<p>Resolve an SVG key to a request <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> for UI rendering. </p>
+<p>This non-const query may publish a request texture; final size-dependent rasterization occurs during frame preparation. sourceKey is borrowed App-owned metadata. Do not overwrite manager-owned handle/UV fields. Reacquire after removal and keep borrowed metadata within the <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> lifetime.</p>
+<dl class="section return"><dt>Returns</dt><dd>Missing keys return IconNotFound under <a class="el" href="namespaceFlowUi.html#aad5959c752865996fd9c8799c8aa4b9aa5edd20860058924c2d4642804898e678">IconGenerationFailurePolicy::FailRequest</a>. Other policies successfully return an unavailable reference requesting a fallback or omission, with a once-per-key diagnostic. Recoverable initialization, validation, allocation, and storage failures are returned as <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>; no exception escapes this noexcept operation.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.textureRef(<span class="stringliteral">&quot;status/check&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> texture = *result;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a8a56630c33ee9c4b7e9fd5083606b50a" name="a8a56630c33ee9c4b7e9fd5083606b50a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8a56630c33ee9c4b7e9fd5083606b50a">&#9670;&#160;</a></span>visitDevAtlases()</h2>
 
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::IconManager::visitDevAtlases </td>
+          <td>(</td>
+          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>userData</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#a59ecaffb155eeea64c6206d7776e48da">DevAtlasVisitor</a></td>          <td class="paramname"><span class="paramname"><em>visitor</em></span>&#160;) const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Observe development catalogue entries without invoking application operations. </p>
+<p>Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts allocated nonempty atlas pages; completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>. Earlier callback effects, including the counter, are not rolled back on failure. With icon support disabled, this hook succeeds with true and makes no callbacks.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a detached manager or null visitor. A failed <a class="el" href="classFlowUi_1_1Result.html">Result</a> is an operational/callback error, not an incomplete-visit bool.</dd></dl>
+<div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line">std::size_t count = 0;</div>
+<div class="line"><span class="keyword">auto</span> result = manager.visitDevAtlases(&amp;count,</div>
+<div class="line">    [](<span class="keywordtype">void</span>* target, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1IconManager_1_1DevAtlasView.html">FlowUi::IconManager::DevAtlasView</a>&amp; page) {</div>
+<div class="line">        <span class="keyword">auto</span>&amp; observedCount = *<span class="keyword">static_cast&lt;</span>std::size_t*<span class="keyword">&gt;</span>(target);</div>
+<div class="line">        <span class="keywordflow">if</span> (page.<a class="code hl_variable" href="structFlowUi_1_1IconManager_1_1DevAtlasView.html#a0024b465be102f9b97aec442bcab8efd">width</a> != 0 &amp;&amp; page.<a class="code hl_variable" href="structFlowUi_1_1IconManager_1_1DevAtlasView.html#a228dd632776a3e607f8b5e1121438bf7">height</a> != 0) {</div>
+<div class="line">            ++observedCount;</div>
+<div class="line">        }</div>
+<div class="line">        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">    });</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe">completed</a> = *result;</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="anamespaceFlowUi_1_1devSystems_1_1agentic_html_aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe"><div class="ttname"><a href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe">FlowUi::devSystems::agentic::AgenticInteractionPhase::completed</a></div><div class="ttdeci">@ completed</div><div class="ttdef"><b>Definition</b> AgenticInteraction.hpp:486</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_1_1DevAtlasView_html"><div class="ttname"><a href="structFlowUi_1_1IconManager_1_1DevAtlasView.html">FlowUi::IconManager::DevAtlasView</a></div><div class="ttdoc">Borrowed SVG atlas-page allocation metrics.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:88</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_1_1DevAtlasView_html_a0024b465be102f9b97aec442bcab8efd"><div class="ttname"><a href="structFlowUi_1_1IconManager_1_1DevAtlasView.html#a0024b465be102f9b97aec442bcab8efd">FlowUi::IconManager::DevAtlasView::width</a></div><div class="ttdeci">std::uint32_t width</div><div class="ttdoc">Page width in pixels.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:94</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_1_1DevAtlasView_html_a228dd632776a3e607f8b5e1121438bf7"><div class="ttname"><a href="structFlowUi_1_1IconManager_1_1DevAtlasView.html#a228dd632776a3e607f8b5e1121438bf7">FlowUi::IconManager::DevAtlasView::height</a></div><div class="ttdeci">std::uint32_t height</div><div class="ttdoc">Page height in pixels.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:96</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="aa90dbb4de193fbf3f7b4490dfab12d0f" name="aa90dbb4de193fbf3f7b4490dfab12d0f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa90dbb4de193fbf3f7b4490dfab12d0f">&#9670;&#160;</a></span>visitDevIcons()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::IconManager::visitDevIcons </td>
+          <td>(</td>
+          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>userData</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#a68da84ac0480b2055ee679f0c2682d1e">DevIconVisitor</a></td>          <td class="paramname"><span class="paramname"><em>visitor</em></span>&#160;) const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Observe development catalogue entries without invoking application operations. </p>
+<p>Development-only synchronous observation under FLOW_UI_DEV_MODE. The example counts materialized raster rows (unrasterized SVG rows are excluded); completed is the separate successful bool payload. Views and their text/pointers/handles are borrowed; copy needed values during the callback, do not mutate the catalogue while visiting, and do not retain callback arguments. Visitor exceptions are converted to <a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a>. Earlier callback effects, including the counter, are not rolled back on failure. With icon support disabled, this hook succeeds with true and makes no callbacks.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success contains true after visiting the whole catalogue (including an empty catalogue), or false when a visitor stops or for a detached manager or null visitor. A failed <a class="el" href="classFlowUi_1_1Result.html">Result</a> is an operational/callback error, not an incomplete-visit bool.</dd></dl>
+<div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line">std::size_t count = 0;</div>
+<div class="line"><span class="keyword">auto</span> result = manager.visitDevIcons(&amp;count,</div>
+<div class="line">    [](<span class="keywordtype">void</span>* target, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1IconManager_1_1DevIconView.html">FlowUi::IconManager::DevIconView</a>&amp; icon) {</div>
+<div class="line">        <span class="keyword">auto</span>&amp; observedCount = *<span class="keyword">static_cast&lt;</span>std::size_t*<span class="keyword">&gt;</span>(target);</div>
+<div class="line">        <span class="keywordflow">if</span> (<span class="keyword">static_cast&lt;</span><span class="keywordtype">bool</span><span class="keyword">&gt;</span>(icon.<a class="code hl_variable" href="structFlowUi_1_1IconManager_1_1DevIconView.html#a23a8ef033d6e177c061e0bb80c8da24c">texture</a>)) {</div>
+<div class="line">            ++observedCount;</div>
+<div class="line">        }</div>
+<div class="line">        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">    });</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> <a class="code hl_enumvalue" href="namespaceFlowUi_1_1devSystems_1_1agentic.html#aa93f7a9aafec6f4cf684da9b2bfe3efcaaa8fb77e57d1ca18d593e909729871fe">completed</a> = *result;</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_1_1DevIconView_html"><div class="ttname"><a href="structFlowUi_1_1IconManager_1_1DevIconView.html">FlowUi::IconManager::DevIconView</a></div><div class="ttdoc">Borrowed SVG raster metadata; reacquire after icon cache mutation.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:59</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_1_1DevIconView_html_a23a8ef033d6e177c061e0bb80c8da24c"><div class="ttname"><a href="structFlowUi_1_1IconManager_1_1DevIconView.html#a23a8ef033d6e177c061e0bb80c8da24c">FlowUi::IconManager::DevIconView::texture</a></div><div class="ttdeci">TextureHandle texture</div><div class="ttdoc">Borrowed generation-checked raster texture binding.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:67</div></div>
+</div><!-- fragment -->
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
@@ -521,7 +826,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1IconManager.html">IconManager</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1IconManager.html">IconManager</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

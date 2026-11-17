@@ -416,6 +416,10 @@ struct DevTypeOps {
 	/** @brief Construct/reset optional presence through the typed adapter. */
 	DevValueOperationStatus (*setOptionalPresence)(
 		void* value, bool present) noexcept = nullptr;
+	/** @brief Copy-construct valid typed storage, preserving the payload's exception when available. */
+	void (*copyConstructOrThrow)(const void* source, void* destination) = nullptr;
+	/** @brief Move-construct valid typed storage; present only when payload transfer cannot throw. */
+	void (*moveConstructNoexcept)(void* source, void* destination) noexcept = nullptr;
 };
 
 /** @brief Immutable reflected type metadata; all indices refer to its schema generation. */

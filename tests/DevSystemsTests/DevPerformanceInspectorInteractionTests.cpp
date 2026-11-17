@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
@@ -30,14 +31,14 @@ child_id(LocalElementName name,
 													  definition, name.token);
 }
 [[nodiscard]] Clay_BoundingBox find_bounds(const App& app, uint32_t clay_id) {
-	for (const auto& node : app.ui().devTreeSnapshot().clay.nodes)
+	for (const auto& node : ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot().clay.nodes)
 		if (node.clayId == clay_id)
 			return node.bounds;
 	return {};
 }
 void check_bounds(App& app, float width) {
-	const auto& snapshot = app.ui().devTreeSnapshot();
-	const auto root_id = app.ui().toClayEID(FlowElementID{.value = inspector_id.value}).id;
+	const auto& snapshot = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot();
+	const auto root_id = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(FlowElementID{.value = inspector_id.value}).id;
 	const auto panel = find_bounds(app, root_id);
 	require(std::abs(panel.width - width) < 1 && panel.x + panel.width <= 1400.5f,
 			"Inspector stays inside its fixed column and screen");
@@ -81,7 +82,7 @@ void check_numeric_center(App& app) {
 			"Numeric text is vertically centered in its editable field");
 }
 void preview_marker(const App& app, float width, const char* phase) {
-	std::cout << "Inspector preview: frame=" << app.ui().devTreeSnapshot().frameNumber
+	std::cout << "Inspector preview: frame=" << ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot().frameNumber
 			  << " width=" << int(width) << " phase=" << phase << '\n';
 }
 
@@ -93,7 +94,7 @@ int main() {
 	config.window.height = 900;
 	config.dev.excludeInternalDevElementsFromCapture = false;
 	config.vk.enableValidation = true;
-	auto app = makeApplication(config);
+	auto app = ::FlowUi::test::requireValue(makeApplication(config));
 	DevInterfaceState session;
 	session.capture_windows.emplace_back(
 		DevWindowInfo{1, "Example application with a deliberately long descriptive window title"});
@@ -183,15 +184,15 @@ int main() {
 	const auto draw = [&](FlowElementID control = {}, int event = 0, bool numeric = false) {
 		require(bool(app.beginFrame()), "begin inspector frame");
 		auto& interaction =
-			const_cast<InteractionSnapshot&>(app.ui().getPreviousFramesInteraction());
+			const_cast<InteractionSnapshot&>(::FlowUi::test::requireValue(app.ui()).get().getPreviousFramesInteraction());
 		interaction = {};
-		auto& input = const_cast<FrameInput&>(app.ui().getCurrentFrameInput());
+		auto& input = const_cast<FrameInput&>(::FlowUi::test::requireValue(app.ui()).get().getCurrentFrameInput());
 		input.windowFocused = true;
 		input.mouseDown = {};
 		input.mouseX = -10;
 		input.mouseY = -10;
 		if (control) {
-			const auto clay_id = app.ui().toClayEID(control).id;
+			const auto clay_id = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(control).id;
 			interaction.hoveredElementIds.emplace_back(clay_id);
 			if (event == 1) {
 				interaction.pressedElementIds.emplace_back(clay_id);
@@ -215,7 +216,7 @@ int main() {
 			workbench_column.clip.horizontal = true;
 			workbench_column.clip.scrollInputDisabled = true;
 			CLAY(CLAY_ID("inspector-workbench-column"), workbench_column) {
-				app.ui()
+				::FlowUi::test::requireValue(app.ui()).get()
 					.createElement(kDevPerformanceWorkbench,
 								   Global<kDevPerformanceWorkbench>("inspector.visual.workbench"))
 					.setParameters({&app, &session, CLAY_ID("inspector-workbench-column")})
@@ -225,7 +226,7 @@ int main() {
 			panel.layout.sizing = {.width = CLAY_SIZING_FIXED(width),
 								   .height = CLAY_SIZING_GROW(0)};
 			CLAY(CLAY_ID("inspector-verification-column"), panel) {
-				app.ui()
+				::FlowUi::test::requireValue(app.ui()).get()
 					.createElement(kDevPerformanceInspector, inspector_id)
 					.setParameters({&app, &session})
 					.draw();
@@ -237,15 +238,15 @@ int main() {
 	for (int frame_count = 0; frame_count < 4; ++frame_count)
 		draw();
 	preview_marker(app, width, "empty");
-	auto& reporting = app.devMonitoring().timingReporting();
+	auto& reporting = ::FlowUi::test::requireValue(app.devMonitoring()).get().timingReporting();
 	require(reporting.begin_capture(1) == 1, "seed retained generation");
 	reporting.admit_tick(1, 1000000000);
 	reporting.note_tick_boundary(2, 1008000000);
 	reporting.stop_capture(2);
 	reporting.seal_capture();
 	draw();
-	auto* state = app.elements().getStatePointer(kDevPerformanceInspector, MainWindowId,
-												 FlowElementID{.value = inspector_id.value});
+	auto* state = ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.elements()).get().getStatePointer(kDevPerformanceInspector, MainWindowId,
+												 FlowElementID{.value = inspector_id.value}));
 	require(state != nullptr, "inspector state exists");
 	state->analysis = analyze_performance(fixture, 0, 0);
 	state->analysis_target_ms = 4;

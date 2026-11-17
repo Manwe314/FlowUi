@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,24 +106,127 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::GpuMemorySnapshot Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DevMemoryTypes_8hpp_source.html">DevMemoryTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a6f89d4206140b927d563fd04cc5d1b4e" id="r_a6f89d4206140b927d563fd04cc5d1b4e"><td class="memItemLeft"><a id="a6f89d4206140b927d563fd04cc5d1b4e" name="a6f89d4206140b927d563fd04cc5d1b4e"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>capturedAtNs</b> = 0u</td></tr>
-<tr class="memitem:a6a1deee483f7cce9bdcbc299050e6825" id="r_a6a1deee483f7cce9bdcbc299050e6825"><td class="memItemLeft"><a id="a6a1deee483f7cce9bdcbc299050e6825" name="a6a1deee483f7cce9bdcbc299050e6825"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>sampleDurationNs</b> = 0u</td></tr>
-<tr class="memitem:a834096f517b0cf7e2a527f833bbf43df" id="r_a834096f517b0cf7e2a527f833bbf43df"><td class="memItemLeft"><a id="a834096f517b0cf7e2a527f833bbf43df" name="a834096f517b0cf7e2a527f833bbf43df"></a>
-uint64_t&#160;</td><td class="memItemRight"><b>sampleSequence</b> = 0u</td></tr>
-<tr class="memitem:ae014f8a7056b4794cd9b877497b6630e" id="r_ae014f8a7056b4794cd9b877497b6630e"><td class="memItemLeft"><a id="ae014f8a7056b4794cd9b877497b6630e" name="ae014f8a7056b4794cd9b877497b6630e"></a>
-std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1GpuHeapMemorySample.html">GpuHeapMemorySample</a> &gt;&#160;</td><td class="memItemRight"><b>heaps</b> {}</td></tr>
-<tr class="memitem:a92599d619bfa0c03eb6e0c530c23d9c1" id="r_a92599d619bfa0c03eb6e0c530c23d9c1"><td class="memItemLeft"><a id="a92599d619bfa0c03eb6e0c530c23d9c1" name="a92599d619bfa0c03eb6e0c530c23d9c1"></a>
-bool&#160;</td><td class="memItemRight"><b>memoryBudgetExtensionEnabled</b> = false</td></tr>
-<tr class="memitem:ad96093b433fbd839feeda7ecd10065a7" id="r_ad96093b433fbd839feeda7ecd10065a7"><td class="memItemLeft"><a id="ad96093b433fbd839feeda7ecd10065a7" name="ad96093b433fbd839feeda7ecd10065a7"></a>
-bool&#160;</td><td class="memItemRight"><b>detailedStatisticsIncluded</b> = false</td></tr>
-<tr class="memitem:a8e732fc1d738b15acf750f4867f84910" id="r_a8e732fc1d738b15acf750f4867f84910"><td class="memItemLeft"><a id="a8e732fc1d738b15acf750f4867f84910" name="a8e732fc1d738b15acf750f4867f84910"></a>
-bool&#160;</td><td class="memItemRight"><b>available</b> = false</td></tr>
+<tr class="memitem:a6f89d4206140b927d563fd04cc5d1b4e" id="r_a6f89d4206140b927d563fd04cc5d1b4e"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a6f89d4206140b927d563fd04cc5d1b4e">capturedAtNs</a> = 0u</td></tr>
+<tr class="memitem:a6a1deee483f7cce9bdcbc299050e6825" id="r_a6a1deee483f7cce9bdcbc299050e6825"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a6a1deee483f7cce9bdcbc299050e6825">sampleDurationNs</a> = 0u</td></tr>
+<tr class="memitem:a834096f517b0cf7e2a527f833bbf43df" id="r_a834096f517b0cf7e2a527f833bbf43df"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a834096f517b0cf7e2a527f833bbf43df">sampleSequence</a> = 0u</td></tr>
+<tr class="memitem:ae014f8a7056b4794cd9b877497b6630e" id="r_ae014f8a7056b4794cd9b877497b6630e"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1GpuHeapMemorySample.html">GpuHeapMemorySample</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ae014f8a7056b4794cd9b877497b6630e">heaps</a> {}</td></tr>
+<tr class="memitem:a92599d619bfa0c03eb6e0c530c23d9c1" id="r_a92599d619bfa0c03eb6e0c530c23d9c1"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a92599d619bfa0c03eb6e0c530c23d9c1">memoryBudgetExtensionEnabled</a> = false</td></tr>
+<tr class="memitem:ad96093b433fbd839feeda7ecd10065a7" id="r_ad96093b433fbd839feeda7ecd10065a7"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ad96093b433fbd839feeda7ecd10065a7">detailedStatisticsIncluded</a> = false</td></tr>
+<tr class="memitem:a8e732fc1d738b15acf750f4867f84910" id="r_a8e732fc1d738b15acf750f4867f84910"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a8e732fc1d738b15acf750f4867f84910">available</a> = false</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Owned GPU heap sample collected without waiting for GPU completion. available distinguishes unsupported sampling from an empty measured result. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a8e732fc1d738b15acf750f4867f84910" name="a8e732fc1d738b15acf750f4867f84910"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8e732fc1d738b15acf750f4867f84910">&#9670;&#160;</a></span>available</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::GpuMemorySnapshot::available = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether GPU sampling produced valid evidence. </p>
+
+</div>
+</div>
+<a id="a6f89d4206140b927d563fd04cc5d1b4e" name="a6f89d4206140b927d563fd04cc5d1b4e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6f89d4206140b927d563fd04cc5d1b4e">&#9670;&#160;</a></span>capturedAtNs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuMemorySnapshot::capturedAtNs = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Monotonic timestamp of this sample in nanoseconds. </p>
+
+</div>
+</div>
+<a id="ad96093b433fbd839feeda7ecd10065a7" name="ad96093b433fbd839feeda7ecd10065a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad96093b433fbd839feeda7ecd10065a7">&#9670;&#160;</a></span>detailedStatisticsIncluded</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::GpuMemorySnapshot::detailedStatisticsIncluded = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether detailed allocation/block statistics were collected. </p>
+
+</div>
+</div>
+<a id="ae014f8a7056b4794cd9b877497b6630e" name="ae014f8a7056b4794cd9b877497b6630e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae014f8a7056b4794cd9b877497b6630e">&#9670;&#160;</a></span>heaps</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="structFlowUi_1_1devSystems_1_1GpuHeapMemorySample.html">GpuHeapMemorySample</a>&gt; FlowUi::devSystems::GpuMemorySnapshot::heaps {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Owned per-heap measurements. </p>
+
+</div>
+</div>
+<a id="a92599d619bfa0c03eb6e0c530c23d9c1" name="a92599d619bfa0c03eb6e0c530c23d9c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a92599d619bfa0c03eb6e0c530c23d9c1">&#9670;&#160;</a></span>memoryBudgetExtensionEnabled</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::devSystems::GpuMemorySnapshot::memoryBudgetExtensionEnabled = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether the Vulkan memory-budget extension is enabled. </p>
+
+</div>
+</div>
+<a id="a6a1deee483f7cce9bdcbc299050e6825" name="a6a1deee483f7cce9bdcbc299050e6825"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6a1deee483f7cce9bdcbc299050e6825">&#9670;&#160;</a></span>sampleDurationNs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuMemorySnapshot::sampleDurationNs = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Time spent collecting this sample in nanoseconds. </p>
+
+</div>
+</div>
+<a id="a834096f517b0cf7e2a527f833bbf43df" name="a834096f517b0cf7e2a527f833bbf43df"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a834096f517b0cf7e2a527f833bbf43df">&#9670;&#160;</a></span>sampleSequence</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t FlowUi::devSystems::GpuMemorySnapshot::sampleSequence = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Monotonic GPU sample sequence. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devMonitoringAndReporting/memory/<a class="el" href="DevMemoryTypes_8hpp_source.html">DevMemoryTypes.hpp</a></li>
 </ul>
@@ -140,7 +243,7 @@ bool&#160;</td><td class="memItemRight"><b>available</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1GpuMemorySnapshot.html">GpuMemorySnapshot</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1GpuMemorySnapshot.html">GpuMemorySnapshot</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

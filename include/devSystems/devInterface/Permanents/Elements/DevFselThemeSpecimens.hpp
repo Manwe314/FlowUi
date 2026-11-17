@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #pragma once
 #include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
@@ -34,7 +35,7 @@ void draw_fsel_theme_specimens(Context& context, App& app, SpecimenState& sandbo
 	};
 
 	if (sandbox.preview_layout < 2 || sandbox.preview_layout == 2 || sandbox.preview_layout == 3)
-		CLAY(context.clayID("buttons"), specimen_row()) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("buttons")), specimen_row()) {
 			for (uint32_t specimen = 0; specimen < 2; ++specimen) {
 				if (sandbox.preview_layout >= 2 && sandbox.preview_layout != specimen + 2)
 					continue;
@@ -43,7 +44,7 @@ void draw_fsel_theme_specimens(Context& context, App& app, SpecimenState& sandbo
 				parameters.contentMode = FSEL::ButtonContentMode::TextOnly;
 				parameters.enabled = specimen == 0;
 				parameters.onActivate = ActionCall{
-					app.actions().uiActions().make(kFselThemeToggleSample, sandbox.sample_checked)};
+					FlowUi::ValueOrThrow(app.actions()).get().uiActions().make(kFselThemeToggleSample, sandbox.sample_checked)};
 				context.uiManager
 					.createElement(FSEL::kButton,
 								   RuntimeName("sample-button-" + std::to_string(specimen)))
@@ -53,12 +54,12 @@ void draw_fsel_theme_specimens(Context& context, App& app, SpecimenState& sandbo
 			}
 		}
 	if (sandbox.preview_layout < 2 || sandbox.preview_layout == 4 || sandbox.preview_layout == 5)
-		CLAY(context.clayID("toggles"), specimen_row()) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("toggles")), specimen_row()) {
 			if (sandbox.preview_layout < 2 || sandbox.preview_layout == 4) {
 				FSEL::CheckboxParameters checkbox{};
 				checkbox.isChecked = sandbox.sample_checked;
 				checkbox.onToggle = ActionCall{
-					app.actions().uiActions().make(kFselThemeToggleSample, sandbox.sample_checked)};
+					FlowUi::ValueOrThrow(app.actions()).get().uiActions().make(kFselThemeToggleSample, sandbox.sample_checked)};
 				context.uiManager.createElement(FSEL::kCheckbox, "sample-checkbox")
 					.setParameters(checkbox)
 					.setDevInternalCapture(true)
@@ -68,7 +69,7 @@ void draw_fsel_theme_specimens(Context& context, App& app, SpecimenState& sandbo
 				FSEL::SwitchParameters toggle{};
 				toggle.isOn = sandbox.sample_switch;
 				toggle.onToggle = ActionCall{
-					app.actions().uiActions().make(kFselThemeToggleSample, sandbox.sample_switch)};
+					FlowUi::ValueOrThrow(app.actions()).get().uiActions().make(kFselThemeToggleSample, sandbox.sample_switch)};
 				context.uiManager.createElement(FSEL::kSwitch, "sample-switch")
 					.setParameters(toggle)
 					.setDevInternalCapture(true)

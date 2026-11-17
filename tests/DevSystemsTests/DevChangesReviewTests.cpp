@@ -25,11 +25,16 @@ namespace {
 using namespace FlowUi::devSystems::tooling;
 using changes_review_test::Element;
 
-[[nodiscard]] const DevChangesReviewRow& amount_row(const DevChangesReviewPlan& plan) {
+[[nodiscard]] const DevChangesReviewRow& review_row(const DevChangesReviewPlan& plan,
+												  std::string_view fieldPath) {
 	const auto found = std::find_if(plan.rows.begin(), plan.rows.end(),
-									[](const auto& row) { return row.field_path == "amount"; });
+		[&](const auto& row) { return row.field_path == fieldPath; });
 	assert(found != plan.rows.end());
 	return *found;
+}
+
+[[nodiscard]] const DevChangesReviewRow& amount_row(const DevChangesReviewPlan& plan) {
+	return review_row(plan, "amount");
 }
 
 [[nodiscard]] std::string read_file(const std::filesystem::path& path) {
@@ -269,10 +274,13 @@ void verify_external_reconciliation_and_unresolved(const std::filesystem::path& 
 	replace_once(external, "\"fieldPath\": \"amount\"", "\"fieldPath\": \"missing_amount\"");
 	write_file(path, external);
 	plan = fixture.pipeline.query_review();
-	assert(plan.counts.errors == 1 && !plan.can_commit && plan.rows.size() == 1);
-	assert(plan.rows.front().reason.find("field 'missing_amount'") != std::string::npos);
-	assert(plan.rows.front().reason.find("'missing_amount' is missing from type '") !=
-		   std::string::npos);
+	assert(plan.counts.errors == 1 && !plan.can_commit);
+	assert(std::count_if(plan.rows.begin(), plan.rows.end(), [](const auto& row) {
+		return row.field_path == "missing_amount";
+	}) == 1);
+	const auto& missingRow = review_row(plan, "missing_amount");
+	assert(missingRow.reason.find("field 'missing_amount'") != std::string::npos);
+	assert(missingRow.reason.find("'missing_amount' is missing from type '") != std::string::npos);
 
 	external = compatible_manifest;
 	const auto type_position = external.find("\"valueTypeId\": \"");
@@ -534,7 +542,7 @@ void verify_unknown_memory_members(const std::filesystem::path& directory) {
 		assert(!pipeline.commit_review(plan).applied);
 		assert(read_file(path) == modified);
 	};
-	reject_member("\"version\":1", "futurePolicy");
+	reject_member("\"version\":", "futurePolicy");
 	reject_member("\"key\":", "futureTargetMetadata");
 	reject_member("\"kind\":", "futureEvidenceMetadata");
 	write_file(path, original);
@@ -629,10 +637,10 @@ void verify_texture_metadata_contract(const std::filesystem::path& directory) {
 	write_file(path, bake_detail::encode_manifest(obsolete));
 	plan = fixture.pipeline.query_review();
 	assert(plan.valid_disk && plan.counts.errors == 1 && !plan.can_commit);
-	assert(plan.rows.front().validity == DevChangesValidity::Invalid);
+	assert(review_row(plan, original.entries.front().fieldPath).validity == DevChangesValidity::Invalid);
 	DevChangesReviewRequest removal;
 	removal.decisions.emplace_back(
-		DevChangesDecisionEntry{plan.rows.front().key, DevChangesDecision::Remove});
+		DevChangesDecisionEntry{review_row(plan, original.entries.front().fieldPath).key, DevChangesDecision::Remove});
 	plan = fixture.pipeline.query_review(removal);
 	assert(plan.can_commit && plan.counts.removals == 1);
 	assert(fixture.pipeline.commit_review(plan).applied);

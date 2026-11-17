@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #pragma once
 
 #include <string_view>
@@ -358,140 +359,140 @@ inline constexpr std::string_view kCaptureSvg = R"svg(
 
 #if FLOWUI_INCLUDE_ICON_MANAGER
 inline void registerDevInterfaceIcons(IconManager& icons) {
-	if (!icons.contains(kErrorReporterKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kErrorReporterKey))) {
 		(void)icons.registerSvg(kErrorReporterKey, kErrorReporterSvg);
 	}
-	if (!icons.contains(kUnbakedChangesReporterKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kUnbakedChangesReporterKey))) {
 		(void)icons.registerSvg(
 			kUnbakedChangesReporterKey, kUnbakedChangesReporterSvg);
 	}
-	if (!icons.contains(kTreeExpandedKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kTreeExpandedKey))) {
 		(void)icons.registerSvg(kTreeExpandedKey, kTreeExpandedSvg);
 	}
-	if (!icons.contains(kTreeCollapsedKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kTreeCollapsedKey))) {
 		(void)icons.registerSvg(kTreeCollapsedKey, kTreeCollapsedSvg);
 	}
-	if (!icons.contains(kCopyKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kCopyKey))) {
 		(void)icons.registerSvg(kCopyKey, kCopySvg);
 	}
-	if (!icons.contains(kPasteKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kPasteKey))) {
 		(void)icons.registerSvg(kPasteKey, kPasteSvg);
 	}
-	if (!icons.contains(kUndoKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kUndoKey))) {
 		(void)icons.registerSvg(kUndoKey, kUndoSvg);
 	}
-	if (!icons.contains(kRedoKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kRedoKey))) {
 		(void)icons.registerSvg(kRedoKey, kRedoSvg);
 	}
-	if (!icons.contains(kRevertKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kRevertKey))) {
 		(void)icons.registerSvg(kRevertKey, kRevertSvg);
 	}
-	if (!icons.contains(kExpandKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kExpandKey))) {
 		(void)icons.registerSvg(kExpandKey, kExpandSvg);
 	}
-	if (!icons.contains(kCollapseKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kCollapseKey))) {
 		(void)icons.registerSvg(kCollapseKey, kCollapseSvg);
 	}
-	if (!icons.contains(kPreviewPanKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kPreviewPanKey))) {
 		(void)icons.registerSvg(kPreviewPanKey, kPreviewPanSvg);
 	}
-	if (!icons.contains(kPreviewResetKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kPreviewResetKey))) {
 		(void)icons.registerSvg(kPreviewResetKey, kPreviewResetSvg);
 	}
-	if (!icons.contains(kPreviewRulerKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kPreviewRulerKey))) {
 		(void)icons.registerSvg(kPreviewRulerKey, kPreviewRulerSvg);
 	}
-	if (!icons.contains(kAddKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kAddKey))) {
 		(void)icons.registerSvg(kAddKey, kAddSvg);
 	}
-	if (!icons.contains(kRemoveKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kRemoveKey))) {
 		(void)icons.registerSvg(kRemoveKey, kRemoveSvg);
 	}
-	if (!icons.contains(kUpKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kUpKey))) {
 		(void)icons.registerSvg(kUpKey, kUpSvg);
 	}
-	if (!icons.contains(kDownKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kDownKey))) {
 		(void)icons.registerSvg(kDownKey, kDownSvg);
 	}
-	if (!icons.contains(kBackKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kBackKey))) {
 		(void)icons.registerSvg(kBackKey, kBackSvg);
 	}
-	if (!icons.contains(kForwardKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kForwardKey))) {
 		(void)icons.registerSvg(kForwardKey, kForwardSvg);
 	}
-	if (!icons.contains(kZoomInKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kZoomInKey))) {
 		(void)icons.registerSvg(kZoomInKey, kZoomInSvg);
 	}
-	if (!icons.contains(kZoomOutKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kZoomOutKey))) {
 		(void)icons.registerSvg(kZoomOutKey, kZoomOutSvg);
 	}
-	if (!icons.contains(kFitKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kFitKey))) {
 		(void)icons.registerSvg(kFitKey, kFitSvg);
 	}
-	if (!icons.contains(kClearKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kClearKey))) {
 		(void)icons.registerSvg(kClearKey, kClearSvg);
 	}
-	if (!icons.contains(kHistoryKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kHistoryKey))) {
 		(void)icons.registerSvg(kHistoryKey, kHistorySvg);
 	}
-	if (!icons.contains(kSettingsKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kSettingsKey))) {
 		(void)icons.registerSvg(kSettingsKey, kSettingsSvg);
 	}
-	if (!icons.contains(kRefreshKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kRefreshKey))) {
 		(void)icons.registerSvg(kRefreshKey, kRefreshSvg);
 	}
-	if (!icons.contains(kExportKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kExportKey))) {
 		(void)icons.registerSvg(kExportKey, kExportSvg);
 	}
-	if (!icons.contains(kSaveKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kSaveKey))) {
 		(void)icons.registerSvg(kSaveKey, kSaveSvg);
 	}
-	if (!icons.contains(kOpenKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kOpenKey))) {
 		(void)icons.registerSvg(kOpenKey, kOpenSvg);
 	}
-	if (!icons.contains(kPlayKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kPlayKey))) {
 		(void)icons.registerSvg(kPlayKey, kPlaySvg);
 	}
-	if (!icons.contains(kPauseKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kPauseKey))) {
 		(void)icons.registerSvg(kPauseKey, kPauseSvg);
 	}
-	if (!icons.contains(kStopKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kStopKey))) {
 		(void)icons.registerSvg(kStopKey, kStopSvg);
 	}
-	if (!icons.contains(kRecordKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kRecordKey))) {
 		(void)icons.registerSvg(kRecordKey, kRecordSvg);
 	}
-	if (!icons.contains(kEditKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kEditKey))) {
 		(void)icons.registerSvg(kEditKey, kEditSvg);
 	}
-	if (!icons.contains(kCheckKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kCheckKey))) {
 		(void)icons.registerSvg(kCheckKey, kCheckSvg);
 	}
-	if (!icons.contains(kShowKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kShowKey))) {
 		(void)icons.registerSvg(kShowKey, kShowSvg);
 	}
-	if (!icons.contains(kHideKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kHideKey))) {
 		(void)icons.registerSvg(kHideKey, kHideSvg);
 	}
-	if (!icons.contains(kPinKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kPinKey))) {
 		(void)icons.registerSvg(kPinKey, kPinSvg);
 	}
-	if (!icons.contains(kUnpinKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kUnpinKey))) {
 		(void)icons.registerSvg(kUnpinKey, kUnpinSvg);
 	}
-	if (!icons.contains(kInspectKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kInspectKey))) {
 		(void)icons.registerSvg(kInspectKey, kInspectSvg);
 	}
-	if (!icons.contains(kLockKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kLockKey))) {
 		(void)icons.registerSvg(kLockKey, kLockSvg);
 	}
-	if (!icons.contains(kUnlockKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kUnlockKey))) {
 		(void)icons.registerSvg(kUnlockKey, kUnlockSvg);
 	}
-	if (!icons.contains(kFollowKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kFollowKey))) {
 		(void)icons.registerSvg(kFollowKey, kFollowSvg);
 	}
-	if (!icons.contains(kCaptureKey)) {
+	if (!FlowUi::ValueOrThrow(icons.contains(kCaptureKey))) {
 		(void)icons.registerSvg(kCaptureKey, kCaptureSvg);
 	}
 }

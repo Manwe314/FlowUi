@@ -18,7 +18,10 @@ class DevTooling;
 namespace FlowUi::devSystems::agentic {
 /** Gather bounded provenance before measurement admission. Reads executable and resource files
  * using the application's exact resource policy, owns reflected values, and releases every lease
- * before returning. Unavailable facts remain unknown with explicit scope/limitations. */
+ * before returning. Unavailable facts remain unknown with explicit scope/limitations.
+ * On Linux the service retains one successful loaded-process executable identity for its run;
+ * resource hashes and per-capture settings are freshly collected. The byte budget
+ * still applies to the full executable size. */
 [[nodiscard]] Status complete_provenance(AgenticCaptureSnapshot& snapshot, App& application,
 										 DevMonitoringAndReporting& monitoring, DevTooling& tooling,
 										 const ResourceConfig& resources) noexcept;

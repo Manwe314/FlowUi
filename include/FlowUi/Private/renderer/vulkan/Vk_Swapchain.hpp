@@ -57,6 +57,6 @@ struct SwapchainGeneration {
 		VkSurfaceKHR surface,
 		VkExtent2D preferredExtent = {},
 		VkSwapchainKHR oldSwapchain = VK_NULL_HANDLE);
-	void waitForPresentCompletion(VulkanContext& vk) const;
+	[[nodiscard]] VkResult waitForPresentCompletion(VulkanContext& vk) const noexcept;
 	void destroy(VulkanContext& vk);
 };

@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Performance/Selector/DevPerformanceSelector.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/RadioChoice.hpp"
@@ -30,7 +31,7 @@ void draw_section_title(Context& context, LocalElementName name, std::string_vie
 	section.backgroundColor = interface_theme::kDepth1Panel;
 	section.border = {.color = interface_theme::kBorderPrimary,
 					  .width = Clay_BorderWidth{0, 0, 0, 1, 0}};
-	CLAY(context.clayID(name), section) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(name)), section) {
 		draw_text(context, label);
 	}
 }
@@ -62,11 +63,11 @@ void draw_scope(Context& context, DevPerformanceSelection& selection) {
 	const auto windows =
 		context.params.interfaceState && context.params.interfaceState->capture_metadata_generation
 			? context.params.interfaceState->capture_windows
-		: context.params.app ? context.params.app->devWindowSnapshot()
+		: context.params.app ? FlowUi::ValueOrThrow(context.params.app->devWindowSnapshot())
 							 : std::vector<DevWindowInfo>{};
 	const auto threads =
 		context.params.app
-			? context.params.app->devMonitoring().timingReporting().cpuTrackSnapshot()
+			? FlowUi::ValueOrThrow(context.params.app->devMonitoring()).get().timingReporting().cpuTrackSnapshot()
 			: std::vector<TimingTrackDescriptor>{};
 	auto& scope = selection.selected_scope;
 	if (scope.id != 0) {
@@ -125,9 +126,9 @@ void draw_scope(Context& context, DevPerformanceSelection& selection) {
 	controls.layout.padding = Clay_Padding{8, 8, 7, 7};
 	controls.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
 	controls.backgroundColor = interface_theme::kDepth1Panel;
-	CLAY(context.clayID("hardware-controls"), controls) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("hardware-controls")), controls) {
 		const auto choices = selector_choice_track();
-		CLAY(context.clayID("hardware"), choices) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("hardware")), choices) {
 			draw_choice(context, LocalElementName{"domain"}, 0, selection.hardware_domain, "Both");
 			draw_choice(context, LocalElementName{"domain"}, 1, selection.hardware_domain,
 						"CPU Only");
@@ -148,7 +149,7 @@ void draw_scope(Context& context, DevPerformanceSelection& selection) {
 void draw_zones(Context& context, DevPerformanceSelection& selection) {
 	auto descriptors =
 		context.params.app
-			? context.params.app->devMonitoring().timingReporting().descriptorSnapshot()
+			? FlowUi::ValueOrThrow(context.params.app->devMonitoring()).get().timingReporting().descriptorSnapshot()
 			: std::vector<TimingZoneDescriptor>{};
 	std::ranges::sort(descriptors, [](const auto& left, const auto& right) {
 		if (left.category != right.category)
@@ -216,10 +217,10 @@ void DevPerformanceSelector::buildElement(BuildContext& context) {
 			header.backgroundColor = interface_theme::kDepth2Ink;
 			header.border = {.color = interface_theme::kBorderPrimary,
 							 .width = Clay_BorderWidth{0, 0, 0, 1, 0}};
-			CLAY(context.clayID("header"), header) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("header")), header) {
 				draw_text(context, "Performance Scope:", 12);
 				const auto toggle = selector_choice_track();
-				CLAY(context.clayID("mode-toggle"), toggle) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("mode-toggle")), toggle) {
 					draw_choice(context, LocalElementName{"mode"}, 0, selection.selector_mode,
 								"Scope");
 					draw_choice(context, LocalElementName{"mode"}, 1, selection.selector_mode,
@@ -229,7 +230,7 @@ void DevPerformanceSelector::buildElement(BuildContext& context) {
 			Clay_ElementDeclaration main{};
 			main.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
 			main.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
-			CLAY(context.clayID("main"), main) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("main")), main) {
 				if (selection.selector_mode == 1) {
 					context.uiManager.createElement(kDevSelectorSearch, LocalElementName{"search"})
 						.setParameters(DevSelectorSearchParameters{
@@ -243,8 +244,8 @@ void DevPerformanceSelector::buildElement(BuildContext& context) {
 				content.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 				content.backgroundColor = interface_theme::kDepth0Keel;
 				const auto scroll_id =
-					context.clayID(selection.selector_mode == 0 ? LocalElementName{"scope-scroll"}
-																: LocalElementName{"zone-scroll"});
+					FlowUi::ValueOrThrow(context.clayID(selection.selector_mode == 0 ? LocalElementName{"scope-scroll"}
+																: LocalElementName{"zone-scroll"}));
 				const auto scroll = Clay_GetScrollContainerData(scroll_id);
 				content.clip = {.vertical = true,
 								.childOffset = scroll.found && scroll.scrollPosition
@@ -257,7 +258,7 @@ void DevPerformanceSelector::buildElement(BuildContext& context) {
 					rows.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 					rows.layout.padding = Clay_Padding{0, 0, 0, 0};
 					rows.layout.childGap = 0;
-					CLAY(context.clayID("rows"), rows) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("rows")), rows) {
 						if (selection.selector_mode == 0)
 							draw_scope(context, selection);
 						else

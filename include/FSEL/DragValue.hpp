@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -227,7 +229,7 @@ struct DragValue {
 			return;
 		}
 		const FSELDragValueTheme& theme =
-			context.uiManager.template theme<FSELTheme>().dragValueTheme;
+			FlowUi::ValueOrThrow(context.uiManager.template theme<FSELTheme>()).get().dragValueTheme;
 		const bool editCursor =
 			context.state().mode == DragValueInteractionMode::Editing ||
 			!canDrag(context.params);
@@ -355,7 +357,7 @@ struct DragValue {
 	 */
 	static void buildElement(BuildContext& context) {
 		const FSELDragValueTheme& dragTheme =
-			context.uiManager.template theme<FSELTheme>().dragValueTheme;
+			FlowUi::ValueOrThrow(context.uiManager.template theme<FSELTheme>()).get().dragValueTheme;
 		const FSELTextFieldTheme& theme = dragTheme.field;
 		auto& state = context.state();
 		auto& manager = context.uiManager.inputFields();
@@ -376,9 +378,9 @@ struct DragValue {
 		const bool editing = state.mode == DragValueInteractionMode::Editing;
 
 		const Clay_ElementId contentId = context.uiManager.toClayEID(
-			context.part(Parts::content));
+			FlowUi::ValueOrThrow(context.part(Parts::content)));
 		const Clay_ElementId textId = context.uiManager.toClayEID(
-			context.part(Parts::text));
+			FlowUi::ValueOrThrow(context.part(Parts::text)));
 		const Clay_Padding padding = context.params.padding.value_or(theme.padding);
 		const Clay_Dimensions viewport = detail::text_field::resolveViewport(
 			contentId,
@@ -435,7 +437,7 @@ struct DragValue {
 				return transaction.origin != EditOrigin::Programmatic;
 			});
 		if (textEditable && userTextChanged) {
-			const std::string fieldText = field.text.copy();
+			const std::string fieldText = FlowUi::ValueOrThrow(field.text.copy());
 			const std::string sanitized = detail::numeric_text::sanitize<T>(
 				fieldText,
 				context.params.format.allowScientificInput);
@@ -462,7 +464,7 @@ struct DragValue {
 
 		const detail::numeric_text::ClassifiedValue<T> classified =
 			detail::numeric_text::classify(
-				detail::numeric_text::parse<T>(field.text.copy()),
+				detail::numeric_text::parse<T>(FlowUi::ValueOrThrow(field.text.copy())),
 				bounds);
 		const std::optional<T> candidate = classified.candidate;
 		state.textStatus = classified.status;
@@ -635,7 +637,7 @@ private:
 
 	static void requestDragCursor(InteractionContext& context) {
 		const FSELDragValueTheme& theme =
-			context.uiManager.template theme<FSELTheme>().dragValueTheme;
+			FlowUi::ValueOrThrow(context.uiManager.template theme<FSELTheme>()).get().dragValueTheme;
 		context.uiManager.requestCursor(
 			context.params.dragCursor.value_or(theme.dragCursor),
 			context.params.cursorPriority.value_or(theme.cursorPriority));

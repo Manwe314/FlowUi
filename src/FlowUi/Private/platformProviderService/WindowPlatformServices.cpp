@@ -1,6 +1,6 @@
 #include "FlowUi/Private/platformProviderService/WindowPlatformServices.hpp"
 
-#include "FlowUi/Private/ErrorReporting.hpp"
+#include "FlowUi/Private/ApiBoundary.hpp"
 
 #include <utility>
 
@@ -21,31 +21,28 @@ bool WindowPlatformServices::hasClipboardAccess() const noexcept {
 	return service_ && state_ && service_->hasClipboardAccess(*state_);
 }
 
-void WindowPlatformServices::setClipboardText(std::string_view text) const {
+Status WindowPlatformServices::setClipboardText(std::string_view text) const noexcept try {
 	if (!service_ || !state_)
-		return;
-	const auto status = service_->setClipboardText(*state_, text);
-	if (!status)
-		reportErrorEvent({.error = status.error(), .kind = ErrorEventKind::Reported});
+		return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::WindowWriteClipboard));
+	return service_->setClipboardText(*state_, text);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::WindowWriteClipboard));
 }
 
-std::string WindowPlatformServices::clipboardText() const {
+Result<std::string> WindowPlatformServices::clipboardText() const noexcept try {
 	if (!service_ || !state_)
-		return {};
-	auto result = service_->clipboardText(*state_);
-	if (!result) {
-		reportErrorEvent({.error = result.error(), .kind = ErrorEventKind::Reported});
-		return {};
-	}
-	return std::move(*result);
+		return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::WindowReadClipboard));
+	return service_->clipboardText(*state_);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::WindowReadClipboard));
 }
 
-void WindowPlatformServices::setCursor(CursorType cursor) const {
+Status WindowPlatformServices::setCursor(CursorType cursor) const noexcept try {
 	if (!service_ || !state_)
-		return;
-	const auto status = service_->setCursor(*state_, cursor);
-	if (!status)
-		reportErrorEvent({.error = status.error(), .kind = ErrorEventKind::Reported});
+		return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::WindowSetCursor));
+	return service_->setCursor(*state_, cursor);
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::WindowSetCursor));
 }
 
 } // namespace FlowUi::detail::platform

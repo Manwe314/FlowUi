@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.hpp"
 #include "FlowUi/Public/input/Key.hpp"
 
@@ -38,8 +39,8 @@ void activate(void* target, uint64_t action, uint64_t value) {
 	if (navigation.ui_manager) {
 		navigation.ui_manager->inputFields().requestCaret(FlowElementID{},
 														  CaretRequestKind::ClearAll);
-		navigation.ui_manager->shortcuts().setFocusedElement(
-			action == Domain ? navigation.domains_id : navigation.browser_id);
+		FlowUi::ValueOrThrow(navigation.ui_manager->shortcuts().setFocusedElement(
+			action == Domain ? navigation.domains_id : navigation.browser_id));
 	}
 	if (action == Domain) {
 		select_catalogue_domain(state, static_cast<DevCatalogueDomain>(value));
@@ -135,12 +136,12 @@ void domain_choice(Context& context, Identity identity, std::string_view label, 
 	caption.layout.sizing.height = CLAY_SIZING_GROW(0);
 	caption.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
 	caption.clip = {.horizontal = true, .scrollInputDisabled = true};
-	CLAY(context.clayID(Keyed("row-caption", identity.token)), caption)
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("row-caption", identity.token))), caption)
 	CLAY_TEXT(context.uiManager.toClayString(label), CLAY_TEXT_CONFIG(configuration));
 	auto count = ui::row(19);
 	count.layout.sizing.width = CLAY_SIZING_FIXED(32);
 	count.layout.childAlignment.x = CLAY_ALIGN_X_RIGHT;
-	CLAY(context.clayID(Keyed("row-count", identity.token)), count) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("row-count", identity.token))), count) {
 		configuration.textColor = interface_theme::kTextSecondary;
 		configuration.textAlignment = CLAY_TEXT_ALIGN_RIGHT;
 		CLAY_TEXT(context.uiManager.toClayString(badge), CLAY_TEXT_CONFIG(configuration));
@@ -176,21 +177,21 @@ void control(Context& context, Identity identity, std::string_view label, uint64
 	caption.layout.sizing = {CLAY_SIZING_PERCENT(badge.empty() ? 1.0f : .64f), CLAY_SIZING_GROW(0)};
 	caption.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
 	caption.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
-	CLAY(context.clayID(Keyed("row-caption", identity.token)), caption)
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("row-caption", identity.token))), caption)
 	CLAY_TEXT(context.uiManager.toClayString(label), CLAY_TEXT_CONFIG(text));
 	if (!badge.empty()) {
 		auto spacer = ui::column(0);
-		CLAY(context.clayID(Keyed("badge-spacer", identity.token)), spacer) {}
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("badge-spacer", identity.token))), spacer) {}
 		auto count = ui::column(0);
 		count.layout.sizing = {CLAY_SIZING_FIXED(32), CLAY_SIZING_GROW(0)};
 		count.layout.childAlignment = {CLAY_ALIGN_X_RIGHT, CLAY_ALIGN_Y_CENTER};
 		count.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
-		CLAY(context.clayID(Keyed("row-count", identity.token)), count) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("row-count", identity.token))), count) {
 			if (badge == "—") {
 				Clay_ElementDeclaration dash{};
 				dash.layout.sizing = {CLAY_SIZING_FIXED(10), CLAY_SIZING_FIXED(1)};
 				dash.backgroundColor = interface_theme::kTextMuted;
-				CLAY(context.clayID(Keyed("unavailable-count", identity.token)), dash) {}
+				CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("unavailable-count", identity.token))), dash) {}
 			} else {
 				text.textColor = interface_theme::kTextSecondary;
 				text.textAlignment = CLAY_TEXT_ALIGN_RIGHT;
@@ -215,7 +216,7 @@ void keyboard(Context& context) {
 	auto& state = *context.state().catalogue;
 	const auto& input = context.uiManager.getCurrentFrameInput();
 	const auto& previous = context.uiManager.getPreviousFrameInput();
-	const auto focused = context.uiManager.shortcuts().focusedElement().id;
+	const auto focused = FlowUi::ValueOrThrow(context.uiManager.shortcuts().focusedElement()).id;
 	const bool domain_focus = focused == context.state().domains_id.id;
 	const bool browser_focus = focused == context.state().browser_id.id;
 	if (domain_focus && (!state.keyboard_active || !state.domain_focus))
@@ -377,8 +378,8 @@ void DevCatalogueSelector::buildElement(BuildContext& context) {
 	auto& state = context.params.interfaceState->catalogue;
 	context.state().catalogue = &state;
 	context.state().ui_manager = &context.uiManager;
-	context.state().domains_id = context.clayID("domains");
-	context.state().browser_id = context.clayID(Keyed("browser", state.domain));
+	context.state().domains_id = FlowUi::ValueOrThrow(context.clayID("domains"));
+	context.state().browser_id = FlowUi::ValueOrThrow(context.clayID(Keyed("browser", state.domain)));
 	if (state.dirty)
 		rebuild_catalogue_filter(state);
 	build_rows(context);
@@ -406,17 +407,17 @@ void DevCatalogueSelector::buildElement(BuildContext& context) {
 		auto domains = ui::column(0);
 		domains.layout.sizing.width = CLAY_SIZING_PERCENT(1);
 		domains.layout.sizing.height = CLAY_SIZING_FIXED(state.domain_height);
-		const auto domain_scroll_data = Clay_GetScrollContainerData(context.clayID("domains"));
+		const auto domain_scroll_data = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("domains")));
 		domains.clip = {.vertical = true,
 						.childOffset = domain_scroll_data.found && domain_scroll_data.scrollPosition
 										   ? *domain_scroll_data.scrollPosition
 										   : Clay_Vector2{}};
-		CLAY(context.clayID("domains"), domains) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("domains")), domains) {
 			auto heading = ui::row(30);
 			heading.layout.padding = {12, 12, 0, 0};
 			heading.backgroundColor = interface_theme::kDepth1Panel;
 			heading.border = {.color = interface_theme::kBorderPrimary, .width = {0, 0, 0, 1, 0}};
-			CLAY(context.clayID("heading"), heading)
+			CLAY(FlowUi::ValueOrThrow(context.clayID("heading")), heading)
 			ui::text(context, "Catalogue:", interface_theme::kTextCanvas, 12);
 			for (uint64_t domain_index = 0; domain_index < 9; ++domain_index) {
 				const bool selected = state.domain == domain_index;
@@ -451,12 +452,12 @@ void DevCatalogueSelector::buildElement(BuildContext& context) {
 		}
 		const auto rendered_domain = state.domain;
 		auto& domain = state.domains[rendered_domain];
-		context.state().browser_id = context.clayID(Keyed("browser", rendered_domain));
+		context.state().browser_id = FlowUi::ValueOrThrow(context.clayID(Keyed("browser", rendered_domain)));
 		auto browser_section = ui::column(0);
 		browser_section.layout.sizing = {.width = CLAY_SIZING_GROW(0),
 										 .height = CLAY_SIZING_GROW(0)};
 		browser_section.clip = {.horizontal = true, .scrollInputDisabled = true};
-		CLAY(context.clayID("browser-section"), browser_section) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("browser-section")), browser_section) {
 			control(context, LocalElementName{"all"},
 					"All " + std::string(catalogue_domain_name(
 								 static_cast<DevCatalogueDomain>(rendered_domain))),
@@ -472,7 +473,7 @@ void DevCatalogueSelector::buildElement(BuildContext& context) {
 			filter_bar.backgroundColor = interface_theme::kDepth1Panel;
 			filter_bar.border = {.color = interface_theme::kBorderPrimary,
 								 .width = {0, 0, 0, 1, 0}};
-			CLAY(context.clayID("filter-bar"), filter_bar) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("filter-bar")), filter_bar) {
 				context.uiManager
 					.createElement(kDevSelectorSearch, Keyed("search", rendered_domain))
 					.setParameters({.query = &domain.search,
@@ -501,7 +502,7 @@ void DevCatalogueSelector::buildElement(BuildContext& context) {
 			auto browser = ui::column(0);
 			browser.layout.sizing.width = CLAY_SIZING_PERCENT(1);
 			browser.layout.sizing.height = CLAY_SIZING_GROW(0);
-			const auto browser_id = context.clayID(Keyed("browser", rendered_domain));
+			const auto browser_id = FlowUi::ValueOrThrow(context.clayID(Keyed("browser", rendered_domain)));
 			const auto scroll = Clay_GetScrollContainerData(browser_id);
 			if (scroll.found && scroll.scrollPosition) {
 				if (context.state().restore_scroll && rendered_domain == state.domain)
@@ -551,7 +552,7 @@ void DevCatalogueSelector::buildElement(BuildContext& context) {
 					auto declaration = ui::column(0);
 					declaration.layout.sizing.height =
 						CLAY_SIZING_FIXED(std::max(0.0f, spacer_height));
-					CLAY(context.clayID(RuntimeName(name)), declaration) {}
+					CLAY(FlowUi::ValueOrThrow(context.clayID(RuntimeName(name))), declaration) {}
 				};
 				spacer("before", static_cast<float>(first) * browser_row_height);
 				uint64_t selected_browser_key = state.selected_identity;

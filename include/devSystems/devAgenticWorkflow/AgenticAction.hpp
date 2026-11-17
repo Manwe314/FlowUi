@@ -105,6 +105,12 @@ struct AgenticActionReceipt {
 	 * @brief Whether acknowledged application completion succeeded; dispatch alone is insufficient.
 	 */
 	bool dispatched = false, completed = false, completion_succeeded = false;
+	/**
+	 * @brief Whether completion/result observation terminated without reliable evidence.
+	 * Timeout, cancellation, callback failure and invalid result evidence do not acknowledge business completion
+	 * or roll back prior dispatch. The executor does not redispatch this invocation.
+	 */
+	bool completionObservationFailed = false;
 };
 /** Application-owned typed boundary: decode before invoking; return owned result and pending token.
  * Callbacks execute only on the ordinary platform-thread safe point. */
@@ -149,7 +155,8 @@ public:
 	/** Validate expected revision and decode all arguments before any dispatch side effect. */
 	[[nodiscard]] Result<AgenticActionReceipt>
 	invoke(App& application, const AgenticActionInvocation& invocation) noexcept;
-	/** Poll application acknowledgement without redispatching a pending action. */
+	/** Poll application acknowledgement without redispatching a pending action. Observation
+	 * failure retains dispatch/completion facts and terminates further polling of this receipt. */
 	[[nodiscard]] Result<AgenticActionReceipt> poll(App& application,
 													const AgenticActionReceipt& receipt) noexcept;
 	/** Invoke a declared cancellation adapter; dispatched work cannot be rolled back implicitly. */

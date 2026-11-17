@@ -2,7 +2,7 @@
 
 This reference lists startup and operation configuration, their defaults, units, and build conditions. Core types live in `FlowUi`; development types retain their `FlowUi::devSystems` namespaces and headers under `include/devSystems`.
 
-Include [AppConfig.hpp](../../include/FlowUi/Public/configurationStructs/AppConfig.hpp) to configure startup, and [App.hpp](../../include/FlowUi/Public/App.hpp) for `makeApplication()`. Startup copies the configuration; editing the caller's original struct does not reconfigure the running application. Use explicit runtime APIs, such as `App::setWindowInputConfig()`, for supported live changes.
+Include [AppConfig.hpp](include/FlowUi/Public/configurationStructs/AppConfig.hpp) to configure startup, and [App.hpp](include/FlowUi/Public/App.hpp) for `makeApplication()`. Startup copies the configuration; editing the caller's original struct does not reconfigure the running application. Use explicit runtime APIs, such as `App::setWindowInputConfig()`, for supported live changes.
 
 - [Startup configuration](#flowui_config_startup)
 - [Capacity settings and precedence](#flowui_config_capacity)
@@ -45,11 +45,11 @@ Development capture controls require `FLOW_UI_DEV_MODE`. Agentic controls additi
 
 ## Startup configuration {#flowui_config_startup}
 
-Defaults below are declaration defaults unless an effective app default is explicitly stated. Colors use RGBA components in the 0–255 range. KiB/MiB/GiB are binary units. Child configuration rows lead to the detailed tables that follow.
+Defaults below are declaration defaults unless an effective app default is explicitly stated. These configuration colors use RGBA components in the 0–255 range. The separate legacy `FlowUiTheme` palettes use normalized 0–1 components; see [themes](docs/api/theme_manager.md). KiB/MiB/GiB are binary units. Child configuration rows lead to the detailed tables that follow.
 
 ### AppConfig
 
-[Declaration](../../include/FlowUi/Public/configurationStructs/AppConfig.hpp).
+[Declaration](include/FlowUi/Public/configurationStructs/AppConfig.hpp).
 
 | Member | Default | Meaning |
 |---|---|---|
@@ -66,7 +66,7 @@ Defaults below are declaration defaults unless an effective app default is expli
 
 ### ResourceConfig
 
-[Declaration](../../include/FlowUi/Public/configurationStructs/ResourceConfig.hpp); [consumer](../../src/FlowUi/Private/resourceService/ResourceDiscovery.cpp).
+[Declaration](include/FlowUi/Public/configurationStructs/ResourceConfig.hpp); [consumer](src/FlowUi/Private/resourceService/ResourceDiscovery.cpp).
 
 | Member | Default | Meaning |
 |---|---|---|
@@ -79,7 +79,7 @@ Defaults below are declaration defaults unless an effective app default is expli
 
 ### WindowConfig and WindowConfigOverrides
 
-[Declaration](../../include/FlowUi/Public/configurationStructs/WindowConfig.hpp); [backend](../../include/FlowUi/Private/windowService/Window.hpp).
+[Declaration](include/FlowUi/Public/configurationStructs/WindowConfig.hpp); [backend](include/FlowUi/Private/platformProviderService/providers/glfw/GlfwWindow.hpp).
 
 | Member | Default | Meaning |
 |---|---|---|
@@ -93,11 +93,11 @@ Defaults below are declaration defaults unless an effective app default is expli
 | `highDPI` | `true` | Request supported high-DPI backend behavior. |
 | `input` | `{}` | Initial native input modes. |
 
-[`WindowConfigOverrides`](../../include/FlowUi/Public/configurationStructs/WindowConfig.hpp) has exactly the same nine member names and meanings, each wrapped in `std::optional`, all initially absent. An absent title uses the main-window title followed by ` - Window N`. Its `input` replaces the whole input configuration; it is not a recursive partial override.
+[`WindowConfigOverrides`](include/FlowUi/Public/configurationStructs/WindowConfig.hpp) has exactly the same nine member names and meanings, each wrapped in `std::optional`, all initially absent. An absent title uses the main-window title followed by ` - Window N`. Its `input` replaces the whole input configuration; it is not a recursive partial override.
 
 ### WindowInputConfig
 
-[Declaration](../../include/FlowUi/Public/configurationStructs/InputConfig.hpp); [consumer](../../include/FlowUi/Private/windowService/Window.hpp).
+[Declaration](include/FlowUi/Public/configurationStructs/InputConfig.hpp); [consumer](include/FlowUi/Private/platformProviderService/providers/glfw/GlfwWindow.hpp).
 
 | Member | Default | Meaning |
 |---|---|---|
@@ -109,7 +109,7 @@ Defaults below are declaration defaults unless an effective app default is expli
 
 ### VulkanConfig
 
-[Declaration](../../include/FlowUi/Public/configurationStructs/VulkanConfig.hpp).
+[Declaration](include/FlowUi/Public/configurationStructs/VulkanConfig.hpp).
 
 | Member | Default | Meaning |
 |---|---|---|
@@ -124,7 +124,7 @@ Rendering uses sample count one; there is no MSAA setting to configure.
 
 ### UiConfig
 
-[Declaration](../../include/FlowUi/Public/configurationStructs/UiConfig.hpp); [initialization](../../src/FlowUi/Private/layoutService/UiManagerState.cpp); [layout/input scaling](../../src/FlowUi/Private/AppRuntime.cpp).
+[Declaration](include/FlowUi/Public/configurationStructs/UiConfig.hpp); [initialization](src/FlowUi/Private/layoutService/UiManagerState.cpp); [layout/input scaling](src/FlowUi/Private/AppRuntime.cpp).
 
 | Member | Default | Meaning |
 |---|---|---|
@@ -141,7 +141,7 @@ Rendering uses sample count one; there is no MSAA setting to configure.
 
 ### FontFamilyCreateInfo and FontFaceCreateInfo
 
-[Declarations](../../include/FlowUi/Public/managerStructs/FontTypes.hpp). These public resource descriptions are also reusable with FontManager APIs.
+[Declarations](include/FlowUi/Public/managerStructs/FontTypes.hpp). These public resource descriptions are also reusable with FontManager APIs.
 
 | Type.member | Default | Meaning |
 |---|---|---|
@@ -156,7 +156,7 @@ Rendering uses sample count one; there is no MSAA setting to configure.
 
 ### InputManagerConfig
 
-[Declaration](../../include/FlowUi/Public/configurationStructs/InputConfig.hpp); [appearance mapping](../../src/FlowUi/Public/managers/InputFieldManager.cpp).
+[Declaration](include/FlowUi/Public/configurationStructs/InputConfig.hpp); [appearance mapping](src/FlowUi/Public/managers/InputFieldManager.cpp).
 
 | Member | Default | Meaning |
 |---|---|---|
@@ -171,7 +171,7 @@ Field-local overlay styles can override these defaults.
 
 ### ShortcutManagerConfig and default shortcut families
 
-[Declarations](../../include/FlowUi/Public/configurationStructs/ShortcutManagerConfig.hpp); [registration consumer](../../src/FlowUi/Public/managers/ShortcutManager.cpp).
+[Declarations](include/FlowUi/Public/configurationStructs/ShortcutManagerConfig.hpp); [registration consumer](src/FlowUi/Public/managers/ShortcutManager.cpp).
 
 | Type.member | Default | Meaning |
 |---|---|---|
@@ -197,11 +197,11 @@ close/minimize chords on Windows/Linux. Fullscreen uses Ctrl+Cmd+F on macOS or
 F11 elsewhere. Enabled replacement chords require exact modifiers and Press;
 duplicate window chords are rejected. Automatic undo/redo requests and their
 configuration member have been removed; see the
-[shortcut migration and usage guide](shortcut_manager.md).
+[shortcut migration and usage guide](docs/api/shortcut_manager.md).
 
 ### IconManagerConfig
 
-[Declaration](../../include/FlowUi/Public/configurationStructs/IconManagerConfig.hpp); [cache consumer](../../src/FlowUi/Private/resourceService/IconCacheController.cpp).
+[Declaration](include/FlowUi/Public/configurationStructs/IconManagerConfig.hpp); [cache consumer](src/FlowUi/Private/resourceService/IconCacheController.cpp).
 
 | Member | Default | Meaning |
 |---|---|---|
@@ -212,7 +212,7 @@ configuration member have been removed; see the
 
 ### MemoryCapacityProfile and MemoryCapacitySetting
 
-[Declarations](../../include/FlowUi/Public/configurationStructs/MemoryCapacityProfile.hpp).
+[Declarations](include/FlowUi/Public/configurationStructs/MemoryCapacityProfile.hpp).
 
 | Type.member | Default | Meaning |
 |---|---|---|
@@ -226,7 +226,7 @@ configuration member have been removed; see the
 
 ### StorageMemoryCapacities
 
-[Declaration](../../include/FlowUi/Public/configurationStructs/StorageConfig.hpp). Every member defaults to zero, meaning preserve the effective default. Values are bytes.
+[Declaration](include/FlowUi/Public/configurationStructs/StorageConfig.hpp). Every member defaults to zero, meaning preserve the effective default. Values are bytes.
 
 | Member | Effective app default | Meaning |
 |---|---|---|
@@ -240,7 +240,7 @@ configuration member have been removed; see the
 
 ### MemoryCapacityProfileMetadata
 
-[Declaration](../../include/FlowUi/Public/configurationStructs/MemoryCapacityProfile.hpp). These members do not tune runtime allocations.
+[Declaration](include/FlowUi/Public/configurationStructs/MemoryCapacityProfile.hpp). These members do not tune runtime allocations.
 
 | Member | Default | Meaning |
 |---|---|---|
@@ -255,7 +255,7 @@ configuration member have been removed; see the
 
 ### ErrorContract, ErrorPolicy, ErrorObserverConfig, ErrorSink
 
-[Declarations](../../include/FlowUi/Public/errorManagement/ErrorPolicy.hpp). Contract defaults construct both its `policy` and `observer` blocks. Recovery choices affect the app lifetime; the observer reports outcomes rather than choosing recovery.
+[Declarations](include/FlowUi/Public/errorManagement/ErrorPolicy.hpp). Contract defaults construct both its `policy` and `observer` blocks. Recovery choices affect the app lifetime; the observer reports outcomes rather than choosing recovery.
 
 | Type.member | Default | Meaning |
 |---|---|---|
@@ -272,7 +272,7 @@ configuration member have been removed; see the
 | `.missingPopupAnchor` | `SkipPopup` | Skip, defer, or anchor to viewport. |
 | `.popupCapacity` | `ClampLayer` | Clamp layer or skip overflowing popup. |
 | `.inputQueueOverflow` | `DropNewest` | Drop newest or oldest queued text input. |
-| `.inputTextQueueCapacity` | `4096` | Per-window queued text input capacity. |
+| `.inputTextQueueCapacity` | `4096` | Per-window queued text input capacity in Unicode codepoints, not UTF-8 bytes. |
 | `ErrorObserverConfig.sink` | empty | App callback destination. |
 | `.mode` | `SinkOrDefault` | Sink-or-default, sink-and-default, sink-only, or default-only routing. |
 | `.output` | `stderr` | Default report stream. |
@@ -281,7 +281,7 @@ configuration member have been removed; see the
 
 ### DevToolsConfig and DevShortcutChord
 
-[Declarations](../../include/FlowUi/Public/configurationStructs/DevToolsConfig.hpp). Monitoring/tooling exist only in development builds.
+[Declarations](include/FlowUi/Public/configurationStructs/DevToolsConfig.hpp). Monitoring/tooling exist only in development builds.
 
 | Type.member | Default | Meaning |
 |---|---|---|
@@ -301,7 +301,7 @@ configuration member have been removed; see the
 
 ### Developer monitoring blocks
 
-Declarations in this subsection live in [DevConfig.hpp](../../include/devSystems/DevConfig.hpp), namespace `FlowUi::devSystems`.
+Declarations in this subsection live in [DevConfig.hpp](include/devSystems/DevConfig.hpp), namespace `FlowUi::devSystems`.
 
 `DevMonitoringConfig` contains exactly six default-constructed blocks: `timing` (CPU/GPU capture), `timingReporting` (timing retention/statistics), `memory` (memory producers/probes), `memoryReporting` (memory retention/aggregation), `errors` (error recording), and `errorReporting` (error correlation/retention).
 
@@ -334,11 +334,11 @@ Declarations in this subsection live in [DevConfig.hpp](../../include/devSystems
 | `.quantileWindowSegments` | `20,000` | Segment window for quantile calculations. |
 | `.retainLifetimeEvents` | `false` | Retain detailed lifetime evidence when available. |
 
-Consumer families: [timing](../../src/devSystems/devMonitoringAndReporting/timing/DevTiming.cpp), [timing reporting](../../src/devSystems/devMonitoringAndReporting/reporting/DevTimingReporting.cpp), [memory](../../src/devSystems/devMonitoringAndReporting/memory/DevMemory.cpp), [environment probes](../../src/devSystems/devMonitoringAndReporting/memory/DevEnvironmentMemoryProbe.cpp), [memory reporting](../../src/devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.cpp).
+Consumer families: [timing](src/devSystems/devMonitoringAndReporting/timing/DevTiming.cpp), [timing reporting](src/devSystems/devMonitoringAndReporting/reporting/DevTimingReporting.cpp), [memory](src/devSystems/devMonitoringAndReporting/memory/DevMemory.cpp), [environment probes](src/devSystems/devMonitoringAndReporting/memory/DevEnvironmentMemoryProbe.cpp), [memory reporting](src/devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.cpp).
 
 ### Developer error configuration
 
-[Declarations](../../include/devSystems/DevConfig.hpp); [recording](../../src/devSystems/devMonitoringAndReporting/errors/DevError.cpp); [reporting](../../src/devSystems/devMonitoringAndReporting/reporting/DevErrorReporting.cpp). Namespace: `FlowUi::devSystems`.
+[Declarations](include/devSystems/DevConfig.hpp); [recording](src/devSystems/devMonitoringAndReporting/errors/DevError.cpp); [reporting](src/devSystems/devMonitoringAndReporting/reporting/DevErrorReporting.cpp). Namespace: `FlowUi::devSystems`.
 
 | Type.member | Default | Meaning |
 |---|---|---|
@@ -377,7 +377,7 @@ Stack/snapshot behavior requires the relevant detail level and available provide
 
 ### Developer tooling configuration
 
-[Declarations](../../include/devSystems/DevConfig.hpp). `devSystems::DevToolingConfig` groups `schema`, `overrides`, and `treeCapture`, all `{}`. Their types live in `FlowUi::devSystems::tooling`.
+[Declarations](include/devSystems/DevConfig.hpp). `devSystems::DevToolingConfig` groups `schema`, `overrides`, and `treeCapture`, all `{}`. Their types live in `FlowUi::devSystems::tooling`.
 
 | Type.member | Default | Meaning |
 |---|---|---|
@@ -400,11 +400,11 @@ Stack/snapshot behavior requires the relevant detail level and available provide
 | `.directLinkReserve` | `2048` | Initial Flow–Clay link reserve; Clay capture builds only. |
 | `.maximumClayNodes` | `4,194,304` | Clay node ceiling; Clay capture builds only. |
 
-Consumers: [schema registry](../../include/devSystems/devTooling/schema/DevSchemaRegistry.hpp), [override engine](../../src/devSystems/devTooling/override/DevOverrideEngine.cpp), [tree capture](../../src/devSystems/devTooling/tree/DevTreeCapture.cpp). Capacity-profile entries can override the corresponding initial tree reserves during app creation.
+Consumers: [schema registry](include/devSystems/devTooling/schema/DevSchemaRegistry.hpp), [override engine](src/devSystems/devTooling/override/DevOverrideEngine.cpp), [tree capture](src/devSystems/devTooling/tree/DevTreeCapture.cpp). Capacity-profile entries can override the corresponding initial tree reserves during app creation.
 
 ### AgenticWorkflowConfig and AgenticLimits
 
-[Declarations](../../include/devSystems/devAgenticWorkflow/AgenticTypes.hpp). Namespace: `FlowUi::devSystems::agentic`; available only in agentic builds. [Configuration consumer](../../src/devSystems/devAgenticWorkflow/AgenticService.cpp).
+[Declarations](include/devSystems/devAgenticWorkflow/AgenticTypes.hpp). Namespace: `FlowUi::devSystems::agentic`; available only in agentic builds. [Configuration consumer](src/devSystems/devAgenticWorkflow/AgenticService.cpp).
 
 | Type.member | Default | Meaning |
 |---|---|---|
@@ -433,7 +433,7 @@ Unset optional enablement is different from false. Compiling support does not it
 
 ## Build-time settings outside AppConfig {#flowui_config_build}
 
-These change the compiled library or package and cannot be replaced with runtime booleans. Configure them through [CMakeLists.txt](../../CMakeLists.txt); consume the generated build configuration consistently with the linked library.
+These change the compiled library or package and cannot be replaced with runtime booleans. Configure them through [CMakeLists.txt](CMakeLists.txt); consume the generated build configuration consistently with the linked library.
 
 | CMake setting | Default | Meaning |
 |---|---|---|
@@ -447,6 +447,8 @@ These change the compiled library or package and cannot be replaced with runtime
 | `FLOWUI_PUBLIC_VULKAN_INTEROP` | `ON` | Expose public Vulkan viewport interop APIs. |
 | `FLOWUI_ENABLE_RUNTIME_FONT_BAKING` | `OFF` | Include runtime TTF-to-MSDF generation. |
 | `FLOWUI_BUILD_FONT_BAKER` | `ON` | Build offline font baker tool. |
+| `FLOWUI_PLATFORM_PROVIDER_HEADER` / `FLOWUI_PLATFORM_PROVIDER_TYPE` | empty / empty | Source-build custom complete provider selection; both must be set together, otherwise GLFW is selected. |
+| `FLOWUI_ADDITIONAL_TRANSLATORS_HEADER` / `FLOWUI_ADDITIONAL_TRANSLATORS_TYPE` | empty / empty | Source-build additional input pack selection; both must be set together. Native input remains active. |
 | `COMPILE_FSELI` | `ON` | Include standard elements through the public Flow header; development builds force effective FSEL support on. |
 | `FLOW_UI_ENABLE_BAKED_CHANGES` | `ON` | Enable automatic baked-change compilation. |
 | `FLOWUI_GLFW_PROVIDER` | `auto` | Choose auto/system/vendored GLFW. |
@@ -456,15 +458,21 @@ These change the compiled library or package and cannot be replaced with runtime
 | `FLOWUI_BUILD_TESTS` | top-level `ON`, dependency `OFF` | Build test targets. |
 | `FLOWUI_REQUIRE_VULKAN_TEST_DEVICE` | `OFF` | Fail rather than skip device-dependent storage tests when no suitable device exists. |
 
-Per-target resource-copy, baking, and agentic integration helper arguments live in [FlowUiResources.cmake](../../cmake/FlowUiResources.cmake), [FlowUiBaking.cmake](../../cmake/FlowUiBaking.cmake), and [FlowUiAgentic.cmake](../../cmake/FlowUiAgentic.cmake). They are build integration inputs rather than additional runtime configuration structs.
+Per-target resource-copy, baking, and agentic integration helper arguments live in [FlowUiResources.cmake](cmake/FlowUiResources.cmake), [FlowUiBaking.cmake](cmake/FlowUiBaking.cmake), and [FlowUiAgentic.cmake](cmake/FlowUiAgentic.cmake). They are build integration inputs rather than additional runtime configuration structs.
 
 ## Additional operation-level settings {#flowui_config_operations}
 
 These belong to their operation or element rather than `AppConfig`. Supply them to the relevant operation rather than adding them to startup configuration.
 
+### Managed windows and operation capabilities
+
+[`ManagedWindowFlags`](include/FlowUi/Public/managerStructs/WindowTypes.hpp) has `autoDestroyOnClose = true`. A managed secondary window with this flag is destroyed after a close request during dispatch; disabling it leaves teardown to the caller. It is supplied to callback registration/window creation, not `AppConfig`.
+
+[`WindowOperationCapabilities`](include/FlowUi/Public/managerStructs/WindowOperationTypes.hpp) is returned by `App::windowOperationCapabilities()`. It reports backend support rather than requesting operations. Its `close_window`, `minimize`, `maximize_restore` and `toggle_fullscreen` fields all default to false; check the returned `Result` before reading them. [App](docs/api/app.md) includes the checked call and operation examples.
+
 ### FieldConfig and element state policy
 
-[`FieldConfig`](../../include/FlowUi/Public/managerStructs/InputFieldTypes.hpp) is already public and supplied with each field request.
+[`FieldConfig`](include/FlowUi/Public/managerStructs/InputFieldTypes.hpp) is already public and supplied with each field request.
 
 | Member | Default | Meaning |
 |---|---|---|
@@ -475,13 +483,13 @@ These belong to their operation or element rather than `AppConfig`. Supply them 
 | `softWrap` | `false` | Wrap multiline hard lines into visual slices. |
 | `allowArrowNavigation` | `true` | Let the manager handle caret arrow navigation. |
 
-[`TextLayoutDescriptor`](../../include/FlowUi/Public/managerStructs/InputFieldTypes.hpp) supplies `fontId` (0, font), `fontSize` (14), `letterSpacing` (0), `viewportWidth` and `viewportHeight` (0, available region), `tabWidth` (4), and `floatingZIndex` (0, generated line layering). Field requests may supply an optional `InputFieldOverlayStyle`; its visual defaults replace the global caret/selection style for that field.
+[`TextLayoutDescriptor`](include/FlowUi/Public/managerStructs/InputFieldTypes.hpp) supplies `fontId` (0, font), `fontSize` (14), `letterSpacing` (0), `viewportWidth` and `viewportHeight` (0, available region), `tabWidth` (4), and `floatingZIndex` (0, generated line layering). Field requests may supply an optional `InputFieldOverlayStyle`; its visual defaults replace the global caret/selection style for that field.
 
-[`ElementStatePolicy`](../../include/FlowUi/Public/elementAuthoring/ElementStatePolicy.hpp) has `retention` (`Transient`, or `WindowLifetime`) and `graceFrames` (5 absent committed frames). Transient state expires on the next absent committed frame after its grace period; window-lifetime policy ignores the grace period. This is definition-level configuration and is correctly public.
+[`ElementStatePolicy`](include/FlowUi/Public/elementAuthoring/ElementStatePolicy.hpp) has `retention` (`Transient`, or `WindowLifetime`) and `graceFrames` (5 absent committed frames). Transient state expires on the next absent committed frame after its grace period; window-lifetime policy ignores the grace period. This is definition-level configuration and is correctly public.
 
 ### Popup configuration
 
-[Declarations](../../include/FlowUi/Public/managerStructs/PopupTypes.hpp). All are already public.
+[Declarations](include/FlowUi/Public/managerStructs/PopupTypes.hpp). All are already public.
 
 | Type.member | Default | Meaning |
 |---|---|---|
@@ -507,7 +515,7 @@ These belong to their operation or element rather than `AppConfig`. Supply them 
 
 ### PerformanceCaptureSettings
 
-[Declaration](../../include/devSystems/devMonitoringAndReporting/reporting/DevPerformanceCapture.hpp); accepted by the [public App capture API](../../include/FlowUi/Public/App.hpp). Namespace: `FlowUi::devSystems`.
+[Declaration](include/devSystems/devMonitoringAndReporting/reporting/DevPerformanceCapture.hpp); accepted by the [public App capture API](include/FlowUi/Public/App.hpp). Namespace: `FlowUi::devSystems`.
 
 | Member | Default | Meaning |
 |---|---|---|
@@ -524,7 +532,7 @@ These belong to their operation or element rather than `AppConfig`. Supply them 
 
 ### Agentic capture requests and content policy
 
-[Declarations](../../include/devSystems/devAgenticWorkflow/AgenticCapture.hpp), namespace `FlowUi::devSystems::agentic`. These user-supplied operation policies remain under `include/devSystems`, alongside development startup types.
+[Declarations](include/devSystems/devAgenticWorkflow/AgenticCapture.hpp), namespace `FlowUi::devSystems::agentic`. These user-supplied operation policies remain under `include/devSystems`, alongside development startup types.
 
 | Type.member | Default | Meaning |
 |---|---|---|
@@ -565,17 +573,17 @@ These belong to their operation or element rather than `AppConfig`. Supply them 
 | `.capture_window` | `true` | Capture window images when visual capture is requested/permitted. |
 | `.capture_viewports` | `false` | Include viewport images. |
 
-[`AgenticShutdownPolicy`](../../include/devSystems/devAgenticWorkflow/AgenticService.hpp) additionally has `publish_partial=true` (publish incomplete CPU evidence on shutdown) and `device_lost=false` (device-loss shutdown context). It is an operation policy, not an app default.
+[`AgenticShutdownPolicy`](include/devSystems/devAgenticWorkflow/AgenticService.hpp) additionally has `publish_partial=true` (publish incomplete CPU evidence on shutdown) and `device_lost=false` (device-loss shutdown context). It is an operation policy, not an app default.
 
 ### Other authoring values and internal UI settings
 
-Public style/resource descriptions are intentionally separate: [FlowUiTheme](../../include/FlowUi/Public/FlowUiTheme.hpp), [TextureRef](../../include/FlowUi/Public/TextureRef.hpp), [viewport API and descriptions](../../include/FlowUi/Public/managers/ViewPortManager.hpp), and [FSEL](../../include/FSEL). They configure particular elements/resources rather than library startup. Theme fields, texture descriptions, FSEL parameters, and Clay layouts are documented by their authoring APIs.
+Public style/resource descriptions are intentionally separate: [FlowUiTheme](include/FlowUi/Public/FlowUiTheme.hpp), [TextureRef](include/FlowUi/Public/TextureRef.hpp), [viewport API and descriptions](include/FlowUi/Public/managers/ViewPortManager.hpp), and [FSEL](include/FSEL). They configure particular elements/resources rather than library startup. Theme fields, texture descriptions, FSEL parameters, and Clay layouts are documented by their authoring APIs.
 
-Developer-panel-only settings can remain internal. Examples are [`MemoryPlannerSettings`](../../include/devSystems/devInterface/Memory/Analysis/DevMemoryPlanner.hpp), which holds reserve/percentile/margin/growth-factor choices for a what-if calculation, and [`MemoryHistoryLaneSettings`](../../include/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbenchData.hpp), which holds panel source/scope/metric selections and resolved UI bookkeeping. They are not missing AppConfig members. Likewise [`DevFieldOptions`](../../include/devSystems/devTooling/schema/DevSchemaDescriptor.hpp) and [`DevRolePolicy`](../../include/devSystems/devTooling/schema/DevSchemaTypes.hpp) configure schema authoring, not startup.
+Developer-panel-only settings can remain internal. Examples are [`MemoryPlannerSettings`](include/devSystems/devInterface/Memory/Analysis/DevMemoryPlanner.hpp), which holds reserve/percentile/margin/growth-factor choices for a what-if calculation, and [`MemoryHistoryLaneSettings`](include/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbenchData.hpp), which holds panel source/scope/metric selections and resolved UI bookkeeping. They are not missing AppConfig members. Likewise [`DevFieldOptions`](include/devSystems/devTooling/schema/DevSchemaDescriptor.hpp) and [`DevRolePolicy`](include/devSystems/devTooling/schema/DevSchemaTypes.hpp) configure schema authoring, not startup.
 
 ### Agentic interaction limits
 
-[AgenticInteractionLimits](../../include/devSystems/devAgenticWorkflow/AgenticInteraction.hpp) bounds one decoded/compiled input plan. These bounds are separate from service transport limits and require agentic support.
+[AgenticInteractionLimits](include/devSystems/devAgenticWorkflow/AgenticInteraction.hpp) bounds one decoded/compiled input plan. These bounds are separate from service transport limits and require agentic support.
 
 | Member | Default | Meaning |
 |---|---|---|
@@ -590,15 +598,15 @@ Developer-panel-only settings can remain internal. Examples are [`MemoryPlannerS
 
 ## Internal assembly types
 
-[StorageConfig and WindowStorageDesc](../../include/FlowUi/Private/storageSystem/StorageTypes.hpp) assemble resolved capacities, budgets, frame arenas, and descriptor limits. [AppWindowConfig](../../include/FlowUi/Private/AppRuntime.hpp) combines native, Vulkan, and UI settings for a window. These remain implementation types; configure the supported startup and operation values described above.
+[StorageConfig and WindowStorageDesc](include/FlowUi/Private/storageSystem/StorageTypes.hpp) assemble resolved capacities, budgets, frame arenas, and descriptor limits. [AppWindowConfig](include/FlowUi/Private/AppRuntime.hpp) combines native, Vulkan, and UI settings for a window. These remain implementation types; configure the supported startup and operation values described above.
 
 ## Documentation and output locations
 
-`docs/` holds Markdown documentation and generated Doxygen output. Agentic screenshots, captures, logs, reports, and verification matrices, including Markdown reports, belong under `.flowui/agentic/`. Harness exports default to `.flowui/agentic/verification/<suite>/`; the standard evidence store is `.flowui/agentic/v1/`. See the [agentic workflow guide](../agentic-workflow.md).
+`docs/` holds Markdown documentation and generated Doxygen output. Agentic screenshots, captures, logs, reports, and verification matrices, including Markdown reports, belong under `.flowui/agentic/`. Harness exports default to `.flowui/agentic/verification/<suite>/`; the standard evidence store is `.flowui/agentic/v1/`. See the [agentic workflow guide](docs/agentic-workflow.md).
 
 ## Registered capacity keys {#flowui_config_capacity_keys}
 
-Pass these exact keys to `makeMemoryCapacityTargetId()`. Defaults and alignment follow the [capacity registry](../../include/FlowUi/Private/storageSystem/capacity/MemoryCapacityTargets.hpp). The accepted maximum constrains the startup hint; it is not a command to allocate that maximum or a runtime growth ceiling. Zero selects the listed default, which can itself mean no explicit reserve.
+Pass these exact keys to `makeMemoryCapacityTargetId()`. Defaults and alignment follow the [capacity registry](include/FlowUi/Private/storageSystem/capacity/MemoryCapacityTargets.hpp). The accepted maximum constrains the startup hint; it is not a command to allocate that maximum or a runtime growth ceiling. Zero selects the listed default, which can itself mean no explicit reserve.
 
 `SIZE_MAX` follows the target architecture; `UINT32_MAX` is the 32-bit unsigned maximum. Scope identifies the owner or context. Entries exclude invalid-handle table sentinels. Feature-specific owners only consume their capacities when the corresponding subsystem is built.
 

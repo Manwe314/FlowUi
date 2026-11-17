@@ -113,7 +113,7 @@ Application code should normally leave those alone. The app-facing options are:
 - `tintEnabled`: whether the image command color should multiply the texture.
 
 ```cpp
-FlowUi::TextureRef thumbnail = app.images().getTexture("thumbnail/tree");
+FlowUi::TextureRef thumbnail = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.images()).get().getTexture("thumbnail/tree"));
 thumbnail.fitMode = FlowUi::TextureFitMode::Cover;
 thumbnail.tintEnabled = false;
 ```
@@ -123,7 +123,7 @@ Filtering comes from the sampler owned by the logical texture.
 For icons, tinting is often useful:
 
 ```cpp
-FlowUi::TextureRef saveIcon = app.icons().textureRef("toolbar/save");
+FlowUi::TextureRef saveIcon = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.icons()).get().textureRef("toolbar/save"));
 saveIcon.fitMode = FlowUi::TextureFitMode::Contain;
 saveIcon.tintEnabled = true;
 ```
@@ -173,7 +173,7 @@ Padding helps avoid filtering bleed between neighboring icons in the same atlas 
 Use `app.images()` to access the app-owned `FlowUi::ImageManager`.
 
 ```cpp
-FlowUi::ImageManager& imageManager = app.images();
+FlowUi::ImageManager& imageManager = FlowUi::ValueOrThrow(app.images()).get();
 ```
 
 Register discovered image files with application-defined keys.
@@ -252,7 +252,7 @@ If the key is missing, FlowUi returns fallback texture id `0` and logs a warning
 Use `app.icons()` to access the app-owned `FlowUi::IconManager`.
 
 ```cpp
-FlowUi::IconManager& iconManager = app.icons();
+FlowUi::IconManager& iconManager = FlowUi::ValueOrThrow(app.icons()).get();
 ```
 
 Register discovered SVG files with application-defined keys.
@@ -332,7 +332,7 @@ Clay image commands carry opaque image data. In FlowUi, pass a frame-stored `Tex
 
 ```cpp
 Clay_ImageElementConfig image{};
-image.imageData = app.ui().imageData(treeThumbnail);
+image.imageData = FlowUi::ValueOrThrow(app.ui()).get().imageData(treeThumbnail);
 ```
 
 Do not pass the address of a temporary or local `TextureRef`. `imageData()` copies the ref into `UiManager` frame storage and returns a pointer that stays valid until the frame ends.
@@ -342,18 +342,18 @@ Do not pass the address of a temporary or local `TextureRef`. `imageData()` copi
 The thumbnail card uses an image texture and an icon texture in the same Clay subtree.
 
 ```cpp
-FlowUi::TextureRef thumbnail = app.images().getTexture("thumbnail/tree");
+FlowUi::TextureRef thumbnail = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.images()).get().getTexture("thumbnail/tree"));
 thumbnail.fitMode = FlowUi::TextureFitMode::Cover;
 
-FlowUi::TextureRef status = app.icons().textureRef("status/check");
+FlowUi::TextureRef status = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.icons()).get().textureRef("status/check"));
 status.fitMode = FlowUi::TextureFitMode::Contain;
 status.tintEnabled = true;
 
 Clay_ImageElementConfig thumbnailImage{};
-thumbnailImage.imageData = app.ui().imageData(thumbnail);
+thumbnailImage.imageData = FlowUi::ValueOrThrow(app.ui()).get().imageData(thumbnail);
 
 Clay_ImageElementConfig statusImage{};
-statusImage.imageData = app.ui().imageData(status);
+statusImage.imageData = FlowUi::ValueOrThrow(app.ui()).get().imageData(status);
 ```
 
 Then emit the image nodes:
@@ -373,11 +373,11 @@ thumbnailBox.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZIN
 Clay_ElementDeclaration statusBox{};
 statusBox.layout.sizing = {.width = CLAY_SIZING_FIXED(18.0f), .height = CLAY_SIZING_FIXED(18.0f)};
 
-CLAY(app.ui().toClayEID("asset-card/tree"), card) {
-    CLAY(app.ui().toClayEID("asset-card/tree/thumbnail"), thumbnailBox) {
+CLAY(FlowUi::ValueOrThrow(app.ui()).get().toClaySID("asset-card/tree"), card) {
+    CLAY(FlowUi::ValueOrThrow(app.ui()).get().toClaySID("asset-card/tree/thumbnail"), thumbnailBox) {
         CLAY_IMAGE(thumbnailImage);
     }
-    CLAY(app.ui().toClayEID("asset-card/tree/status"), statusBox) {
+    CLAY(FlowUi::ValueOrThrow(app.ui()).get().toClaySID("asset-card/tree/status"), statusBox) {
         CLAY_IMAGE(statusImage);
     }
 }
@@ -390,12 +390,12 @@ The image manager texture is already a concrete texture slot. The icon manager t
 Toolbar icons are just more image commands. The only difference is that tinting is usually enabled and the bounding boxes are smaller.
 
 ```cpp
-FlowUi::TextureRef openIcon = app.icons().textureRef("toolbar/open");
+FlowUi::TextureRef openIcon = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.icons()).get().textureRef("toolbar/open"));
 openIcon.fitMode = FlowUi::TextureFitMode::Contain;
 openIcon.tintEnabled = true;
 
 Clay_ImageElementConfig openImage{};
-openImage.imageData = app.ui().imageData(openIcon);
+openImage.imageData = FlowUi::ValueOrThrow(app.ui()).get().imageData(openIcon);
 
 Clay_ElementDeclaration button{};
 button.layout.sizing = {.width = CLAY_SIZING_FIXED(32.0f), .height = CLAY_SIZING_FIXED(32.0f)};
@@ -403,7 +403,7 @@ button.layout.padding = CLAY_PADDING_ALL(6);
 button.backgroundColor = FlowUi::Flow_Color("#202633ff");
 button.cornerRadius = CLAY_CORNER_RADIUS(6);
 
-CLAY(app.ui().toClayEID("toolbar/open"), button) {
+CLAY(FlowUi::ValueOrThrow(app.ui()).get().toClaySID("toolbar/open"), button) {
     CLAY_IMAGE(openImage);
 }
 ```
@@ -474,48 +474,48 @@ config.iconManager.atlasPadding = 1;
 
 FlowUi::App app = FlowUi::makeApplication(config);
 
-FlowUi::ImageManager& images = app.images();
-FlowUi::IconManager& icons = app.icons();
+FlowUi::ImageManager& images = FlowUi::ValueOrThrow(app.images()).get();
+FlowUi::IconManager& icons = FlowUi::ValueOrThrow(app.icons()).get();
 
 for (const ProjectImageAsset& image : discoverProjectImages()) {
-    if (!images.contains(image.key)) {
-        (void)images.registerImage(image.key, image.path.string());
+    if (!FlowUi::ValueOrThrow(images.contains(image.key))) {
+        (void)FlowUi::ValueOrThrow(images.registerImage(image.key, image.path.string()));
     }
 }
 
 for (const ProjectIconAsset& icon : discoverProjectIcons()) {
-    if (!icons.contains(icon.key)) {
-        (void)icons.registerFromFile(icon.key, icon.path.string());
+    if (!FlowUi::ValueOrThrow(icons.contains(icon.key))) {
+        (void)FlowUi::ValueOrThrow(icons.registerFromFile(icon.key, icon.path.string()));
     }
 }
 
-(void)icons.registerSvg("status/check", kCheckSvg);
+(void)FlowUi::ValueOrThrow(icons.registerSvg("status/check", kCheckSvg));
 ```
 
 The frame loop draws with `TextureRef` and `imageData()`:
 
 ```cpp
-while (!app.shouldClose()) {
+while (!FlowUi::ValueOrThrow(app.shouldClose())) {
     app.beginFrame();
 
-    FlowUi::TextureRef thumbnail = app.images().getTexture("thumbnail/tree");
+    FlowUi::TextureRef thumbnail = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.images()).get().getTexture("thumbnail/tree"));
     thumbnail.fitMode = FlowUi::TextureFitMode::Cover;
 
-    FlowUi::TextureRef icon = app.icons().textureRef("status/check");
+    FlowUi::TextureRef icon = FlowUi::ValueOrThrow(FlowUi::ValueOrThrow(app.icons()).get().textureRef("status/check"));
     icon.fitMode = FlowUi::TextureFitMode::Contain;
     icon.tintEnabled = true;
 
     Clay_ImageElementConfig thumbnailImage{};
-    thumbnailImage.imageData = app.ui().imageData(thumbnail);
+    thumbnailImage.imageData = FlowUi::ValueOrThrow(app.ui()).get().imageData(thumbnail);
 
     Clay_ImageElementConfig iconImage{};
-    iconImage.imageData = app.ui().imageData(icon);
+    iconImage.imageData = FlowUi::ValueOrThrow(app.ui()).get().imageData(icon);
 
-    CLAY(app.ui().toClayEID("asset/thumbnail"), {.layout = {.sizing = {.width = CLAY_SIZING_FIXED(220.0f), .height = CLAY_SIZING_FIXED(130.0f)}}}) {
+    CLAY(FlowUi::ValueOrThrow(app.ui()).get().toClaySID("asset/thumbnail"), {.layout = {.sizing = {.width = CLAY_SIZING_FIXED(220.0f), .height = CLAY_SIZING_FIXED(130.0f)}}}) {
         CLAY_IMAGE(thumbnailImage);
     }
 
-    CLAY(app.ui().toClayEID("asset/status"), {.layout = {.sizing = {.width = CLAY_SIZING_FIXED(18.0f), .height = CLAY_SIZING_FIXED(18.0f)}}}) {
+    CLAY(FlowUi::ValueOrThrow(app.ui()).get().toClaySID("asset/status"), {.layout = {.sizing = {.width = CLAY_SIZING_FIXED(18.0f), .height = CLAY_SIZING_FIXED(18.0f)}}}) {
         CLAY_IMAGE(iconImage);
     }
 

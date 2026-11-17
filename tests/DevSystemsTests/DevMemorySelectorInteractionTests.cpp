@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
@@ -41,16 +42,16 @@ int main() {
 	config.window.height = 1400;
 	config.dev.excludeInternalDevElementsFromCapture = false;
 	config.vk.enableValidation = true;
-	auto app = makeApplication(config);
+	auto app = ::FlowUi::test::requireValue(makeApplication(config));
 	DevInterfaceState session;
 	auto& selection = session.memory_selection;
 	const auto draw = [&](FlowElementID target = {}, int event = 0, FlowElementID extra = {},
 						  bool inspect = false) {
 		assert(app.beginFrame());
 		auto& interaction =
-			const_cast<InteractionSnapshot&>(app.ui().getPreviousFramesInteraction());
+			const_cast<InteractionSnapshot&>(::FlowUi::test::requireValue(app.ui()).get().getPreviousFramesInteraction());
 		interaction = {};
-		auto& input = const_cast<FrameInput&>(app.ui().getCurrentFrameInput());
+		auto& input = const_cast<FrameInput&>(::FlowUi::test::requireValue(app.ui()).get().getCurrentFrameInput());
 		input.windowFocused = true;
 		input.mouseDown = {};
 		input.mouseDown[0] = event == 1;
@@ -59,7 +60,7 @@ int main() {
 		for (const auto control : {target, extra}) {
 			if (!control)
 				continue;
-			const auto clay_id = app.ui().toClayEID(control).id;
+			const auto clay_id = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(control).id;
 			interaction.hoveredElementIds.emplace_back(clay_id);
 			if (event == 1)
 				interaction.pressedElementIds.emplace_back(clay_id);
@@ -72,7 +73,7 @@ int main() {
 		root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		CLAY(CLAY_ID("memory-selector-root"), root) {
 			if (inspect) {
-				app.ui()
+				::FlowUi::test::requireValue(app.ui()).get()
 					.createElement(kDevNode, inspect_id)
 					.setParameters(DevNodeParameters{.debugName = "Inspect shared row",
 													 .interfaceState = &session,
@@ -81,7 +82,7 @@ int main() {
 													 .selectionKey = 456})
 					.draw();
 			} else
-				app.ui()
+				::FlowUi::test::requireValue(app.ui()).get()
 					.createElement(kDevMemorySelector, selector_id)
 					.setParameters({&app, &session})
 					.draw();
@@ -90,7 +91,7 @@ int main() {
 		assert(app.drawFrame());
 	};
 	const auto has_label = [&](std::string_view label) {
-		const auto& tree = app.ui().devTreeSnapshot();
+		const auto& tree = ::FlowUi::test::requireValue(app.ui()).get().devTreeSnapshot();
 		return std::ranges::any_of(
 			tree.clay.nodes, [&](const auto& node) { return tree.string(node.text) == label; });
 	};
@@ -112,17 +113,17 @@ int main() {
 	const auto scope_id =
 		part_id(FlowElementID{.value = selector_id.value}, DevMemorySelector::definitionId,
 				LocalElementName{"scope-control"}.token);
-	const auto tree_clay_id = app.ui().toClayEID(tree_id);
-	const auto scope_clay_id = app.ui().toClayEID(scope_id);
+	const auto tree_clay_id = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(tree_id);
+	const auto scope_clay_id = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(scope_id);
 	const auto scroll_before = Clay_GetScrollContainerData(tree_clay_id);
 	assert(scroll_before.found);
 	assert(scroll_before.contentDimensions.height > scroll_before.scrollContainerDimensions.height);
 	const auto scope_before = Clay_GetElementData(scope_clay_id).boundingBox;
 	const auto row_before =
-		Clay_GetElementData(app.ui().toClayEID(node_id(DevMemoryNodeId::CpuStorage))).boundingBox;
+		Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(node_id(DevMemoryNodeId::CpuStorage))).boundingBox;
 	const auto viewport = Clay_GetElementData(tree_clay_id).boundingBox;
 	assert(viewport.height == 408);
-	auto* native_window = static_cast<GLFWwindow*>(app.nativeWindowHandle());
+	auto* native_window = static_cast<GLFWwindow*>(::FlowUi::test::requireValue(app.nativeWindowHandle()));
 	const auto cursor_callback = glfwSetCursorPosCallback(native_window, nullptr);
 	glfwSetCursorPosCallback(native_window, cursor_callback);
 	const auto scroll_callback = glfwSetScrollCallback(native_window, nullptr);
@@ -134,7 +135,7 @@ int main() {
 	draw();
 	assert(Clay_GetScrollContainerData(tree_clay_id).scrollPosition->y < 0);
 	const auto row_after =
-		Clay_GetElementData(app.ui().toClayEID(node_id(DevMemoryNodeId::CpuStorage))).boundingBox;
+		Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(node_id(DevMemoryNodeId::CpuStorage))).boundingBox;
 	assert(row_after.y < row_before.y);
 	assert(Clay_GetElementData(scope_clay_id).boundingBox.y == scope_before.y);
 	// Wheel over the pinned scope must not move the tree.

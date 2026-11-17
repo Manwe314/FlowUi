@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -113,16 +113,22 @@ $(function() {
 Public Attributes</h2></td></tr>
 <tr class="memitem:a175719dee44ffc60f655afd1da4ea5fc" id="r_a175719dee44ffc60f655afd1da4ea5fc"><td class="memItemLeft"><a id="a175719dee44ffc60f655afd1da4ea5fc" name="a175719dee44ffc60f655afd1da4ea5fc"></a>
 std::string&#160;</td><td class="memItemRight"><b>set_name</b> {}</td></tr>
+<tr class="memdesc:a175719dee44ffc60f655afd1da4ea5fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Owned catalogue-set membership name. <br /></td></tr>
 <tr class="memitem:abc53a2ba7490f32009d8e5a69d894c91" id="r_abc53a2ba7490f32009d8e5a69d894c91"><td class="memItemLeft"><a id="abc53a2ba7490f32009d8e5a69d894c91" name="abc53a2ba7490f32009d8e5a69d894c91"></a>
 <a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a>&#160;</td><td class="memItemRight"><b>definition</b> {}</td></tr>
+<tr class="memdesc:abc53a2ba7490f32009d8e5a69d894c91"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stable Flow definition represented by the adapter. <br /></td></tr>
 <tr class="memitem:a0c20ad618033bcc4e7ead1daa201141a" id="r_a0c20ad618033bcc4e7ead1daa201141a"><td class="memItemLeft"><a id="a0c20ad618033bcc4e7ead1daa201141a" name="a0c20ad618033bcc4e7ead1daa201141a"></a>
 void(*&#160;</td><td class="memItemRight"><b>draw</b> )(<a class="el" href="classFlowUi_1_1UiManager.html">UiManager</a> &amp;, uint64_t, bool) = nullptr</td></tr>
+<tr class="memdesc:a0c20ad618033bcc4e7ead1daa201141a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Typed drawing adapter; invocation requires explicit passive-default admission. <br /></td></tr>
 <tr class="memitem:a3f801539c5f471829e1a91cd232c3555" id="r_a3f801539c5f471829e1a91cd232c3555"><td class="memItemLeft"><a id="a3f801539c5f471829e1a91cd232c3555" name="a3f801539c5f471829e1a91cd232c3555"></a>
 bool&#160;</td><td class="memItemRight"><b>admitted</b> = false</td></tr>
+<tr class="memdesc:a3f801539c5f471829e1a91cd232c3555"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether application author explicitly admitted passive default construction. <br /></td></tr>
 <tr class="memitem:adca8d7db8bf1d8fac268f8ba7bdb56e1" id="r_adca8d7db8bf1d8fac268f8ba7bdb56e1"><td class="memItemLeft"><a id="adca8d7db8bf1d8fac268f8ba7bdb56e1" name="adca8d7db8bf1d8fac268f8ba7bdb56e1"></a>
 bool&#160;</td><td class="memItemRight"><b>has_draw</b> = false</td></tr>
+<tr class="memdesc:adca8d7db8bf1d8fac268f8ba7bdb56e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether this definition provides a draw build path. <br /></td></tr>
 <tr class="memitem:ac7026b0484d4a6aa1dfb894c09a9a7f0" id="r_ac7026b0484d4a6aa1dfb894c09a9a7f0"><td class="memItemLeft"><a id="ac7026b0484d4a6aa1dfb894c09a9a7f0" name="ac7026b0484d4a6aa1dfb894c09a9a7f0"></a>
 bool&#160;</td><td class="memItemRight"><b>has_construct</b> = false</td></tr>
+<tr class="memdesc:ac7026b0484d4a6aa1dfb894c09a9a7f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether this definition provides a construct build path. <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Typed, explicitly admitted passive defaults, independent of reflection coverage. </p>
@@ -142,7 +148,7 @@ bool&#160;</td><td class="memItemRight"><b>has_construct</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">DevSchemaRegistry</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry_1_1ElementPreview.html">ElementPreview</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">DevSchemaRegistry</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry_1_1ElementPreview.html">ElementPreview</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

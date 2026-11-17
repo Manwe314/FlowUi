@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Private/ApiBoundary.hpp"
+
 #include "FlowUi/Public/BuildConfig.hpp"
 
 #include <functional>
@@ -59,14 +61,34 @@ public:
 		/** @brief Whether all nested theme reads support UiManager's local theme resolver. */
 		bool uses_local_theme = false;
 	};
-	/** Register or replace the named preview for every variant of T (development only).
-	 * Capture example state by value, or retain dependencies for the manager lifetime.
-	 * Set uses_local_theme only when all nested scene theme reads use UiManager's resolver;
-	 * direct App::themes() reads bypass the local scope and restrict the scene to active variants.
+	/**
+	 * @brief Available only with FLOW_UI_DEV_MODE. Register or replace a named retained example for every variant of T. Name/callback must be nonempty. Callback/name storage failures inside this call become Status errors; constructing the std::function argument happens before the call and may itself throw. Captures must remain valid for the manager lifetime. Set uses_local_theme only when nested theme reads all use UiManager's scoped resolver. Preview drawing must not register previews or trigger application operations.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE
+	 * const std::function<void(FlowUi::App&, FlowUi::UiManager&)> draw =
+	 *     [](FlowUi::App&, FlowUi::UiManager& ui) {
+	 *         auto themeResult = ui.flowTheme();
+	 *         if (!themeResult) throw FlowUi::FlowUiException(themeResult.error());
+	 *         const FlowUi::FlowUiTheme& theme = themeResult->get();
+	 *         ui.createElement(counter, "theme-preview")
+	 *             .setParameters({.width = theme.fontSizeMedium * 8.0f})
+	 *             .draw();
+	 *     };
+	 * auto status = themes.registerDevPreview<FlowUi::FlowUiTheme>("Counter", draw, true);
+	 * if (!status) {
+	 *     throw FlowUi::FlowUiException(status.error());
+	 * }
+	 * #endif
+	 * @endcode
+	 *
+	 * @see docs/api/theme_manager.md
 	 */
 	template <typename T>
 	[[nodiscard]] Status registerDevPreview(std::string_view debug_name,
-											std::function<void(App&, UiManager&)> draw,
+											const std::function<void(App&, UiManager&)>& draw,
 											bool uses_local_theme = false) noexcept {
 		if (debug_name.empty() || !draw)
 			return unexpectedError(
@@ -75,25 +97,77 @@ public:
 			for (auto& preview : dev_previews_)
 				if (preview.theme_type == detail::typeHash<T>() &&
 					preview.scene.debug_name == debug_name) {
-					preview.scene.draw = std::move(draw);
+					preview.scene.draw = draw;
 					preview.scene.uses_local_theme = uses_local_theme;
 					return {};
 				}
 			dev_previews_.emplace_back(DevPreviewEntry{
-				DevThemePreview{std::move(draw), std::string(debug_name), uses_local_theme},
+				DevThemePreview{draw, std::string(debug_name), uses_local_theme},
 				detail::typeHash<T>()});
 			return {};
 		} catch (...) {
-			return unexpectedError(
-				makeError(ErrorCode::ThemeMutationFailed, ErrorSite::ThemeRegisterVariant));
+			return unexpectedError(detail::currentExceptionError(ErrorSite::ThemeRegisterVariant));
 		}
 	}
-	/** Visit registered component examples for a theme type, in registration order. */
+	/**
+	 * @brief Available only with FLOW_UI_DEV_MODE. Construct the retained std::function inside the recoverable error boundary, then register it using the same name/ownership/scoped-theme contract as the std::function overload. Callback construction and registration failures become Status errors. The drawing callback runs later; its own drawing exceptions follow that enclosing frame boundary.
+	 *
+	 * @par Example
+	 * The complete ExampleCounter definition is provided in the element API reference.
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE
+	 * auto status = themes.registerDevPreview<FlowUi::FlowUiTheme>("Counter",
+	 *     [](FlowUi::App&, FlowUi::UiManager& ui) {
+	 *         auto themeResult = ui.flowTheme();
+	 *         if (!themeResult) throw FlowUi::FlowUiException(themeResult.error());
+	 *         const FlowUi::FlowUiTheme& theme = themeResult->get();
+	 *         ui.createElement(counter, "theme-preview")
+	 *             .setParameters({.width = theme.fontSizeMedium * 8.0f})
+	 *             .draw();
+	 *     }, true);
+	 * if (!status) {
+	 *     throw FlowUi::FlowUiException(status.error());
+	 * }
+	 * #endif
+	 * @endcode
+	 *
+	 * @see docs/api/theme_manager.md
+	 */
+	template <typename T, typename Draw>
+		requires (!std::is_same_v<std::remove_cvref_t<Draw>, std::function<void(App&, UiManager&)>>)
+	[[nodiscard]] Status registerDevPreview(std::string_view debugName, Draw&& draw,
+										 bool usesLocalTheme = false) noexcept {
+		return detail::catchResult<Status>(ErrorSite::ThemeRegisterVariant, [&] {
+			return registerDevPreview<T>(debugName,
+				std::function<void(App&, UiManager&)>(std::forward<Draw>(draw)), usesLocalTheme);
+		});
+	}
+
+	/**
+	 * @brief Available only with FLOW_UI_DEV_MODE. Synchronously visit examples of one reflected theme type in registration order. The preview and its fields are borrowed for the callback. A completed visit returns successful Status; arbitrary visitor exceptions propagate. This function has no noexcept contract.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE
+	 * std::size_t previewCount = 0;
+	 * auto status = themes.visitDevPreviews(inspectedTheme.type,
+	 *     [&previewCount](const FlowUi::ThemeManager::DevThemePreview& preview) {
+	 *         if (preview.draw && !preview.debug_name.empty()) ++previewCount;
+	 *     });
+	 * if (!status) {
+	 *     throw FlowUi::FlowUiException(status.error());
+	 * }
+	 * #endif
+	 * @endcode
+	 *
+	 * @see docs/api/theme_manager.md
+	 */
 	template <typename Visitor>
-	void visitDevPreviews(devSystems::tooling::DevTypeId theme_type, Visitor&& visitor) const {
+	[[nodiscard]] Status visitDevPreviews(devSystems::tooling::DevTypeId theme_type, Visitor&& visitor) const {
 		for (const auto& preview : dev_previews_)
 			if (preview.theme_type == theme_type)
 				visitor(preview.scene);
+		return {};
 	}
 	/** @brief Borrowed reflected theme payloads; valid during visitation and until registry mutation. */
 	struct DevThemePayloadView {
@@ -118,10 +192,41 @@ public:
 	};
 	/** @brief Synchronous observation callback; return false to stop visitation. Arguments are borrowed for the call. */
 	using DevThemePayloadVisitor = bool (*)(void*, const DevThemePayloadView&) noexcept;
-	/** Clone the live payload into a new named variant; existing names are rejected. */
+	/**
+	 * @brief Available only with FLOW_UI_DEV_MODE. Clone the live reflected payload into a new named variant, rejecting existing destination names. Check initialization/type/source/destination failures through Status. Obtain the reflected identity from a real catalogue payload view; cloning does not change its source payload. Reacquire catalogue borrows after registry mutation.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE
+	 * const std::string_view destination = "custom";
+	 * auto status = themes.clone_dev_variant(
+	 *     inspectedTheme.type, inspectedTheme.variant, destination);
+	 * if (!status) {
+	 *     throw FlowUi::FlowUiException(status.error());
+	 * }
+	 * #endif
+	 * @endcode
+	 *
+	 * @see docs/api/theme_manager.md
+	 */
 	[[nodiscard]] Status clone_dev_variant(devSystems::tooling::DevTypeId type, std::string_view source,
 										   std::string_view destination) noexcept;
-	/** Switch the active variant of a reflected theme type. */
+	/**
+	 * @brief Available only with FLOW_UI_DEV_MODE. Select the named variant of a reflected theme type. Return initialization/missing-variant errors through Status. Obtain the type and variant from a real catalogue payload view and reacquire theme borrows after changing the registry selection.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * #if FLOW_UI_DEV_MODE
+	 * auto status = themes.set_dev_active_variant(
+	 *     inspectedTheme.type, inspectedTheme.variant);
+	 * if (!status) {
+	 *     throw FlowUi::FlowUiException(status.error());
+	 * }
+	 * #endif
+	 * @endcode
+	 *
+	 * @see docs/api/theme_manager.md
+	 */
 	[[nodiscard]] Status set_dev_active_variant(devSystems::tooling::DevTypeId type,
 												std::string_view variant) noexcept;
 	/** @brief Return the current development-observation revision; zero when support is disabled. */
@@ -135,78 +240,115 @@ public:
 	/** @brief Append observation-only memory accounting to sink without transferring storage ownership. */
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
 #endif
-	/** @brief Construct an uninitialized theme registry; normally obtained from App::themes(). */
-	ThemeManager();
-	/** @brief Release all registered payloads and queued mutation callbacks. */
-	~ThemeManager();
+	/**
+	 * @brief Construct a detached manager; application code normally obtains the initialized App-owned manager.
+	 *
+	 * @see docs/api/theme_manager.md
+	 */
+	ThemeManager() noexcept;
+	/**
+	 * @brief Release owned service data. The App controls this manager lifetime.
+	 *
+	 * @see docs/api/theme_manager.md
+	 */
+	~ThemeManager() noexcept;
 
+	/**
+	 * @brief Copying and moving are disabled as declared; use the App-owned instance by reference.
+	 *
+	 * @see docs/api/theme_manager.md
+	 */
 	ThemeManager(const ThemeManager&) = delete;
+	/**
+	 * @brief Copying and moving are disabled as declared; use the App-owned instance by reference.
+	 *
+	 * @see docs/api/theme_manager.md
+	 */
 	ThemeManager& operator=(const ThemeManager&) = delete;
 
 	/**
-	 * @brief Register a named theme variant for type T.
+	 * @brief Register an owned copy of a named theme payload; the shorter overload uses variant "default". makeActive selects the registered variant immediately.
 	 *
-	 * @tparam T User-defined or library theme struct type.
-	 * @param variantName Name identifying this theme variant.
-	 * @param themeData Theme struct payload containing design tokens.
-	 * @param makeActive If true, sets this variant as the active theme for type T.
-	 * @return Success or a structured initialization/registration error. The
-	 * manager owns the moved payload; the variant name is copied.
+	 * Hybrid contract: known validation failures are returned; arbitrary payload copy/assignment and allocation exceptions propagate. Failed replacement can partially affect a payload; abandon it instead of assuming rollback.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * auto result = themes.registerTheme<FlowUi::FlowUiTheme>("light", FlowUi::FlowUiTheme::light(), false);
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * @endcode
+	 *
+	 * @see docs/api/theme_manager.md
 	 */
 	template <typename T>
-	[[nodiscard]] Status registerTheme(std::string_view variantName, T themeData,
+	[[nodiscard]] Status registerTheme(std::string_view variantName, const T& themeData,
 									   bool makeActive = true) {
-		if (!controller_) {
+		if (!controller_ || !storage_) {
 			return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeRegisterVariant));
 		}
+		const auto writable = detail::catchResult<Status>(ErrorSite::ThemeRegisterVariant, [&] {
+			storage_->noteManagerMutation(InvalidWindowId);
+			return Status{};
+		});
+		if (!writable) return writable;
 #if FLOW_UI_DEV_MODE
 		if (devSchemaRegistry_) devSchemaRegistry_->ensureTheme<T>();
 #endif
-		try {
+		T ownedThemeData = themeData;
 #if FLOW_UI_DEV_MODE
-			const T authored = themeData;
+		const T authored = themeData;
 #endif
 #if FLOW_UI_HAS_BAKED_CHANGES
-			baked::applyBakedThemeDefaults<T>(variantName, themeData);
+		baked::applyBakedThemeDefaults<T>(variantName, ownedThemeData);
 #endif
-			const auto variantId = controller_->internString(variantName);
-			controller_->registerThemeVariant<T>(variantId, std::move(themeData), makeActive
+		const auto variantId = controller_->internString(variantName);
+		controller_->registerThemeVariant<T>(variantId, std::move(ownedThemeData), makeActive
 #if FLOW_UI_DEV_MODE
-												 ,
-												 &authored
+											 ,
+											 &authored
 #endif
-			);
-			storage_->noteManagerMutation(InvalidWindowId);
-			return {};
-		} catch (const FlowUiException& exception) {
-			return unexpectedError(exception.error());
-		}
+		);
+		return {};
 	}
 
 	/**
-	 * @brief Register the default variant for theme type T under name "default".
+	 * @brief Register an owned copy of a named theme payload; the shorter overload uses variant "default". makeActive selects the registered variant immediately.
 	 *
-	 * @tparam T User-defined or library theme struct type.
-	 * @param themeData Theme struct payload containing design tokens.
-	 * @param makeActive If true, sets this variant as the active theme for type T.
-	 * @return Success or a structured initialization/registration error. The
-	 * manager owns the moved payload; the variant name is copied.
+	 * Hybrid contract: known validation failures are returned; arbitrary payload copy/assignment and allocation exceptions propagate. Failed replacement can partially affect a payload; abandon it instead of assuming rollback.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * auto result = themes.registerTheme<FlowUi::FlowUiTheme>(FlowUi::FlowUiTheme::dark());
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * @endcode
+	 *
+	 * @see docs/api/theme_manager.md
 	 */
 	template <typename T>
-	[[nodiscard]] Status registerTheme(T themeData, bool makeActive = true) {
-		return registerTheme<T>("default", std::move(themeData), makeActive);
+	[[nodiscard]] Status registerTheme(const T& themeData, bool makeActive = true) {
+		return registerTheme<T>("default", themeData, makeActive);
 	}
 
 	/**
-	 * @brief Set the active variant for theme type T by variant name.
+	 * @brief Select a previously registered variant for this theme type. Missing initialization/type/variant failures are returned in Status.
 	 *
-	 * @tparam T Theme struct type.
-	 * @param variantName Name of the registered variant to set active.
-	 * @return Success when the variant is active, or a structured error when
-	 * the manager, theme type, or variant is unavailable.
+	 * Hybrid contract: known FlowUi validation failures are returned; non-FlowUi name preparation/allocation exceptions propagate.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * auto result = themes.setActiveVariant<FlowUi::FlowUiTheme>("light");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * @endcode
+	 *
+	 * @see docs/api/theme_manager.md
 	 */
 	template <typename T>
-	[[nodiscard]] Status setActiveVariant(std::string_view variantName) {
+	[[nodiscard]] Status setActiveVariant(std::string_view variantName) try {
 		if (!controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeSetActiveVariant));
 		const auto variantId = controller_->internString(variantName);
 		if (!controller_->hasThemeType<T>()) {
@@ -215,21 +357,30 @@ public:
 		if (!controller_->setActiveVariant<T>(variantId)) {
 			return unexpectedError(makeError(ErrorCode::ThemeVariantNotFound, ErrorSite::ThemeSetActiveVariant));
 		}
-		storage_->noteManagerMutation(InvalidWindowId);
 		return {};
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
 	}
 
 	/**
-	 * @brief Access the active variant for theme type T.
+	 * @brief Borrow the active registered payload through Result<reference_wrapper<const T>>; missing initialization or active variant is an error.
 	 *
-	 * @tparam T Theme struct type.
-	 * @return Const reference to the active theme payload of type T.
-	 * @throws FlowUiException if uninitialized or no active variant exists.
-	 * @note The reference borrows the registered payload; reacquire after replacing
-	 * variants, applying mutations, or destroying/reinitializing the manager.
+	 * Check the Result, then use const T& value = result->get(). This is a borrow: reacquire after replacing variants, registry mutations or manager destruction/reinitialization.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * auto result = themes.getActiveTheme<FlowUi::FlowUiTheme>();
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::FlowUiTheme& theme = result->get();
+	 * const float fontSize = theme.fontSizeMedium;
+	 * @endcode
+	 *
+	 * @see docs/api/theme_manager.md
 	 */
 	template <typename T>
-	[[nodiscard]] const T& getActiveTheme() const {
+	[[nodiscard]] Result<std::reference_wrapper<const T>> getActiveTheme() const noexcept try {
 		if (!controller_) {
 			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeLookupActiveVariant));
 		}
@@ -237,21 +388,30 @@ public:
 		if (!ptr) {
 			throw FlowUiException(makeError(ErrorCode::ThemeActiveVariantMissing, ErrorSite::ThemeLookupActiveVariant));
 		}
-		return *ptr;
+		return std::cref(*ptr);
+	} catch (...) {
+		return unexpectedError(detail::currentExceptionError(ErrorSite::ThemeLookupActiveVariant));
 	}
 
 	/**
-	 * @brief Access a specific named variant for theme type T.
+	 * @brief Borrow one named registered payload through Result<reference_wrapper<const T>>; missing initialization or variant is an error.
 	 *
-	 * @tparam T Theme struct type.
-	 * @param variantName Name of the registered variant.
-	 * @return Const reference to the named theme payload of type T.
-	 * @throws FlowUiException if uninitialized or the named variant is absent.
-	 * @note The reference borrows the registered payload; reacquire after replacing
-	 * variants, applying mutations, or destroying/reinitializing the manager.
+	 * Check the Result, then use const T& value = result->get(). This is a borrow: reacquire after replacing variants, registry mutations or manager destruction/reinitialization.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * auto result = themes.getTheme<FlowUi::FlowUiTheme>("light");
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * const FlowUi::FlowUiTheme& theme = result->get();
+	 * const float fontSize = theme.fontSizeMedium;
+	 * @endcode
+	 *
+	 * @see docs/api/theme_manager.md
 	 */
 	template <typename T>
-	[[nodiscard]] const T& getTheme(std::string_view variantName) const {
+	[[nodiscard]] Result<std::reference_wrapper<const T>> getTheme(std::string_view variantName) const noexcept try {
 		if (!controller_) {
 			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeLookupActiveVariant));
 		}
@@ -260,21 +420,29 @@ public:
 		if (!ptr) {
 			throw FlowUiException(makeError(ErrorCode::ThemeVariantNotFound, ErrorSite::ThemeLookupActiveVariant));
 		}
-		return *ptr;
+		return std::cref(*ptr);
+	} catch (...) {
+		return unexpectedError(detail::currentExceptionError(ErrorSite::ThemeLookupActiveVariant));
 	}
 
 	/**
-	 * @brief Queue a mutation function to update a theme variant at the next frame boundary.
+	 * @brief Queue a retained mutator for the named variant. Success means queued, not applied; captured references must survive application of queued work.
 	 *
-	 * @tparam T Theme struct type.
-	 * @param variantName Name of the registered variant to mutate.
-	 * @param mutator Retained callback receiving the theme payload when queued work runs.
-	 * Captured references must survive until application of the queued mutation.
-	 * @return Success when queued, or an initialization/type/variant error.
+	 * Hybrid contract: initialization/type/variant failures are returned; callback construction, name preparation and allocation exceptions propagate. Mutators run later and may throw when applied.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * auto result = themes.updateTheme<FlowUi::FlowUiTheme>("light", [](FlowUi::FlowUiTheme& theme) { theme.fontSizeMedium = 16.0f; });
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * @endcode
+	 *
+	 * @see docs/api/theme_manager.md
 	 */
-	template <typename T>
+	template <typename T, typename Mutator>
 	[[nodiscard]] Status updateTheme(std::string_view variantName,
-									 std::function<void(T&)> mutator) {
+									 Mutator&& mutator) {
 		if (!controller_) {
 			return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeStageMutation));
 		}
@@ -282,47 +450,61 @@ public:
 		if (!controller_->hasThemeType<T>()) {
 			return unexpectedError(makeError(ErrorCode::ThemeTypeNotFound, ErrorSite::ThemeStageMutation));
 		}
-		if (!controller_->queueThemeMutation<T>(variantId, std::move(mutator))) {
+		if (!controller_->queueThemeMutation<T>(variantId, std::function<void(T&)>(std::forward<Mutator>(mutator)))) {
 			return unexpectedError(makeError(ErrorCode::ThemeVariantNotFound, ErrorSite::ThemeStageMutation));
 		}
 		return {};
 	}
 
 	/**
-	 * @brief Queue a mutation function for the active variant of type T.
+	 * @brief Queue a retained mutator for the active variant of this type. Success means queued, not applied; borrowed captures must survive application.
 	 *
-	 * @tparam T Theme struct type.
-	 * @param mutator Retained callback; borrowed captures must outlive queued work.
-	 * @return Success when queued, or an initialization/type/active-variant error.
+	 * Hybrid contract: initialization/type/variant failures are returned; callback construction, name preparation and allocation exceptions propagate. Mutators run later and may throw when applied.
+	 *
+	 * @par Example
+	 * @code{.cpp}
+	 * auto result = themes.updateActiveTheme<FlowUi::FlowUiTheme>([](FlowUi::FlowUiTheme& theme) { theme.fontSizeMedium = 16.0f; });
+	 * if (!result) {
+	 *     throw FlowUi::FlowUiException(result.error());
+	 * }
+	 * @endcode
+	 *
+	 * @see docs/api/theme_manager.md
 	 */
-	template <typename T>
-	[[nodiscard]] Status updateActiveTheme(std::function<void(T&)> mutator) {
+	template <typename T, typename Mutator>
+	[[nodiscard]] Status updateActiveTheme(Mutator&& mutator) {
 		if (!controller_) {
 			return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeStageMutation));
 		}
 		if (!controller_->hasThemeType<T>()) {
 			return unexpectedError(makeError(ErrorCode::ThemeTypeNotFound, ErrorSite::ThemeStageMutation));
 		}
-		if (!controller_->queueActiveThemeMutation<T>(std::move(mutator))) {
+		if (!controller_->queueActiveThemeMutation<T>(std::function<void(T&)>(std::forward<Mutator>(mutator)))) {
 			return unexpectedError(makeError(ErrorCode::ThemeActiveVariantMissing, ErrorSite::ThemeStageMutation));
 		}
 		return {};
 	}
 
 	/**
-	 * @brief Initialize ThemeManager with a storage system instance.
-	 * 
-	 * @param storage Storage system instance.
+	 * @brief Framework lifecycle wiring to the App-owned storage system. Application code obtains this manager through App::themes().
+	 *
+	 * @see docs/api/theme_manager.md
 	 */
 	void init(detail::storage::IStorageSystem& storage);
 
 	/**
-	 * @brief Destroy ThemeManager resources and unregister storage records.
+	 * @brief Release this manager storage records and pending mutations. Framework lifecycle service; application code should retain the App-owned manager.
+	 *
+	 * @see docs/api/theme_manager.md
 	 */
 	void destroy() noexcept;
 
 	/**
-	 * @brief Apply all queued staged theme mutations.
+	 * @brief Apply queued mutations at an application safe point. App normally calls this service; avoid changing themes while UI output is being built.
+	 *
+	 * Arbitrary mutator exceptions propagate; a mutator may already have changed its target. Remaining detached callbacks are abandoned after failure, with no automatic retry. Rejection before detaching retains the queued batch.
+	 *
+	 * @see docs/api/theme_manager.md
 	 */
 	void applyStagedMutations();
 

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,31 +106,121 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::UiActionCall Class Reference<div class="ingroups"><a class="el" href="group__flowui__action__manager.html">Action Manager</a></div></div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="ActionTypes_8hpp_source.html">ActionTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-types" class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a8e9ea268063f39181ae61af8d1064ab8" id="r_a8e9ea268063f39181ae61af8d1064ab8"><td class="memItemLeft"><a id="a8e9ea268063f39181ae61af8d1064ab8" name="a8e9ea268063f39181ae61af8d1064ab8"></a>
-using&#160;</td><td class="memItemRight"><b>InvokeThunk</b> = void (*)(const std::byte* payload)</td></tr>
+<tr class="memitem:a8e9ea268063f39181ae61af8d1064ab8" id="r_a8e9ea268063f39181ae61af8d1064ab8"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a8e9ea268063f39181ae61af8d1064ab8">InvokeThunk</a> = void (*)(const std::byte* payload)</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a33e47cc6d9d80abb13a4bce7274724e7" id="r_a33e47cc6d9d80abb13a4bce7274724e7"><td class="memItemLeft"><a id="a33e47cc6d9d80abb13a4bce7274724e7" name="a33e47cc6d9d80abb13a4bce7274724e7"></a>
-constexpr&#160;</td><td class="memItemRight"><b>operator bool</b> () const noexcept</td></tr>
+<tr class="memitem:a1922e084078dda532127715b086d3f4e" id="r_a1922e084078dda532127715b086d3f4e"><td class="memItemLeft">constexpr&#160;</td><td class="memItemRight"><a class="el" href="#a1922e084078dda532127715b086d3f4e">UiActionCall</a> () noexcept=default</td></tr>
+<tr class="memitem:a33e47cc6d9d80abb13a4bce7274724e7" id="r_a33e47cc6d9d80abb13a4bce7274724e7"><td class="memItemLeft">constexpr&#160;</td><td class="memItemRight"><a class="el" href="#a33e47cc6d9d80abb13a4bce7274724e7">operator bool</a> () const noexcept</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-attribs" class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
-<tr class="memitem:a0d35bc4e73b87c84c56c0395b422c9de" id="r_a0d35bc4e73b87c84c56c0395b422c9de"><td class="memItemLeft"><a id="a0d35bc4e73b87c84c56c0395b422c9de" name="a0d35bc4e73b87c84c56c0395b422c9de"></a>
-static constexpr std::size_t&#160;</td><td class="memItemRight"><b>InlineBytes</b> = 2u * sizeof(void*)</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a6373ccafdba6839d74f6de6d833093b6" id="r_a6373ccafdba6839d74f6de6d833093b6"><td class="memItemLeft"><a id="a6373ccafdba6839d74f6de6d833093b6" name="a6373ccafdba6839d74f6de6d833093b6"></a>
-class&#160;</td><td class="memItemRight"><b>UiActions</b></td></tr>
-<tr class="memitem:afbf17e1f0158828c2be22ecde58644fc" id="r_afbf17e1f0158828c2be22ecde58644fc"><td class="memItemLeft"><a id="afbf17e1f0158828c2be22ecde58644fc" name="afbf17e1f0158828c2be22ecde58644fc"></a>
-class&#160;</td><td class="memItemRight"><b>ActionManager</b></td></tr>
-<tr class="memitem:a783c5efa1c0492f628bb0c98c02429f6" id="r_a783c5efa1c0492f628bb0c98c02429f6"><td class="memItemLeft"><a id="a783c5efa1c0492f628bb0c98c02429f6" name="a783c5efa1c0492f628bb0c98c02429f6"></a>
-class&#160;</td><td class="memItemRight"><b>ActionCall</b></td></tr>
+<tr class="memitem:a0d35bc4e73b87c84c56c0395b422c9de" id="r_a0d35bc4e73b87c84c56c0395b422c9de"><td class="memItemLeft">static constexpr std::size_t&#160;</td><td class="memItemRight"><a class="el" href="#a0d35bc4e73b87c84c56c0395b422c9de">InlineBytes</a> = 2u * sizeof(void*)</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Small copyable UI operation with inline borrowed resource bindings. Obtain it from <a class="el" href="group__flowui__action__manager.html#gaed2e7828505874abd12a93b22aa7ad79" title="Pack a stateless, trivial, concrete void-returning UiAction recipe and its arguments into a direct Ui...">UiActions::make()</a>; bound resources must outlive invocation.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1UiActionCall.html">FlowUi::UiActionCall</a> call{}; <span class="comment">// Empty calls are inert.</span></div>
+<div class="ttc" id="aclassFlowUi_1_1UiActionCall_html"><div class="ttname"><a href="classFlowUi_1_1UiActionCall.html">FlowUi::UiActionCall</a></div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:78</div></div>
+</div><!-- fragment --> </dd></dl>
+</div><a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Member Typedef Documentation</h2>
+<a id="a8e9ea268063f39181ae61af8d1064ab8" name="a8e9ea268063f39181ae61af8d1064ab8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8e9ea268063f39181ae61af8d1064ab8">&#9670;&#160;</a></span>InvokeThunk</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="#a8e9ea268063f39181ae61af8d1064ab8">FlowUi::UiActionCall::InvokeThunk</a> = void (*)(const std::byte* payload)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Dispatch function for the inline payload; used by the action binding machinery. </p>
+
+</div>
+</div>
+<a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a1922e084078dda532127715b086d3f4e" name="a1922e084078dda532127715b086d3f4e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1922e084078dda532127715b086d3f4e">&#9670;&#160;</a></span>UiActionCall()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::UiActionCall::UiActionCall </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel constexpr">constexpr</span><span class="mlabel default">default</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Construct an empty UI call. </p>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a33e47cc6d9d80abb13a4bce7274724e7" name="a33e47cc6d9d80abb13a4bce7274724e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a33e47cc6d9d80abb13a4bce7274724e7">&#9670;&#160;</a></span>operator bool()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::UiActionCall::operator bool </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel explicit">explicit</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return whether this value contains a nonempty call. </p>
+
+</div>
+</div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a0d35bc4e73b87c84c56c0395b422c9de" name="a0d35bc4e73b87c84c56c0395b422c9de"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d35bc4e73b87c84c56c0395b422c9de">&#9670;&#160;</a></span>InlineBytes</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::size_t FlowUi::UiActionCall::InlineBytes = 2u * sizeof(void*)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span><span class="mlabel constexpr">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Maximum inline payload bytes available for UI resource bindings. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="ActionTypes_8hpp_source.html">ActionTypes.hpp</a></li>
 </ul>
@@ -147,7 +237,7 @@ class&#160;</td><td class="memItemRight"><b>ActionCall</b></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="classFlowUi_1_1UiActionCall.html">UiActionCall</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="classFlowUi_1_1UiActionCall.html">UiActionCall</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

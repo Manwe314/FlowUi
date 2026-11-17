@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,17 +106,64 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::AppActionCall Struct Reference<div class="ingroups"><a class="el" href="group__flowui__action__manager.html">Action Manager</a></div></div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="ActionTypes_8hpp_source.html">ActionTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a8dae529d67d6f4d20ae3a6fb3dc2c8f9" id="r_a8dae529d67d6f4d20ae3a6fb3dc2c8f9"><td class="memItemLeft"><a id="a8dae529d67d6f4d20ae3a6fb3dc2c8f9" name="a8dae529d67d6f4d20ae3a6fb3dc2c8f9"></a>
-constexpr&#160;</td><td class="memItemRight"><b>operator bool</b> () const noexcept</td></tr>
+<tr class="memitem:a8dae529d67d6f4d20ae3a6fb3dc2c8f9" id="r_a8dae529d67d6f4d20ae3a6fb3dc2c8f9"><td class="memItemLeft">constexpr&#160;</td><td class="memItemRight"><a class="el" href="#a8dae529d67d6f4d20ae3a6fb3dc2c8f9">operator bool</a> () const noexcept</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a5a3da995cf39552e3e11ebb755b284e0" id="r_a5a3da995cf39552e3e11ebb755b284e0"><td class="memItemLeft"><a id="a5a3da995cf39552e3e11ebb755b284e0" name="a5a3da995cf39552e3e11ebb755b284e0"></a>
-<a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a>&#160;</td><td class="memItemRight"><b>id</b></td></tr>
+<tr class="memitem:a5a3da995cf39552e3e11ebb755b284e0" id="r_a5a3da995cf39552e3e11ebb755b284e0"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5a3da995cf39552e3e11ebb755b284e0">id</a></td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Copyable call to an application action by stable identity; binding and availability are checked at invocation.</p>
+<dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> invoked = <span class="keyword">static_cast&lt;</span><span class="keywordtype">bool</span><span class="keyword">&gt;</span>(call); <span class="comment">// Binding/availability are checked separately.</span></div>
+</div><!-- fragment --> </dd></dl>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a8dae529d67d6f4d20ae3a6fb3dc2c8f9" name="a8dae529d67d6f4d20ae3a6fb3dc2c8f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8dae529d67d6f4d20ae3a6fb3dc2c8f9">&#9670;&#160;</a></span>operator bool()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FlowUi::AppActionCall::operator bool </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel explicit">explicit</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return whether this value contains a nonempty call. </p>
+
+</div>
+</div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a5a3da995cf39552e3e11ebb755b284e0" name="a5a3da995cf39552e3e11ebb755b284e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a3da995cf39552e3e11ebb755b284e0">&#9670;&#160;</a></span>id</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> FlowUi::AppActionCall::id</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Application action identity; value-initialize the call to obtain an empty call. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/managerStructs/<a class="el" href="ActionTypes_8hpp_source.html">ActionTypes.hpp</a></li>
 </ul>
@@ -133,7 +180,7 @@ Public Attributes</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1AppActionCall.html">AppActionCall</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1AppActionCall.html">AppActionCall</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,12 +106,49 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::AppActionIDHash Struct Reference<div class="ingroups"><a class="el" href="group__flowui__action__manager.html">Action Manager</a></div></div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="AppActionID_8hpp_source.html">AppActionID.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:acfb64799de70a1ce45be29830d6b5f74" id="r_acfb64799de70a1ce45be29830d6b5f74"><td class="memItemLeft"><a id="acfb64799de70a1ce45be29830d6b5f74" name="acfb64799de70a1ce45be29830d6b5f74"></a>
-constexpr std::size_t&#160;</td><td class="memItemRight"><b>operator()</b> (<a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> id) const noexcept</td></tr>
+<tr class="memitem:acfb64799de70a1ce45be29830d6b5f74" id="r_acfb64799de70a1ce45be29830d6b5f74"><td class="memItemLeft">constexpr std::size_t&#160;</td><td class="memItemRight"><a class="el" href="#acfb64799de70a1ce45be29830d6b5f74">operator()</a> (<a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a> id) const noexcept</td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Container hash adapter for application-action identity; ignores developer labels. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="acfb64799de70a1ce45be29830d6b5f74" name="acfb64799de70a1ce45be29830d6b5f74"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acfb64799de70a1ce45be29830d6b5f74">&#9670;&#160;</a></span>operator()()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::size_t FlowUi::AppActionIDHash::operator() </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1AppActionID.html">AppActionID</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Hash the numeric action identity for associative containers. </p><dl class="section user"><dt>Example</dt><dd><div class="fragment"><div class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> first = <a class="code hl_function" href="group__flowui__action__manager.html#ga78191cadc43d03c544c284c66abbd22a">FlowUi::AppAction</a>(<span class="stringliteral">&quot;editor.save&quot;</span>);</div>
+<div class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> second = <a class="code hl_function" href="group__flowui__action__manager.html#ga78191cadc43d03c544c284c66abbd22a">FlowUi::AppAction</a>(<span class="stringliteral">&quot;editor.save&quot;</span>);</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> valid = <span class="keyword">static_cast&lt;</span><span class="keywordtype">bool</span><span class="keyword">&gt;</span>(first);</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> same = first == second;</div>
+<div class="line"><span class="keyword">const</span> std::size_t hash = <a class="code hl_struct" href="structFlowUi_1_1AppActionIDHash.html">FlowUi::AppActionIDHash</a>{}(first);</div>
+<div class="ttc" id="agroup__flowui__action__manager_html_ga78191cadc43d03c544c284c66abbd22a"><div class="ttname"><a href="group__flowui__action__manager.html#ga78191cadc43d03c544c284c66abbd22a">FlowUi::AppAction</a></div><div class="ttdeci">consteval AppActionID AppAction(const char(&amp;name)[N]) noexcept</div><div class="ttdef"><b>Definition</b> AppActionID.hpp:72</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppActionIDHash_html"><div class="ttname"><a href="structFlowUi_1_1AppActionIDHash.html">FlowUi::AppActionIDHash</a></div><div class="ttdef"><b>Definition</b> AppActionID.hpp:83</div></div>
+</div><!-- fragment --> </dd></dl>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/FlowUi/Public/identificationTypes/<a class="el" href="AppActionID_8hpp_source.html">AppActionID.hpp</a></li>
 </ul>
@@ -128,7 +165,7 @@ constexpr std::size_t&#160;</td><td class="memItemRight"><b>operator()</b> (<a c
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><a href="structFlowUi_1_1AppActionIDHash.html">AppActionIDHash</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="structFlowUi_1_1AppActionIDHash.html">AppActionIDHash</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

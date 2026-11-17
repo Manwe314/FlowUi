@@ -235,7 +235,7 @@ struct TranslatorMetrics {
 	std::size_t resets = 0;
 };
 
-template <std::size_t Identity, bool FailAcquisition = false>
+template <std::size_t Identity, bool FailAcquisition = false, bool FailPolling = false>
 class SampleTranslator {
 public:
 	inline static TranslatorMetrics metrics{};
@@ -257,10 +257,14 @@ public:
 			return unexpectedError(
 				makeError(ErrorCode::ObjectNotInitialized, ErrorSite::InputBeginFrame));
 		++metrics.polls;
-		return sink.key({.device = Identity + 100,
+		const auto emitted = sink.key({.device = Identity + 100,
 						 .target = context.focusedTarget(),
 						 .key = Key::A,
 						 .pressed = true});
+		if (!emitted) return emitted;
+		if constexpr (FailPolling)
+			return unexpectedError(makeError(ErrorCode::PlatformInitializationFailed, ErrorSite::InputBeginFrame));
+		return {};
 	}
 	void resetTarget(WindowId target, InputSink& sink) noexcept {
 		++metrics.resets;
@@ -300,6 +304,26 @@ void translatorPackLifecycle() {
 		FLOWUI_CHECK(First::metrics.released == 1);
 	}
 	First::metrics = {};
+	using PollFailure = SampleTranslator<3, false, true>;
+	PollFailure::metrics = {};
+	Second::metrics = {};
+	{
+		InputState cancelledState;
+		InputService cancelledService;
+		FLOWUI_CHECK(cancelledService.initialize());
+		FLOWUI_CHECK(cancelledService.registerTarget(1, cancelledState));
+		InputTranslatorPack<First, PollFailure, Second> pack;
+		FLOWUI_CHECK(pack.initialize(context));
+		FLOWUI_CHECK(!pack.poll(context, cancelledService.sink()));
+		FLOWUI_CHECK(First::metrics.polls == 1 && PollFailure::metrics.polls == 1);
+		FLOWUI_CHECK(Second::metrics.polls == 0);
+		// Earlier translators emitted before failure; reject the tick and reset before consuming it.
+		pack.resetTarget(1, cancelledService.sink());
+		FLOWUI_CHECK(cancelledService.poll(.01));
+		FLOWUI_CHECK(!cancelledService.keyDown(cancelledState, Key::A));
+	}
+	First::metrics = {};
+	Second::metrics = {};
 	InputState state;
 	InputService service;
 	FLOWUI_CHECK(service.initialize());

@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Inspect/Inspector/DevClayInspector.hpp"
 
 #if FLOW_UI_DEV_MODE && FLOW_UI_DEV_CAPTURE_CLAY
@@ -46,7 +47,7 @@ void DevClayInspector::buildElement(BuildContext& context) {
 
 	if (interface_state && context.params.app &&
 		context.params.app->hasWindow(interface_state->selectedWindowId)) {
-		snapshot = &context.params.app->ui(interface_state->selectedWindowId).devTreeSnapshot();
+		snapshot = &FlowUi::ValueOrThrow(context.params.app->ui(interface_state->selectedWindowId)).get().devTreeSnapshot();
 		if (snapshot && context.params.selectionKey != 0u) {
 			selected_clay_node = findClayNodeBySelectionKey(*snapshot, context.params.selectionKey);
 		}
@@ -76,7 +77,7 @@ void DevClayInspector::buildElement(BuildContext& context) {
 		};
 		header.backgroundColor = interface_theme::kDepth2Ink;
 
-		CLAY(context.clayID("inspector-header"), header) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("inspector-header")), header) {
 			CLAY_TEXT(
 				context.uiManager.toClayString("Clay Element Inspector"),
 				CLAY_TEXT_CONFIG(clayTextConfig(interface_theme::kTextCanvas, 12)));
@@ -91,7 +92,7 @@ void DevClayInspector::buildElement(BuildContext& context) {
 			empty_container.layout.padding = Clay_Padding{18, 18, 18, 18};
 			empty_container.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
 
-			CLAY(context.clayID("empty-selection"), empty_container) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("empty-selection")), empty_container) {
 				CLAY_TEXT(
 					context.uiManager.toClayString("No Clay element selected"),
 					CLAY_TEXT_CONFIG(clayTextConfig(interface_theme::kTextMuted, 12)));
@@ -108,7 +109,7 @@ void DevClayInspector::buildElement(BuildContext& context) {
 		content_column.layout.padding = Clay_Padding{12, 12, 12, 12};
 		content_column.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		content_column.layout.childGap = 12;
-		const auto scroll = Clay_GetScrollContainerData(context.clayID("inspector-content"));
+		const auto scroll = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("inspector-content")));
 		content_column.clip = {
 			.horizontal = true,
 			.vertical = true,
@@ -116,7 +117,7 @@ void DevClayInspector::buildElement(BuildContext& context) {
 				scroll.found && scroll.scrollPosition ? *scroll.scrollPosition : Clay_Vector2{},
 		};
 
-		CLAY(context.clayID("inspector-content"), content_column) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("inspector-content")), content_column) {
 			// Card 1: Clay Element Identity
 			Clay_ElementDeclaration identity_card{};
 			identity_card.layout.sizing = {
@@ -133,7 +134,7 @@ void DevClayInspector::buildElement(BuildContext& context) {
 				.width = Clay_BorderWidth{1, 1, 1, 1, 0},
 			};
 
-			CLAY(context.clayID("identity-card"), identity_card) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("identity-card")), identity_card) {
 				CLAY_TEXT(
 					context.uiManager.toClayString("IDENTITY"),
 					CLAY_TEXT_CONFIG(clayTextConfig(interface_theme::kTextMuted, 9)));
@@ -193,7 +194,7 @@ void DevClayInspector::buildElement(BuildContext& context) {
 				.width = Clay_BorderWidth{1, 1, 1, 1, 0},
 			};
 
-			CLAY(context.clayID("owner-card"), owner_card) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("owner-card")), owner_card) {
 				CLAY_TEXT(
 					context.uiManager.toClayString("OWNING FLOW ELEMENT"),
 					CLAY_TEXT_CONFIG(clayTextConfig(interface_theme::kTextMuted, 9)));

@@ -32,7 +32,8 @@ namespace {
 
 InputState::InputState(std::size_t textCapacity, InputQueueOverflowPolicy overflowPolicy,
 					   std::size_t eventCapacity)
-	: queue_(textCapacity, overflowPolicy), sink_(eventCapacity) {
+	: queue_(textCapacity, overflowPolicy) {
+	detail::requireApiSuccess(sink_.initialize(eventCapacity));
 	ingress_.reserve(eventCapacity);
 	pendingEvents_.reserve(eventCapacity);
 	frameEvents_.reserve(eventCapacity);

@@ -1,4 +1,5 @@
 #include "FlowUi/Public/defaults/FontDefaults.hpp"
+#include "FlowUi/Private/ApiBoundary.hpp"
 
 #include <array>
 
@@ -61,12 +62,14 @@ static constexpr std::array<uint8_t, 564> missing_font_bytes{
 
 } // namespace
 
-FontFaceCreateInfo missing_font() {
+Result<FontFaceCreateInfo> missing_font() noexcept try {
 	FontFaceCreateInfo face{};
 	face.name = "FlowUi Missing Font";
 	face.pixelSize = 16.0f;
 	face.baked_data = std::as_bytes(std::span(missing_font_bytes));
 	return face;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::FontLoad));
 }
 
 } // namespace FlowUi::defaults

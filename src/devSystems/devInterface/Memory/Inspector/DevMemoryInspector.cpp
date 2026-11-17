@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Memory/Inspector/DevMemoryInspector.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/Button.hpp"
@@ -35,16 +36,16 @@ void disclosure(DevMemoryInspector::BuildContext& context, LocalElementName name
 	parameters.hoveredOverrides.backgroundColor = interface_theme::kHoverSurface;
 	parameters.hoveredOverrides.labelColor = interface_theme::kTextCanvas;
 #if FLOWUI_INCLUDE_ICON_MANAGER
-	auto& icons = context.params.app->icons();
+	auto& icons = FlowUi::ValueOrThrow(context.params.app->icons()).get();
 	interface_icons::registerDevInterfaceIcons(icons);
 	parameters.icon =
-		icons.textureRef(expanded ? interface_icons::kCollapseKey : interface_icons::kExpandKey);
+		FlowUi::ValueOrThrow(icons.textureRef(expanded ? interface_icons::kCollapseKey : interface_icons::kExpandKey));
 	parameters.contentMode = FSEL::ButtonContentMode::IconThenText;
 	parameters.iconSize = 12;
 	parameters.text = label;
 #endif
 	parameters.onActivate =
-		ActionCall{context.params.app->actions().uiActions().make(toggle_disclosure, expanded)};
+		ActionCall{FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(toggle_disclosure, expanded)};
 	context.uiManager.createElement(FSEL::kButton, name)
 		.setParameters(parameters)
 		.setDevInternalCapture(true)
@@ -63,7 +64,7 @@ void reading(DevMemoryInspector::BuildContext& context, std::string_view label, 
 			 bool supported, bool bytes, bool decimal) {
 	auto line = row(22);
 	line.layout.sizing.height = CLAY_SIZING_FIT(22);
-	CLAY(context.clayID(Keyed("reading", uint64_t(std::hash<std::string_view>{}(label)))), line) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("reading", uint64_t(std::hash<std::string_view>{}(label))))), line) {
 		text(context, label, interface_theme::kTextMuted, 10);
 		text(context,
 			 supported ? bytes
@@ -95,8 +96,8 @@ constexpr auto capacity_weightings = std::to_array<FSEL::ComboBoxOption>(
 		using Input = std::remove_cvref_t<decltype(input)>;
 		const auto element =
 			::FlowUi::detail::element_id::resolveLocal(context.id, Input::definitionId, name.token);
-		const auto* field = context.uiManager.elements().getStatePointerConst(
-			input, context.uiManager.windowId(), element);
+		const auto* field = FlowUi::ValueOrThrow(context.uiManager.elements().getStatePointerConst(
+			input, context.uiManager.windowId(), element));
 		return !field || field->textStatus == FSEL::NumericTextStatus::Complete;
 	};
 	if (tool.strategy == 0 && tool.editor.planner.margin_mode == 0 &&
@@ -141,8 +142,8 @@ void reset_capacity_inputs(DevMemoryInspector::BuildContext& context) {
 		using Input = std::remove_cvref_t<decltype(input)>;
 		const auto element =
 			::FlowUi::detail::element_id::resolveLocal(context.id, Input::definitionId, name.token);
-		if (auto* field = context.uiManager.elements().getStatePointer(
-				input, context.uiManager.windowId(), element)) {
+		if (auto* field = FlowUi::ValueOrThrow(context.uiManager.elements().getStatePointer(
+				input, context.uiManager.windowId(), element))) {
 			field->editSession = {};
 			field->wasFocused = false;
 			field->forceTextSynchronization = true;
@@ -295,9 +296,9 @@ void update_capacity_tool(DevMemoryInspector::BuildContext& context, DevMemoryRe
 	}
 	if (action == 415 && tool.selected_target)
 		if (const auto* definition = FlowUi::detail::find_initial_capacity(tool.selected_target))
-			context.params.app->setClipboardText(definition->key);
+			FlowUi::ValueOrThrow(context.params.app->setClipboardText(definition->key));
 	if (action == 413) {
-		auto& memory = context.params.app->devMonitoring().memory();
+		auto& memory = FlowUi::ValueOrThrow(context.params.app->devMonitoring()).get().memory();
 		auto config = memory.config();
 		config.level = MemoryMonitoringLevel::SubsystemCapacity;
 		memory.setConfig(config);
@@ -391,7 +392,7 @@ void stage_connector(DevMemoryInspector::BuildContext& context, uint64_t index) 
 	auto connector = column();
 	connector.layout.sizing = {.width = CLAY_SIZING_FIXED(2), .height = CLAY_SIZING_FIXED(9)};
 	connector.backgroundColor = interface_theme::kAccentSeaGlass;
-	CLAY(context.clayID(Keyed("capacity-connector", index)), connector) {}
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("capacity-connector", index))), connector) {}
 }
 void capacity_comparison(DevMemoryInspector::BuildContext& context,
 						 const MemoryCapacityProposal& proposal) {
@@ -405,7 +406,7 @@ void capacity_comparison(DevMemoryInspector::BuildContext& context,
 		auto track = row(5);
 		track.layout.childGap = 0;
 		track.backgroundColor = interface_theme::kDepth0Keel;
-		CLAY(context.clayID(Keyed("capacity-comparison", index)), track) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("capacity-comparison", index))), track) {
 			auto bar = column();
 			bar.layout.sizing = {
 				.width = values[index] ? CLAY_SIZING_PERCENT(float(double(values[index]) / scale))
@@ -414,7 +415,7 @@ void capacity_comparison(DevMemoryInspector::BuildContext& context,
 			bar.backgroundColor = index == 0   ? interface_theme::kTextMuted
 								  : index == 1 ? interface_theme::kStatusAmber
 											   : interface_theme::kAccentSeaGlass;
-			CLAY(context.clayID(Keyed("capacity-comparison-bar", index)), bar) {}
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("capacity-comparison-bar", index))), bar) {}
 		}
 	}
 }
@@ -441,11 +442,11 @@ void build_capacity_tool(DevMemoryInspector::BuildContext& context,
 	}
 	auto section = column(0);
 	section.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-	CLAY(context.clayID("capacity-tuning-section"), section) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("capacity-tuning-section")), section) {
 		disclosure(context, LocalElementName{"capacity-tuning-header"}, "Capacity tuning",
 				   context.state().capacity_tuning_expanded);
 		if (context.state().capacity_tuning_expanded) {
-			CLAY(context.clayID("capacity-tool"), panel) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("capacity-tool")), panel) {
 				text(context,
 					 "Application draft · " + std::string(memory_capacity_scope_name(tool.scope)) +
 						 (tool.editor_target ? " · Target specialization" : " · Scope policy"),
@@ -453,9 +454,9 @@ void build_capacity_tool(DevMemoryInspector::BuildContext& context,
 				text(context,
 					 "Five steps to prepare startup values. Live allocations stay unchanged.",
 					 interface_theme::kTextMuted, 10);
-				CLAY(context.clayID("capacity-stage-evidence"), capacity_stage()) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("capacity-stage-evidence")), capacity_stage()) {
 					text(context, "1  Evidence", interface_theme::kTextCanvas, 12);
-					if (context.params.app->devMonitoring().memory().config().level <
+					if (FlowUi::ValueOrThrow(context.params.app->devMonitoring()).get().memory().config().level <
 						MemoryMonitoringLevel::SubsystemCapacity) {
 #if FLOWUI_DEV_MEMORY_LEVEL >= 2
 						button(context, state, 413, "Enable detailed demand monitoring");
@@ -488,7 +489,7 @@ void build_capacity_tool(DevMemoryInspector::BuildContext& context,
 					}
 				}
 				stage_connector(context, 0);
-				CLAY(context.clayID("capacity-stage-strategy"), capacity_stage()) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("capacity-stage-strategy")), capacity_stage()) {
 					text(context, "2  Scope strategy", interface_theme::kTextCanvas, 12);
 					const auto existing = std::ranges::find_if(tool.rules, [&](const auto& rule) {
 						return tool.editor_target ? rule.target == tool.editor_target
@@ -537,7 +538,7 @@ void build_capacity_tool(DevMemoryInspector::BuildContext& context,
 						button(context, state, 406, "Back to scope policy");
 				}
 				stage_connector(context, 1);
-				CLAY(context.clayID("capacity-stage-result"), capacity_stage()) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("capacity-stage-result")), capacity_stage()) {
 					text(context, "3  Result", interface_theme::kTextCanvas, 12);
 					text(context, std::to_string(eligible) + " eligible · " +
 									  std::to_string(protected_count) + " specific · " +
@@ -633,7 +634,7 @@ void build_capacity_tool(DevMemoryInspector::BuildContext& context,
 						 interface_theme::kTextMuted, 10);
 				}
 				stage_connector(context, 2);
-				CLAY(context.clayID("capacity-stage-refine"), capacity_stage()) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("capacity-stage-refine")), capacity_stage()) {
 					text(context, "4  Refine capacities", interface_theme::kTextCanvas, 12);
 					if (!tool.target_options.empty())
 						choice(context, "capacity-target", "Inspect an affected capacity",
@@ -734,7 +735,7 @@ void build_capacity_tool(DevMemoryInspector::BuildContext& context,
 					}
 				}
 				stage_connector(context, 3);
-				CLAY(context.clayID("capacity-stage-prepare"), capacity_stage()) {
+				CLAY(FlowUi::ValueOrThrow(context.clayID("capacity-stage-prepare")), capacity_stage()) {
 					text(context, "5  Prepare settings", interface_theme::kTextCanvas, 12);
 					button(context, state, 400,
 						   (tool.editor_target
@@ -765,11 +766,11 @@ void build_capacity_tool(DevMemoryInspector::BuildContext& context,
 	auto ledger = column(8);
 	ledger.layout.sizing.width = CLAY_SIZING_PERCENT(1);
 	ledger.layout.padding = {12, 12, 10, 12};
-	CLAY(context.clayID("capacity-scope-settings-section"), section) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("capacity-scope-settings-section")), section) {
 		disclosure(context, LocalElementName{"capacity-scope-settings-header"},
 				   "Capacity Scope Settings", context.state().capacity_scope_settings_expanded);
 		if (context.state().capacity_scope_settings_expanded) {
-			CLAY(context.clayID("scope-settings"), ledger) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("scope-settings")), ledger) {
 				text(context,
 					 "Specific policies survive parent edits. Locks freeze prepared exact values.",
 					 interface_theme::kTextMuted, 10);
@@ -834,7 +835,7 @@ void DevMemoryInspector::buildElement(BuildContext& context) {
 		return;
 	auto& state = context.params.interfaceState->memory_workbench;
 	auto& analysis = state.analysis;
-	auto& reporting = context.params.app->devMonitoring().memoryReporting();
+	auto& reporting = FlowUi::ValueOrThrow(context.params.app->devMonitoring()).get().memoryReporting();
 	const auto* track = inspected_track(state);
 	// History actions belong to the Workbench, which may process them next frame.
 	const auto action =
@@ -842,8 +843,8 @@ void DevMemoryInspector::buildElement(BuildContext& context) {
 			? std::exchange(analysis.ui_action, 0)
 			: 0;
 	if (action == 137 && track)
-		context.params.app->setClipboardText(track->title + "\n" +
-											 memory_track_reading(*track, state.decimal));
+		FlowUi::ValueOrThrow(context.params.app->setClipboardText(track->title + "\n" +
+											 memory_track_reading(*track, state.decimal)));
 	if (action == 134 && track) {
 		state.focus = track->parent_identity;
 		state.next_history_ns = 0;
@@ -860,7 +861,7 @@ void DevMemoryInspector::buildElement(BuildContext& context) {
 	root.clip.scrollInputDisabled = true;
 	CLAY(context.clayID(), root) {
 		const auto* saved = selected_memory_dataset(analysis);
-		CLAY(context.clayID("subject-content"), content) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("subject-content")), content) {
 			const auto& diagnostics = context.params.interfaceState->diagnostics;
 			if (diagnostics.return_available &&
 				(diagnostics.navigation_memory_event || diagnostics.navigation_memory_checkpoint)) {
@@ -912,15 +913,15 @@ void DevMemoryInspector::buildElement(BuildContext& context) {
 		auto body = column(0);
 		body.layout.sizing = {.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_GROW(0)};
 		body.clip = {.vertical = true};
-		const auto scroll = Clay_GetScrollContainerData(context.clayID("scroll-body"));
+		const auto scroll = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("scroll-body")));
 		if (scroll.found && scroll.scrollPosition)
 			body.clip.childOffset = *scroll.scrollPosition;
-		CLAY(context.clayID("scroll-body"), body) {
-			CLAY(context.clayID("scope-diagnostics-section"), section) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("scroll-body")), body) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("scope-diagnostics-section")), section) {
 				disclosure(context, LocalElementName{"scope-diagnostics"}, "Scope diagnostics",
 						   analysis.capacity_tool.show_diagnostics);
 				if (analysis.capacity_tool.show_diagnostics) {
-					CLAY(context.clayID("scope-diagnostics-content"), content) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("scope-diagnostics-content")), content) {
 						if (!track)
 							text(context, "Choose a scope or track to view diagnostics.");
 						else {
@@ -972,11 +973,11 @@ void DevMemoryInspector::buildElement(BuildContext& context) {
 					}
 				}
 				if (track && analysis.capacity_tool.show_diagnostics)
-					CLAY(context.clayID("measurement-section"), section) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("measurement-section")), section) {
 						disclosure(context, LocalElementName{"measurement-header"},
 								   "Measurement Details", analysis.show_quality);
 						if (analysis.show_quality) {
-							CLAY(context.clayID("measurement-content"), content) {
+							CLAY(FlowUi::ValueOrThrow(context.clayID("measurement-content")), content) {
 								text(context, track->estimated
 												  ? "Estimated container/resource footprint"
 												  : "Producer-reported measurement");
@@ -995,7 +996,7 @@ void DevMemoryInspector::buildElement(BuildContext& context) {
 						}
 					}
 				if (analysis.capacity_tool.show_diagnostics && analysis.baseline_dataset && track) {
-					CLAY(context.clayID("baseline-content"), content) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("baseline-content")), content) {
 						const auto baseline = std::ranges::find(
 							analysis.datasets, analysis.baseline_dataset, &MemoryDataset::identity);
 						if (baseline != analysis.datasets.end()) {

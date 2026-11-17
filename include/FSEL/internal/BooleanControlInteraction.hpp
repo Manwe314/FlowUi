@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Public/Color.hpp"
+
 #include <algorithm>
 #include <cmath>
 
@@ -24,7 +26,7 @@ template <typename Element>
 	const ElementInteractionContext<Element>& context,
 	ActionCall onToggle) {
 	return context.params.enabled &&
-		context.actionAvailability(onToggle).enabled;
+		FlowUi::ValueOrThrow(context.actionAvailability(onToggle)).enabled;
 }
 
 template <typename Element>

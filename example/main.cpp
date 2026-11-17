@@ -1,5 +1,4 @@
 #include <cstdint>
-#include <exception>
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -11,8 +10,11 @@
 
 namespace {
 
-void requireStatus(FlowUi::Status status) {
-	if (!status) throw FlowUi::FlowUiException(status.error());
+bool checkStatus(const FlowUi::Status& status) {
+	if (status)
+		return true;
+	std::cerr << "FlowUi example failed: " << FlowUi::errorName(status.error().code) << '\n';
+	return false;
 }
 
 struct DemoState {
@@ -51,16 +53,26 @@ Clay_ElementDeclaration pageStyle() {
 	return page;
 }
 
-void drawMainWindow(FlowUi::App& app, DemoState& state) {
-	FlowUi::UiManager& ui = app.ui(app.mainWindowId());
+template <FlowUi::FlowElement Element>
+void drawElement(FlowUi::UiManager& ui, const Element& element,
+				 FlowUi::LocalElementName name, FlowUi::ParametersOf<Element> parameters) {
+	ui.createElement(element, name).setParameters(std::move(parameters)).draw();
+}
+
+void drawMainWindow(FlowUi::UiManager& ui, DemoState& state) {
+	const auto& actions = ui.actions();
 	const Clay_TextElementConfig heading = textStyle(24);
 	const Clay_TextElementConfig helper = textStyle(14, FlowUi::Flow_Color("#aeb8ccff"));
 
-	CLAY(ui.toClaySID("example/main/page"), pageStyle()) {
-		CLAY_TEXT(ui.toClayString("Multi-window text demo"), CLAY_TEXT_CONFIG(heading));
+	const auto pageId = ui.toClaySID("example/main/page");
+	const auto headingText = ui.toClayString("Multi-window text demo");
+	const auto statusText = ui.toClayString(state.status);
+	if (!pageId || !headingText || !statusText)
+		return;
+	CLAY(*pageId, pageStyle()) {
+		CLAY_TEXT(*headingText, CLAY_TEXT_CONFIG(heading));
 
-		ui.createElement(FlowUi::FSEL::kTextInput, "example/main/text-input")
-			.setParameters(FlowUi::FSEL::TextInputParameters{
+		drawElement(ui, FlowUi::FSEL::kTextInput, "example/main/text-input", FlowUi::FSEL::TextInputParameters{
 				.value = &state.text,
 				.maxBytes = 4096,
 				.idleOverrides = {.backgroundColor = FlowUi::Flow_Color("#f3f5f8ff")},
@@ -69,13 +81,11 @@ void drawMainWindow(FlowUi::App& app, DemoState& state) {
 						.width = CLAY_SIZING_GROW(0),
 						.height = CLAY_SIZING_FIT(0),
 					},
-			})
-			.draw();
+			});
 
-		ui.createElement(FlowUi::FSEL::kButton, "example/main/open-window")
-			.setParameters(FlowUi::FSEL::ButtonParameters{
+		drawElement(ui, FlowUi::FSEL::kButton, "example/main/open-window", FlowUi::FSEL::ButtonParameters{
 				.onActivate =
-					FlowUi::ActionCall{ui.actions().uiActions().make(request_text_window, state)},
+					FlowUi::ActionCall{actions.uiActions().make(request_text_window, state)},
 				.text = "Open text window",
 				.idleOverrides =
 					{
@@ -84,37 +94,46 @@ void drawMainWindow(FlowUi::App& app, DemoState& state) {
 						.borderColor = FlowUi::Flow_Color("#a9c7ffff"),
 					},
 				.contentMode = FlowUi::FSEL::ButtonContentMode::TextOnly,
-			})
-			.draw();
+			});
 
-		CLAY_TEXT(ui.toClayString(state.status), CLAY_TEXT_CONFIG(helper));
+		CLAY_TEXT(*statusText, CLAY_TEXT_CONFIG(helper));
 	}
 }
 
-void drawTextWindow(FlowUi::App& app, FlowUi::WindowId window, const DemoState& state) {
-	FlowUi::UiManager& ui = app.ui(window);
+void drawTextWindow(FlowUi::UiManager& ui, const DemoState& state) {
 	const Clay_TextElementConfig heading = textStyle(18, FlowUi::Flow_Color("#aeb8ccff"));
 	const Clay_TextElementConfig content = textStyle(28);
 	const std::string_view visibleText = state.text.empty()
 		? std::string_view("(the input is empty)")
 		: std::string_view(state.text);
 
-	CLAY(ui.toClaySID("example/text-window/page"), pageStyle()) {
-		CLAY_TEXT(ui.toClayString("Text from the main window:"), CLAY_TEXT_CONFIG(heading));
-		CLAY_TEXT(ui.toClayString(visibleText), CLAY_TEXT_CONFIG(content));
+	const auto pageId = ui.toClaySID("example/text-window/page");
+	const auto headingText = ui.toClayString("Text from the main window:");
+	const auto bodyText = ui.toClayString(visibleText);
+	if (!pageId || !headingText || !bodyText)
+		return;
+	CLAY(*pageId, pageStyle()) {
+		CLAY_TEXT(*headingText, CLAY_TEXT_CONFIG(heading));
+		CLAY_TEXT(*bodyText, CLAY_TEXT_CONFIG(content));
 	}
 }
 
-void closeRequestedTextWindows(FlowUi::App& app, DemoState& state) {
+FlowUi::Status closeRequestedTextWindows(FlowUi::App& app, DemoState& state) {
 	for (size_t index = 0; index < state.textWindows.size();) {
 		const FlowUi::WindowId window = state.textWindows[index];
-		if (!app.shouldClose(window)) {
+		const auto closed = app.shouldClose(window);
+		if (!closed)
+			return FlowUi::unexpectedError(closed.error());
+		if (!*closed) {
 			++index;
 			continue;
 		}
-		requireStatus(app.destroyWindow(window));
+		const auto destroyed = app.destroyWindow(window);
+		if (!destroyed)
+			return destroyed;
 		state.textWindows.erase(state.textWindows.begin() + static_cast<std::ptrdiff_t>(index));
 	}
+	return {};
 }
 
 void createRequestedTextWindow(FlowUi::App& app, DemoState& state) {
@@ -126,61 +145,60 @@ void createRequestedTextWindow(FlowUi::App& app, DemoState& state) {
 	config.height = 260;
 	config.title = "FlowUi text window " + std::to_string(state.nextWindowNumber++);
 
-	try {
-		auto created = app.createWindow(config);
-		if (!created) {
-			state.status = std::string("Could not create the window: ") +
-				std::string(FlowUi::errorName(created.error().code));
-			return;
-		}
-		const FlowUi::WindowId window = created.value();
-		state.textWindows.push_back(window);
-		state.status = "Opened " + config.title + ".";
-	} catch (const std::exception& error) {
-		state.status = std::string("Could not create the window: ") + error.what();
+	auto created = app.createWindow(config);
+	if (!created) {
+		state.status = std::string("Could not create the window: ") +
+			std::string(FlowUi::errorName(created.error().code));
+		return;
 	}
+	state.textWindows.push_back(*created);
+	state.status = "Opened " + config.title + ".";
 }
 
 } // namespace
 
 int main() {
-	try {
-		FlowUi::AppConfig config{};
-		config.window.title = "FlowUi multi-window example";
-		config.window.width = 680;
-		config.window.height = 360;
-		config.ui.fontAtlasSize = 512;
+	FlowUi::AppConfig config{};
+	config.window.title = "FlowUi multi-window example";
+	config.window.width = 680;
+	config.window.height = 360;
+	config.ui.fontAtlasSize = 512;
 
-		FlowUi::App app = FlowUi::makeApplication(config);
-		DemoState state{};
-
-		while (true) {
-			requireStatus(app.pollEvents());
-			if (app.shouldClose(app.mainWindowId())) break;
-
-			closeRequestedTextWindows(app, state);
-
-			requireStatus(app.beginFrame(app.mainWindowId()));
-			drawMainWindow(app, state);
-			requireStatus(app.endFrame(app.mainWindowId()));
-			requireStatus(app.drawFrame(app.mainWindowId()));
-
-			createRequestedTextWindow(app, state);
-
-			for (const FlowUi::WindowId window : state.textWindows) {
-				requireStatus(app.beginFrame(window));
-				drawTextWindow(app, window, state);
-				requireStatus(app.endFrame(window));
-				requireStatus(app.drawFrame(window));
-			}
-		}
-
-		for (const FlowUi::WindowId window : state.textWindows) {
-			if (app.hasWindow(window)) requireStatus(app.destroyWindow(window));
-		}
-		return 0;
-	} catch (const std::exception& error) {
-		std::cerr << "FlowUi example failed: " << error.what() << '\n';
+	auto createdApp = FlowUi::makeApplication(config);
+	if (!createdApp) {
+		std::cerr << "Could not initialize FlowUi: " << FlowUi::errorName(createdApp.error().code) << '\n';
 		return 1;
 	}
+	FlowUi::App app = std::move(*createdApp);
+	DemoState state{};
+
+	while (true) {
+		if (!checkStatus(app.pollEvents()))
+			return 1;
+		const auto closed = app.shouldClose();
+		if (!closed) {
+			app.reportError(closed.error());
+			return 1;
+		}
+		if (*closed)
+			break;
+		if (!checkStatus(closeRequestedTextWindows(app, state)))
+			return 1;
+		if (!checkStatus(app.runFrame(app.mainWindowId(),
+			[&](FlowUi::UiManager& ui, FlowUi::WindowId) { drawMainWindow(ui, state); })))
+			return 1;
+
+		createRequestedTextWindow(app, state);
+		for (const FlowUi::WindowId window : state.textWindows) {
+			if (!checkStatus(app.runFrame(window,
+				[&](FlowUi::UiManager& ui, FlowUi::WindowId) { drawTextWindow(ui, state); })))
+				return 1;
+		}
+	}
+
+	for (const FlowUi::WindowId window : state.textWindows) {
+		if (app.hasWindow(window) && !checkStatus(app.destroyWindow(window)))
+			return 1;
+	}
+	return 0;
 }

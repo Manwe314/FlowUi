@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevInterface.hpp"
 
 #if FLOW_UI_DEV_MODE
@@ -52,7 +53,7 @@ void build_catalogue_content(Context& context, DevInterfaceState& state) {
 	if (hide_inspector || hide_selector) {
 		auto toolbar = ui::row(30);
 		toolbar.layout.padding = {10, 10, 0, 0};
-		CLAY(context.clayID("catalogue-drawers"), toolbar) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("catalogue-drawers")), toolbar) {
 			if (hide_selector)
 				ui::button(context, "catalogue-browse",
 						   state.catalogue.selector_drawer ? "Close browser" : "Browse assets",
@@ -127,7 +128,7 @@ void build_catalogue_content(Context& context, DevInterfaceState& state) {
 		surface.backgroundColor = interface_theme::kDepth1Panel;
 		surface.border = {.color = interface_theme::kBorderVisible, .width = {1, 1, 1, 1, 0}};
 		surface.clip = {.horizontal = true, .vertical = true};
-		CLAY(context.clayID(Keyed("catalogue-drawer", inspector ? 1 : 0)), surface) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("catalogue-drawer", inspector ? 1 : 0))), surface) {
 			if (inspector)
 				context.uiManager.createElement(kDevCatalogueInspector, kInspectorArea)
 					.setParameters(DevCatalogueContentParameters{.app = context.params.app,

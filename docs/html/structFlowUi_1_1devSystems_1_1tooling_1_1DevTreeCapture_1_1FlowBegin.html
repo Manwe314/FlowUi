@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,33 +106,51 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevTreeCapture::FlowBegin Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Borrowed invocation metadata copied by <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture.html#add82ec865bd1bb992300b8456cb3f076" title="Copy invocation metadata and open a balanced capture scope; pass the returned frame-qualified token t...">beginFlow()</a> during an active capture.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevTreeCapture_8hpp_source.html">DevTreeCapture.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a69879478adcc1b41aadf899c879d54fc" id="r_a69879478adcc1b41aadf899c879d54fc"><td class="memItemLeft"><a id="a69879478adcc1b41aadf899c879d54fc" name="a69879478adcc1b41aadf899c879d54fc"></a>
 <a class="el" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a>&#160;</td><td class="memItemRight"><b>definition</b> {}</td></tr>
+<tr class="memdesc:a69879478adcc1b41aadf899c879d54fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stable Flow definition identity. <br /></td></tr>
 <tr class="memitem:a444a8bca1d2b208b844448d9a48d6228" id="r_a444a8bca1d2b208b844448d9a48d6228"><td class="memItemLeft"><a id="a444a8bca1d2b208b844448d9a48d6228" name="a444a8bca1d2b208b844448d9a48d6228"></a>
 <a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a>&#160;</td><td class="memItemRight"><b>instance</b> {}</td></tr>
+<tr class="memdesc:a444a8bca1d2b208b844448d9a48d6228"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolved Flow instance identity. <br /></td></tr>
 <tr class="memitem:ae5af403feedf846708c90f01c22f39e7" id="r_ae5af403feedf846708c90f01c22f39e7"><td class="memItemLeft"><a id="ae5af403feedf846708c90f01c22f39e7" name="ae5af403feedf846708c90f01c22f39e7"></a>
 std::string_view&#160;</td><td class="memItemRight"><b>definitionName</b> {}</td></tr>
+<tr class="memdesc:ae5af403feedf846708c90f01c22f39e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Definition display name copied into the capture string pool. <br /></td></tr>
 <tr class="memitem:a9a044194146276b32a276a3d954e17a6" id="r_a9a044194146276b32a276a3d954e17a6"><td class="memItemLeft"><a id="a9a044194146276b32a276a3d954e17a6" name="a9a044194146276b32a276a3d954e17a6"></a>
 std::string_view&#160;</td><td class="memItemRight"><b>definitionTypeToken</b> {}</td></tr>
+<tr class="memdesc:a9a044194146276b32a276a3d954e17a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Complete definition C++ type token copied into the string pool. <br /></td></tr>
 <tr class="memitem:a2ccebed26b3c4ee0d3ee27853aab50de" id="r_a2ccebed26b3c4ee0d3ee27853aab50de"><td class="memItemLeft"><a id="a2ccebed26b3c4ee0d3ee27853aab50de" name="a2ccebed26b3c4ee0d3ee27853aab50de"></a>
 std::string_view&#160;</td><td class="memItemRight"><b>sourceFile</b> {}</td></tr>
+<tr class="memdesc:a2ccebed26b3c4ee0d3ee27853aab50de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invocation source path copied during <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture.html#add82ec865bd1bb992300b8456cb3f076" title="Copy invocation metadata and open a balanced capture scope; pass the returned frame-qualified token t...">beginFlow()</a>. <br /></td></tr>
 <tr class="memitem:a2215fb35c02008396893ccb562620068" id="r_a2215fb35c02008396893ccb562620068"><td class="memItemLeft"><a id="a2215fb35c02008396893ccb562620068" name="a2215fb35c02008396893ccb562620068"></a>
 std::string_view&#160;</td><td class="memItemRight"><b>sourceFunction</b> {}</td></tr>
+<tr class="memdesc:a2215fb35c02008396893ccb562620068"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invocation function name copied during <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture.html#add82ec865bd1bb992300b8456cb3f076" title="Copy invocation metadata and open a balanced capture scope; pass the returned frame-qualified token t...">beginFlow()</a>. <br /></td></tr>
 <tr class="memitem:a72e7782baca598bac18308701fdf021a" id="r_a72e7782baca598bac18308701fdf021a"><td class="memItemLeft"><a id="a72e7782baca598bac18308701fdf021a" name="a72e7782baca598bac18308701fdf021a"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>sourceLine</b> = 0</td></tr>
+<tr class="memdesc:a72e7782baca598bac18308701fdf021a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invocation source line. <br /></td></tr>
 <tr class="memitem:a32883a6c4bd62e79be79a4acba245494" id="r_a32883a6c4bd62e79be79a4acba245494"><td class="memItemLeft"><a id="a32883a6c4bd62e79be79a4acba245494" name="a32883a6c4bd62e79be79a4acba245494"></a>
 uint32_t&#160;</td><td class="memItemRight"><b>sourceColumn</b> = 0</td></tr>
+<tr class="memdesc:a32883a6c4bd62e79be79a4acba245494"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invocation source column. <br /></td></tr>
 <tr class="memitem:aebb3b9dbe76ad7a79a9ebdd5b28bf996" id="r_aebb3b9dbe76ad7a79a9ebdd5b28bf996"><td class="memItemLeft"><a id="aebb3b9dbe76ad7a79a9ebdd5b28bf996" name="aebb3b9dbe76ad7a79a9ebdd5b28bf996"></a>
 bool&#160;</td><td class="memItemRight"><b>constructed</b> = false</td></tr>
+<tr class="memdesc:aebb3b9dbe76ad7a79a9ebdd5b28bf996"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the invocation opens a constructed root rather than drawing immediately. <br /></td></tr>
 <tr class="memitem:a631fa2165f08412fa4d21d71a024dffd" id="r_a631fa2165f08412fa4d21d71a024dffd"><td class="memItemLeft"><a id="a631fa2165f08412fa4d21d71a024dffd" name="a631fa2165f08412fa4d21d71a024dffd"></a>
 bool&#160;</td><td class="memItemRight"><b>internalDev</b> = false</td></tr>
+<tr class="memdesc:a631fa2165f08412fa4d21d71a024dffd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether this invocation belongs to protected developer UI. <br /></td></tr>
 <tr class="memitem:a20bb54d28582fb3dbe4298a7d3b4a4e2" id="r_a20bb54d28582fb3dbe4298a7d3b4a4e2"><td class="memItemLeft"><a id="a20bb54d28582fb3dbe4298a7d3b4a4e2" name="a20bb54d28582fb3dbe4298a7d3b4a4e2"></a>
 bool&#160;</td><td class="memItemRight"><b>suppress</b> = false</td></tr>
+<tr class="memdesc:a20bb54d28582fb3dbe4298a7d3b4a4e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether this invocation should be omitted from captured nodes. <br /></td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Borrowed invocation metadata copied by <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture.html#add82ec865bd1bb992300b8456cb3f076" title="Copy invocation metadata and open a balanced capture scope; pass the returned frame-qualified token t...">beginFlow()</a> during an active capture. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/devSystems/devTooling/tree/<a class="el" href="DevTreeCapture_8hpp_source.html">DevTreeCapture.hpp</a></li>
 </ul>
 </div><!-- contents -->
@@ -148,7 +166,7 @@ bool&#160;</td><td class="memItemRight"><b>suppress</b> = false</td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture.html">DevTreeCapture</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture_1_1FlowBegin.html">FlowBegin</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture.html">DevTreeCapture</a></li><li class="navelem"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeCapture_1_1FlowBegin.html">FlowBegin</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

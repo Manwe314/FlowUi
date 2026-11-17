@@ -1,3 +1,4 @@
+#include "FlowUi/Public/Color.hpp"
 #include "devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/Button.hpp"
@@ -84,10 +85,10 @@ void disclosure(Context& context, LocalElementName name, std::string_view label,
 	parameters.text = owned_label;
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	if (context.params.app) {
-		auto& icons = context.params.app->icons();
+		auto& icons = FlowUi::ValueOrThrow(context.params.app->icons()).get();
 		interface_icons::registerDevInterfaceIcons(icons);
-		parameters.icon = icons.textureRef(expanded ? interface_icons::kCollapseKey
-													: interface_icons::kExpandKey);
+		parameters.icon = FlowUi::ValueOrThrow(icons.textureRef(expanded ? interface_icons::kCollapseKey
+													: interface_icons::kExpandKey));
 		parameters.contentMode = FSEL::ButtonContentMode::IconThenText;
 		parameters.iconSize = 12;
 		parameters.text = label;
@@ -103,7 +104,7 @@ void disclosure(Context& context, LocalElementName name, std::string_view label,
 	}
 	if (context.params.app)
 		parameters.onActivate =
-			ActionCall{context.params.app->actions().uiActions().make(toggle_disclosure, expanded)};
+			ActionCall{FlowUi::ValueOrThrow(context.params.app->actions()).get().uiActions().make(toggle_disclosure, expanded)};
 	context.uiManager.createElement(FSEL::kButton, name)
 		.setParameters(parameters)
 		.setDevInternalCapture(true)
@@ -128,7 +129,7 @@ void choice(Context& context, LocalElementName name, std::string_view label, uin
 			std::span<const FSEL::ComboBoxOption> options) {
 	auto field = column(3);
 	field.layout.sizing.width = CLAY_SIZING_GROW(0);
-	CLAY(context.clayID(Keyed("choice-field", name.token)), field) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("choice-field", name.token))), field) {
 		text(context, label, interface_theme::kTextSecondary, 11);
 		FSEL::ComboBoxParameters parameters;
 		parameters.selectedValue = &value;
@@ -147,9 +148,9 @@ void number(Context& context, LocalElementName name, std::string_view label, flo
 			float minimum, float maximum, std::string_view unit) {
 	auto field = column(3);
 	field.layout.sizing.width = CLAY_SIZING_GROW(0);
-	CLAY(context.clayID(Keyed("number-field", name.token)), field) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("number-field", name.token))), field) {
 		text(context, label, interface_theme::kTextSecondary, 11);
-		CLAY(context.clayID(Keyed("number-row", name.token)), row()) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("number-row", name.token))), row()) {
 			FSEL::NumberInputParameters<float> parameters;
 			parameters.value = &value;
 			parameters.minimum = minimum;
@@ -179,14 +180,14 @@ void key_value(Context& context, uint64_t key, std::string_view label, std::stri
 		declaration.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		declaration.layout.childGap = 8;
 	}
-	CLAY(context.clayID(Keyed("value-row", key)), declaration) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("value-row", key))), declaration) {
 		auto cell = column(0);
 		if (!narrow)
 			cell.layout.sizing.width = CLAY_SIZING_PERCENT(.4f);
-		CLAY(context.clayID(Keyed("value-label", key)), cell) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("value-label", key))), cell) {
 			text(context, label, interface_theme::kTextSecondary, 11);
 		}
-		CLAY(context.clayID(Keyed("value-content", key)), (narrow ? column(0) : [&] {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("value-content", key))), (narrow ? column(0) : [&] {
 				 auto value_cell = column(0);
 				 value_cell.layout.sizing.width = CLAY_SIZING_GROW(0);
 				 return value_cell;
@@ -199,7 +200,7 @@ void subtitle(Context& context, uint64_t key, std::string_view title) {
 	auto declaration = column();
 	declaration.layout.padding = {0, 0, 8, 3};
 	declaration.border = {.color = interface_theme::kBorderPrimary, .width = {.top = 1}};
-	CLAY(context.clayID(Keyed("subtitle", key)), declaration) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("subtitle", key))), declaration) {
 		text(context, title, interface_theme::kAccentSeaGlass, 12);
 	}
 }
@@ -211,7 +212,7 @@ void metric(Context& context, uint64_t key, std::string_view label, std::string_
 	tile.layout.padding = {8, 8, 8, 8};
 	tile.cornerRadius = CLAY_CORNER_RADIUS(3);
 	tile.layout.childAlignment.x = CLAY_ALIGN_X_CENTER;
-	CLAY(context.clayID(Keyed("metric", key)), tile) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("metric", key))), tile) {
 		text(context, label, interface_theme::kTextSecondary, 11, CLAY_TEXT_ALIGN_CENTER);
 		text(context, value, color, 15, CLAY_TEXT_ALIGN_CENTER);
 		if (!secondary.empty())
@@ -280,7 +281,7 @@ void build_capture(Context& context, bool narrow, const TimingReportingStatus& r
 	auto pair = column();
 	if (!narrow)
 		pair.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
-	CLAY(context.clayID("capture-mode-fields"), pair) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("capture-mode-fields")), pair) {
 		choice(context, LocalElementName{"capture-start"}, "Start", session.capture_start_mode,
 			   start_options);
 		choice(context, LocalElementName{"capture-end"}, "Stop", session.capture_end_mode,
@@ -330,7 +331,7 @@ void build_capture(Context& context, bool narrow, const TimingReportingStatus& r
 			FSEL::ComboBoxOption{13, "Ctrl + Alt + Super"},
 			FSEL::ComboBoxOption{14, "Shift + Alt + Super"},
 			FSEL::ComboBoxOption{15, "Ctrl + Shift + Alt + Super"}};
-		CLAY(context.clayID("shortcut-fields"), pair) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("shortcut-fields")), pair) {
 			choice(context, LocalElementName{"capture-modifiers"}, "Modifiers",
 				   session.capture_modifiers, modifier_options);
 			choice(context, LocalElementName{"capture-key"}, "Key", session.capture_key,
@@ -343,7 +344,7 @@ void build_capture(Context& context, bool narrow, const TimingReportingStatus& r
 	if (session.capture_end_mode == 1) {
 		choice(context, LocalElementName{"capture-budget-window"}, "Budget source",
 			   session.capture_budget_window, state.window_options);
-		CLAY(context.clayID("capture-budget-fields"), pair) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("capture-budget-fields")), pair) {
 			number(context, LocalElementName{"capture-budget"}, "Threshold",
 				   session.capture_budget_ms, .001f, 60000, "ms");
 			number(context, LocalElementName{"capture-tail"}, "After event",
@@ -382,7 +383,7 @@ void build_capture(Context& context, bool narrow, const TimingReportingStatus& r
 			 interface_theme::kTextSecondary, 11);
 		if (context.params.app) {
 			const auto& capture =
-				context.params.app->devMonitoring().performance_capture().status();
+				FlowUi::ValueOrThrow(context.params.app->devMonitoring()).get().performance_capture().status();
 			static constexpr std::array reasons{"Manual reopen", "Duration elapsed",
 												"Budget event",	 "Shutdown",
 												"Failure",		 "Ring capacity reached"};
@@ -411,7 +412,7 @@ void build_rolling(Context& context, bool narrow) {
 	auto pair = column();
 	if (!narrow)
 		pair.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
-	CLAY(context.clayID("analysis-context"), pair) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("analysis-context")), pair) {
 		choice(context, LocalElementName{"analysis-range"}, "Range", state.analysis_range, ranges);
 		choice(context, LocalElementName{"analysis-source"}, "Timing source", state.analysis_source,
 			   state.window_options);
@@ -446,13 +447,13 @@ void build_rolling(Context& context, bool narrow) {
 		const auto color = median > target_ns		  ? interface_theme::kStatusRed
 						   : median >= target_ns * .8 ? interface_theme::kStatusAmber
 													  : interface_theme::kAccentSeaGlass;
-		CLAY(context.clayID("rolling-metrics-first"), pair) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("rolling-metrics-first")), pair) {
 			metric(context, 1, "Typical", performance_duration(median),
 				   "Mean " + performance_duration(mean));
 			metric(context, 2, "Tail · P95", performance_duration(p95),
 				   "P99 " + performance_duration(performance_percentile(sorted, .99)));
 		}
-		CLAY(context.clayID("rolling-metrics-second"), pair) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("rolling-metrics-second")), pair) {
 			metric(context, 3, "Worst", performance_duration(sorted.back()),
 				   std::to_string(sorted.size()) + " intervals");
 			metric(context, 4, "Above target", decimal(100.0 * above / sorted.size(), "%"),
@@ -469,7 +470,7 @@ void build_rolling(Context& context, bool narrow) {
 		trend.backgroundColor = interface_theme::kDepth0Keel;
 		trend.layout.padding = {3, 3, 3, 3};
 		const double maximum = std::max(double(sorted.back()), target_ns);
-		CLAY(context.clayID("cadence-trend"), trend) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("cadence-trend")), trend) {
 			const size_t bucket_count = std::min(size_t{32}, analysis.cadence.size());
 			for (size_t bucket = 0; bucket < bucket_count; ++bucket) {
 				const size_t first = bucket * analysis.cadence.size() / bucket_count;
@@ -482,7 +483,7 @@ void build_rolling(Context& context, bool narrow) {
 					CLAY_SIZING_FIXED(float(std::max(1.0, 38 * duration / maximum)));
 				bar.backgroundColor = duration > target_ns ? interface_theme::kStatusRed
 														   : interface_theme::kAccentCurrent;
-				CLAY(context.clayID(Keyed("trend-bar", bucket)), bar) {}
+				CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("trend-bar", bucket))), bar) {}
 			}
 			auto target_line = row(1);
 			target_line.backgroundColor = interface_theme::kAccentSignalBlue;
@@ -492,7 +493,7 @@ void build_rolling(Context& context, bool narrow) {
 												 CLAY_ATTACH_POINT_LEFT_BOTTOM};
 			target_line.floating.offset.y = -float(3 + 38 * target_ns / maximum);
 			target_line.floating.pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_PASSTHROUGH;
-			CLAY(context.clayID("target-line"), target_line) {}
+			CLAY(FlowUi::ValueOrThrow(context.clayID("target-line")), target_line) {}
 		}
 		text(context, "Oldest to newest · bucket maximum · blue line: target",
 			 interface_theme::kTextSecondary, 10);
@@ -527,7 +528,7 @@ void build_rolling(Context& context, bool narrow) {
 									  FSEL::ComboBoxOption{2, "Waits / gaps"}};
 	if (state.domain && !state.ranking)
 		state.ranking = 1;
-	CLAY(context.clayID("ranking-controls"), pair) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("ranking-controls")), pair) {
 		choice(context, LocalElementName{"ranking-domain"}, "Domain", state.domain, domains);
 		choice(context, LocalElementName{"ranking-metric"}, "Rank by", state.ranking,
 			   state.domain ? std::span<const FSEL::ComboBoxOption>{gpu_rankings}
@@ -582,7 +583,7 @@ void build_rolling(Context& context, bool narrow) {
 		zone_row.layout.padding = {8, 8, 8, 8};
 		zone_row.backgroundColor = interface_theme::kDepth0Keel;
 		zone_row.cornerRadius = CLAY_CORNER_RADIUS(3);
-		CLAY(context.clayID(Keyed("ranked-zone", order[rank])), zone_row) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("ranked-zone", order[rank]))), zone_row) {
 			text(context, zone.label);
 			text(context,
 				 std::string(role_label(zone.role)) + " · Window " +
@@ -607,14 +608,14 @@ void build_rolling(Context& context, bool narrow) {
 				 interface_theme::kTextSecondary, 10);
 			auto rail = row(3);
 			rail.backgroundColor = interface_theme::kBorderPrimary;
-			CLAY(context.clayID(Keyed("ranking-rail", rank)), rail) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("ranking-rail", rank))), rail) {
 				auto fill = rail;
 				fill.layout.sizing.width = CLAY_SIZING_PERCENT(
 					float(score(analysis.zones[order.front()]) > 0
 							  ? score(zone) / score(analysis.zones[order.front()])
 							  : 0));
 				fill.backgroundColor = interface_theme::kAccentCurrent;
-				CLAY(context.clayID(Keyed("ranking-fill", rank)), fill) {}
+				CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("ranking-fill", rank))), fill) {}
 			}
 			DevPerformanceInspectorActionParameters expand;
 			expand.label =
@@ -708,7 +709,7 @@ void build_selected(Context& context, bool narrow) {
 	auto pair = column();
 	if (!narrow)
 		pair.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
-	CLAY(context.clayID("selected-costs"), pair) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("selected-costs")), pair) {
 		metric(context, 10, block.synthetic_tick ? "Tick interval" : "Elapsed",
 			   performance_duration(block.duration_ns), "Inclusive duration");
 		if (block.domain == TimingSampleDomain::Cpu && !block.synthetic_tick)
@@ -728,7 +729,7 @@ void build_selected(Context& context, bool narrow) {
 			key_value(context, 31, "Parent share",
 					  decimal(100.0 * block.duration_ns / parent.duration_ns, "%"), narrow);
 	}
-	CLAY(context.clayID("selected-navigation"), pair) {
+	CLAY(FlowUi::ValueOrThrow(context.clayID("selected-navigation")), pair) {
 		navigation(context, LocalElementName{"focus"}, "Focus in minor", timeline.inspected_sample,
 				   TimelineAction::Open);
 		navigation(context, LocalElementName{"reveal"}, "Reveal in major",
@@ -821,7 +822,7 @@ void build_selected(Context& context, bool narrow) {
 		 ++child_position) {
 		const size_t child_index = children[child_position];
 		const auto& child = timeline.snapshot.blocks[child_index];
-		CLAY(context.clayID(Keyed("child-detail", child_index)), column(3)) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID(Keyed("child-detail", child_index))), column(3)) {
 			text(context, child.label);
 			text(context,
 				 performance_duration(child.duration_ns) +
@@ -981,7 +982,7 @@ void DevPerformanceInspectorAction::onReleased(InteractionContext& context) {
 		context.params.command.revision == context.params.timeline->snapshot_revision)
 		context.params.timeline->pending = context.params.command;
 	if (context.params.app && !context.params.clipboard_text.empty())
-		context.params.app->setClipboardText(context.params.clipboard_text);
+		FlowUi::ValueOrThrow(context.params.app->setClipboardText(context.params.clipboard_text));
 }
 void DevPerformanceInspectorAction::buildElement(BuildContext& context) {
 	const auto icon_key =
@@ -1012,7 +1013,7 @@ void DevPerformanceInspectorAction::buildElement(BuildContext& context) {
 			image.backgroundColor = context.params.enabled ? interface_theme::kTextCanvas
 														   : interface_theme::kTextSecondary;
 			image.image.imageData = context.uiManager.imageData(icon);
-			CLAY(context.clayID("action-icon"), image) {}
+			CLAY(FlowUi::ValueOrThrow(context.clayID("action-icon")), image) {}
 		} else
 			text(context, context.params.label,
 				 context.params.enabled ? interface_theme::kTextCanvas
@@ -1031,7 +1032,7 @@ void DevPerformanceInspector::buildElement(BuildContext& context) {
 	auto& state = context.state();
 	auto& timeline = context.params.interfaceState->performance_timeline;
 	const auto status = context.params.app
-							? context.params.app->devMonitoring().timingReporting().status()
+							? FlowUi::ValueOrThrow(context.params.app->devMonitoring()).get().timingReporting().status()
 							: TimingReportingStatus{};
 	const auto generation = status.capture_generation;
 	const bool context_changed = generation != state.analysis.generation ||
@@ -1043,7 +1044,7 @@ void DevPerformanceInspector::buildElement(BuildContext& context) {
 			had_expanded_zone ? state.analysis.zones[state.expanded_zone].largest.population()
 							  : PerformanceAnalysisSample{}.population();
 		if (context.params.app) {
-			auto capture = context.params.app->devMonitoring().timingReporting().read_capture();
+			auto capture = FlowUi::ValueOrThrow(context.params.app->devMonitoring()).get().timingReporting().read_capture();
 			state.analysis =
 				analyze_performance(capture, state.analysis_range, state.analysis_source);
 		}
@@ -1062,7 +1063,7 @@ void DevPerformanceInspector::buildElement(BuildContext& context) {
 	state.window_labels.clear();
 	state.window_options.clear();
 	const auto live_windows =
-		context.params.app ? context.params.app->devWindowSnapshot() : std::vector<DevWindowInfo>{};
+		context.params.app ? FlowUi::ValueOrThrow(context.params.app->devWindowSnapshot()) : std::vector<DevWindowInfo>{};
 	state.window_labels.reserve(live_windows.size() +
 								context.params.interfaceState->capture_windows.size());
 	state.window_options.reserve(state.window_labels.capacity() + 1);
@@ -1093,18 +1094,18 @@ void DevPerformanceInspector::buildElement(BuildContext& context) {
 		auto title = row(36);
 		title.layout.padding = {12, 12, 0, 0};
 		title.backgroundColor = interface_theme::kDepth2Ink;
-		CLAY(context.clayID("title"), title) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("title")), title) {
 			text(context, "Inspector", interface_theme::kTextCanvas, 14);
 		}
 		auto body = column(0);
 		body.layout.sizing.height = CLAY_SIZING_GROW(0);
 		body.clip = {.vertical = true};
-		auto scroll = Clay_GetScrollContainerData(context.clayID("scroll-body"));
+		auto scroll = Clay_GetScrollContainerData(FlowUi::ValueOrThrow(context.clayID("scroll-body")));
 		if (scroll.found && scroll.scrollPosition) {
 			if (state.previous_selection != timeline.inspected_sample ||
 				state.selected_revision != timeline.snapshot_revision) {
-				const auto selected = Clay_GetElementData(context.clayID("selected-section"));
-				const auto viewport = Clay_GetElementData(context.clayID("scroll-body"));
+				const auto selected = Clay_GetElementData(FlowUi::ValueOrThrow(context.clayID("selected-section")));
+				const auto viewport = Clay_GetElementData(FlowUi::ValueOrThrow(context.clayID("scroll-body")));
 				if (selected.found && viewport.found &&
 					selected.boundingBox.y < viewport.boundingBox.y)
 					scroll.scrollPosition->y += viewport.boundingBox.y - selected.boundingBox.y;
@@ -1115,24 +1116,24 @@ void DevPerformanceInspector::buildElement(BuildContext& context) {
 		state.selected_revision = timeline.snapshot_revision;
 		auto content = column(8);
 		content.layout.padding = {12, 12, 10, 12};
-		CLAY(context.clayID("scroll-body"), body) {
-			CLAY(context.clayID("capture-section"), column(0)) {
+		CLAY(FlowUi::ValueOrThrow(context.clayID("scroll-body")), body) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("capture-section")), column(0)) {
 				disclosure(context, LocalElementName{"capture-header"}, "Capture Settings",
 						   state.capture_expanded, true);
 				if (state.capture_expanded)
-					CLAY(context.clayID("capture-content"), content) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("capture-content")), content) {
 						build_capture(context, narrow, status);
 					}
 			}
-			CLAY(context.clayID("rolling-section"), column(0)) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("rolling-section")), column(0)) {
 				disclosure(context, LocalElementName{"rolling-header"}, "Rolling Stats",
 						   state.rolling_expanded, true);
 				if (state.rolling_expanded)
-					CLAY(context.clayID("rolling-content"), content) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("rolling-content")), content) {
 						build_rolling(context, narrow);
 					}
 			}
-			CLAY(context.clayID("selected-section"), column(0)) {
+			CLAY(FlowUi::ValueOrThrow(context.clayID("selected-section")), column(0)) {
 				disclosure(context, LocalElementName{"selected-header"}, "Selected Zone Details",
 						   state.selected_expanded, true);
 				if (state.selected_expanded) {
@@ -1140,9 +1141,9 @@ void DevPerformanceInspector::buildElement(BuildContext& context) {
 					// leased.
 					auto capture =
 						context.params.app
-							? context.params.app->devMonitoring().timingReporting().read_capture()
+							? FlowUi::ValueOrThrow(context.params.app->devMonitoring()).get().timingReporting().read_capture()
 							: TimingCaptureReadView{};
-					CLAY(context.clayID("selected-content"), content) {
+					CLAY(FlowUi::ValueOrThrow(context.clayID("selected-content")), content) {
 						if (timeline.capture_generation &&
 							capture.generation != timeline.capture_generation)
 							text(context, "The selected sample is no longer retained.",

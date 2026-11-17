@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
@@ -25,7 +26,7 @@ int main() {
 	config.window.height = 800;
 	config.dev.excludeInternalDevElementsFromCapture = false;
 	config.vk.enableValidation = true;
-	auto app = makeApplication(config);
+	auto app = ::FlowUi::test::requireValue(makeApplication(config));
 	DevInterfaceState session;
 	constexpr auto workbench_id = Global<kDevMemoryWorkbench>("memory.workbench.verification");
 	const auto control_id = [&](uint64_t action) {
@@ -47,9 +48,9 @@ int main() {
 		++drawn_frames;
 		assert(app.beginFrame());
 		auto& interaction =
-			const_cast<InteractionSnapshot&>(app.ui().getPreviousFramesInteraction());
+			const_cast<InteractionSnapshot&>(::FlowUi::test::requireValue(app.ui()).get().getPreviousFramesInteraction());
 		interaction = {};
-		auto& input = const_cast<FrameInput&>(app.ui().getCurrentFrameInput());
+		auto& input = const_cast<FrameInput&>(::FlowUi::test::requireValue(app.ui()).get().getCurrentFrameInput());
 		input.mouseX = -1;
 		input.mouseY = -1;
 		input.windowFocused = true;
@@ -64,12 +65,12 @@ int main() {
 			const auto image_id = ::FlowUi::detail::element_id::resolveLocal(
 				FlowElementID{.value = workbench_id.value}, DevMemoryWorkbench::definitionId,
 				LocalElementName{"history-image"}.token);
-			const auto bounds = Clay_GetElementData(app.ui().toClayEID(image_id)).boundingBox;
+			const auto bounds = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(image_id)).boundingBox;
 			input.mouseX = bounds.x + 68 + (bounds.width - 76) * pointer_fraction;
 			input.mouseY = bounds.y + bounds.height * pointer_vertical;
 		}
 		if (action) {
-			const auto element = app.ui().toClayEID(control_id(action));
+			const auto element = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(control_id(action));
 			const auto identity = element.id;
 			const auto button_bounds = Clay_GetElementData(element).boundingBox;
 			input.mouseX = button_bounds.x + button_bounds.width / 2;
@@ -81,7 +82,7 @@ int main() {
 				interaction.releasedElementIds.emplace_back(identity);
 		}
 		if (child_control.value) {
-			const auto element = app.ui().toClayEID(child_control);
+			const auto element = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(child_control);
 			const auto identity = element.id;
 			const auto child_bounds = Clay_GetElementData(element).boundingBox;
 			input.mouseX = child_bounds.x + child_bounds.width / 2;
@@ -102,7 +103,7 @@ int main() {
 		background.backgroundColor = Flow_Color("#071A22");
 		CLAY(CLAY_ID("memory-full-window"), background) {
 			CLAY(CLAY_ID("memory-workbench-root"), root) {
-				app.ui()
+				::FlowUi::test::requireValue(app.ui()).get()
 					.createElement(kDevMemoryWorkbench, workbench_id)
 					.setParameters({&app, &session})
 					.draw();
@@ -110,7 +111,7 @@ int main() {
 		}
 		assert(app.endFrame());
 		const auto workbench_bounds =
-			Clay_GetElementData(app.ui().toClayEID(FlowElementID{.value = workbench_id.value}))
+			Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(FlowElementID{.value = workbench_id.value}))
 				.boundingBox;
 		assert(workbench_bounds.width <= width + 1);
 		assert(app.drawFrame());
@@ -124,14 +125,14 @@ int main() {
 	draw();
 	assert(!session.memory_workbench.tracks.empty());
 	const auto workbench_scroll =
-		Clay_GetScrollContainerData(app.ui().toClayEID(FlowElementID{.value = workbench_id.value}));
+		Clay_GetScrollContainerData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(FlowElementID{.value = workbench_id.value}));
 	assert(workbench_scroll.found);
 	assert(workbench_scroll.contentDimensions.height >
 		   workbench_scroll.scrollContainerDimensions.height);
 	const auto cpu_scope = uint64_t(DevMemoryNodeId::CpuStorage);
 	const auto track_token = cpu_scope | (uint64_t{1} << 63);
 	const auto track_id = control_id(track_token);
-	const auto track_bounds = Clay_GetElementData(app.ui().toClayEID(track_id)).boundingBox;
+	const auto track_bounds = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(track_id)).boundingBox;
 	assert(track_bounds.width > 800 && track_bounds.height >= 58);
 	click(track_token);
 	assert(session.memory_workbench.focus == cpu_scope);
@@ -163,13 +164,13 @@ int main() {
 	assert(session.memory_workbench.decimal);
 	click(2);
 	assert(!session.memory_workbench.following);
-	assert(app.devMonitoring().memoryReporting().status().freeze_owner_count == 0);
+	assert(::FlowUi::test::requireValue(app.devMonitoring()).get().memoryReporting().status().freeze_owner_count == 0);
 	assert(session.memory_workbench.held_data);
 	const auto held = session.memory_workbench.held_data->segments;
-	const auto consumed_tick = app.devMonitoring().memoryReporting().status().lastConsumedAppTick;
+	const auto consumed_tick = ::FlowUi::test::requireValue(app.devMonitoring()).get().memoryReporting().status().lastConsumedAppTick;
 	draw();
 	draw();
-	assert(app.devMonitoring().memoryReporting().status().lastConsumedAppTick > consumed_tick);
+	assert(::FlowUi::test::requireValue(app.devMonitoring()).get().memoryReporting().status().lastConsumedAppTick > consumed_tick);
 	assert(session.memory_workbench.held_data->segments.size() == held.size());
 	for (size_t index = 0; index < held.size(); ++index)
 		assert(session.memory_workbench.held_data->segments[index].endNs == held[index].endNs);
@@ -229,11 +230,11 @@ int main() {
 	assert(history.view_end_ns - history.view_begin_ns == panned_duration);
 	click(2);
 	assert(session.memory_workbench.following);
-	assert(app.devMonitoring().memoryReporting().status().freeze_owner_count == 0);
+	assert(::FlowUi::test::requireValue(app.devMonitoring()).get().memoryReporting().status().freeze_owner_count == 0);
 	draw(0, 1, 900, true);
 	draw(0, 0, 900, true);
 	assert(!session.memory_workbench.following);
-	assert(app.devMonitoring().memoryReporting().status().freeze_owner_count == 0);
+	assert(::FlowUi::test::requireValue(app.devMonitoring()).get().memoryReporting().status().freeze_owner_count == 0);
 	// Direct range selection, followed by an independently configured three-lane view.
 	draw(0, 1, 900, true, {}, .2f);
 	draw(0, 1, 900, true, {}, .8f);
@@ -243,13 +244,13 @@ int main() {
 	click(204);
 	assert(session.memory_workbench.history_settings_open);
 	const auto settings_bounds =
-		Clay_GetElementData(app.ui().toClayEID(control_id(204))).boundingBox;
-	const auto done_bounds = Clay_GetElementData(app.ui().toClayEID(control_id(206))).boundingBox;
+		Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(control_id(204))).boundingBox;
+	const auto done_bounds = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(control_id(206))).boundingBox;
 	assert(settings_bounds.width > 0 && done_bounds.width > 0);
 	assert(settings_bounds.x != done_bounds.x || settings_bounds.y != done_bounds.y);
 	draw();
 	const auto stable_settings_bounds =
-		Clay_GetElementData(app.ui().toClayEID(control_id(204))).boundingBox;
+		Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(control_id(204))).boundingBox;
 	assert(stable_settings_bounds.x == settings_bounds.x &&
 		   stable_settings_bounds.y == settings_bounds.y);
 	std::cout << "History review frame=" << drawn_frames - 1 << " phase=one-lane-settings\n";
@@ -268,7 +269,7 @@ int main() {
 	const auto scope_option = ::FlowUi::detail::element_id::resolveLocal(
 		scope_combo, FSEL::ComboBox::definitionId,
 		Keyed("option", uint64_t(DevMemoryNodeId::InputFields)).token);
-	assert(Clay_GetElementData(app.ui().toClayEID(scope_option)).found);
+	assert(Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(scope_option)).found);
 	draw(0, 1, 900, false, scope_option);
 	draw(0, 2, 900, false, scope_option);
 	draw();
@@ -314,7 +315,7 @@ int main() {
 	};
 	hide();
 	hide();
-	assert(app.devMonitoring().memoryReporting().status().freeze_owner_count == 0);
+	assert(::FlowUi::test::requireValue(app.devMonitoring()).get().memoryReporting().status().freeze_owner_count == 0);
 	assert(session.memory_workbench.following);
 	assert(!session.memory_workbench.held_data);
 	draw(0, 0, 420);

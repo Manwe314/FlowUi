@@ -1,3 +1,4 @@
+#include "../TestHarness.hpp"
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
@@ -21,13 +22,13 @@ int main() {
 	config.window.height = 900;
 	config.dev.excludeInternalDevElementsFromCapture = false;
 	config.vk.enableValidation = true;
-	auto app = makeApplication(config);
+	auto app = ::FlowUi::test::requireValue(makeApplication(config));
 	DevInterfaceState session;
 	session.memory_selection.selected_node = uint64_t(DevMemoryNodeId::PersistentPool);
 	constexpr auto workbench_id = Global<kDevMemoryWorkbench>("surface.memory.workbench");
 	constexpr auto inspector_id = Global<kDevMemoryInspector>("surface.memory.inspector");
 	constexpr auto context_id = Global<kDevMemoryContextControls>("surface.memory.context");
-	const auto inspector_body_id = app.ui().toClayEID(::FlowUi::detail::element_id::resolveLocal(
+	const auto inspector_body_id = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(::FlowUi::detail::element_id::resolveLocal(
 		FlowElementID{inspector_id.value}, DevMemoryInspector::definitionId,
 		LocalElementName{"scroll-body"}.token));
 	const auto action_id = [&](FlowElementID parent, uint32_t action) {
@@ -37,15 +38,15 @@ int main() {
 	const auto draw = [&](FlowElementID control = {}, int event = 0, float inspector_width = 360) {
 		assert(app.beginFrame());
 		auto& interaction =
-			const_cast<InteractionSnapshot&>(app.ui().getPreviousFramesInteraction());
+			const_cast<InteractionSnapshot&>(::FlowUi::test::requireValue(app.ui()).get().getPreviousFramesInteraction());
 		interaction = {};
-		auto& input = const_cast<FrameInput&>(app.ui().getCurrentFrameInput());
+		auto& input = const_cast<FrameInput&>(::FlowUi::test::requireValue(app.ui()).get().getCurrentFrameInput());
 		input.mouseX = input.mouseY = -1;
 		input.windowFocused = true;
 		input.mouseDown = {};
 		input.mouseDown[0] = event == 1;
 		if (control.value) {
-			const auto identity = app.ui().toClayEID(control).id;
+			const auto identity = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(control).id;
 			interaction.hoveredElementIds.emplace_back(identity);
 			if (event == 1)
 				interaction.pressedElementIds.emplace_back(identity);
@@ -56,7 +57,7 @@ int main() {
 		root.layout.sizing = {.width = CLAY_SIZING_FIXED(1400), .height = CLAY_SIZING_FIXED(900)};
 		root.backgroundColor = interface_theme::kDepth0Keel;
 		CLAY(CLAY_ID("memory-surface-test"), root) {
-			app.ui()
+			::FlowUi::test::requireValue(app.ui()).get()
 				.createElement(kDevMemoryContextControls, context_id)
 				.setParameters({&app, &session})
 				.draw();
@@ -67,7 +68,7 @@ int main() {
 				workbench.layout.sizing = {.width = CLAY_SIZING_FIXED(850),
 										   .height = CLAY_SIZING_GROW(0)};
 				CLAY(CLAY_ID("memory-test-workbench"), workbench)
-				app.ui()
+				::FlowUi::test::requireValue(app.ui()).get()
 					.createElement(kDevMemoryWorkbench, workbench_id)
 					.setParameters({&app, &session})
 					.draw();
@@ -76,7 +77,7 @@ int main() {
 										   .height = CLAY_SIZING_GROW(0)};
 				inspector.clip = {.horizontal = true, .vertical = true};
 				CLAY(CLAY_ID("memory-test-inspector"), inspector)
-				app.ui()
+				::FlowUi::test::requireValue(app.ui()).get()
 					.createElement(kDevMemoryInspector, inspector_id)
 					.setParameters({&app, &session})
 					.draw();
@@ -88,7 +89,7 @@ int main() {
 	const auto click = [&](FlowElementID identity) {
 		// Exercise clipping realistically: bring Inspector controls into its visible viewport.
 		for (int attempt = 0; attempt < 2; ++attempt) {
-			const auto control = Clay_GetElementData(app.ui().toClayEID(identity));
+			const auto control = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(identity));
 			const auto inspector = Clay_GetElementData(inspector_body_id);
 			const auto scroll = Clay_GetScrollContainerData(inspector_body_id);
 			if (control.found && inspector.found && scroll.found && scroll.scrollPosition &&
@@ -113,7 +114,7 @@ int main() {
 	};
 	const auto check_field_text = [&](const auto& element, FlowElementID identity) {
 		using Element = std::remove_cvref_t<decltype(element)>;
-		const auto field = Clay_GetElementData(app.ui().toClayEID(identity));
+		const auto field = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(identity));
 		const auto content = Clay_GetElementData(Clay_ElementId{
 			.id = FlowIDToClayID(PartID(element, identity, Element::Parts::content))});
 		const auto label = Clay_GetElementData(
@@ -190,15 +191,15 @@ int main() {
 	analysis.dataset = 0;
 	click(action_id(FlowElementID{context_id.value}, 100));
 	assert(analysis.recording);
-	const auto recording_tick = app.devMonitoring().memoryReporting().status().lastConsumedAppTick;
+	const auto recording_tick = ::FlowUi::test::requireValue(app.devMonitoring()).get().memoryReporting().status().lastConsumedAppTick;
 	draw();
 	draw();
-	assert(app.devMonitoring().memoryReporting().status().lastConsumedAppTick > recording_tick);
+	assert(::FlowUi::test::requireValue(app.devMonitoring()).get().memoryReporting().status().lastConsumedAppTick > recording_tick);
 	click(action_id(FlowElementID{context_id.value}, 100));
 	assert(!analysis.recording && analysis.datasets.size() == 2);
 	assert(!analysis.datasets.back().segments.empty());
 	assert(analysis.dataset == analysis.datasets.back().identity);
-	assert(app.devMonitoring().memoryReporting().status().freeze_owner_count == 0);
+	assert(::FlowUi::test::requireValue(app.devMonitoring()).get().memoryReporting().status().freeze_owner_count == 0);
 	click(action_id(FlowElementID{context_id.value}, 104));
 	assert(analysis.baseline_dataset == analysis.dataset);
 	click(action_id(FlowElementID{context_id.value}, 103));
@@ -223,7 +224,7 @@ int main() {
 		assert(inspector_scroll.found && inspector_scroll.contentDimensions.width <=
 											 inspector_scroll.scrollContainerDimensions.width + 1);
 	}
-	const auto summary_id = app.ui().toClayEID(::FlowUi::detail::element_id::resolveLocal(
+	const auto summary_id = ::FlowUi::test::requireValue(app.ui()).get().toClayEID(::FlowUi::detail::element_id::resolveLocal(
 		FlowElementID{inspector_id.value}, DevMemoryInspector::definitionId,
 		LocalElementName{"subject-content"}.token));
 	const auto summary_before = Clay_GetElementData(summary_id);
@@ -232,13 +233,13 @@ int main() {
 		const auto control =
 			local_control(FlowElementID{inspector_id.value}, FSEL::Button::definitionId, name);
 		click(control);
-		const auto* presentation = app.ui().elements().getStatePointerConst(
-			kDevMemoryInspector, app.ui().windowId(), FlowElementID{inspector_id.value});
+		const auto* presentation = ::FlowUi::test::requireValue(::FlowUi::test::requireValue(app.ui()).get().elements().getStatePointerConst(
+			kDevMemoryInspector, ::FlowUi::test::requireValue(app.ui()).get().windowId(), FlowElementID{inspector_id.value}));
 		assert(presentation);
 		assert(name.token == LocalElementName{"capacity-tuning-header"}.token
 				   ? !presentation->capacity_tuning_expanded
 				   : !presentation->capacity_scope_settings_expanded);
-		const auto bounds = Clay_GetElementData(app.ui().toClayEID(control));
+		const auto bounds = Clay_GetElementData(::FlowUi::test::requireValue(app.ui()).get().toClayEID(control));
 		const auto body_bounds = Clay_GetElementData(inspector_body_id);
 		assert(bounds.found && body_bounds.found &&
 			   std::abs(bounds.boundingBox.width - body_bounds.boundingBox.width) <= 1);

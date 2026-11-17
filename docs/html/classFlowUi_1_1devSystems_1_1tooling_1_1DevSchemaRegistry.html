@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,6 +106,11 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi::devSystems::tooling::DevSchemaRegistry Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Queues typed reflection roots and publishes immutable schema generations. Retained <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaView.html" title="Copyable shared ownership of an immutable schema generation. Retain this handle while borrowing any g...">DevSchemaView</a> values pin older generations across later publications.
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DevSchemaRegistry_8hpp_source.html">DevSchemaRegistry.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
@@ -118,36 +123,49 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ab4e35c66f34c7355d1869f3b550314bc" id="r_ab4e35c66f34c7355d1869f3b550314bc"><td class="memItemLeft">std::span&lt; const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry_1_1ElementPreview.html">ElementPreview</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ab4e35c66f34c7355d1869f3b550314bc">elementPreviews</a> () const noexcept</td></tr>
 <tr class="memitem:a6b75a942c457bcbbeea26c13783c906c" id="r_a6b75a942c457bcbbeea26c13783c906c"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a6b75a942c457bcbbeea26c13783c906c">previewRevision</a> () const noexcept</td></tr>
 <tr class="memitem:ae416ac250bb7bb457f18e07779feb090" id="r_ae416ac250bb7bb457f18e07779feb090"><td class="memItemLeft"><a id="ae416ac250bb7bb457f18e07779feb090" name="ae416ac250bb7bb457f18e07779feb090"></a>
-&#160;</td><td class="memItemRight"><b>DevSchemaRegistry</b> (<a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaLimits.html">DevSchemaLimits</a> limits={})</td></tr>
+&#160;</td><td class="memItemRight"><b>DevSchemaRegistry</b> (<a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaLimits.html">DevSchemaLimits</a> <a class="el" href="#ae4d80e5b47eb2b8b29f87e2c3f56a549">limits</a>={})</td></tr>
+<tr class="memdesc:ae416ac250bb7bb457f18e07779feb090"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct an empty registry with copied schema capacity/depth limits. <br /></td></tr>
+<tr class="memitem:afae751926f863838395c7e491d9f3757" id="r_afae751926f863838395c7e491d9f3757"><td class="memItemLeft"><a id="afae751926f863838395c7e491d9f3757" name="afae751926f863838395c7e491d9f3757"></a>
+&#160;</td><td class="memItemRight"><b>~DevSchemaRegistry</b> ()</td></tr>
+<tr class="memdesc:afae751926f863838395c7e491d9f3757"><td class="mdescLeft">&#160;</td><td class="mdescRight">Release queued roots and this owner's generation references; retained <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaView.html" title="Copyable shared ownership of an immutable schema generation. Retain this handle while borrowing any g...">DevSchemaView</a> copies keep published generations alive. <br /></td></tr>
 <tr class="memitem:a77882eee226f2ff22f4e4884586393cd" id="r_a77882eee226f2ff22f4e4884586393cd"><td class="memItemLeft"><a id="a77882eee226f2ff22f4e4884586393cd" name="a77882eee226f2ff22f4e4884586393cd"></a>
 &#160;</td><td class="memItemRight"><b>DevSchemaRegistry</b> (const DevSchemaRegistry &amp;)=delete</td></tr>
 <tr class="memitem:a4eee7e3005a6cd09d5cd33b0fdb711a4" id="r_a4eee7e3005a6cd09d5cd33b0fdb711a4"><td class="memItemLeft"><a id="a4eee7e3005a6cd09d5cd33b0fdb711a4" name="a4eee7e3005a6cd09d5cd33b0fdb711a4"></a>
-DevSchemaRegistry &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const DevSchemaRegistry &amp;)=delete</td></tr>
+<a class="el" href="#ae416ac250bb7bb457f18e07779feb090">DevSchemaRegistry</a> &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (const <a class="el" href="#ae416ac250bb7bb457f18e07779feb090">DevSchemaRegistry</a> &amp;)=delete</td></tr>
 <tr class="memitem:a902130522fa58dc48a072480b898e625" id="r_a902130522fa58dc48a072480b898e625"><td class="memItemLeft"><a id="a902130522fa58dc48a072480b898e625" name="a902130522fa58dc48a072480b898e625"></a>
 &#160;</td><td class="memItemRight"><b>DevSchemaRegistry</b> (DevSchemaRegistry &amp;&amp;)=delete</td></tr>
 <tr class="memitem:ac54b699c4bb7ac00f3a7f30d8763f570" id="r_ac54b699c4bb7ac00f3a7f30d8763f570"><td class="memItemLeft"><a id="ac54b699c4bb7ac00f3a7f30d8763f570" name="ac54b699c4bb7ac00f3a7f30d8763f570"></a>
-DevSchemaRegistry &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (DevSchemaRegistry &amp;&amp;)=delete</td></tr>
+<a class="el" href="#ae416ac250bb7bb457f18e07779feb090">DevSchemaRegistry</a> &amp;&#160;</td><td class="memItemRight"><b>operator=</b> (<a class="el" href="#ae416ac250bb7bb457f18e07779feb090">DevSchemaRegistry</a> &amp;&amp;)=delete</td></tr>
 <tr class="memitem:a07e6e9b2c0a439464fe89c25ae93d558" id="r_a07e6e9b2c0a439464fe89c25ae93d558"><td class="memTemplParams" colspan="2"><a id="a07e6e9b2c0a439464fe89c25ae93d558" name="a07e6e9b2c0a439464fe89c25ae93d558"></a>
 template&lt;FlowElement Element&gt; </td></tr>
 <tr class="memitem:a07e6e9b2c0a439464fe89c25ae93d558 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><b>ensureElement</b> ()</td></tr>
+<tr class="memdesc:a07e6e9b2c0a439464fe89c25ae93d558"><td class="mdescLeft">&#160;</td><td class="mdescRight">Queue this element definition and its parameter/state/resource types once; <a class="el" href="#a244127ea1194a103b8baf8a848ed2b02">publishPendingAtSafePoint()</a> performs ingestion. <br /></td></tr>
 <tr class="memitem:a7cb870efbfa5460e40d42951b345d48f" id="r_a7cb870efbfa5460e40d42951b345d48f"><td class="memTemplParams" colspan="2"><a id="a7cb870efbfa5460e40d42951b345d48f" name="a7cb870efbfa5460e40d42951b345d48f"></a>
 template&lt;typename Theme&gt; </td></tr>
 <tr class="memitem:a7cb870efbfa5460e40d42951b345d48f template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><b>ensureTheme</b> ()</td></tr>
+<tr class="memdesc:a7cb870efbfa5460e40d42951b345d48f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Queue this theme payload type once; no application theme value is instantiated or registered. <br /></td></tr>
 <tr class="memitem:a6264e0c19053c384dd7311dfdeaf17d2" id="r_a6264e0c19053c384dd7311dfdeaf17d2"><td class="memTemplParams" colspan="2"><a id="a6264e0c19053c384dd7311dfdeaf17d2" name="a6264e0c19053c384dd7311dfdeaf17d2"></a>
 template&lt;typename Struct&gt; </td></tr>
 <tr class="memitem:a6264e0c19053c384dd7311dfdeaf17d2 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><b>ensureStruct</b> ()</td></tr>
+<tr class="memdesc:a6264e0c19053c384dd7311dfdeaf17d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Queue this extra reflected struct type once for the next safe-point publication. <br /></td></tr>
 <tr class="memitem:afbf0ac4001cc879e8fead12f6cc6dae7" id="r_afbf0ac4001cc879e8fead12f6cc6dae7"><td class="memTemplParams" colspan="2"><a id="afbf0ac4001cc879e8fead12f6cc6dae7" name="afbf0ac4001cc879e8fead12f6cc6dae7"></a>
 template&lt;typename... Elements, typename... Themes, typename... Structs&gt; </td></tr>
 <tr class="memitem:afbf0ac4001cc879e8fead12f6cc6dae7 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><b>ingest</b> (const <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevCatalogue.html">DevCatalogue</a>&lt; <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevElementCatalogue.html">DevElementCatalogue</a>&lt; Elements... &gt;, <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevThemeCatalogue.html">DevThemeCatalogue</a>&lt; Themes... &gt;, <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevStructCatalogue.html">DevStructCatalogue</a>&lt; Structs... &gt; &gt; &amp;)</td></tr>
+<tr class="memdesc:afbf0ac4001cc879e8fead12f6cc6dae7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Queue every root in a compile-time catalogue; duplicate type roots are coalesced. <br /></td></tr>
 <tr class="memitem:a244127ea1194a103b8baf8a848ed2b02" id="r_a244127ea1194a103b8baf8a848ed2b02"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a244127ea1194a103b8baf8a848ed2b02">publishPendingAtSafePoint</a> ()</td></tr>
 <tr class="memitem:a56510ea1d39d4c57500845cd891b669d" id="r_a56510ea1d39d4c57500845cd891b669d"><td class="memItemLeft"><a id="a56510ea1d39d4c57500845cd891b669d" name="a56510ea1d39d4c57500845cd891b669d"></a>
 <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaView.html">DevSchemaView</a>&#160;</td><td class="memItemRight"><b>view</b> () const noexcept</td></tr>
+<tr class="memdesc:a56510ea1d39d4c57500845cd891b669d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a shared immutable generation handle; retaining it keeps all referenced metadata alive across future publications. <br /></td></tr>
 <tr class="memitem:af5e69eee80b3846a1d337334f851f3f6" id="r_af5e69eee80b3846a1d337334f851f3f6"><td class="memItemLeft"><a id="af5e69eee80b3846a1d337334f851f3f6" name="af5e69eee80b3846a1d337334f851f3f6"></a>
 std::size_t&#160;</td><td class="memItemRight"><b>pendingRootCount</b> () const noexcept</td></tr>
+<tr class="memdesc:af5e69eee80b3846a1d337334f851f3f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of distinct queued roots awaiting publication. <br /></td></tr>
 <tr class="memitem:ae4d80e5b47eb2b8b29f87e2c3f56a549" id="r_ae4d80e5b47eb2b8b29f87e2c3f56a549"><td class="memItemLeft"><a id="ae4d80e5b47eb2b8b29f87e2c3f56a549" name="ae4d80e5b47eb2b8b29f87e2c3f56a549"></a>
 <a class="el" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaLimits.html">DevSchemaLimits</a>&#160;</td><td class="memItemRight"><b>limits</b> () const noexcept</td></tr>
+<tr class="memdesc:ae4d80e5b47eb2b8b29f87e2c3f56a549"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy the immutable configured schema capacity/depth limits. <br /></td></tr>
 </table>
-<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Queues typed reflection roots and publishes immutable schema generations. Retained <a class="el" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaView.html" title="Copyable shared ownership of an immutable schema generation. Retain this handle while borrowing any g...">DevSchemaView</a> values pin older generations across later publications. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="ab4e35c66f34c7355d1869f3b550314bc" name="ab4e35c66f34c7355d1869f3b550314bc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab4e35c66f34c7355d1869f3b550314bc">&#9670;&#160;</a></span>elementPreviews()</h2>
 
@@ -259,7 +277,7 @@ template&lt;FlowElement Element&gt; </div>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>devSystems</b></li><li class="navelem"><b>tooling</b></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">DevSchemaRegistry</a></li>
+    <li class="navelem"><a href="namespaceFlowUi.html">FlowUi</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems.html">devSystems</a></li><li class="navelem"><a href="namespaceFlowUi_1_1devSystems_1_1tooling.html">tooling</a></li><li class="navelem"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">DevSchemaRegistry</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

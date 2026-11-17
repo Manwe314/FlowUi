@@ -10,8 +10,10 @@ namespace FlowUi::Font {
 /**
  * @brief Vulkan resources for the font atlas array.
  *
- * AtlasArrayResource is returned by FlowUi::FontManager::getAtlasResource() for
- * renderer integrations that need to bind FlowUi's font atlas directly.
+ * FlowUi::FontManager::getAtlasResource() returns this object through
+ * `Result<std::reference_wrapper<const AtlasArrayResource>>`. Check the Result, then
+ * bind const AtlasArrayResource& atlas = result->get() for convenient field access.
+ * Include this header to read fields; FontManager.hpp only forward-declares the type.
  * All handles are borrowed from the font manager; do not destroy them. Atlas
  * growth may replace binding resources, so re-read them when bindingRevision
  * changes and do not retain handles beyond the owning App lifetime.

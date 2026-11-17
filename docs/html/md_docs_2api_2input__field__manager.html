@@ -40,8 +40,8 @@
         <span class="left">
           <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
           <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
@@ -65,7 +65,7 @@ $(function() { codefold.init(); });
       <div id="nav-sync" class="sync"></div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
+  <div id="splitbar" style="-moz-user-select:none;"
        class="ui-resizable-handle">
   </div>
 </div>
@@ -106,108 +106,536 @@ $(function() {
   <div class="headertitle"><div class="title">Input Field Manager API </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1>Enums</h1>
-<h2><b>CaretRequestKind</b></h2>
-<h3><span class="tt">enum class CaretRequestKind : uint8_t</span></h3>
-<p>Requested caret operation for an input field. It supports setting primary focus, adding a caret, or clearing all carets and focus.</p>
-<h1>Public Structs</h1>
-<h2><b>InputManagerConfig</b></h2>
-<h3><span class="tt">struct InputManagerConfig</span></h3>
-<p>Caret and selection rendering configuration. It controls caret dimensions, caret color, selection color, and selected text color.</p>
-<h2><b>FieldConfig</b></h2>
-<h3><span class="tt">struct FieldConfig</span></h3>
-<p>Behavior configuration for an editable field. It controls read-only state, newline insertion, arrow navigation, and maximum stored bytes.</p>
-<h2><b>FieldRequest</b></h2>
-<h3><span class="tt">struct FieldRequest</span></h3>
-<p>Per-frame request submitted by a custom input element. It marks a field present, provides initial text, config, and Clay ids for text and content areas.</p>
-<h2><b>FieldQueryResult</b></h2>
-<h3><span class="tt">struct FieldQueryResult</span></h3>
-<p>Current manager-owned field state returned by requestField. It exposes text, primary caret state, and selection state.</p>
+<div class="textblock"><p><a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Public declarations</a> · <a href="include/FlowUi/Public/managerStructs/InputFieldTypes.hpp">Field values</a></p>
+<p>The window-owned manager retains editable text by strong Flow ID or window-local InputField <span class="tt">ResourceKey</span>. An element requests its snapshot once per UI build and draws its Clay text/content nodes. Initial text is copied only for a new field. Typed local/global/part IDs remain distinct identities; <span class="tt">ResourceKey</span> identities are normalized in the InputField domain.</p>
+<p>Single-line fields expose contiguous text. Multiline fields expose visible lines and chunked <span class="tt">FieldTextView</span>; submit each emitted visible text line with the frame-scoped handle. Text, visible-line spans, selections, and edit/command reports borrow manager storage and must be copied before mutation/removal or frame advancement. Reversible transaction reports must be copied into application-owned undo history.</p>
+<h1>Acquire the manager</h1>
+<p><span class="tt">App</span> getters return <span class="tt">Result&lt;std::reference_wrapper&lt;T&gt;&gt;</span>. Check the wrapper, then name the borrowed object as a normal reference:</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = app.ui();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line"><a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; manager = result-&gt;get();</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:110</div></div>
+</div><!-- fragment --><p>Call <span class="tt">ui.inputFields()</span> on that <span class="tt">UiManager&amp;</span> to obtain the direct manager reference. The reference is borrowed; the App must outlive it, and window-owned managers must also stay within their owning window lifetime. The examples use an already acquired manager reference and existing field/window identities where needed. Field acquisition and mutations return direct values, booleans or <span class="tt">EditResult</span>; operational failures throw and must leave the failed invocation. <span class="tt">frameStatus()</span> and <span class="tt">FieldTextView::copy()</span> retain checked results. Include the relevant manager/value headers and <span class="tt"><a class="el" href="Color_8hpp_source.html">FlowUi/Public/Color.hpp</a></span> for the public <span class="tt">ValueOrThrow</span> convenience.</p>
+<p>ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<p>Direct <span class="tt">bool</span> return values describe the operation outcome, so <span class="tt">false</span> is an ordinary rejection/no-change answer. <span class="tt">EditResult</span> likewise distinguishes applied, no-change and rejected edits without an outer Result. Operational exceptions latch failure and belong to the enclosing frame boundary.</p>
+<h1>Value helpers: FieldTextView</h1>
+<h2><b>FieldTextView</b></h2>
+<h3><span class="tt">FieldTextView() noexcept = default</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">FieldTextView (construction)</span></li>
+<li><b>Arguments:</b> none.</li>
+</ul>
+<p>Construct an empty detached text view. The view has zero bytes and no contiguous storage.</p>
+<p>The view owns no text.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1FieldTextView.html">FlowUi::FieldTextView</a> textView;</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> isEmpty = textView.<a class="code hl_function" href="classFlowUi_1_1FieldTextView.html#a3ffde86236a6b47ef0b2b2eec7636bbf">empty</a>();</div>
+<div class="ttc" id="aclassFlowUi_1_1FieldTextView_html"><div class="ttname"><a href="classFlowUi_1_1FieldTextView.html">FlowUi::FieldTextView</a></div><div class="ttdoc">Non-owning access to manager-owned single-line or chunked text.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:55</div></div>
+<div class="ttc" id="aclassFlowUi_1_1FieldTextView_html_a3ffde86236a6b47ef0b2b2eec7636bbf"><div class="ttname"><a href="classFlowUi_1_1FieldTextView.html#a3ffde86236a6b47ef0b2b2eec7636bbf">FlowUi::FieldTextView::empty</a></div><div class="ttdeci">bool empty() const noexcept</div><div class="ttdoc">Test whether the viewed document has zero bytes.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:96</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/InputFieldTypes.hpp">Owning header</a>.</p>
+<h2><b>sizeBytes</b></h2>
+<h3><span class="tt">[[nodiscard]] size_t sizeBytes() const noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">size_t</span></li>
+<li><b>Arguments:</b> none.</li>
+</ul>
+<p>Read the viewed document's UTF-8 byte count. Returns zero when detached.</p>
+<p>Valid only while the underlying field view remains alive and unmodified.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> byteCount = value.sizeBytes();</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/InputFieldTypes.hpp">Owning header</a>.</p>
+<h2><b>empty</b></h2>
+<h3><span class="tt">[[nodiscard]] bool empty() const noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">bool</span></li>
+<li><b>Arguments:</b> none.</li>
+</ul>
+<p>Test whether the viewed document has zero bytes. A detached view is empty.</p>
+<p>Valid only while the underlying field view remains alive and unmodified.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> isEmpty = value.empty();</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/InputFieldTypes.hpp">Owning header</a>.</p>
+<h2><b>contiguous</b></h2>
+<h3><span class="tt">[[nodiscard]] std::optional&lt;std::string_view&gt; contiguous() const noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">std::optional&lt;std::string_view&gt;</span></li>
+<li><b>Arguments:</b> none.</li>
+</ul>
+<p>Borrow contiguous text storage if available. Returns nullopt for detached or noncontiguous text. A present empty string_view is valid empty contiguous storage.</p>
+<p>The borrowed bytes are invalidated by field mutation/removal or manager destruction; do not assume multiline text is contiguous.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> contiguousText = value.contiguous();</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/InputFieldTypes.hpp">Owning header</a>.</p>
+<h2><b>copy</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;std::string&gt; copy() const noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;std::string&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> none.</li>
+</ul>
+<p>Copy a full document or byte range to caller-owned text. Success contains an owning std::string. Bounds are clamped to the document; a detached view successfully copies an empty string. Allocation/storage failures are errors.</p>
+<p>The range is half-open in UTF-8 bytes. Copy while the view is valid; the resulting string survives later field mutations.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = value.copy();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line">std::string text = std::move(*result);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/InputFieldTypes.hpp">Owning header</a>.</p>
+<h2><b>copy</b></h2>
+<h3><span class="tt">[[nodiscard]] Result&lt;std::string&gt; copy(TextRange range) const noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Result&lt;std::string&gt;</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> <span class="tt">range</span> half-open UTF-8 byte interval</li>
+</ul>
+<p>Copy a full document or byte range to caller-owned text. Success contains an owning std::string. Bounds are clamped to the document; a detached view successfully copies an empty string. Allocation/storage failures are errors.</p>
+<p>The range is half-open in UTF-8 bytes. Copy while the view is valid; the resulting string survives later field mutations.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = value.copy(<a class="code hl_struct" href="structFlowUi_1_1TextRange.html">FlowUi::TextRange</a>{0, value.sizeBytes()});</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="line">std::string text = std::move(*result);</div>
+<div class="ttc" id="astructFlowUi_1_1TextRange_html"><div class="ttname"><a href="structFlowUi_1_1TextRange.html">FlowUi::TextRange</a></div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:29</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/InputFieldTypes.hpp">Owning header</a>.</p>
+<h2><b>forEachChunk</b></h2>
+<h3><span class="tt">void forEachChunk(TextRange range, const TextChunkVisitor&amp; visitor) const</span></h3>
+<ul>
+<li><b>Returns:</b> none (<span class="tt">void</span>)</li>
+<li><b>Arguments:</b> <span class="tt">range</span> half-open UTF-8 byte interval, <span class="tt">visitor</span> synchronous observation callback</li>
+</ul>
+<p>Synchronously visit text chunks overlapping a byte range. Makes no callbacks for a detached view or empty clamped range.</p>
+<p>Bounds are clamped. Chunks are borrowed only during each call; copy to retain them and do not mutate the field while visiting. Visitor exceptions propagate unchanged; earlier visitor side effects remain visible.</p>
+<p>Exceptions: Visitor exceptions propagate unchanged.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line">std::string ownedText;</div>
+<div class="line">value.forEachChunk(<a class="code hl_struct" href="structFlowUi_1_1TextRange.html">FlowUi::TextRange</a>{0, value.sizeBytes()}, [&amp;ownedText](std::string_view chunk) { ownedText.append(chunk); });</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/InputFieldTypes.hpp">Owning header</a>.</p>
+<h1>Value helpers: FieldHandle</h1>
+<h2><b>operator bool</b></h2>
+<h3><span class="tt">[[nodiscard]] constexpr explicit operator bool() const noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">explicit operator</span></li>
+<li><b>Arguments:</b> none.</li>
+</ul>
+<p>Test whether the opaque handle contains a field slot. Returns value != 0; it does not validate frameEpoch or current field existence.</p>
+<p>Only submitTextSpan() checks whether a handle is acceptable for the current frame.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> valid = <span class="keyword">static_cast&lt;</span><span class="keywordtype">bool</span><span class="keyword">&gt;</span>(value);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/InputFieldTypes.hpp">Owning header</a>.</p>
+<h2><b>operator==</b></h2>
+<h3><span class="tt">friend constexpr bool operator==(FieldHandle, FieldHandle) noexcept = default</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">friend bool</span></li>
+<li><b>Arguments:</b> none.</li>
+</ul>
+<p>Compare two field tokens by slot identity and frame epoch. Returns true only when both value and frameEpoch match.</p>
+<p>Equality does not establish that either token is accepted by the current frame.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> sameHandle = value == other;</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managerStructs/InputFieldTypes.hpp">Owning header</a>.</p>
 <h1>Public API</h1>
+<h2><b>frameStatus</b></h2>
+<h3><span class="tt">[[nodiscard]] Status frameStatus() const noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Status</span>; check success before accessing the value; use <span class="tt">.error()</span> on failure.</li>
+<li><b>Arguments:</b> none.</li>
+</ul>
+<p>Read the latched failure for the current input-field frame. Success means no failure was latched; an error means the surrounding frame must be canceled.</p>
+<p>A successful later call does not clear an earlier frame failure. UiManager checks this status when completing the frame.</p>
+<p>Recoverable initialization, validation, allocation, and storage failures are returned as FlowUiError; no exception escapes this noexcept operation.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a105713a2a18e110bc4473c7d15003cb2">frameStatus</a>();</div>
+<div class="line"><span class="keywordflow">if</span> (!result) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(result.error());</div>
+<div class="line">}</div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a105713a2a18e110bc4473c7d15003cb2"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a105713a2a18e110bc4473c7d15003cb2">FlowUi::UiManager::frameStatus</a></div><div class="ttdeci">Status frameStatus() const noexcept</div><div class="ttdoc">Return the first latched UI error for this frame, including input-field and popup failure state....</div><div class="ttdef"><b>Definition</b> UiManager.hpp:125</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
 <h2><b>requestField</b></h2>
-<h3><span class="tt">FieldQueryResult requestField(ID fieldId, const FieldRequest&amp; request)</span></h3>
+<h3><span class="tt">[[nodiscard]] FieldQueryResult requestField(FlowElementID fieldId, const FieldRequest&amp; request)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">FieldQueryResult</span></li>
-<li><b>Arguments:</b> <span class="tt">fieldId</span> a <span class="tt">FlowElementID</span>, <span class="tt">GlobalFlowID</span>, <span class="tt">FlowElementPartID</span>, or <span class="tt">ResourceKey</span>; <span class="tt">request</span> initial text, config, and Clay element ids.</li>
+<li><b>Returns:</b> <span class="tt">FieldQueryResult</span>.</li>
+<li><b>Arguments:</b> <span class="tt">fieldId</span>, <span class="tt">request</span> operation configuration</li>
 </ul>
-<p>Registers or updates an input field for the current frame and returns its current manager-owned state. Call this once per frame from the element that draws the editable field.</p>
+<p>Register or update a field and borrow its current frame snapshot. Returns FieldQueryResult directly; an empty strong ID yields an empty snapshot. New fields copy initialText; later requests preserve edited text.</p>
+<p>Call once per field during its active UI build. Update config and Clay text/content IDs each frame. An unrequested focused field loses primary focus at frame finalization. Text, visible lines, selections, and transaction spans are manager-owned; copy data before field mutation/removal or the next frame invalidates it.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1FieldQueryResult.html">FlowUi::FieldQueryResult</a> field = context.uiManager.inputFields().requestField(</div>
-<div class="line">    context.id,</div>
-<div class="line">    {.initialText = <span class="stringliteral">&quot;Search&quot;</span>, .textElementId = textId, .contentElementId = contentId});</div>
-<div class="ttc" id="astructFlowUi_1_1FieldQueryResult_html"><div class="ttname"><a href="structFlowUi_1_1FieldQueryResult.html">FlowUi::FieldQueryResult</a></div><div class="ttdoc">Result returned from an input field request.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:336</div></div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1FieldRequest.html">FlowUi::FieldRequest</a> request{};</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#a12ef2017e97ede3355dcfc887efc3b03">initialText</a> = <span class="stringliteral">&quot;Search&quot;</span>;</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#a6af8584e0fef10efd0691052b6ee02c9">textElementId</a> = textElementId;</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#aa1e23f55fe98494083ca7147939b6652">contentElementId</a> = contentElementId;</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FieldQueryResult.html">FlowUi::FieldQueryResult</a> field = manager.requestField(fieldId, request);</div>
+<div class="ttc" id="astructFlowUi_1_1FieldQueryResult_html"><div class="ttname"><a href="structFlowUi_1_1FieldQueryResult.html">FlowUi::FieldQueryResult</a></div><div class="ttdoc">Result returned from an input field request.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:551</div></div>
+<div class="ttc" id="astructFlowUi_1_1FieldRequest_html"><div class="ttname"><a href="structFlowUi_1_1FieldRequest.html">FlowUi::FieldRequest</a></div><div class="ttdoc">Input field request submitted by UI code.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:495</div></div>
+<div class="ttc" id="astructFlowUi_1_1FieldRequest_html_a12ef2017e97ede3355dcfc887efc3b03"><div class="ttname"><a href="structFlowUi_1_1FieldRequest.html#a12ef2017e97ede3355dcfc887efc3b03">FlowUi::FieldRequest::initialText</a></div><div class="ttdeci">std::string_view initialText</div><div class="ttdoc">Initial text used when the field state is first created.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:503</div></div>
+<div class="ttc" id="astructFlowUi_1_1FieldRequest_html_a6af8584e0fef10efd0691052b6ee02c9"><div class="ttname"><a href="structFlowUi_1_1FieldRequest.html#a6af8584e0fef10efd0691052b6ee02c9">FlowUi::FieldRequest::textElementId</a></div><div class="ttdeci">Clay_ElementId textElementId</div><div class="ttdoc">Clay text element id for measuring caret and selection positions.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:519</div></div>
+<div class="ttc" id="astructFlowUi_1_1FieldRequest_html_aa1e23f55fe98494083ca7147939b6652"><div class="ttname"><a href="structFlowUi_1_1FieldRequest.html#aa1e23f55fe98494083ca7147939b6652">FlowUi::FieldRequest::contentElementId</a></div><div class="ttdeci">Clay_ElementId contentElementId</div><div class="ttdoc">Clay content element id for pointer hit testing.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:528</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>requestField</b></h2>
+<h3><span class="tt">[[nodiscard]] FieldQueryResult requestField(GlobalFlowID fieldId, const FieldRequest&amp; request)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">FieldQueryResult</span>.</li>
+<li><b>Arguments:</b> <span class="tt">fieldId</span>, <span class="tt">request</span> operation configuration</li>
+</ul>
+<p>Register or update a field and borrow its current frame snapshot. Returns FieldQueryResult directly; an empty strong ID yields an empty snapshot. New fields copy initialText; later requests preserve edited text.</p>
+<p>Call once per field during its active UI build. Update config and Clay text/content IDs each frame. An unrequested focused field loses primary focus at frame finalization. Text, visible lines, selections, and transaction spans are manager-owned; copy data before field mutation/removal or the next frame invalidates it.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1FieldRequest.html">FlowUi::FieldRequest</a> request{};</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#a12ef2017e97ede3355dcfc887efc3b03">initialText</a> = <span class="stringliteral">&quot;Search&quot;</span>;</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#a6af8584e0fef10efd0691052b6ee02c9">textElementId</a> = textElementId;</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#aa1e23f55fe98494083ca7147939b6652">contentElementId</a> = contentElementId;</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FieldQueryResult.html">FlowUi::FieldQueryResult</a> field = manager.requestField(fieldId, request);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>requestField</b></h2>
+<h3><span class="tt">[[nodiscard]] FieldQueryResult requestField(FlowElementPartID fieldId, const FieldRequest&amp; request)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">FieldQueryResult</span>.</li>
+<li><b>Arguments:</b> <span class="tt">fieldId</span>, <span class="tt">request</span> operation configuration</li>
+</ul>
+<p>Register or update a field and borrow its current frame snapshot. Returns FieldQueryResult directly; an empty strong ID yields an empty snapshot. New fields copy initialText; later requests preserve edited text.</p>
+<p>Call once per field during its active UI build. Update config and Clay text/content IDs each frame. An unrequested focused field loses primary focus at frame finalization. Text, visible lines, selections, and transaction spans are manager-owned; copy data before field mutation/removal or the next frame invalidates it.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1FieldRequest.html">FlowUi::FieldRequest</a> request{};</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#a12ef2017e97ede3355dcfc887efc3b03">initialText</a> = <span class="stringliteral">&quot;Search&quot;</span>;</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#a6af8584e0fef10efd0691052b6ee02c9">textElementId</a> = textElementId;</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#aa1e23f55fe98494083ca7147939b6652">contentElementId</a> = contentElementId;</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FieldQueryResult.html">FlowUi::FieldQueryResult</a> field = manager.requestField(fieldId, request);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>requestField</b></h2>
+<h3><span class="tt">[[nodiscard]] FieldQueryResult requestField(ResourceKey key, const FieldRequest&amp; request)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">FieldQueryResult</span>.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity, <span class="tt">request</span> operation configuration</li>
+</ul>
+<p>Register or update a field and borrow its current frame snapshot. Returns FieldQueryResult directly; an empty strong ID yields an empty snapshot. New fields copy initialText; later requests preserve edited text.</p>
+<p>Call once per field during its active UI build. Update config and Clay text/content IDs each frame. An unrequested focused field loses primary focus at frame finalization. Text, visible lines, selections, and transaction spans are manager-owned; copy data before field mutation/removal or the next frame invalidates it. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;search&quot;</span>};</div>
+<div class="line"><a class="code hl_struct" href="structFlowUi_1_1FieldRequest.html">FlowUi::FieldRequest</a> request{};</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#a12ef2017e97ede3355dcfc887efc3b03">initialText</a> = <span class="stringliteral">&quot;Search&quot;</span>;</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#a6af8584e0fef10efd0691052b6ee02c9">textElementId</a> = textElementId;</div>
+<div class="line">request.<a class="code hl_variable" href="structFlowUi_1_1FieldRequest.html#aa1e23f55fe98494083ca7147939b6652">contentElementId</a> = contentElementId;</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FieldQueryResult.html">FlowUi::FieldQueryResult</a> field = manager.requestField(key, request);</div>
+<div class="ttc" id="astructFlowUi_1_1ResourceKey_html"><div class="ttname"><a href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a></div><div class="ttdoc">Human-readable logical identity accepted by FlowUi managers.</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:39</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>submitTextSpan</b></h2>
+<h3><span class="tt">[[nodiscard]] bool submitTextSpan(FieldHandle field, const FieldTextSpanSubmission&amp; span)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">bool</span>.</li>
+<li><b>Arguments:</b> <span class="tt">field</span> current frame field handle, <span class="tt">span</span> visible-line text-node submission</li>
+</ul>
+<p>Associate a visible multiline Clay text node with its document range. Returns true when accepted; false means an expired handle, unknown field, invalid text ID/range, or range not matching a visible line.</p>
+<p>Submit every emitted VisibleTextLine during the same frame as requestField(). FieldHandle::operator bool only tests its slot and does not validate the epoch.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FieldTextSpanSubmission.html">FlowUi::FieldTextSpanSubmission</a> span{</div>
+<div class="line">    .logicalRange = line.logicalRange,</div>
+<div class="line">    .textElementId = textElementId,</div>
+<div class="line">    .visualLineIndex = line.visualLineIndex,</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> accepted = manager.submitTextSpan(field, span);</div>
+<div class="ttc" id="astructFlowUi_1_1FieldTextSpanSubmission_html"><div class="ttname"><a href="structFlowUi_1_1FieldTextSpanSubmission.html">FlowUi::FieldTextSpanSubmission</a></div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:258</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
 <h2><b>requestCaret</b></h2>
-<h3><span class="tt">void requestCaret(ID fieldId, CaretRequestKind kind)</span></h3>
+<h3><span class="tt">void requestCaret(FlowElementID fieldId, CaretRequestKind kind)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
-<li><b>Arguments:</b> <span class="tt">fieldId</span> field to focus or edit, <span class="tt">kind</span> requested caret operation.</li>
+<li><b>Returns:</b> <span class="tt">void</span> (no payload).</li>
+<li><b>Arguments:</b> <span class="tt">fieldId</span>, <span class="tt">kind</span> caret operation</li>
 </ul>
-<p>Requests focus or caret changes for an input field. <span class="tt">SetPrimary</span> is the common operation for clicked fields, while <span class="tt">ClearAll</span> removes text focus globally.</p>
+<p>Apply a focus or caret request to persistent field state. Returns normally when the request completes. SetPrimary may create empty state before requestField(); ClearAll clears every field's focus and ignores a strong identity; ResourceKey overloads still validate their key before applying it.</p>
+<p>SetPrimary is the normal click-focus operation; Add requests an additional caret. Changes take effect immediately in manager state.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">context.uiManager.inputFields().requestCaret(context.id, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
-<div class="ttc" id="agroup__flowui__input__field__manager_html_ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd"><div class="ttname"><a href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a></div><div class="ttdeci">@ SetPrimary</div><div class="ttdoc">Make the requested field the primary focused input field.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:202</div></div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line">manager.requestCaret(fieldId, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
+<div class="ttc" id="agroup__flowui__input__field__manager_html_ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd"><div class="ttname"><a href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a></div><div class="ttdeci">@ SetPrimary</div><div class="ttdoc">Make the requested field the primary focused input field.</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:443</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>requestCaret</b></h2>
+<h3><span class="tt">void requestCaret(GlobalFlowID fieldId, CaretRequestKind kind)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">void</span> (no payload).</li>
+<li><b>Arguments:</b> <span class="tt">fieldId</span>, <span class="tt">kind</span> caret operation</li>
+</ul>
+<p>Apply a focus or caret request to persistent field state. Returns normally when the request completes. SetPrimary may create empty state before requestField(); ClearAll clears every field's focus and ignores a strong identity; ResourceKey overloads still validate their key before applying it.</p>
+<p>SetPrimary is the normal click-focus operation; Add requests an additional caret. Changes take effect immediately in manager state.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line">manager.requestCaret(fieldId, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>requestCaret</b></h2>
+<h3><span class="tt">void requestCaret(FlowElementPartID fieldId, CaretRequestKind kind)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">void</span> (no payload).</li>
+<li><b>Arguments:</b> <span class="tt">fieldId</span>, <span class="tt">kind</span> caret operation</li>
+</ul>
+<p>Apply a focus or caret request to persistent field state. Returns normally when the request completes. SetPrimary may create empty state before requestField(); ClearAll clears every field's focus and ignores a strong identity; ResourceKey overloads still validate their key before applying it.</p>
+<p>SetPrimary is the normal click-focus operation; Add requests an additional caret. Changes take effect immediately in manager state.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line">manager.requestCaret(fieldId, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>requestCaret</b></h2>
+<h3><span class="tt">void requestCaret(ResourceKey key, CaretRequestKind kind)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">void</span> (no payload).</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity, <span class="tt">kind</span> caret operation</li>
+</ul>
+<p>Apply a focus or caret request to persistent field state. Returns normally when the request completes. SetPrimary may create empty state before requestField(); ClearAll clears every field's focus and ignores a strong identity; ResourceKey overloads still validate their key before applying it.</p>
+<p>SetPrimary is the normal click-focus operation; Add requests an additional caret. Changes take effect immediately in manager state. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;search&quot;</span>};</div>
+<div class="line">manager.requestCaret(key, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
 <h2><b>removeField</b></h2>
-<h3><span class="tt">bool removeField(ID fieldId)</span></h3>
+<h3><span class="tt">[[nodiscard]] bool removeField(FlowElementID fieldId)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">bool</span></li>
-<li><b>Arguments:</b> <span class="tt">fieldId</span> field state to remove.</li>
+<li><b>Returns:</b> <span class="tt">bool</span>.</li>
+<li><b>Arguments:</b> <span class="tt">fieldId</span></li>
 </ul>
-<p>Deletes stored text, config, caret, and selection state for one field. Use this when a dynamic field is removed or when external state should replace the edited text.</p>
+<p>Remove a field's text, configuration, carets, and selection. Returns true if a field was removed or false for an empty strong ID/missing field.</p>
+<p>Removing a focused field clears or transfers primary focus. All borrowed field text/views/reports become invalid.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = app.ui().inputFields().removeField(nameFieldId);</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = manager.removeField(fieldId);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>removeField</b></h2>
+<h3><span class="tt">[[nodiscard]] bool removeField(GlobalFlowID fieldId)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">bool</span>.</li>
+<li><b>Arguments:</b> <span class="tt">fieldId</span></li>
+</ul>
+<p>Remove a field's text, configuration, carets, and selection. Returns true if a field was removed or false for an empty strong ID/missing field.</p>
+<p>Removing a focused field clears or transfers primary focus. All borrowed field text/views/reports become invalid.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = manager.removeField(fieldId);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>removeField</b></h2>
+<h3><span class="tt">[[nodiscard]] bool removeField(FlowElementPartID fieldId)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">bool</span>.</li>
+<li><b>Arguments:</b> <span class="tt">fieldId</span></li>
+</ul>
+<p>Remove a field's text, configuration, carets, and selection. Returns true if a field was removed or false for an empty strong ID/missing field.</p>
+<p>Removing a focused field clears or transfers primary focus. All borrowed field text/views/reports become invalid.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = manager.removeField(fieldId);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>removeField</b></h2>
+<h3><span class="tt">[[nodiscard]] bool removeField(ResourceKey key)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">bool</span>.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity</li>
+</ul>
+<p>Remove a field's text, configuration, carets, and selection. Returns true if a field was removed or false for an empty strong ID/missing field.</p>
+<p>Removing a focused field clears or transfers primary focus. All borrowed field text/views/reports become invalid. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;search&quot;</span>};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removed = manager.removeField(key);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
 <h2><b>replaceText</b></h2>
-<h3><span class="tt">bool replaceText(ID fieldId, std::string_view text, bool preserveCaret = true)</span></h3>
+<h3><span class="tt">[[nodiscard]] bool replaceText(FlowElementID fieldId, std::string_view text, bool preserveCaret = true)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">bool</span></li>
-<li><b>Arguments:</b> <span class="tt">fieldId</span> field state to update, <span class="tt">text</span> replacement text, <span class="tt">preserveCaret</span> whether to keep and clamp caret state.</li>
+<li><b>Returns:</b> <span class="tt">bool</span>.</li>
+<li><b>Arguments:</b> <span class="tt">fieldId</span>, <span class="tt">text</span> UTF-8 text, <span class="tt">preserveCaret</span> whether to remap existing carets</li>
 </ul>
-<p>Replaces stored text for an existing field. By default, active carets and selections are preserved and clamped to the new text; pass <span class="tt">false</span> to clear active carets from that field.</p>
+<p>Replace an existing field's text while retaining its configuration. Returns true if text changed; false for an empty strong ID, missing field, unchanged text, or a rejected edit (invalid UTF-8/range, newline policy, or maxBytes).</p>
+<p>preserveCaret defaults to true: carets/selections are remapped through the smallest differing UTF-8 range and clamped. false clears active carets only after an applied replacement. Programmatic replacement bypasses readOnly, while UTF-8/newline/maxBytes validation still applies. Any field text mutation invalidates borrowed field text/views.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> changed = app.ui().inputFields().replaceText(nameFieldId, externalName, <span class="keyword">false</span>);</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> changed = manager.replaceText(fieldId, <span class="stringliteral">&quot;Updated text&quot;</span>, <span class="keyword">true</span>);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>replaceText</b></h2>
+<h3><span class="tt">[[nodiscard]] bool replaceText(GlobalFlowID fieldId, std::string_view text, bool preserveCaret = true)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">bool</span>.</li>
+<li><b>Arguments:</b> <span class="tt">fieldId</span>, <span class="tt">text</span> UTF-8 text, <span class="tt">preserveCaret</span> whether to remap existing carets</li>
+</ul>
+<p>Replace an existing field's text while retaining its configuration. Returns true if text changed; false for an empty strong ID, missing field, unchanged text, or a rejected edit (invalid UTF-8/range, newline policy, or maxBytes).</p>
+<p>preserveCaret defaults to true: carets/selections are remapped through the smallest differing UTF-8 range and clamped. false clears active carets only after an applied replacement. Programmatic replacement bypasses readOnly, while UTF-8/newline/maxBytes validation still applies. Any field text mutation invalidates borrowed field text/views.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> changed = manager.replaceText(fieldId, <span class="stringliteral">&quot;Updated text&quot;</span>, <span class="keyword">true</span>);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>replaceText</b></h2>
+<h3><span class="tt">[[nodiscard]] bool replaceText(FlowElementPartID fieldId, std::string_view text, bool preserveCaret = true)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">bool</span>.</li>
+<li><b>Arguments:</b> <span class="tt">fieldId</span>, <span class="tt">text</span> UTF-8 text, <span class="tt">preserveCaret</span> whether to remap existing carets</li>
+</ul>
+<p>Replace an existing field's text while retaining its configuration. Returns true if text changed; false for an empty strong ID, missing field, unchanged text, or a rejected edit (invalid UTF-8/range, newline policy, or maxBytes).</p>
+<p>preserveCaret defaults to true: carets/selections are remapped through the smallest differing UTF-8 range and clamped. false clears active carets only after an applied replacement. Programmatic replacement bypasses readOnly, while UTF-8/newline/maxBytes validation still applies. Any field text mutation invalidates borrowed field text/views.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> changed = manager.replaceText(fieldId, <span class="stringliteral">&quot;Updated text&quot;</span>, <span class="keyword">true</span>);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>replaceText</b></h2>
+<h3><span class="tt">[[nodiscard]] bool replaceText(ResourceKey key, std::string_view text, bool preserveCaret = true)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">bool</span>.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity, <span class="tt">text</span> UTF-8 text, <span class="tt">preserveCaret</span> whether to remap existing carets</li>
+</ul>
+<p>Replace an existing field's text while retaining its configuration. Returns true if text changed; false for an empty strong ID, missing field, unchanged text, or a rejected edit (invalid UTF-8/range, newline policy, or maxBytes).</p>
+<p>preserveCaret defaults to true: carets/selections are remapped through the smallest differing UTF-8 range and clamped. false clears active carets only after an applied replacement. Programmatic replacement bypasses readOnly, while UTF-8/newline/maxBytes validation still applies. Any field text mutation invalidates borrowed field text/views. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;search&quot;</span>};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> changed = manager.replaceText(key, <span class="stringliteral">&quot;Updated text&quot;</span>, <span class="keyword">true</span>);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
 <h2><b>clear</b></h2>
 <h3><span class="tt">void clear()</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
+<li><b>Returns:</b> <span class="tt">void</span> (no payload).</li>
 <li><b>Arguments:</b> none.</li>
 </ul>
-<p>Clears all managed input field state. This resets fields, focus, key repeat, pointer drag, and frame render overrides.</p>
+<p>Clear every field and reset focus, repeat, drag, and frame overrides. Success means the reset completed.</p>
+<p>All previously borrowed field views, spans, text, and handles must be discarded.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.ui().inputFields().clear();</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line">manager.clear();</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
 <h2><b>hasPrimaryFieldFocus</b></h2>
-<h3><span class="tt">bool hasPrimaryFieldFocus() const</span></h3>
+<h3><span class="tt">[[nodiscard]] bool hasPrimaryFieldFocus() const noexcept</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">bool</span></li>
 <li><b>Arguments:</b> none.</li>
 </ul>
-<p>Reports whether any input field currently owns primary text focus. This is useful for suppressing global shortcuts while the user is editing text.</p>
+<p>Test whether a primary field has at least one caret. Returns false if detached, no primary field exists, or its caret list is empty.</p>
+<p>This is a direct noexcept query; it does not report initialization errors.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (!app.ui().inputFields().hasPrimaryFieldFocus()) { runGlobalShortcut(); }</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> hasFocus = manager.hasPrimaryFieldFocus();</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>canEditPrimaryField</b></h2>
+<h3><span class="tt">[[nodiscard]] bool canEditPrimaryField() const noexcept</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">bool</span></li>
+<li><b>Arguments:</b> none.</li>
+</ul>
+<p>Test whether the primary field exists, has a caret, and is writable. Returns false for detached, unfocused, missing, caret-free, or read-only fields.</p>
+<p>This is a direct noexcept query.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> editable = manager.canEditPrimaryField();</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
 <h2><b>getSelectedText</b></h2>
-<h3><span class="tt">std::string_view getSelectedText() const</span></h3>
+<h3><span class="tt">[[nodiscard]] std::string_view getSelectedText() const</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">std::string_view</span></li>
+<li><b>Returns:</b> <span class="tt">std::string_view</span>.</li>
 <li><b>Arguments:</b> none.</li>
 </ul>
-<p>Returns selected text from the primary field, or an empty view when no selection exists. The view points into manager-owned storage and is invalidated when that field text changes or is removed.</p>
+<p>Borrow the earliest selected range in the primary field. Returns an empty view if there is no primary field or active selection. Detached state and copy/allocation failures throw.</p>
+<p>Single-line selections borrow field storage; chunked selections borrow scratch storage reused by a later getSelectedText() call. Copy to std::string immediately to retain it across another query, text mutation, removal, or frame/lifetime change.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">std::string selected(app.ui().inputFields().getSelectedText());</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> result = manager.getSelectedText();</div>
+<div class="line"><span class="keyword">const</span> std::string selectedText{result};</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
 <h2><b>insertTextAtPrimaryCaret</b></h2>
-<h3><span class="tt">bool insertTextAtPrimaryCaret(std::string_view utf8Text)</span></h3>
+<h3><span class="tt">[[nodiscard]] bool insertTextAtPrimaryCaret(std::string_view utf8Text)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">bool</span></li>
-<li><b>Arguments:</b> <span class="tt">utf8Text</span> text to insert.</li>
+<li><b>Returns:</b> <span class="tt">bool</span>.</li>
+<li><b>Arguments:</b> <span class="tt">utf8Text</span></li>
 </ul>
-<p>Inserts UTF-8 text at the primary caret, replacing active selections. The operation respects read-only state and <span class="tt">FieldConfig::maxBytes</span>.</p>
+<p>Insert UTF-8 text at every caret in the primary field, replacing selections. Returns true when text/caret state changed; false for empty text, absent focus/carets, read-only fields, unchanged text/carets, or rejected UTF-8/newline/size policies.</p>
+<p>The input is consumed synchronously. FieldConfig readOnly/maxBytes rules apply; normal keyboard text already comes through the frame pipeline.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> pasted = app.ui().inputFields().insertTextAtPrimaryCaret(app.ui().clipboardText());</div>
-</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>. </p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> changed = manager.insertTextAtPrimaryCaret(<span class="stringliteral">&quot;Pasted text&quot;</span>);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>enqueueCommand</b></h2>
+<h3><span class="tt">[[nodiscard]] bool enqueueCommand(TextCommand command, std::string_view payload = {})</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">bool</span>.</li>
+<li><b>Arguments:</b> <span class="tt">command</span>, <span class="tt">payload</span></li>
+</ul>
+<p>Queue a semantic text command for the field focused now. Returns true when queued or false when no primary field owns focus.</p>
+<p>payload is copied. The queue captures field identity and selection-extension state; commands execute during field processing, not necessarily at submission.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_enumeration" href="group__flowui__input__field__manager.html#gabc15f2937e19384daee25f8b38ccd88b">FlowUi::TextCommand</a> command = <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggabc15f2937e19384daee25f8b38ccd88ba702bbdc91c8e399d7b0807de5b7adc27">FlowUi::TextCommand::SelectAll</a>;</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> queued = manager.enqueueCommand(command);</div>
+<div class="ttc" id="agroup__flowui__input__field__manager_html_gabc15f2937e19384daee25f8b38ccd88b"><div class="ttname"><a href="group__flowui__input__field__manager.html#gabc15f2937e19384daee25f8b38ccd88b">FlowUi::TextCommand</a></div><div class="ttdeci">TextCommand</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:413</div></div>
+<div class="ttc" id="agroup__flowui__input__field__manager_html_ggabc15f2937e19384daee25f8b38ccd88ba702bbdc91c8e399d7b0807de5b7adc27"><div class="ttname"><a href="group__flowui__input__field__manager.html#ggabc15f2937e19384daee25f8b38ccd88ba702bbdc91c8e399d7b0807de5b7adc27">FlowUi::TextCommand::SelectAll</a></div><div class="ttdeci">@ SelectAll</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:414</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>applyEdits</b></h2>
+<h3><span class="tt">[[nodiscard]] EditResult applyEdits( FlowElementID fieldId, std::span&lt;const TextReplacement&gt; edits, EditOrigin origin = EditOrigin::Programmatic)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">EditResult</span>.</li>
+<li><b>Arguments:</b> <span class="tt">fieldId</span>, <span class="tt">edits</span> replacement batch in original-document byte coordinates, <span class="tt">origin</span> edit attribution</li>
+</ul>
+<p>Validate and atomically apply a replacement batch to an existing field. Returns EditResult directly: Applied, NoChange, or a Rejected* outcome. Rejection is an ordinary edit outcome; operational failures throw.</p>
+<p>Ranges use original-document UTF-8 byte coordinates, must be in bounds, nonoverlapping, and on codepoint boundaries. Rejections leave text unchanged. No primary focus is needed; readOnly, newline policy, valid UTF-8, and maxBytes are enforced. Input spans/strings are consumed synchronously. origin defaults to Programmatic.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> std::array edits{<a class="code hl_struct" href="structFlowUi_1_1TextReplacement.html">FlowUi::TextReplacement</a>{</div>
+<div class="line">    .oldRange = {0, 0},</div>
+<div class="line">    .insertedText = <span class="stringliteral">&quot;Hello&quot;</span>,</div>
+<div class="line">}};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> edit = manager.applyEdits(fieldId, edits, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">FlowUi::EditOrigin::Programmatic</a>);</div>
+<div class="ttc" id="agroup__flowui__input__field__manager_html_ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc"><div class="ttname"><a href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">FlowUi::EditOrigin::Programmatic</a></div><div class="ttdeci">@ Programmatic</div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:292</div></div>
+<div class="ttc" id="astructFlowUi_1_1TextReplacement_html"><div class="ttname"><a href="structFlowUi_1_1TextReplacement.html">FlowUi::TextReplacement</a></div><div class="ttdef"><b>Definition</b> InputFieldTypes.hpp:317</div></div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>applyEdits</b></h2>
+<h3><span class="tt">[[nodiscard]] EditResult applyEdits( GlobalFlowID fieldId, std::span&lt;const TextReplacement&gt; edits, EditOrigin origin = EditOrigin::Programmatic)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">EditResult</span>.</li>
+<li><b>Arguments:</b> <span class="tt">fieldId</span>, <span class="tt">edits</span> replacement batch in original-document byte coordinates, <span class="tt">origin</span> edit attribution</li>
+</ul>
+<p>Validate and atomically apply a replacement batch to an existing field. Returns EditResult directly: Applied, NoChange, or a Rejected* outcome. Rejection is an ordinary edit outcome; operational failures throw.</p>
+<p>Ranges use original-document UTF-8 byte coordinates, must be in bounds, nonoverlapping, and on codepoint boundaries. Rejections leave text unchanged. No primary focus is needed; readOnly, newline policy, valid UTF-8, and maxBytes are enforced. Input spans/strings are consumed synchronously. origin defaults to Programmatic.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> std::array edits{<a class="code hl_struct" href="structFlowUi_1_1TextReplacement.html">FlowUi::TextReplacement</a>{</div>
+<div class="line">    .oldRange = {0, 0},</div>
+<div class="line">    .insertedText = <span class="stringliteral">&quot;Hello&quot;</span>,</div>
+<div class="line">}};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> edit = manager.applyEdits(fieldId, edits, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">FlowUi::EditOrigin::Programmatic</a>);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>applyEdits</b></h2>
+<h3><span class="tt">[[nodiscard]] EditResult applyEdits( FlowElementPartID fieldId, std::span&lt;const TextReplacement&gt; edits, EditOrigin origin = EditOrigin::Programmatic)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">EditResult</span>.</li>
+<li><b>Arguments:</b> <span class="tt">fieldId</span>, <span class="tt">edits</span> replacement batch in original-document byte coordinates, <span class="tt">origin</span> edit attribution</li>
+</ul>
+<p>Validate and atomically apply a replacement batch to an existing field. Returns EditResult directly: Applied, NoChange, or a Rejected* outcome. Rejection is an ordinary edit outcome; operational failures throw.</p>
+<p>Ranges use original-document UTF-8 byte coordinates, must be in bounds, nonoverlapping, and on codepoint boundaries. Rejections leave text unchanged. No primary focus is needed; readOnly, newline policy, valid UTF-8, and maxBytes are enforced. Input spans/strings are consumed synchronously. origin defaults to Programmatic.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> std::array edits{<a class="code hl_struct" href="structFlowUi_1_1TextReplacement.html">FlowUi::TextReplacement</a>{</div>
+<div class="line">    .oldRange = {0, 0},</div>
+<div class="line">    .insertedText = <span class="stringliteral">&quot;Hello&quot;</span>,</div>
+<div class="line">}};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> edit = manager.applyEdits(fieldId, edits, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">FlowUi::EditOrigin::Programmatic</a>);</div>
+</div><!-- fragment --><p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>.</p>
+<h2><b>applyEdits</b></h2>
+<h3><span class="tt">[[nodiscard]] EditResult applyEdits( ResourceKey key, std::span&lt;const TextReplacement&gt; edits, EditOrigin origin = EditOrigin::Programmatic)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">EditResult</span>.</li>
+<li><b>Arguments:</b> <span class="tt">key</span> logical resource identity, <span class="tt">edits</span> replacement batch in original-document byte coordinates, <span class="tt">origin</span> edit attribution</li>
+</ul>
+<p>Validate and atomically apply a replacement batch to an existing field. Returns EditResult directly: Applied, NoChange, or a Rejected* outcome. Rejection is an ordinary edit outcome; operational failures throw.</p>
+<p>Ranges use original-document UTF-8 byte coordinates, must be in bounds, nonoverlapping, and on codepoint boundaries. Rejections leave text unchanged. No primary focus is needed; readOnly, newline policy, valid UTF-8, and maxBytes are enforced. Input spans/strings are consumed synchronously. origin defaults to Programmatic. ResourceKey overloads infer the manager's resource domain when unspecified and require this manager's window-local scope; incompatible explicit domains/scopes are errors.</p>
+<p>Operational failures propagate as exceptions and latch the frame failure where manager mutation or frame storage is involved. Leave the failed authoring operation; <span class="tt">App::runFrame()</span> contains it and cancels the frame. Catching an exception does not clear a latched frame error.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a> key{.name = <span class="stringliteral">&quot;search&quot;</span>};</div>
+<div class="line"><span class="keyword">const</span> std::array edits{<a class="code hl_struct" href="structFlowUi_1_1TextReplacement.html">FlowUi::TextReplacement</a>{</div>
+<div class="line">    .oldRange = {0, 0},</div>
+<div class="line">    .insertedText = <span class="stringliteral">&quot;Hello&quot;</span>,</div>
+<div class="line">}};</div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> edit = manager.applyEdits(key, edits, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggac4c000112c00c4b93f0377f4718508e6ada757f3f9cec4ed07ae44a210119b1cc">FlowUi::EditOrigin::Programmatic</a>);</div>
+</div><!-- fragment --><h1>Build-gated development hooks</h1>
+<p><span class="tt">FLOW_UI_DEV_MODE</span> and the development memory-level macros expose additional inspection/recording hooks in the header. They are development infrastructure, not the application API described here. Their existing build gates and signatures are unchanged.</p>
+<p>See: <a href="include/FlowUi/Public/managers/InputFieldManager.hpp">Owning header</a>. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

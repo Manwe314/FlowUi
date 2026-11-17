@@ -1,3 +1,4 @@
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "FlowUi/Public/managers/ShortcutManager.hpp"
 #include "FlowUi/Public/defaults/ShortcutDefaults.hpp"
 #include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
@@ -99,7 +100,7 @@ bool ShortcutManager::devMatches(const DevShortcutView& candidate, const Shortcu
 bool ShortcutManager::devPrecedes(const DevShortcutView& left, const DevShortcutView& right) noexcept {
 	return precedenceLess(left.scope, left.priority, left.order, right.scope, right.priority, right.order);
 }
-bool ShortcutManager::visitDevShortcuts(void* target, DevShortcutVisitor visitor) const {
+Result<bool> ShortcutManager::visitDevShortcuts(void* target, DevShortcutVisitor visitor) const noexcept try {
 	if (!storage_ || !stateHandle_ || !visitor) return false;
 	const auto& current = state();
 	for (const auto& [identity, registration] : current.registrationsById) {
@@ -117,6 +118,8 @@ bool ShortcutManager::visitDevShortcuts(void* target, DevShortcutVisitor visitor
 			.handling = registration->handling, .callback = bool(registration->callback)})) return false;
 	}
 	return true;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ShortcutRegister));
 }
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
@@ -238,7 +241,7 @@ Result<ShortcutId> ShortcutManager::registerShortcut(
 	const ShortcutChord& chord,
 	ShortcutScope scope,
 	int32_t priority,
-	ShortcutCallback callback) {
+	ShortcutCallback callback) noexcept try {
 	if (!callback || chord.key < 0 || chord.key >= static_cast<int>(FrameInput::kKeyboardKeyCount)) {
 		return unexpectedError(makeError(ErrorCode::ShortcutInvalid, ErrorSite::ShortcutRegister));
 	}
@@ -269,9 +272,11 @@ Result<ShortcutId> ShortcutManager::registerShortcut(
 	candidate.registeredKeyRefCount[chord.key] += 1u;
 	++candidate.nextShortcutId;
 	++candidate.nextRegistrationOrder;
-	current = std::move(candidate);
 	storage_->noteManagerMutation(window_);
+	current = std::move(candidate);
 	return id;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ShortcutRegister));
 }
 
 Result<ShortcutId> ShortcutManager::registerShortcut(
@@ -279,7 +284,7 @@ Result<ShortcutId> ShortcutManager::registerShortcut(
 	ShortcutScope scope,
 	int32_t priority,
 	AppActionCall action,
-	ShortcutHandling handling) {
+	ShortcutHandling handling) noexcept try {
 	if (!action || chord.key < 0 || chord.key >= static_cast<int>(FrameInput::kKeyboardKeyCount)) {
 		return unexpectedError(makeError(ErrorCode::ShortcutInvalid, ErrorSite::ShortcutRegister));
 	}
@@ -311,19 +316,30 @@ Result<ShortcutId> ShortcutManager::registerShortcut(
 	candidate.registeredKeyRefCount[chord.key] += 1u;
 	++candidate.nextShortcutId;
 	++candidate.nextRegistrationOrder;
-	current = std::move(candidate);
 	storage_->noteManagerMutation(window_);
+	current = std::move(candidate);
 	return id;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ShortcutRegister));
 }
 
-bool ShortcutManager::unregisterShortcut(ShortcutId id) {
+Result<bool> ShortcutManager::unregisterShortcut(ShortcutId id) noexcept try {
 	auto& current = state();
 	const auto registrationIt = current.registrationsById.find(id);
 	if (registrationIt == current.registrationsById.end()) return false;
 	const auto registration = registrationIt->second;
-	registration->tombstoned = true;
 	const uint32_t packed = registration->packedChord;
 	const int key = unpackKey(packed);
+	const auto bucketIt = current.chordBuckets.find(packed);
+	manager_storage::PublishedShortcutBucket replacementBucket;
+	if (bucketIt != current.chordBuckets.end()) {
+		manager_storage::ShortcutBucket candidateBucket = *bucketIt->second;
+		std::erase_if(candidateBucket, [id](const auto& item) { return item->id == id; });
+		if (!candidateBucket.empty())
+			replacementBucket = std::make_shared<const manager_storage::ShortcutBucket>(std::move(candidateBucket));
+	}
+	storage_->noteManagerMutation(window_);
+	registration->tombstoned = true;
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
 								FlowUi::detail::InitialCapacityTarget::shortcuts_registrations,
 								current.registrationsById.size());
@@ -331,11 +347,9 @@ bool ShortcutManager::unregisterShortcut(ShortcutId id) {
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
 								FlowUi::detail::InitialCapacityTarget::shortcuts_chords,
 								current.chordBuckets.size());
-	if (const auto bucketIt = current.chordBuckets.find(packed); bucketIt != current.chordBuckets.end()) {
-		manager_storage::ShortcutBucket bucket = *bucketIt->second;
-		std::erase_if(bucket, [id](const auto& item) { return item->id == id; });
-		if (bucket.empty()) current.chordBuckets.erase(bucketIt);
-		else bucketIt->second = std::make_shared<const manager_storage::ShortcutBucket>(std::move(bucket));
+	if (bucketIt != current.chordBuckets.end()) {
+		if (replacementBucket) bucketIt->second = std::move(replacementBucket);
+		else current.chordBuckets.erase(bucketIt);
 	}
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
 								FlowUi::detail::InitialCapacityTarget::shortcuts_keys,
@@ -344,13 +358,15 @@ bool ShortcutManager::unregisterShortcut(ShortcutId id) {
 		if (keyIt->second <= 1u) current.registeredKeyRefCount.erase(keyIt);
 		else --keyIt->second;
 	}
-	storage_->noteManagerMutation(window_);
 	return true;
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ShortcutRegister));
 }
 
-void ShortcutManager::clear() {
+Status ShortcutManager::clear() noexcept try {
 	auto& current = state();
-	if (current.registrationsById.empty() && current.focusedElementId.id == 0u) return;
+	if (current.registrationsById.empty() && current.focusedElementId.id == 0u) return {};
+	storage_->noteManagerMutation(window_);
 	for (auto& [_, registration] : current.registrationsById) registration->tombstoned = true;
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
 								FlowUi::detail::InitialCapacityTarget::shortcuts_chords,
@@ -366,19 +382,32 @@ void ShortcutManager::clear() {
 	current.registeredKeyRefCount.clear();
 	current.focusedElementId = {};
 	++current.registrationEpoch;
-	storage_->noteManagerMutation(window_);
+
+	return {};
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ShortcutRegister));
 }
 
-void ShortcutManager::setFocusedElement(Clay_ElementId elementId) {
+Status ShortcutManager::setFocusedElement(Clay_ElementId elementId) noexcept try {
 	auto& current = state();
-	if (current.focusedElementId.id == elementId.id) return;
-	current.focusedElementId = elementId;
+	if (current.focusedElementId.id == elementId.id) return {};
 	storage_->noteManagerMutation(window_);
+	current.focusedElementId = elementId;
+
+	return {};
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ShortcutRegister));
 }
 
-void ShortcutManager::clearFocusedElement() { setFocusedElement({}); }
+Status ShortcutManager::clearFocusedElement() noexcept try { return setFocusedElement({});
+	return {};
+} catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ShortcutRegister));
+}
 
-Clay_ElementId ShortcutManager::focusedElement() const { return state().focusedElementId; }
+Result<Clay_ElementId> ShortcutManager::focusedElement() const noexcept try { return state().focusedElementId; } catch (...) {
+	return unexpectedError(detail::currentExceptionError(ErrorSite::ShortcutRegister));
+}
 
 void ShortcutManager::beginFrame(UiManager& ui, const FrameInput& currentInput, const FrameInput& previousInput) {
 	auto& current = state();
