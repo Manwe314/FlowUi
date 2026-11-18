@@ -28,7 +28,9 @@ namespace FlowUi {
 class App;
 class UiManager;
 
-namespace detail::storage { class IStorageSystem; }
+namespace detail::storage {
+class StorageBinding;
+}
 namespace devSystems { class MemorySampleSink; }
 #if FLOW_UI_DEV_MODE
 namespace devSystems::tooling { class DevOverrideCapture; class DevOverrideEngine; }
@@ -288,7 +290,7 @@ public:
 			return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeRegisterVariant));
 		}
 		const auto writable = detail::catchResult<Status>(ErrorSite::ThemeRegisterVariant, [&] {
-			storage_->noteManagerMutation(InvalidWindowId);
+			detail::storage::StorageRecordAccess{*storage_}.noteManagerMutation(InvalidWindowId);
 			return Status{};
 		});
 		if (!writable) return writable;
@@ -490,7 +492,7 @@ public:
 	 *
 	 * @see docs/api/theme_manager.md
 	 */
-	void init(detail::storage::IStorageSystem& storage);
+	void init(detail::storage::StorageBinding& storage);
 
 	/**
 	 * @brief Release this manager storage records and pending mutations. Framework lifecycle service; application code should retain the App-owned manager.
@@ -532,7 +534,7 @@ private:
 #endif
 
 private:
-	detail::storage::IStorageSystem* storage_ = nullptr;
+	detail::storage::StorageBinding* storage_ = nullptr;
 	std::unique_ptr<detail::manager_storage::ThemeStorageController> controller_{};
 #if FLOW_UI_DEV_MODE
 	struct DevPreviewEntry {

@@ -1,5 +1,6 @@
 #pragma once
 #include "FlowUi/Private/ApiBoundary.hpp"
+#include "FlowUi/Private/storageSystem/StorageRecordAccess.hpp"
 
 #include "FlowUi/Public/BuildConfig.hpp"
 
@@ -31,7 +32,7 @@ class UiManager;
 class ActionManager;
 
 namespace detail::storage {
-class IStorageSystem;
+class StorageBinding;
 }
 namespace devSystems { class MemorySampleSink; }
 
@@ -440,7 +441,7 @@ private:
 		void* payload_ = nullptr;
 	};
 
-	void init(App& app, detail::storage::IStorageSystem& storage);
+	void init(App& app, detail::storage::StorageBinding& storage);
 	void destroy() noexcept;
 	void rebindOwner(App& app) noexcept;
 	void attachTo(UiManager& ui) noexcept;
@@ -486,7 +487,7 @@ private:
 		Resources&&... resources);
 
 	App* app_ = nullptr;
-	detail::storage::IStorageSystem* storage_ = nullptr;
+	detail::storage::StorageBinding* storage_ = nullptr;
 	uint64_t stateHandle_ = 0;
 	uint32_t stateName_ = 0;
 	AppActions appActions_;
@@ -629,32 +630,32 @@ Result<AppActionCall> ActionManager::bindTyped(
 	const std::string_view effectiveName = descriptor.debugName.empty()
 		? std::string_view{"flowui.app_action.binding"}
 		: descriptor.debugName;
-	const detail::storage::StringId debugName = storage_->intern(effectiveName);
+	detail::storage::StorageRecordAccess recordStorage{*storage_};
+	const detail::storage::StringId debugName = recordStorage.intern(effectiveName);
 	detail::storage::PersistentRecordHandle handle{};
 	try {
-		handle = detail::storage::createTypedPersistentRecord<
-		detail::action::AppActionBindingHeader,
-		Payload>(
-		*storage_,
-		detail::storage::PersistentRecordCreateInfo{
-			.kind = detail::storage::ResourceKind::AppActionBinding,
-			.window = InvalidWindowId,
-			.debugName = debugName,
-		},
-		[descriptor, debugName](
-			detail::action::AppActionBindingHeader& header,
-			const detail::storage::AlignedRecordLayout&) {
-			header.id = descriptor.id;
-			header.callableTypeHash = detail::typeHash<StoredCallable>();
-			header.resultTypeHash = detail::action::resultTypeHash<Payload>();
-			header.debugName = debugName;
-			header.invokeDiscard = &detail::action::invokeDiscard<Payload>;
-			if constexpr (!std::is_void_v<PayloadResult>) {
-				header.invokeResult = &detail::action::invokeResult<Payload>;
-			}
-		},
-		StoredCallable(std::forward<Callable>(callable)),
-		std::decay_t<Resources>(std::forward<Resources>(resources))...);
+		handle =
+			detail::storage::createTypedPersistentRecord<detail::action::AppActionBindingHeader,
+														 Payload>(
+				recordStorage,
+				detail::storage::PersistentRecordCreateInfo{
+					.kind = detail::storage::ResourceKind::AppActionBinding,
+					.window = InvalidWindowId,
+					.debugName = debugName,
+				},
+				[descriptor, debugName](detail::action::AppActionBindingHeader& header,
+										const detail::storage::AlignedRecordLayout&) {
+					header.id = descriptor.id;
+					header.callableTypeHash = detail::typeHash<StoredCallable>();
+					header.resultTypeHash = detail::action::resultTypeHash<Payload>();
+					header.debugName = debugName;
+					header.invokeDiscard = &detail::action::invokeDiscard<Payload>;
+					if constexpr (!std::is_void_v<PayloadResult>) {
+						header.invokeResult = &detail::action::invokeResult<Payload>;
+					}
+				},
+				StoredCallable(std::forward<Callable>(callable)),
+				std::decay_t<Resources>(std::forward<Resources>(resources))...);
 	} catch (const std::bad_alloc&) {
 		throw;
 	} catch (const FlowUiException& exception) {
@@ -670,14 +671,14 @@ Result<AppActionCall> ActionManager::bindTyped(
 	try {
 		publishBinding(descriptor.id, handle, replacement);
 	} catch (const FlowUiException&) {
-		(void)storage_->removePersistentRecord(
-			handle, detail::storage::ResourceKind::AppActionBinding);
+		(void)recordStorage.removePersistentRecord(handle,
+												   detail::storage::ResourceKind::AppActionBinding);
 		detail::terminateForFatalError(makeError(
 			ErrorCode::ActionPublicationConflict, ErrorSite::ActionPublish,
 			descriptor.id.value));
 	} catch (...) {
-		(void)storage_->removePersistentRecord(
-			handle, detail::storage::ResourceKind::AppActionBinding);
+		(void)recordStorage.removePersistentRecord(handle,
+												   detail::storage::ResourceKind::AppActionBinding);
 		return unexpectedError(makeError(ErrorCode::ResourcePublicationFailed, ErrorSite::ActionPublish));
 	}
 	return AppActionCall{descriptor.id};

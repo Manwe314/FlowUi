@@ -17,7 +17,9 @@ struct FontManager;
 struct IconManager;
 class ImageManager;
 class ThemeManager;
-namespace detail::storage { class IStorageSystem; }
+namespace detail::storage {
+class StorageBinding;
+}
 namespace devSystems { class DevTimingRecorder; class MemorySampleSink; namespace tooling { struct DevTreeSnapshot; } }
 }
 
@@ -36,7 +38,7 @@ public:
 	DevCatalogues& operator=(const DevCatalogues&) = delete;
 
 	/** @brief Attach borrowed manager/registry pointers and invalidate dependent caches; dependencies must outlive subsequent queries. */
-	void bindManagers(::FlowUi::detail::storage::IStorageSystem* storage, ThemeManager* themes,
+	void bindManagers(::FlowUi::detail::storage::StorageBinding* storage, ThemeManager* themes,
 					  ActionManager* actions, FontManager* fonts, IconManager* icons,
 					  ImageManager* images, DevSchemaRegistry* schemaRegistry) noexcept;
 	/** @brief Attach a borrowed timing recorder; null disables optional query attribution. */
@@ -92,7 +94,7 @@ private:
 	void rebuildThemeCache();
 	void rebuildElementCache(const tooling::DevTreeSnapshot* currentTree);
 
-	::FlowUi::detail::storage::IStorageSystem* storage_ = nullptr;
+	::FlowUi::detail::storage::StorageBinding* storage_ = nullptr;
 	ThemeManager* themeManager_ = nullptr;
 	ActionManager* actionManager_ = nullptr;
 	FontManager* fontManager_ = nullptr;

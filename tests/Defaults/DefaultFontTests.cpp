@@ -2,7 +2,7 @@
 #include "AppTestSupport.hpp"
 
 #include "FlowUi.hpp"
-#include "FlowUi/Private/textLayoutService/CurrentTextShaper.hpp"
+#include "FlowUi/Private/textLayoutService/TextLayoutService.hpp"
 #include "FlowUi/Public/Resources.hpp"
 #include "FlowUi/Public/defaults/FontDefaults.hpp"
 #include "FlowUi/Public/defaults/FselIcons.hpp"
@@ -54,13 +54,17 @@ void test_payload() {
 	FLOWUI_CHECK(variant.metrics.distanceRange == 4.0f);
 	const auto& image = decoded.images[0];
 	FLOWUI_CHECK(image.encoding == artery_font::IMAGE_RAW_BINARY);
-	FLOWUI_CHECK(image.imageType == artery_font::IMAGE_SDF);
+	FLOWUI_CHECK(image.imageType == artery_font::IMAGE_MSDF);
 	FLOWUI_CHECK(image.pixelFormat == artery_font::PIXEL_UNSIGNED8);
-	FLOWUI_CHECK(image.width == 8 && image.height == 12 && image.channels == 1);
-	FLOWUI_CHECK(image.data.length() == 96);
+	FLOWUI_CHECK(image.width == 8 && image.height == 12 && image.channels == 3);
+	FLOWUI_CHECK(image.data.length() == 288);
 	for (uint32_t row = 0; row < image.height; ++row) {
 		for (uint32_t column = 0; column < image.width; ++column) {
-			const auto sample = image.data[static_cast<int>(row * image.width + column)];
+			const auto sample = image.data[static_cast<int>((row * image.width + column) * 3)];
+			FLOWUI_CHECK(image.data[static_cast<int>((row * image.width + column) * 3 + 1)] ==
+						 sample);
+			FLOWUI_CHECK(image.data[static_cast<int>((row * image.width + column) * 3 + 2)] ==
+						 sample);
 			const bool inside_rectangle = column >= 2 && column < 6 && row >= 2 && row < 10;
 			FLOWUI_CHECK((sample > 127) == inside_rectangle);
 		}
@@ -110,12 +114,14 @@ void test_loaded_face(const FlowUi::Font::FontFaceData& face) {
 	FLOWUI_CHECK(variant->unicodeToGlyphIndex.at(0xfffd) == 0);
 	FLOWUI_CHECK(variant->fallbackGlyphIndex == 0);
 	FLOWUI_CHECK(face.sourceAtlasWidth == 8 && face.sourceAtlasHeight == 12);
-	const FlowUi::detail::text::CurrentTextShaper shaper{};
-	const auto shaped = shaper.shape({
-		.text = "A\xEF\xBF\xBD\xE7\x95\x8C",
-		.fontSize = 16,
-		.includeGlyphGeometry = true,
-	}, face);
+	FlowUi::detail::text::TextLayoutService textLayout{};
+	const auto shaped = textLayout.layout(
+		{
+			.text = "A\xEF\xBF\xBD\xE7\x95\x8C",
+			.fontSize = 16,
+			.includeGlyphGeometry = true,
+		},
+		face);
 	FLOWUI_CHECK(shaped.success && shaped.glyphs.size() == 3);
 	for (const auto& glyph : shaped.glyphs) {
 		FLOWUI_CHECK(glyph.glyphIndex == 0);
@@ -123,11 +129,13 @@ void test_loaded_face(const FlowUi::Font::FontFaceData& face) {
 		FLOWUI_CHECK(glyph.u0 < glyph.u1 && glyph.v0 < glyph.v1);
 		FLOWUI_CHECK(std::isfinite(glyph.x) && std::isfinite(glyph.y));
 	}
-	const auto whitespace = shaper.shape({
-		.text = " \t\xC2\xA0\n",
-		.fontSize = 16,
-		.includeGlyphGeometry = true,
-	}, face);
+	const auto whitespace = textLayout.layout(
+		{
+			.text = " \t\xC2\xA0\n",
+			.fontSize = 16,
+			.includeGlyphGeometry = true,
+		},
+		face);
 	FLOWUI_CHECK(whitespace.success && whitespace.glyphs.empty());
 	FLOWUI_CHECK(whitespace.lines.size() == 2);
 	FLOWUI_CHECK(whitespace.measuredAdvance > 0.0f && whitespace.lineHeight > 0.0f);

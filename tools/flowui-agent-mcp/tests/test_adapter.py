@@ -70,6 +70,9 @@ print(json.dumps({'schema':'FlowUi.Agentic.CommandResult','schema_version':'1.0'
         self.assertEqual(envelope["result"]["intent"], "$(touch escaped); `echo bad`")
         self.assertFalse((self.workspace / "escaped").exists())
         self.assertIsNone(image)
+        temporary_root = self.workspace / ".flowui/agentic/verification/mcp"
+        self.assertTrue(temporary_root.is_dir())
+        self.assertEqual(list(temporary_root.iterdir()), [])
 
     async def test_objective_miss_remains_successful_analysis(self):
         cli = self.fake_cli('''import json,sys

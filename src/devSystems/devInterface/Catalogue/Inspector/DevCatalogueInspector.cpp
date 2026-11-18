@@ -2,10 +2,10 @@
 #include "devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.hpp"
 
 #if FLOW_UI_DEV_MODE
+#include "FlowUi/Private/textLayoutService/TextLayoutService.hpp"
+#include "FlowUi/Public/managers/FontManager.hpp"
 #include "devSystems/devInterface/Catalogue/DevCatalogueFocus.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"
-#include "FlowUi/Private/textLayoutService/CurrentTextShaper.hpp"
-#include "FlowUi/Public/managers/FontManager.hpp"
 #include <algorithm>
 
 namespace FlowUi::devSystems::interface_elements {
@@ -23,11 +23,11 @@ void text(Context& context, std::string_view label,
 		ui::text(context, label, color, size);
 		return;
 	}
-	const ::FlowUi::detail::text::CurrentTextShaper shaper;
+	::FlowUi::detail::text::TextLayoutService textLayout;
 	Clay_TextElementConfig configuration{};
 	configuration.fontSize = size;
 	const auto metrics =
-		shaper.shape({.text = "M", .pointsToPixelsScale = 1, .fontSize = size}, *face);
+		textLayout.layout({.text = "M", .pointsToPixelsScale = 1, .fontSize = size}, *face);
 	const float resolved_height =
 		context.uiManager.inputContentElement(configuration).layout.sizing.height.size.minMax.min;
 	const float scale = metrics.lineHeight > 0 ? resolved_height / metrics.lineHeight : 1;
@@ -44,7 +44,7 @@ void text(Context& context, std::string_view label,
 		const auto end = separator == std::string_view::npos ? label.size() : separator;
 		const auto word = label.substr(offset, end - offset);
 		const auto layout =
-			shaper.shape({.text = word, .pointsToPixelsScale = 1, .fontSize = size}, *face);
+			textLayout.layout({.text = word, .pointsToPixelsScale = 1, .fontSize = size}, *face);
 		size_t prefix = 0;
 		float origin = 0;
 		for (const auto& cluster : layout.clusters) {

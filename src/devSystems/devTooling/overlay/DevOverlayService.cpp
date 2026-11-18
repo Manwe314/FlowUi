@@ -1,5 +1,6 @@
 #include "devSystems/devTooling/overlay/DevOverlayService.hpp"
 #include "FlowUi/Private/resourceService/FontCatalogController.hpp"
+#include "FlowUi/Private/textLayoutService/TextLayoutService.hpp"
 
 #if FLOW_UI_DEV_MODE
 
@@ -563,6 +564,15 @@ void buildRenderDiagnostics(
 
 } // namespace
 
+DevOverlayService::DevOverlayService() noexcept = default;
+DevOverlayService::~DevOverlayService() noexcept = default;
+DevOverlayService::DevOverlayService(DevOverlayService&&) noexcept = default;
+DevOverlayService& DevOverlayService::operator=(DevOverlayService&&) noexcept = default;
+
+size_t DevOverlayService::memoryFootprintBytes() const noexcept {
+	return textLayoutService_ ? textLayoutService_->cacheBytes() : 0;
+}
+
 void DevOverlayService::generateOverlayCommands(
 	const DevOverlaySelectionSpec& selection,
 	const DevTreeSnapshot& treeSnapshot,
@@ -627,16 +637,20 @@ void DevOverlayService::buildUiRendererInstances(
 		const uint32_t msdfStart = static_cast<uint32_t>(commandBuffer.instances.size());
 		for (const DevOverlayPrimitive& primitive : commandBuffer.primitives) {
 			if (primitive.kind != DevOverlayPrimitiveKind::TextLabel || primitive.textLabel.empty()) continue;
-			const auto& layout = textLayoutService_.layout(::FlowUi::detail::text::TextLayoutRequest{
-				.text = primitive.textLabel,
-				.fontView = &fontView,
-				.fontId = primitive.fontId,
-				.pointsToPixelsScale = pointsToPixelsScale,
-				.fontSize = static_cast<uint16_t>(std::clamp(std::lround(primitive.textSizePoints), 1l, 65535l)),
-				.letterSpacing = primitive.letterSpacing,
-				.tabWidth = 4,
-				.includeGlyphGeometry = true,
-			});
+			if (!textLayoutService_)
+				textLayoutService_ = std::make_unique<::FlowUi::detail::text::TextLayoutService>();
+			const auto& layout =
+				textLayoutService_->layout(::FlowUi::detail::text::TextLayoutRequest{
+					.text = primitive.textLabel,
+					.fontView = &fontView,
+					.fontId = primitive.fontId,
+					.pointsToPixelsScale = pointsToPixelsScale,
+					.fontSize = static_cast<uint16_t>(
+						std::clamp(std::lround(primitive.textSizePoints), 1l, 65535l)),
+					.letterSpacing = primitive.letterSpacing,
+					.tabWidth = 4,
+					.includeGlyphGeometry = true,
+				});
 			if (!layout.success) continue;
 			for (const ::FlowUi::detail::text::TextLayoutGlyph& glyph : layout.glyphs) {
 				UiInstance instance{};

@@ -247,7 +247,7 @@ struct AgenticLimits {
  */
 struct AgenticWorkflowConfig {
 	/**
-	 * @brief Evidence-store root; use .flowui/agentic for repository-local runtime outputs.
+	 * @brief Evidence-store root; use .flowui/agentic/v1 for repository-local runtime outputs.
 	 * Empty accepts an enabled launch handoff path; enabled services require a resolved path.
 	 */
 	std::filesystem::path store_path;

@@ -12,7 +12,9 @@
 #include "devSystems/devMonitoringAndReporting/memory/DevMemoryRecorder.hpp"
 #include "FlowUi/Private/storageSystem/StorageTypes.hpp"
 
-namespace FlowUi::detail::storage { class IStorageSystem; }
+namespace FlowUi::detail::storage {
+class StorageBinding;
+}
 struct VulkanContext;
 
 namespace FlowUi::devSystems {
@@ -70,7 +72,7 @@ public:
 	/** Copy cumulative recorder and registration quality counters. */
 	[[nodiscard]] MemoryQualitySnapshot qualitySnapshot() const noexcept;
 	/** Attach borrowed runtime storage for sampling, or null to detach; storage must outlive attached use. */
-	void setStorageSystem(::FlowUi::detail::storage::IStorageSystem* storage) noexcept;
+	void setStorageSystem(::FlowUi::detail::storage::StorageBinding* storage) noexcept;
 	/**
 	 * Append a storage checkpoint to destination; return false when storage is detached or snapshot
 	 * acquisition fails.

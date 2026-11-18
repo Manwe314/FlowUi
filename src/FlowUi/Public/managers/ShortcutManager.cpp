@@ -1,7 +1,8 @@
-#include "FlowUi/Private/ApiBoundary.hpp"
 #include "FlowUi/Public/managers/ShortcutManager.hpp"
-#include "FlowUi/Public/defaults/ShortcutDefaults.hpp"
+#include "FlowUi/Private/ApiBoundary.hpp"
+#include "FlowUi/Private/storageSystem/StorageBinding.hpp"
 #include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
+#include "FlowUi/Public/defaults/ShortcutDefaults.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
@@ -151,13 +152,14 @@ void ShortcutManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink)
 namespace manager_storage = detail::manager_storage;
 namespace storage = detail::storage;
 
-void ShortcutManager::init(storage::IStorageSystem& storageSystem, WindowId window) {
+void ShortcutManager::init(storage::StorageBinding& storageBinding, WindowId window) {
+	auto& storageSystem = storageBinding.system();
 	if (storage_) throw FlowUiException(makeError(ErrorCode::ObjectAlreadyInitialized, ErrorSite::ShortcutManagerInitialize));
 	const storage::StringId name = storageSystem.intern("flowui.shortcut.root");
 	const storage::ResourceKey key{storage::ResourceDomain::Input, name, window};
 	const storage::ManagerRecordHandle handle = manager_storage::createState<manager_storage::ShortcutManagerState>(
 		storageSystem, key, storage::ResourceKind::ShortcutRegistration, name);
-	storage_ = &storageSystem;
+	storage_ = &storageBinding;
 	window_ = window;
 	stateHandle_ = handle.packed();
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
@@ -210,8 +212,8 @@ Status ShortcutManager::installDefaultTextShortcuts(const DefaultTextShortcutCon
 void ShortcutManager::destroy() noexcept {
 	if (!storage_) return;
 	try {
-		const storage::StringId name = storage_->intern("flowui.shortcut.root");
-		(void)storage_->removeManagerRecord(
+		const storage::StringId name = storage_->system().intern("flowui.shortcut.root");
+		(void)storage_->system().removeManagerRecord(
 			storage::ResourceKey{storage::ResourceDomain::Input, name, window_},
 			storage::ResourceKind::ShortcutRegistration);
 	} catch (...) {
@@ -272,7 +274,7 @@ Result<ShortcutId> ShortcutManager::registerShortcut(
 	candidate.registeredKeyRefCount[chord.key] += 1u;
 	++candidate.nextShortcutId;
 	++candidate.nextRegistrationOrder;
-	storage_->noteManagerMutation(window_);
+	storage_->system().noteManagerMutation(window_);
 	current = std::move(candidate);
 	return id;
 } catch (...) {
@@ -316,7 +318,7 @@ Result<ShortcutId> ShortcutManager::registerShortcut(
 	candidate.registeredKeyRefCount[chord.key] += 1u;
 	++candidate.nextShortcutId;
 	++candidate.nextRegistrationOrder;
-	storage_->noteManagerMutation(window_);
+	storage_->system().noteManagerMutation(window_);
 	current = std::move(candidate);
 	return id;
 } catch (...) {
@@ -338,7 +340,7 @@ Result<bool> ShortcutManager::unregisterShortcut(ShortcutId id) noexcept try {
 		if (!candidateBucket.empty())
 			replacementBucket = std::make_shared<const manager_storage::ShortcutBucket>(std::move(candidateBucket));
 	}
-	storage_->noteManagerMutation(window_);
+	storage_->system().noteManagerMutation(window_);
 	registration->tombstoned = true;
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
 								FlowUi::detail::InitialCapacityTarget::shortcuts_registrations,
@@ -366,7 +368,7 @@ Result<bool> ShortcutManager::unregisterShortcut(ShortcutId id) noexcept try {
 Status ShortcutManager::clear() noexcept try {
 	auto& current = state();
 	if (current.registrationsById.empty() && current.focusedElementId.id == 0u) return {};
-	storage_->noteManagerMutation(window_);
+	storage_->system().noteManagerMutation(window_);
 	for (auto& [_, registration] : current.registrationsById) registration->tombstoned = true;
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
 								FlowUi::detail::InitialCapacityTarget::shortcuts_chords,
@@ -391,7 +393,7 @@ Status ShortcutManager::clear() noexcept try {
 Status ShortcutManager::setFocusedElement(Clay_ElementId elementId) noexcept try {
 	auto& current = state();
 	if (current.focusedElementId.id == elementId.id) return {};
-	storage_->noteManagerMutation(window_);
+	storage_->system().noteManagerMutation(window_);
 	current.focusedElementId = elementId;
 
 	return {};

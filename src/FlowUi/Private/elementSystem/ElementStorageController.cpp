@@ -93,9 +93,8 @@ struct ResourceAllocation {
 	void* payload = nullptr;
 };
 
-void destroyResourceAllocation(
-	storage::IStorageSystem& storage,
-	storage::MemoryBlock block) noexcept {
+void destroyResourceAllocation(storage::ActiveStorageSystem& storage,
+							   storage::MemoryBlock block) noexcept {
 	if (!block || !block.data) return;
 	auto* header = static_cast<ElementResourceRecordHeader*>(block.data);
 	void* payload = storage::makeAlignedRecordLayout(
@@ -108,10 +107,9 @@ void destroyResourceAllocation(
 	storage.releasePersistent(block);
 }
 
-ResourceAllocation createResourceRecord(
-	storage::IStorageSystem& storage,
-	const element::ElementRegistrationDescriptor& descriptor,
-	App& app) {
+ResourceAllocation createResourceRecord(storage::ActiveStorageSystem& storage,
+										const element::ElementRegistrationDescriptor& descriptor,
+										App& app) {
 	const storage::AlignedRecordLayout layout = storage::makeAlignedRecordLayout(
 		sizeof(ElementResourceRecordHeader),
 		alignof(ElementResourceRecordHeader),
@@ -189,9 +187,8 @@ void validateStateRecord(
 		descriptor.definitionId.value));
 }
 
-storage::PersistentRecordView stateRecordView(
-	storage::IStorageSystem& storage,
-	storage::PersistentRecordHandle handle) noexcept {
+storage::PersistentRecordView stateRecordView(storage::ActiveStorageSystem& storage,
+											  storage::PersistentRecordHandle handle) noexcept {
 	storage::PersistentRecordView view =
 		storage.persistentRecord(handle, storage::ResourceKind::UiElementState);
 	if (!view || view.headerBytes < sizeof(ElementStateRecordHeader) ||
@@ -201,13 +198,10 @@ storage::PersistentRecordView stateRecordView(
 	return view;
 }
 
-ResolvedElementState createStateRecord(
-	storage::IStorageSystem& storage,
-	WindowId window,
-	element::ElementInstanceKey instanceKey,
-	const element::ElementRegistrationDescriptor& descriptor,
-	uint64_t lastSeenCommittedFrame,
-	ElementStatePolicy policy) {
+ResolvedElementState createStateRecord(storage::ActiveStorageSystem& storage, WindowId window,
+									   element::ElementInstanceKey instanceKey,
+									   const element::ElementRegistrationDescriptor& descriptor,
+									   uint64_t lastSeenCommittedFrame, ElementStatePolicy policy) {
 	struct ConstructionContext {
 		element::ElementInstanceKey instanceKey{};
 		const element::ElementRegistrationDescriptor* descriptor = nullptr;
@@ -267,17 +261,14 @@ ResolvedElementState createStateRecord(
 	return {.handle = handle, .payload = view.payload};
 }
 
-ElementStateRecordHeader* stateRecordHeader(
-	storage::IStorageSystem& storage,
-	storage::PersistentRecordHandle handle) noexcept {
+ElementStateRecordHeader* stateRecordHeader(storage::ActiveStorageSystem& storage,
+											storage::PersistentRecordHandle handle) noexcept {
 	storage::PersistentRecordView view = stateRecordView(storage, handle);
 	return view ? static_cast<ElementStateRecordHeader*>(view.header) : nullptr;
 }
 
-void removeGcCandidateAt(
-	WindowElementStateRegistry& registry,
-	storage::IStorageSystem& storage,
-	size_t index) noexcept {
+void removeGcCandidateAt(WindowElementStateRegistry& registry,
+						 storage::ActiveStorageSystem& storage, size_t index) noexcept {
 	if (index >= registry.gcCandidates.size()) {
 		registry.gcCursor = 0;
 		return;
@@ -312,11 +303,9 @@ void removeGcCandidateAt(
 	if (registry.gcCursor >= registry.gcCandidates.size()) registry.gcCursor = 0;
 }
 
-void removeGcCandidate(
-	WindowElementStateRegistry& registry,
-	storage::IStorageSystem& storage,
-	element::ElementInstanceKey instanceKey,
-	ElementStateRecordHeader& header) noexcept {
+void removeGcCandidate(WindowElementStateRegistry& registry, storage::ActiveStorageSystem& storage,
+					   element::ElementInstanceKey instanceKey,
+					   ElementStateRecordHeader& header) noexcept {
 	size_t index = header.gcIndex;
 	if (index >= registry.gcCandidates.size() || registry.gcCandidates[index] != instanceKey) {
 		const auto found = std::find(
@@ -338,11 +327,10 @@ bool isStateExpired(
 		committedFrameNumber - header.lastSeenCommittedFrame > header.policy.graceFrames;
 }
 
-ResolvedElementState resolveExistingState(
-	storage::IStorageSystem& storage,
-	storage::PersistentRecordHandle handle,
-	element::ElementInstanceKey instanceKey,
-	const element::ElementRegistrationDescriptor& descriptor) {
+ResolvedElementState
+resolveExistingState(storage::ActiveStorageSystem& storage, storage::PersistentRecordHandle handle,
+					 element::ElementInstanceKey instanceKey,
+					 const element::ElementRegistrationDescriptor& descriptor) {
 	storage::PersistentRecordView view = stateRecordView(storage, handle);
 	if (!view) return {};
 	validateStateRecord(
@@ -400,7 +388,7 @@ ElementDefinitionRegistry::takeReadyResourceForDestroy() noexcept {
 	return {};
 }
 
-ElementStorageController::ElementStorageController(storage::IStorageSystem& storage)
+ElementStorageController::ElementStorageController(storage::ActiveStorageSystem& storage)
 	: storage_(&storage) {
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	capacity_demand_.bind(storage.memory_demand_control());
@@ -452,7 +440,7 @@ void ElementStorageController::registerWindow(WindowId window) {
 }
 
 void ElementStorageController::destroyWindow(WindowId window) noexcept {
-	storage::IStorageSystem* storage = nullptr;
+	storage::ActiveStorageSystem* storage = nullptr;
 	bool releaseRecords = false;
 	{
 		std::lock_guard<std::mutex> windowsLock(windowsMutex_);
@@ -660,7 +648,7 @@ ResolvedElementState ElementStorageController::resolveOrCreateStateForInvocation
 void ElementStorageController::endStateInvocation(WindowId window) noexcept {
 	bool invocationClosed = false;
 	while (true) {
-		storage::IStorageSystem* storage = nullptr;
+		storage::ActiveStorageSystem* storage = nullptr;
 		storage::PersistentRecordHandle recordToErase{};
 		bool releaseWindow = false;
 		try {
@@ -803,7 +791,7 @@ void ElementStorageController::commitWindowFrame(WindowId window, uint64_t epoch
 void ElementStorageController::cancelWindowFrame(WindowId window, uint64_t epoch) noexcept {
 	bool transactionClosed = false;
 	while (true) {
-		storage::IStorageSystem* storage = nullptr;
+		storage::ActiveStorageSystem* storage = nullptr;
 		storage::PersistentRecordHandle recordToErase{};
 		try {
 			std::lock_guard<std::mutex> windowsLock(windowsMutex_);
@@ -871,7 +859,7 @@ size_t ElementStorageController::collectEligibleStates(
 		std::array<storage::PersistentRecordHandle, kRemovalBatchSize> removals{};
 		size_t removalCount = 0;
 		size_t inspected = 0;
-		storage::IStorageSystem* storage = nullptr;
+		storage::ActiveStorageSystem* storage = nullptr;
 		try {
 			std::lock_guard<std::mutex> windowsLock(windowsMutex_);
 			storage = storage_;
@@ -968,7 +956,7 @@ bool ElementStorageController::eraseState(
 	const element::ElementRegistrationDescriptor& descriptor) {
 	requireStateDescriptor(descriptor);
 	if (window == InvalidWindowId || !instanceKey) return false;
-	storage::IStorageSystem* storage = nullptr;
+	storage::ActiveStorageSystem* storage = nullptr;
 	storage::PersistentRecordHandle handle{};
 	{
 		std::lock_guard<std::mutex> windowsLock(windowsMutex_);
@@ -998,7 +986,7 @@ bool ElementStorageController::eraseState(
 }
 
 void ElementStorageController::shutdown() noexcept {
-	storage::IStorageSystem* storage = nullptr;
+	storage::ActiveStorageSystem* storage = nullptr;
 	{
 		std::lock_guard<std::mutex> lock(windowsMutex_);
 		storage = storage_;

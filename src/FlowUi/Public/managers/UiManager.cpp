@@ -1,6 +1,7 @@
-#include "FlowUi/Private/ApiBoundary.hpp"
 #include "FlowUi/Public/managers/UiManager.hpp"
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "FlowUi/Private/platformProviderService/WindowPlatformServices.hpp"
+#include "FlowUi/Private/storageSystem/StorageBinding.hpp"
 #include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryHistoryViewport.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
@@ -163,14 +164,16 @@ namespace FlowUi
 	}
 #endif
 
-	void UiManager::initStorage(storage::IStorageSystem& storageSystem, WindowId window, const AppConfig& config) {
+	void UiManager::initStorage(storage::StorageBinding& storageBinding, WindowId window,
+								const AppConfig& config) {
+		auto& storageSystem = storageBinding.system();
 		if (storage_) throw FlowUiException(makeError(ErrorCode::ObjectAlreadyInitialized, ErrorSite::UiManagerInitialize));
 		const storage::StringId name = storageSystem.intern("flowui.ui.root");
 		const storage::ResourceKey key{storage::ResourceDomain::Layout, name, window};
 		const storage::ManagerRecordHandle handle = manager_storage::createState<manager_storage::UiManagerState>(
 			storageSystem, key, storage::ResourceKind::UiContext, name,
 			std::ref(storageSystem), window, config);
-		storage_ = &storageSystem;
+		storage_ = &storageBinding;
 		window_ = window;
 		stateHandle_ = handle.packed();
 		state_ = manager_storage::state<manager_storage::UiManagerState>(
@@ -193,22 +196,21 @@ namespace FlowUi
 			},
 			this);
 		try {
-			inputFieldManager_.init(
-				storageSystem, window, state_->inputManagerConfig,
-				state_->pointsToPixelsScale, state_->textLayoutService);
+			inputFieldManager_.init(storageBinding, window, state_->inputManagerConfig,
+									state_->pointsToPixelsScale, state_->textLayoutService);
 			inputFieldManager_.setPlatformServices(platformServices_);
 		} catch (...) {
 			destroyStorage();
 			throw;
 		}
 		try {
-			popupManager_.init(storageSystem, window, config.errors.policy);
+			popupManager_.init(storageBinding, window, config.errors.policy);
 		} catch (...) {
 			destroyStorage();
 			throw;
 		}
 		try {
-			shortcutManager_.init(storageSystem, window);
+			shortcutManager_.init(storageBinding, window);
 			const auto shortcut_status =
 				shortcutManager_.installDefaultTextShortcuts(config.ui.shortcuts.textEditing);
 			if (!shortcut_status)
@@ -226,8 +228,8 @@ namespace FlowUi
 		inputFieldManager_.destroy();
 		if (storage_) {
 			try {
-				const storage::StringId name = storage_->intern("flowui.ui.root");
-				(void)storage_->removeManagerRecord(
+				const storage::StringId name = storage_->system().intern("flowui.ui.root");
+				(void)storage_->system().removeManagerRecord(
 					storage::ResourceKey{storage::ResourceDomain::Layout, name, window_},
 					storage::ResourceKind::UiContext);
 			} catch (...) {
@@ -386,7 +388,8 @@ namespace FlowUi
 			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::UiManagerBeginFrame));
 		}
 		state_->activeFrame = frame;
-		state_->frameArena = storage_->frameArena(frame, storage::MemoryClass::FrameTransient);
+		state_->frameArena =
+			storage_->system().frameArena(frame, storage::MemoryClass::FrameTransient);
 		state_->fontView = fontView;
 		inputFieldManager_.setFontFrameView(fontView, state_->pointsToPixelsScale);
 		if (!state_->frameArena.context) {
@@ -603,7 +606,7 @@ namespace FlowUi
 #endif
 			renderCommands = inputFieldManager_.endFrame(renderCommands);
 		}
-		storage_->noteManagerMutation(window_);
+		storage_->system().noteManagerMutation(window_);
 		if (state_->cursor != state_->previousCursor) {
 			if (platformServices_) {
 				detail::requireApiSuccess(platformServices_->setCursor(state_->cursor));
@@ -663,10 +666,10 @@ namespace FlowUi
 }
 
 	std::string_view UiManager::normalizeUiResourceName(ResourceKey key) const {
-		const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
-			*storage_, key, ResourceDomain::Ui,
-			key_storage::ResourceScope::WindowLocal, window_);
-		return storage_->string(normalized.name);
+		const storage::ResourceKey normalized =
+			key_storage::normalizeResourceKey(storage_->system(), key, ResourceDomain::Ui,
+											  key_storage::ResourceScope::WindowLocal, window_);
+		return storage_->system().string(normalized.name);
 	}
 
 	Clay_String UiManager::toClayString(ResourceKey key) try {

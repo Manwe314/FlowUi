@@ -57,7 +57,7 @@
 #include "FlowUi/Private/renderer/vulkan/Vk_Frames.hpp"
 #include "FlowUi/Private/renderer/vulkan/Vk_Swapchain.hpp"
 #include "FlowUi/Private/resourceService/FontCatalogController.hpp"
-#include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
+#include "FlowUi/Private/storageSystem/StorageConfigurationValidation.hpp"
 #include "FlowUi/Public/input/Key.hpp"
 
 #include <algorithm>
@@ -465,7 +465,7 @@ storage::StorageConfig makeStorageConfig(const AppConfig& config) {
 	return result;
 }
 
-storage::WindowStorageDesc makeWindowStorageDesc(storage::IStorageSystem& storageSystem,
+storage::WindowStorageDesc makeWindowStorageDesc(storage::ActiveStorageSystem& storageSystem,
 												 const storage::StorageConfig& storageConfig,
 												 const AppWindowConfig& config) {
 	return storage::WindowStorageDesc{
@@ -604,7 +604,7 @@ private:
 
 class WindowFrameExitGuard {
 public:
-	WindowFrameExitGuard(storage::IStorageSystem& storageSystem, AppWindow& window,
+	WindowFrameExitGuard(storage::ActiveStorageSystem& storageSystem, AppWindow& window,
 						 WindowId& activeWindow
 #if FLOW_UI_DEV_MODE
 						 ,
@@ -685,7 +685,7 @@ public:
 private:
 	bool nativeImageAcquired_ = false;
 	int drawUncaughtExceptions_ = std::uncaught_exceptions();
-	storage::IStorageSystem* storage_;
+	storage::ActiveStorageSystem* storage_;
 #if FLOW_UI_AGENTIC_WORKFLOW
 	devSystems::agentic::AgenticWorkflowService* agentic_service_ = nullptr;
 	VulkanContext* agentic_context_ = nullptr;
@@ -1116,13 +1116,18 @@ void App::Impl::init(App& owner) {
 #endif
 #endif
 
-	storageSystem = std::make_unique<storage::FlowStorageSystem>(vk);
+	storageSystem = std::make_unique<storage::ActiveStorageSystem>(vk);
 	storageConfig = makeStorageConfig(config);
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	storageConfig.memory_demand_control = devMonitoring.memory().demand_control();
 	capacity_demand.bind(storageConfig.memory_demand_control);
 #endif
+	const auto storageConfigurationStatus =
+		storage::validateStorageConfiguration<storage::ActiveStorageSystem>(storageConfig);
+	if (!storageConfigurationStatus)
+		throw FlowUiException(storageConfigurationStatus.error());
 	storageSystem->initialize(storageConfig);
+	storageBinding.bind(*storageSystem);
 	pending_window_operations.reserve(16u);
 	detail::reserve_initial_capacity(
 		windows,
@@ -1134,7 +1139,7 @@ void App::Impl::init(App& owner) {
 									 storageSystem->initial_memory_capacity(
 										 FlowUi::detail::InitialCapacityTarget::app_dispatch));
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 1
-	devMonitoring.memory().setStorageSystem(storageSystem.get());
+	devMonitoring.memory().setStorageSystem(&storageBinding);
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	fonts.setDevMemoryRecorder(&devMonitoring.memory().recorder());
@@ -1143,7 +1148,7 @@ void App::Impl::init(App& owner) {
 	icons.setDevMemoryRecorder(&devMonitoring.memory().recorder());
 #endif
 #endif
-	themeManager.init(*storageSystem);
+	themeManager.init(storageBinding);
 #if FLOW_UI_DEV_MODE
 	themeManager.setDevSchemaRegistry(&devTooling.schemas());
 #endif
@@ -1157,8 +1162,8 @@ void App::Impl::init(App& owner) {
 	if (!standard_theme_status)
 		throw FlowUiException(standard_theme_status.error());
 #endif
-	actionManager.init(owner, *storageSystem);
-	elementManager.init(owner, *storageSystem);
+	actionManager.init(owner, storageBinding);
+	elementManager.init(owner, storageBinding);
 #if FLOW_UI_DEV_MODE
 	elementManager.setDevTimingRecorder(&timingRecorder());
 	elementManager.setDevSchemaRegistry(&devTooling.schemas());
@@ -1168,7 +1173,7 @@ void App::Impl::init(App& owner) {
 		mainPointer->id, makeWindowStorageDesc(*storageSystem, storageConfig, mainPointer->config));
 	mainPointer->flags.set_flag(AppWindow::Flag::storage_registered, true);
 	elementManager.registerWindow(mainPointer->id);
-	mainPointer->ui.initStorage(*storageSystem, mainPointer->id,
+	mainPointer->ui.initStorage(storageBinding, mainPointer->id,
 								makeUiManagerConfig(config, mainPointer->config));
 #if FLOW_UI_DEV_MODE
 	mainPointer->ui.setDevTimingRecorder(&timingRecorder());
@@ -1218,22 +1223,22 @@ void App::Impl::init(App& owner) {
 		config.errors.policy.transientCapacity == StorageCapacityPolicy::GrowWithinBudget,
 		config.resources);
 	lifecycle_flags.set_flag(LifecycleFlag::images_initialized, true);
-	imageManager.init(*storageSystem, config.errors.policy.missingImage);
-	mainPointer->viewPorts.init(*storageSystem, vk, mainPointer->id,
+	imageManager.init(storageBinding, config.errors.policy.missingImage);
+	mainPointer->viewPorts.init(storageBinding, vk, mainPointer->id,
 								mainPointer->config.vulkan.framesInFlight,
 								config.errors.policy.missingViewport);
 	lifecycle_flags.set_flag(LifecycleFlag::fonts_initialized, true);
-	fonts.init(*storageSystem, config.ui.fontAtlasSize);
+	fonts.init(storageBinding, config.ui.fontAtlasSize);
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	lifecycle_flags.set_flag(LifecycleFlag::icons_initialized, true);
-	icons.init(*storageSystem, config.iconManager, config.errors.policy.iconGeneration,
+	icons.init(storageBinding, config.iconManager, config.errors.policy.iconGeneration,
 			   config.errors.policy.descriptorCapacity);
 #if COMPILE_FSELI
 	FSEL::standard_icons::registerStandardIcons(icons);
 #endif
 #endif
 #if FLOW_UI_DEV_MODE
-	devTooling.catalogues().bindManagers(storageSystem.get(), &themeManager, &actionManager, &fonts,
+	devTooling.catalogues().bindManagers(&storageBinding, &themeManager, &actionManager, &fonts,
 #if FLOWUI_INCLUDE_ICON_MANAGER
 										 &icons,
 #else
@@ -1601,7 +1606,7 @@ WindowId App::Impl::createWindow(const WindowConfig& nativeConfig) {
 			id, makeWindowStorageDesc(*storageSystem, storageConfig, pending->config));
 		pending->flags.set_flag(AppWindow::Flag::storage_registered, true);
 		elementManager.registerWindow(id);
-		pending->ui.initStorage(*storageSystem, id, makeUiManagerConfig(config, pending->config));
+		pending->ui.initStorage(storageBinding, id, makeUiManagerConfig(config, pending->config));
 #if FLOW_UI_DEV_MODE
 		pending->ui.setDevTimingRecorder(&timingRecorder());
 		pending->ui.setDevSchemaRegistry(&devTooling.schemas());
@@ -1640,7 +1645,7 @@ WindowId App::Impl::createWindow(const WindowConfig& nativeConfig) {
 			pending->config.uiTextureDescriptorCapacity,
 			config.errors.policy.transientCapacity == StorageCapacityPolicy::GrowWithinBudget,
 			config.resources);
-		pending->viewPorts.init(*storageSystem, vk, id, pending->config.vulkan.framesInFlight,
+		pending->viewPorts.init(storageBinding, vk, id, pending->config.vulkan.framesInFlight,
 								config.errors.policy.missingViewport);
 
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
@@ -2894,7 +2899,9 @@ void App::Impl::cleanup() noexcept {
 	unregisterAppMemoryProbes();
 #endif
 #if FLOW_UI_DEV_MODE
-	devInterface.release_inspection_resources(storageSystem.get());
+	devInterface.release_inspection_resources(storageBinding.bound() ? &storageBinding : nullptr);
+	devTooling.catalogues().bindManagers(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+										 nullptr);
 #endif
 	elementManager.destroy();
 	actionManager.destroy();
@@ -2957,6 +2964,7 @@ void App::Impl::cleanup() noexcept {
 		devMonitoring.memoryReporting().consume(appTick);
 		devMonitoring.memory().setStorageSystem(nullptr);
 #endif
+		storageBinding.detach();
 		storageSystem->shutdown();
 		storageSystem.reset();
 	}

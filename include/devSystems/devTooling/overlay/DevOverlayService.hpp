@@ -5,22 +5,34 @@
 #if FLOW_UI_DEV_MODE
 
 #include <cstddef>
+#include <memory>
 
 #include "devSystems/devTooling/overlay/DevOverlayCommandBuffer.hpp"
 #include "devSystems/devTooling/overlay/DevOverlayTypes.hpp"
 #include "devSystems/devTooling/tree/DevTreeTypes.hpp"
 namespace FlowUi::detail::manager_storage { struct FontFrameView; }
-#include "FlowUi/Private/textLayoutService/TextLayoutService.hpp"
+namespace FlowUi::detail::text {
+class TextLayoutService;
+}
 
 namespace FlowUi::devSystems::tooling {
 
 /** Renderer-only visual inspection sidecar. It does not own selection or input state. */
 class DevOverlayService {
 public:
+	/** @brief Construct an empty overlay cache without allocating provider state. */
+	DevOverlayService() noexcept;
+	/** @brief Release the private text service after overlay consumers finish. */
+	~DevOverlayService() noexcept;
+	DevOverlayService(const DevOverlayService&) = delete;
+	DevOverlayService& operator=(const DevOverlayService&) = delete;
+	/** @brief Transfer the private cache without relocating its selected provider. */
+	DevOverlayService(DevOverlayService&&) noexcept;
+	/** @brief Transfer the private cache without relocating its selected provider. */
+	DevOverlayService& operator=(DevOverlayService&&) noexcept;
+
 	/** @brief Return retained overlay text-layout cache bytes. */
-	[[nodiscard]] size_t memoryFootprintBytes() const noexcept {
-		return textLayoutService_.cacheBytes();
-	}
+	[[nodiscard]] size_t memoryFootprintBytes() const noexcept;
 
 	/** @brief Generate visual-only primitives from a snapshot-local selection and viewport extent; output is caller-owned and optional renderCommands are borrowed for this call. */
 	void generateOverlayCommands(
@@ -42,7 +54,7 @@ public:
 		float framebufferHeight) noexcept;
 
 private:
-	::FlowUi::detail::text::TextLayoutService textLayoutService_{};
+	std::unique_ptr<::FlowUi::detail::text::TextLayoutService> textLayoutService_;
 };
 
 } // namespace FlowUi::devSystems::tooling

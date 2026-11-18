@@ -1,0 +1,17 @@
+cmake_minimum_required(VERSION 3.25)
+project(FlowUiInstalledContentConsumer LANGUAGES CXX)
+find_package(FlowUi CONFIG REQUIRED)
+add_executable(flowui_installed_content_consumer main.cpp)
+target_compile_features(flowui_installed_content_consumer PRIVATE cxx_std_23)
+target_link_libraries(flowui_installed_content_consumer PRIVATE FlowUi::FlowUi)
+flowui_package_resources(flowui_installed_content_consumer)
+enable_testing()
+add_test(NAME flowui.providers.installed_public_consumer COMMAND flowui_installed_content_consumer)
+if(FLOWUI_TEST_BAKED_FONT)
+    add_test(NAME flowui.providers.installed_live_consumer
+        COMMAND flowui_installed_content_consumer --live --font "${FLOWUI_TEST_BAKED_FONT}")
+else()
+    add_test(NAME flowui.providers.installed_live_consumer
+        COMMAND flowui_installed_content_consumer --live)
+endif()
+set_tests_properties(flowui.providers.installed_live_consumer PROPERTIES TIMEOUT 90)

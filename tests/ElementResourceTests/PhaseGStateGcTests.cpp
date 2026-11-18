@@ -8,13 +8,13 @@
 #include <string_view>
 
 #include "FlowUi/Private/elementSystem/ElementStorageController.hpp"
-#include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
+#include "FlowUi/Private/storageSystem/StorageSystemSelection.hpp"
 #include "FlowUi/Public/elementAuthoring/ElementSet.hpp"
 
 namespace {
 
 using FlowUi::detail::manager_storage::ElementStorageController;
-using FlowUi::detail::storage::FlowStorageSystem;
+using FlowUi::detail::storage::ActiveStorageSystem;
 
 constexpr FlowUi::WindowId kWindow = 71;
 
@@ -167,7 +167,7 @@ public:
 	}
 
 private:
-	FlowStorageSystem storage_;
+	ActiveStorageSystem storage_;
 	ElementStorageController controller_;
 };
 

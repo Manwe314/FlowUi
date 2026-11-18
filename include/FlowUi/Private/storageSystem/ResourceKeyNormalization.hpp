@@ -1,8 +1,8 @@
 #pragma once
 
+#include "FlowUi/Private/storageSystem/StorageTypes.hpp"
 #include "FlowUi/Public/errorManagement/Error.hpp"
 #include "FlowUi/Public/identificationTypes/ResourceKey.hpp"
-#include "FlowUi/Private/storageSystem/IStorageSystem.hpp"
 
 namespace FlowUi::detail::managerStorage {
 
@@ -26,12 +26,10 @@ enum class ResourceScope : unsigned char {
 	throw FlowUiException(makeError(ErrorCode::InvalidResourceKey, ErrorSite::ResourceNormalizeKey));
 }
 
-[[nodiscard]] inline storage::ResourceKey normalizeResourceKey(
-	storage::IStorageSystem& storageSystem,
-	ResourceKey key,
-	ResourceDomain managerDomain,
-	ResourceScope scope,
-	WindowId owningWindow = InvalidWindowId) {
+template <typename Storage>
+[[nodiscard]] inline storage::ResourceKey
+normalizeResourceKey(Storage& storageSystem, ResourceKey key, ResourceDomain managerDomain,
+					 ResourceScope scope, WindowId owningWindow = InvalidWindowId) {
 	if (key.name.empty()) {
 		throw FlowUiException(makeError(ErrorCode::InvalidResourceKey, ErrorSite::ResourceNormalizeKey));
 	}

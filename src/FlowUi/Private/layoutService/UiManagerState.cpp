@@ -11,23 +11,23 @@ namespace FlowUi {
 namespace manager_storage = detail::manager_storage;
 namespace storage = detail::storage;
 
-	manager_storage::UiManagerState::UiManagerState(storage::IStorageSystem& storageSystem,
-													WindowId window, const AppConfig& appConfig)
-		: storage(&storageSystem)
+manager_storage::UiManagerState::UiManagerState(storage::ActiveStorageSystem& storageSystem,
+												WindowId window, const AppConfig& appConfig)
+	: storage(&storageSystem)
 #if FLOW_UI_DEV_MODE
-		  ,
-		  devTreeCapture(appConfig.dev.tooling.treeCapture,
-						 [&] {
-							 FlowUi::detail::InitialMemoryCapacities capacities;
-							 for (const auto& setting : appConfig.memoryCapacityProfile.settings)
-								 if (const auto* definition =
-										 FlowUi::detail::find_initial_capacity(setting.target))
-									 capacities.values[static_cast<size_t>(definition->target)] =
-										 setting.value;
-							 return capacities;
-						 }())
+	  ,
+	  devTreeCapture(appConfig.dev.tooling.treeCapture,
+					 [&] {
+						 FlowUi::detail::InitialMemoryCapacities capacities;
+						 for (const auto& setting : appConfig.memoryCapacityProfile.settings)
+							 if (const auto* definition =
+									 FlowUi::detail::find_initial_capacity(setting.target))
+								 capacities.values[static_cast<size_t>(definition->target)] =
+									 setting.value;
+						 return capacities;
+					 }())
 #endif
-	{
+{
 		const size_t minimumClayArenaCapacityBytes = static_cast<size_t>(Clay_MinMemorySize());
 		const size_t configuredClayArenaCapacityBytes = appConfig.ui.clayArenaCapacityBytes;
 		const size_t clayArenaCapacityBytes = (configuredClayArenaCapacityBytes == 0)
@@ -111,7 +111,7 @@ namespace storage = detail::storage;
 #if FLOW_UI_DEV_MODE
 		devToolsConfig = appConfig.dev;
 #endif
-	}
+}
 
 	manager_storage::UiManagerState::~UiManagerState() noexcept {
 		if (Clay_GetCurrentContext() == clayContext)

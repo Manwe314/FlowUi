@@ -10,15 +10,15 @@
 #include <unordered_map>
 #include <utility>
 
-#include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
-#include "devSystems/devTooling/tree/DevTreeTypes.hpp"
-#include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
-#include "FlowUi/Private/storageSystem/IStorageSystem.hpp"
+#include "FlowUi/Private/storageSystem/StorageBinding.hpp"
 #include "FlowUi/Public/managers/ActionManager.hpp"
 #include "FlowUi/Public/managers/FontManager.hpp"
 #include "FlowUi/Public/managers/IconManager.hpp"
 #include "FlowUi/Public/managers/ImageManager.hpp"
 #include "FlowUi/Public/managers/ThemeManager.hpp"
+#include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
+#include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
+#include "devSystems/devTooling/tree/DevTreeTypes.hpp"
 
 namespace FlowUi::devSystems::tooling {
 namespace storage = ::FlowUi::detail::storage;
@@ -49,9 +49,8 @@ std::uint64_t combinedRevision(std::uint64_t left, std::uint64_t right) noexcept
 
 } // namespace
 
-DevCatalogLease::DevCatalogLease(
-	storage::IStorageSystem* storage,
-	std::vector<TextureHandle> textures) noexcept
+DevCatalogLease::DevCatalogLease(storage::StorageBinding* storage,
+								 std::vector<TextureHandle> textures) noexcept
 	: storage_(storage), textures_(std::move(textures)) {}
 
 DevCatalogLease::~DevCatalogLease() { release(); }
@@ -71,21 +70,18 @@ DevCatalogLease& DevCatalogLease::operator=(DevCatalogLease&& other) noexcept {
 void DevCatalogLease::release() noexcept {
 	if (storage_) {
 		for (TextureHandle texture : textures_) {
-			try { storage_->releaseTextureFromDevInspection(texture); } catch (...) {}
+			try {
+				storage_->system().releaseTextureFromDevInspection(texture);
+			} catch (...) {}
 		}
 	}
 	textures_.clear();
 	storage_ = nullptr;
 }
 
-void DevCatalogues::bindManagers(
-	storage::IStorageSystem* storageSystem,
-	ThemeManager* themes,
-	ActionManager* actions,
-	FontManager* fonts,
-	IconManager* icons,
-	ImageManager* images,
-	DevSchemaRegistry* schemaRegistry) noexcept {
+void DevCatalogues::bindManagers(storage::StorageBinding* storageSystem, ThemeManager* themes,
+								 ActionManager* actions, FontManager* fonts, IconManager* icons,
+								 ImageManager* images, DevSchemaRegistry* schemaRegistry) noexcept {
 	storage_ = storageSystem;
 	themeManager_ = themes;
 	actionManager_ = actions;
@@ -184,8 +180,9 @@ void DevCatalogues::rebuildImageCache() {
 		return true;
 	}));
 	for (DevImageCatalogEntry& entry : cachedImages_) {
-		const storage::DevTextureMetadata devMetadata = storage_
-			? storage_->devTextureMetadata(entry.textureHandle) : storage::DevTextureMetadata{};
+		const storage::DevTextureMetadata devMetadata =
+			storage_ ? storage_->system().devTextureMetadata(entry.textureHandle)
+					 : storage::DevTextureMetadata{};
 		const storage::TextureMetadata& metadata = devMetadata.texture;
 		entry.width = metadata.sourceWidth > 0 ? static_cast<std::uint32_t>(metadata.sourceWidth) : 0;
 		entry.height = metadata.sourceHeight > 0 ? static_cast<std::uint32_t>(metadata.sourceHeight) : 0;
@@ -278,7 +275,7 @@ void DevCatalogues::rebuildAtlasCache() {
 		for (DevAtlasCatalogEntry& entry : cachedAtlases_) {
 			if (!entry.atlasTexture) continue;
 			const storage::DevTextureMetadata metadata =
-				storage_->devTextureMetadata(entry.atlasTexture);
+				storage_->system().devTextureMetadata(entry.atlasTexture);
 			if (metadata.gpuMemoryBytes != 0) entry.gpuMemoryBytes = metadata.gpuMemoryBytes;
 		}
 	}
@@ -423,10 +420,13 @@ DevCatalogLease DevCatalogues::acquireInspectionLease() noexcept {
 	std::vector<TextureHandle> retained;
 	auto retain = [&](TextureHandle texture) {
 		if (!texture || std::ranges::find(retained, texture) != retained.end()) return;
-		if (!storage_->retainTextureForDevInspection(texture)) return;
+		if (!storage_->system().retainTextureForDevInspection(texture))
+			return;
 		try { retained.push_back(texture); }
 		catch (...) {
-			try { storage_->releaseTextureFromDevInspection(texture); } catch (...) {}
+			try {
+				storage_->system().releaseTextureFromDevInspection(texture);
+			} catch (...) {}
 			throw;
 		}
 	};
@@ -438,7 +438,9 @@ DevCatalogLease DevCatalogues::acquireInspectionLease() noexcept {
 		return DevCatalogLease(storage_, std::move(retained));
 	} catch (...) {
 		for (TextureHandle texture : retained) {
-			try { storage_->releaseTextureFromDevInspection(texture); } catch (...) {}
+			try {
+				storage_->system().releaseTextureFromDevInspection(texture);
+			} catch (...) {}
 		}
 		return {};
 	}
@@ -451,11 +453,13 @@ DevCatalogLease DevCatalogues::acquireInspectionLease(std::span<const TextureHan
 		retained.reserve(textures.size());
 		for (const auto texture : textures) {
 			if (!texture || std::ranges::find(retained, texture) != retained.end()) continue;
-			if (storage_->retainTextureForDevInspection(texture)) retained.emplace_back(texture);
+			if (storage_->system().retainTextureForDevInspection(texture))
+				retained.emplace_back(texture);
 		}
 		return DevCatalogLease(storage_, std::move(retained));
 	} catch (...) {
-		for (const auto texture : retained) storage_->releaseTextureFromDevInspection(texture);
+		for (const auto texture : retained)
+			storage_->system().releaseTextureFromDevInspection(texture);
 		return {};
 	}
 }

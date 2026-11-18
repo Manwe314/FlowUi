@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <bit>
 #include <cstddef>
 
 #include "FlowUi/Public/identificationTypes/MemoryCapacityTargets.hpp"
@@ -453,6 +454,40 @@ inline constexpr std::array initial_capacity_definitions{
 							  InitialCapacityTarget::development_tree_active_depth,
 							  InitialCapacityUnit::Entries},
 };
+/** Validate an indexed definition table before it is used for direct lookup. */
+template <size_t DefinitionCount>
+[[nodiscard]] consteval bool validateInitialCapacityDefinitions(
+	const std::array<InitialCapacityDefinition, DefinitionCount>& definitions) noexcept {
+	if (definitions.size() != static_cast<size_t>(InitialCapacityTarget::count)) {
+		return false;
+	}
+	std::array<MemoryCapacityTargetId, DefinitionCount> capacityIds{};
+	for (size_t targetIndex = 0; targetIndex < definitions.size(); ++targetIndex) {
+		const auto& definition = definitions[targetIndex];
+		if (static_cast<size_t>(definition.target) != targetIndex || definition.key.empty() ||
+			!std::has_single_bit(definition.alignment) ||
+			definition.default_value > definition.maximum ||
+			definition.default_value % definition.alignment != 0) {
+			return false;
+		}
+		capacityIds[targetIndex] = definition.id();
+		for (size_t previousIndex = 0; previousIndex < targetIndex; ++previousIndex) {
+			if (capacityIds[previousIndex] == capacityIds[targetIndex]) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+/** Validate the built-in capacity table during translation. */
+[[nodiscard]] consteval bool validateInitialCapacityDefinitions() noexcept {
+	return validateInitialCapacityDefinitions(initial_capacity_definitions);
+}
+
+static_assert(validateInitialCapacityDefinitions(),
+			  "Initial capacity definitions must be indexed, valid, and have unique IDs.");
+
 /* Recognized IDs only; historic aggregate estimates are deliberately unsupported. */
 [[nodiscard]] constexpr const InitialCapacityDefinition*
 find_initial_capacity(MemoryCapacityTargetId id) noexcept {

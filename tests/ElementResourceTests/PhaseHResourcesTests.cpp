@@ -12,15 +12,15 @@
 #include <type_traits>
 
 #include "FlowUi/Private/elementSystem/ElementStorageController.hpp"
-#include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
-#include "FlowUi/Public/managers/ElementManager.hpp"
+#include "FlowUi/Private/storageSystem/StorageSystemSelection.hpp"
 #include "FlowUi/Public/elementAuthoring/ElementSet.hpp"
+#include "FlowUi/Public/managers/ElementManager.hpp"
 
 namespace {
 
 struct Parameters {};
 
-inline FlowUi::detail::storage::IStorageSystem* gReentrantStorage = nullptr;
+inline FlowUi::detail::storage::ActiveStorageSystem* gReentrantStorage = nullptr;
 
 struct alignas(64) AppResources {
 	inline static std::atomic<int> constructions = 0;
@@ -215,7 +215,7 @@ public:
 		storage_.cancelFrame(frame);
 	}
 
-	[[nodiscard]] FlowUi::detail::storage::IStorageSystem& storage() noexcept {
+	[[nodiscard]] FlowUi::detail::storage::ActiveStorageSystem& storage() noexcept {
 		return storage_;
 	}
 
@@ -225,7 +225,7 @@ public:
 	}
 
 private:
-	FlowUi::detail::storage::FlowStorageSystem storage_;
+	FlowUi::detail::storage::ActiveStorageSystem storage_;
 	FlowUi::detail::manager_storage::ElementStorageController controller_;
 };
 

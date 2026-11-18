@@ -1,4 +1,5 @@
 #include "FlowUi/Private/resourceService/FontCatalogController.hpp"
+#include "FlowUi/Private/resourceService/providerTypes/Rgba8Image.hpp"
 
 #include <algorithm>
 #include <cstring>
@@ -29,7 +30,7 @@ uint32_t nextLayerCapacity(uint32_t current, uint32_t required) {
 }
 
 #if FLOW_UI_DEV_MODE
-void release_dev_atlas_layers(storage::IStorageSystem& storage_system,
+void release_dev_atlas_layers(storage::ActiveStorageSystem& storage_system,
 							  std::span<const FontManager::DevAtlasLayerView> layers) noexcept {
 	for (const auto& layer : layers) {
 		try {
@@ -44,7 +45,7 @@ void release_dev_atlas_layers(storage::IStorageSystem& storage_system,
 }
 
 [[nodiscard]] Result<FontManager::DevAtlasLayerView>
-create_dev_atlas_layer(storage::IStorageSystem& storage_system, storage::ImageHandle image,
+create_dev_atlas_layer(storage::ActiveStorageSystem& storage_system, storage::ImageHandle image,
 					   storage::SamplerHandle sampler, uint32_t layer_index,
 					   uint32_t atlas_size) noexcept {
 	storage::ImageViewHandle image_view{};
@@ -84,7 +85,8 @@ create_dev_atlas_layer(storage::IStorageSystem& storage_system, storage::ImageHa
 
 } // namespace
 
-FontCatalogController::FontCatalogController(storage::IStorageSystem& storageSystem, uint32_t atlasSize)
+FontCatalogController::FontCatalogController(storage::ActiveStorageSystem& storageSystem,
+											 uint32_t atlasSize)
 	: storage(&storageSystem), atlasSizeHint(atlasSize) {
 	if (atlasSize == 0) throw FlowUiException(makeError(ErrorCode::RendererConfigurationInvalid, ErrorSite::FontManagerInitialize));
 	const storage::StringId name = storageSystem.intern("flowui.font.atlas.sampler");
@@ -151,11 +153,12 @@ void FontCatalogController::discard_atlas_layers(size_t layer_count) noexcept {
 
 void FontCatalogController::uploadLayerTransactional(uint32_t layer,
 													 const std::vector<uint8_t>& rgbaPixels) {
-	const uint64_t layerBytes64 = static_cast<uint64_t>(atlasSizeHint) * atlasSizeHint * 4u;
-	if (layerBytes64 > std::numeric_limits<size_t>::max() || rgbaPixels.size() != layerBytes64) {
+	const auto layerByteSize = detail::rgba8ByteSize(atlasSizeHint, atlasSizeHint);
+	if (!layerByteSize.valid || rgbaPixels.size() != layerByteSize.value) {
 		throw FlowUiException(
 			makeError(ErrorCode::AssetPayloadInvalid, ErrorSite::FontPublishAtlas));
 	}
+	const uint64_t layerBytes64 = static_cast<uint64_t>(layerByteSize.value);
 	if (layer != atlasLayerPixels.size()) {
 		detail::terminateForFatalError(
 			makeError(ErrorCode::InternalInvariantBroken, ErrorSite::FontPublishAtlas));
@@ -213,7 +216,7 @@ void FontCatalogController::uploadLayerTransactional(uint32_t layer,
 		return;
 	}
 
-	if (layerBytes64 > std::numeric_limits<uint64_t>::max() / candidateCapacity) {
+	if (layerBytes64 > std::numeric_limits<size_t>::max() / candidateCapacity) {
 		throw FlowUiException(
 			makeError(ErrorCode::ArithmeticOverflow, ErrorSite::FontPublishAtlas));
 	}

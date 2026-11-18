@@ -62,7 +62,13 @@ set(FLOWUI_PLATFORM_PROVIDER_HEADER "" CACHE STRING "Custom complete platform pr
 set(FLOWUI_PLATFORM_PROVIDER_TYPE "" CACHE STRING "Fully qualified custom platform provider type")
 set(FLOWUI_ADDITIONAL_TRANSLATORS_HEADER "" CACHE STRING "Header defining an additional input translator pack")
 set(FLOWUI_ADDITIONAL_TRANSLATORS_TYPE "" CACHE STRING "Fully qualified additional input translator pack type")
-foreach(selection IN ITEMS PLATFORM_PROVIDER ADDITIONAL_TRANSLATORS)
+set(FLOWUI_STORAGE_SYSTEM_HEADER "" CACHE STRING "Custom complete storage system header; empty selects FlowStorageSystem")
+set(FLOWUI_STORAGE_SYSTEM_TYPE "" CACHE STRING "Fully qualified custom storage system type")
+foreach(domain IN ITEMS TEXT_LAYOUT FONT_MSDF ICON_RASTER)
+    set(FLOWUI_${domain}_PROVIDER_HEADER "" CACHE STRING "Custom ${domain} provider header; empty selects the built-in")
+    set(FLOWUI_${domain}_PROVIDER_TYPE "" CACHE STRING "Fully qualified custom ${domain} provider type")
+endforeach()
+foreach(selection IN ITEMS PLATFORM_PROVIDER ADDITIONAL_TRANSLATORS STORAGE_SYSTEM TEXT_LAYOUT_PROVIDER FONT_MSDF_PROVIDER ICON_RASTER_PROVIDER)
     if((FLOWUI_${selection}_HEADER STREQUAL "" AND NOT FLOWUI_${selection}_TYPE STREQUAL "") OR
        (FLOWUI_${selection}_TYPE STREQUAL "" AND NOT FLOWUI_${selection}_HEADER STREQUAL ""))
         message(FATAL_ERROR "FLOWUI_${selection}_HEADER and FLOWUI_${selection}_TYPE must both be set or both be empty.")
@@ -78,6 +84,19 @@ foreach(selection IN ITEMS PLATFORM_PROVIDER ADDITIONAL_TRANSLATORS)
     endif()
 endforeach()
 include(cmake/FlowUiPlatformProvider.cmake)
+include(cmake/FlowUiStorageSystem.cmake)
+include(cmake/FlowUiContentProviders.cmake)
+if(FLOWUI_CONFIG_CUSTOM_ICON_RASTER_PROVIDER AND NOT FLOWUI_INCLUDE_ICON_MANAGER)
+    message(FATAL_ERROR "A custom icon raster provider requires FLOWUI_INCLUDE_ICON_MANAGER=ON.")
+endif()
+set(FLOWUI_CONFIG_DEFAULT_FONT_BAKING 0)
+if(NOT FLOWUI_CONFIG_CUSTOM_FONT_MSDF_PROVIDER AND (FLOWUI_BUILD_FONT_BAKER OR FLOWUI_ENABLE_RUNTIME_FONT_BAKING))
+    set(FLOWUI_CONFIG_DEFAULT_FONT_BAKING 1)
+endif()
+set(FLOWUI_NEEDS_DEFAULT_ICON 0)
+if(FLOWUI_INCLUDE_ICON_MANAGER AND NOT FLOWUI_CONFIG_CUSTOM_ICON_RASTER_PROVIDER)
+    set(FLOWUI_NEEDS_DEFAULT_ICON 1)
+endif()
 
 include(GNUInstallDirs)
 set(FLOWUI_RESOURCE_SUBDIRECTORY "flowui" CACHE STRING "Resource pack directory name")
@@ -221,6 +240,7 @@ add_custom_target(flowui_resources ALL
 set(FLOWUI_MSDF_ATLAS_GEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/msdf-atlas-gen")
 
 set(FLOWUI_ARTERY_DIR "")
+if(NOT FLOWUI_CONFIG_CUSTOM_FONT_MSDF_PROVIDER)
 if(EXISTS "${FLOWUI_MSDF_ATLAS_GEN_DIR}/artery-font-format")
     set(FLOWUI_ARTERY_DIR "${FLOWUI_MSDF_ATLAS_GEN_DIR}/artery-font-format")
 elseif(EXISTS "${FLOWUI_MSDF_ATLAS_GEN_DIR}/external/artery-font-format")
@@ -233,16 +253,21 @@ if(FLOWUI_ARTERY_DIR STREQUAL "")
     message(FATAL_ERROR "Could not find artery-font-format inside external/msdf-atlas-gen (did you init submodules with --recursive?)")
 endif()
 
+endif()
+
 add_library(flowui_artery INTERFACE)
 add_library(FlowUi::artery ALIAS flowui_artery)
 set_target_properties(flowui_artery PROPERTIES EXPORT_NAME artery)
+if(NOT FLOWUI_CONFIG_CUSTOM_FONT_MSDF_PROVIDER)
 target_include_directories(flowui_artery SYSTEM INTERFACE
     $<BUILD_INTERFACE:${FLOWUI_ARTERY_DIR}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/external/artery-font-format>
 )
 
+endif()
+
 set(FLOWUI_NEED_MSDF_ATLAS_GEN OFF)
-if(FLOWUI_BUILD_FONT_BAKER OR FLOWUI_ENABLE_RUNTIME_FONT_BAKING)
+if(FLOWUI_CONFIG_DEFAULT_FONT_BAKING)
     set(FLOWUI_NEED_MSDF_ATLAS_GEN ON)
 endif()
 
@@ -268,7 +293,7 @@ if(FLOWUI_NEED_MSDF_ATLAS_GEN)
     endforeach()
 endif()
 
-if(FLOWUI_INCLUDE_ICON_MANAGER)
+if(FLOWUI_NEEDS_DEFAULT_ICON)
     if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/plutosvg/CMakeLists.txt")
         message(FATAL_ERROR "Could not find external/plutosvg (did you init submodules with --recursive?)")
     endif()
@@ -280,7 +305,8 @@ endif()
 
 if(FLOWUI_BUILD_FONT_BAKER)
     add_executable(flowui_font_baker tools/flowui_font_baker/main.cpp)
-    target_link_libraries(flowui_font_baker PRIVATE msdf-atlas-gen::msdf-atlas-gen)
+    target_link_libraries(flowui_font_baker PRIVATE flowui_font_cpu)
+    target_include_directories(flowui_font_baker PRIVATE "${FLOWUI_GENERATED_INCLUDE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/include")
     target_compile_features(flowui_font_baker PRIVATE cxx_std_23)
     target_compile_options(flowui_font_baker PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
     if(MSVC)
@@ -359,6 +385,19 @@ foreach(dependency IN LISTS FLOWUI_PLATFORM_DEPENDENCY_TARGETS)
         message(FATAL_ERROR "Registered platform dependency target does not exist: ${dependency}")
     endif()
 endforeach()
+get_property(FLOWUI_STORAGE_DEPENDENCY_TARGETS GLOBAL PROPERTY FLOWUI_STORAGE_DEPENDENCY_TARGETS)
+get_property(FLOWUI_STORAGE_DEPENDENCY_PACKAGES GLOBAL PROPERTY FLOWUI_STORAGE_DEPENDENCY_PACKAGES)
+list(REMOVE_DUPLICATES FLOWUI_STORAGE_DEPENDENCY_TARGETS)
+list(REMOVE_DUPLICATES FLOWUI_STORAGE_DEPENDENCY_PACKAGES)
+set(FLOWUI_STORAGE_PACKAGE_REQUIREMENTS "")
+foreach(package IN LISTS FLOWUI_STORAGE_DEPENDENCY_PACKAGES)
+    string(APPEND FLOWUI_STORAGE_PACKAGE_REQUIREMENTS "find_dependency(${package})\n")
+endforeach()
+foreach(dependency IN LISTS FLOWUI_STORAGE_DEPENDENCY_TARGETS)
+    if(NOT TARGET ${dependency})
+        message(FATAL_ERROR "Registered storage dependency target does not exist: ${dependency}")
+    endif()
+endforeach()
 set(FLOWUI_HAS_GLFW_PROVIDER OFF)
 if("glfw3" IN_LIST FLOWUI_PLATFORM_DEPENDENCY_PACKAGES)
     set(FLOWUI_HAS_GLFW_PROVIDER ON)
@@ -370,6 +409,68 @@ if("glfw3" IN_LIST FLOWUI_PLATFORM_DEPENDENCY_PACKAGES)
         endif()
     endif()
 endif()
+
+add_library(flowui_image_decode STATIC src/FlowUi/Private/resourceService/providerTypes/RgbaImageDecode.cpp)
+set_target_properties(flowui_image_decode PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_include_directories(flowui_image_decode PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/external")
+set_property(GLOBAL APPEND PROPERTY FLOWUI_CONTENT_PROVIDER_MODULES flowui_image_decode)
+
+flowui_add_content_module(flowui_text_provider TEXT_LAYOUT
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/FlowUi/Private/textLayoutService/providers/basic/BasicTextLayoutProvider.cpp")
+add_library(flowui_font_validation STATIC src/FlowUi/Private/resourceService/fontMSDFProvider/FontCpuAssetValidation.cpp)
+set_target_properties(flowui_font_validation PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_compile_features(flowui_font_validation PUBLIC cxx_std_23)
+target_include_directories(flowui_font_validation PRIVATE "${FLOWUI_GENERATED_INCLUDE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set_property(GLOBAL APPEND PROPERTY FLOWUI_CONTENT_PROVIDER_MODULES flowui_font_validation)
+
+flowui_add_content_module(flowui_font_cpu FONT_MSDF
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/FlowUi/Private/resourceService/fontMSDFProvider/providers/msdfAtlas/ArteryFontCodec.cpp")
+get_target_property(flowui_font_module_type flowui_font_cpu TYPE)
+if(flowui_font_module_type STREQUAL "INTERFACE_LIBRARY")
+    target_link_libraries(flowui_font_cpu INTERFACE flowui_font_validation)
+else()
+    target_link_libraries(flowui_font_cpu PRIVATE flowui_font_validation)
+endif()
+if(NOT FLOWUI_CONFIG_CUSTOM_FONT_MSDF_PROVIDER)
+    target_link_libraries(flowui_font_cpu PRIVATE FlowUi::artery flowui_image_decode)
+    if(FLOWUI_CONFIG_DEFAULT_FONT_BAKING)
+        # Generation is one shared implementation. Runtime consumers without the
+        # baking policy need only the codec, even when the standalone tool is built.
+        add_library(flowui_font_baking STATIC src/FlowUi/Private/resourceService/fontMSDFProvider/providers/msdfAtlas/MsdfAtlasFontBaker.cpp)
+        set_target_properties(flowui_font_baking PROPERTIES POSITION_INDEPENDENT_CODE ON EXPORT_NAME font_baking)
+        target_include_directories(flowui_font_baking PRIVATE "${FLOWUI_GENERATED_INCLUDE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/external")
+        target_compile_features(flowui_font_baking PUBLIC cxx_std_23)
+        target_link_libraries(flowui_font_baking PRIVATE msdf-atlas-gen::msdf-atlas-gen flowui_font_validation)
+        target_link_libraries(flowui_font_cpu PRIVATE $<BUILD_INTERFACE:flowui_font_baking>)
+        if(FLOWUI_ENABLE_RUNTIME_FONT_BAKING)
+            target_link_libraries(flowui_font_cpu PRIVATE $<INSTALL_INTERFACE:FlowUi::font_baking>)
+        endif()
+        if(FLOWUI_ENABLE_RUNTIME_FONT_BAKING)
+            set_property(GLOBAL APPEND PROPERTY FLOWUI_CONTENT_PROVIDER_MODULES flowui_font_baking)
+        else()
+            set(FLOWUI_OPTIONAL_FONT_BAKING_EXPORT ON)
+        endif()
+    else()
+        target_sources(flowui_font_cpu PRIVATE src/FlowUi/Private/resourceService/fontMSDFProvider/providers/msdfAtlas/MsdfAtlasFontBaker.cpp)
+    endif()
+endif()
+if(FLOWUI_INCLUDE_ICON_MANAGER)
+    flowui_add_content_module(flowui_icon_provider ICON_RASTER
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/FlowUi/Private/resourceService/iconRasterProvider/providers/plutoSvg/PlutoSvgIconRasterProvider.cpp")
+    if(FLOWUI_NEEDS_DEFAULT_ICON)
+        target_link_libraries(flowui_icon_provider PRIVATE plutosvg::plutosvg)
+    endif()
+endif()
+set(FLOWUI_CONTENT_PACKAGE_REQUIREMENTS "")
+foreach(domain IN ITEMS TEXT_LAYOUT FONT_MSDF ICON_RASTER)
+    if(FLOWUI_CONFIG_CUSTOM_${domain}_PROVIDER)
+        get_property(provider_targets GLOBAL PROPERTY FLOWUI_${domain}_PROVIDER_TARGETS)
+        get_property(provider_packages GLOBAL PROPERTY FLOWUI_${domain}_PROVIDER_PACKAGES)
+        foreach(package IN LISTS provider_packages)
+            string(APPEND FLOWUI_CONTENT_PACKAGE_REQUIREMENTS "find_dependency(${package})\n")
+        endforeach()
+    endif()
+endforeach()
 
 add_library(flowui)
 add_library(FlowUi::FlowUi ALIAS flowui)
@@ -420,12 +521,13 @@ target_sources(flowui
         src/FlowUi/Public/managers/UiManager.cpp
         src/FlowUi/Private/layoutService/UiManagerState.cpp
         src/FlowUi/Private/elementSystem/FlowUiElementBridge.cpp
-		src/FlowUi/Private/textLayoutService/CurrentTextShaper.cpp
+		src/FlowUi/Private/textLayoutService/TextLayoutValidation.cpp
 		src/FlowUi/Private/textLayoutService/TextLineBreaker.cpp
 		src/FlowUi/Private/textLayoutService/TextLayoutService.cpp
 		src/FlowUi/Private/textLayoutService/TextStorage.cpp
         src/FlowUi/Private/renderer/Vk_UiRenderer.cpp
         src/FlowUi/Private/storageSystem/FlowStorageSystem.cpp
+        src/FlowUi/Private/storageSystem/StorageRecordAccess.cpp
         src/FlowUi/Private/inputService/InputQueue.cpp
         src/FlowUi/Private/inputService/InputState.cpp
         src/FlowUi/Private/inputService/InputService.cpp
@@ -737,16 +839,24 @@ target_include_directories(flowui
 target_link_libraries(flowui
     PUBLIC
         Vulkan::Vulkan
-        FlowUi::artery
 )
-target_link_libraries(flowui PRIVATE ${FLOWUI_PLATFORM_DEPENDENCY_TARGETS})
+target_link_libraries(flowui PRIVATE ${FLOWUI_PLATFORM_DEPENDENCY_TARGETS} ${FLOWUI_STORAGE_DEPENDENCY_TARGETS})
 
+target_link_libraries(flowui PRIVATE flowui_text_provider flowui_font_cpu flowui_image_decode)
 if(FLOWUI_INCLUDE_ICON_MANAGER)
-    target_link_libraries(flowui PRIVATE plutosvg::plutosvg)
+    target_link_libraries(flowui PRIVATE flowui_icon_provider)
 endif()
+foreach(domain IN ITEMS TEXT_LAYOUT FONT_MSDF ICON_RASTER)
+    if(FLOWUI_CONFIG_CUSTOM_${domain}_PROVIDER)
+        get_property(provider_targets GLOBAL PROPERTY FLOWUI_${domain}_PROVIDER_TARGETS)
+        target_link_libraries(flowui PRIVATE ${provider_targets})
+        if(domain STREQUAL "FONT_MSDF" AND FLOWUI_BUILD_FONT_BAKER)
+            target_link_libraries(flowui_font_baker PRIVATE ${provider_targets})
+        endif()
+    endif()
+endforeach()
 
 if(FLOWUI_ENABLE_RUNTIME_FONT_BAKING)
-    target_link_libraries(flowui PRIVATE msdf-atlas-gen::msdf-atlas-gen)
     target_compile_definitions(flowui PUBLIC FLOWUI_RUNTIME_FONT_BAKING=1)
 endif()
 
@@ -779,6 +889,7 @@ endif()
 if(FLOWUI_INSTALL)
     include(CMakePackageConfigHelpers)
 
+    if(NOT FLOWUI_CONFIG_CUSTOM_FONT_MSDF_PROVIDER)
     install(DIRECTORY "${FLOWUI_ARTERY_DIR}/"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/external/artery-font-format"
         REGEX "/\\.git$" EXCLUDE
@@ -786,13 +897,22 @@ if(FLOWUI_INSTALL)
         PATTERN "example.arfont" EXCLUDE
     )
 
-    install(TARGETS flowui flowui_artery
+    endif()
+    get_property(FLOWUI_CONTENT_PROVIDER_MODULES GLOBAL PROPERTY FLOWUI_CONTENT_PROVIDER_MODULES)
+    install(TARGETS flowui flowui_artery ${FLOWUI_CONTENT_PROVIDER_MODULES}
         EXPORT FlowUiTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
+
+    if(FLOWUI_OPTIONAL_FONT_BAKING_EXPORT)
+        install(TARGETS flowui_font_baking EXPORT FlowUiFontBakingTargets
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+        install(EXPORT FlowUiFontBakingTargets FILE FlowUiFontBakingTargets.cmake
+            NAMESPACE FlowUi:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FlowUi)
+    endif()
 
     if(FLOWUI_BUILD_FONT_BAKER)
         install(TARGETS flowui_font_baker
@@ -815,7 +935,7 @@ if(FLOWUI_INSTALL)
     endforeach()
     install(DIRECTORY include/FSEL include/devSystems DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
     install(DIRECTORY "${FLOWUI_RESOURCE_DIRECTORY}/" DESTINATION "${FLOWUI_INSTALL_RESOURCE_DIRECTORY}")
-    install(FILES cmake/FlowUiResources.cmake cmake/FlowUiCopyResources.cmake cmake/FlowUiCopyRuntime.cmake cmake/FlowUiPlatformProvider.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FlowUi)
+    install(FILES cmake/FlowUiResources.cmake cmake/FlowUiCopyResources.cmake cmake/FlowUiCopyRuntime.cmake cmake/FlowUiPlatformProvider.cmake cmake/FlowUiStorageSystem.cmake cmake/FlowUiContentProviders.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FlowUi)
     install(FILES external/clay.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/external)
     install(FILES
         "${FLOWUI_GENERATED_INCLUDE_DIR}/FlowUi/Public/BuildConfig.hpp"
@@ -846,4 +966,25 @@ if(FLOWUI_INSTALL)
         ${CMAKE_CURRENT_BINARY_DIR}/FlowUiConfigVersion.cmake
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FlowUi
     )
+endif()
+
+# Bundled shared objects remain loadable after the installed prefix is relocated.
+if(UNIX AND BUILD_SHARED_LIBS)
+    if(APPLE)
+        set(flowui_relative_library_origin "@loader_path")
+    else()
+        set(flowui_relative_library_origin "$ORIGIN")
+    endif()
+    foreach(runtime_target flowui plutosvg plutovg msdf-atlas-gen msdfgen-core msdfgen-ext)
+        if(TARGET ${runtime_target})
+            get_target_property(runtime_imported ${runtime_target} IMPORTED)
+            if(NOT runtime_imported)
+                set_property(TARGET ${runtime_target} APPEND PROPERTY INSTALL_RPATH "${flowui_relative_library_origin}")
+            endif()
+        endif()
+    endforeach()
+    if(TARGET flowui_font_baker)
+        file(RELATIVE_PATH flowui_tool_library_path "/${CMAKE_INSTALL_BINDIR}" "/${CMAKE_INSTALL_LIBDIR}")
+        set_property(TARGET flowui_font_baker APPEND PROPERTY INSTALL_RPATH "${flowui_relative_library_origin}/${flowui_tool_library_path}")
+    endif()
 endif()

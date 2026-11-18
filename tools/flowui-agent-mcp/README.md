@@ -47,3 +47,5 @@ FLOWUI_AGENT_CLI="$PWD/build/flowui-agent" \
 ```
 
 The SDK-dependent tests report skips when the optional package is absent. Those skips are not evidence of protocol execution. Client-specific IDE behavior and Windows transport must be tested in those environments before being advertised as verified.
+
+Repository-local outputs use `.flowui/agentic/v1` for versioned evidence stores (including `runs/`), `.flowui/agentic/verification/` for verification workspaces and MCP temporary exports, and `.flowui/agentic/logs/` for launch and harness logs. Live MCP and Catalogue harnesses reject output directories outside the resolved verification tree, including symlink escapes. Launch responses and session records identify the relocated stream log paths.

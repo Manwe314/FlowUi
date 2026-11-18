@@ -58,7 +58,9 @@ class Adapter:
         encoded = json.dumps(arguments, ensure_ascii=False, separators=(",", ":"))
         if len(encoded.encode()) > MAXIMUM_ARGUMENT_BYTES:
             return error_envelope(operation, "argument_budget_exhausted", "Arguments exceed the byte limit.", 2), None
-        temporary_directory = tempfile.TemporaryDirectory(prefix="flowui-agent-mcp-")
+        temporary_root = self.workspace / ".flowui/agentic/verification/mcp"
+        temporary_root.mkdir(parents=True, exist_ok=True)
+        temporary_directory = tempfile.TemporaryDirectory(prefix="request-", dir=temporary_root)
         request_arguments = dict(arguments)
         include_image = request_arguments.pop("include_image", True)
         image_path = Path(temporary_directory.name) / "image.png"

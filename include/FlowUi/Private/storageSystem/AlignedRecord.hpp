@@ -39,11 +39,10 @@ struct AlignedRecordLayout {
 	}
 };
 
-[[nodiscard]] inline AlignedRecordLayout makeAlignedRecordLayout(
-	size_t headerBytes,
-	size_t headerAlignment,
-	size_t payloadBytes,
-	size_t payloadAlignment) {
+[[nodiscard]] constexpr AlignedRecordLayout makeAlignedRecordLayout(size_t headerBytes,
+																	size_t headerAlignment,
+																	size_t payloadBytes,
+																	size_t payloadAlignment) {
 	if (headerBytes == 0 || payloadBytes == 0) {
 		throw FlowUiException(makeError(ErrorCode::StorageConfigurationInvalid, ErrorSite::ResourceCreatePersistentRecord));
 	}
@@ -69,10 +68,18 @@ struct AlignedRecordLayout {
 }
 
 template <typename Header, typename Payload>
-[[nodiscard]] inline AlignedRecordLayout makeAlignedRecordLayout() {
-	return makeAlignedRecordLayout(
-		sizeof(Header), alignof(Header), sizeof(Payload), alignof(Payload));
+[[nodiscard]] consteval AlignedRecordLayout makeAlignedRecordLayout() {
+	constexpr auto layout =
+		makeAlignedRecordLayout(sizeof(Header), alignof(Header), sizeof(Payload), alignof(Payload));
+	static_assert(layout.payloadOffset % alignof(Payload) == 0);
+	static_assert(layout.allocationAlignment >= alignof(Header));
+	static_assert(layout.allocationAlignment >= alignof(Payload));
+	return layout;
 }
+
+/** Shared fixed layout used by typed construction, rollback, and destruction. */
+template <typename Header, typename Payload>
+inline constexpr AlignedRecordLayout typedRecordLayout = makeAlignedRecordLayout<Header, Payload>();
 
 template <typename Header, typename Payload, typename... PayloadArgs>
 Header* constructAlignedRecord(

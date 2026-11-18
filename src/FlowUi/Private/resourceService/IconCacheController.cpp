@@ -3,18 +3,8 @@
 #include <algorithm>
 #include <functional>
 
-#include <plutosvg.h>
 
 namespace FlowUi::detail::manager_storage {
-
-IconSurfaceOwner& IconSurfaceOwner::operator=(IconSurfaceOwner&& other) noexcept {
-	if (this == &other) return *this;
-	if (surface) plutovg_surface_destroy(surface);
-	surface = other.surface;
-	other.surface = nullptr;
-	return *this;
-}
-IconSurfaceOwner::~IconSurfaceOwner() { if (surface) plutovg_surface_destroy(surface); }
 
 size_t IconVariantKeyHash::operator()(const IconVariantKey& key) const noexcept {
 	size_t seed = std::hash<std::string>{}(key.nameKey);
@@ -23,9 +13,8 @@ size_t IconVariantKeyHash::operator()(const IconVariantKey& key) const noexcept 
 	return seed;
 }
 
-IconCacheController::IconCacheController(
-	storage::IStorageSystem& storageSystem,
-	const IconManagerConfig& config)
+IconCacheController::IconCacheController(storage::ActiveStorageSystem& storageSystem,
+										 const IconManagerConfig& config)
 	: storage(&storageSystem), atlasSize(std::max(1u, config.atlasSize)),
 	  atlasPadding(config.atlasPadding), sizeReuseTolerance(std::max(1u, config.sizeBucketStep)),
 	  maxAtlasPages(std::max(1u, config.maxAtlasPages)) {
@@ -49,9 +38,14 @@ IconCacheController::~IconCacheController() noexcept {
 		try { if (page.view) storage->releaseImageView(page.view); } catch (...) {}
 		try { if (page.image) storage->releaseImage(page.image); } catch (...) {}
 	}
-	for (auto& [_, document] : documentsByKey) {
-		if (document.document) plutosvg_document_destroy(document.document);
-		try { if (document.source) storage->releaseBlob(document.source); } catch (...) {}
+	while (!documentsByKey.empty()) {
+		const auto document = documentsByKey.begin();
+		const storage::BlobHandle source = document->second.source;
+		documentsByKey.erase(document);
+		try {
+			if (source)
+				storage->releaseBlob(source);
+		} catch (...) {}
 	}
 	try { if (atlasSampler) storage->releaseSampler(atlasSampler); } catch (...) {}
 }

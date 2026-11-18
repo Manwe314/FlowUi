@@ -65,10 +65,25 @@ if(Python3_Interpreter_FOUND AND NOT MSVC)
     endif()
 endif()
 
+if(Python3_Interpreter_FOUND AND NOT MSVC)
+    add_test(NAME flowui.storage.concept_diagnostics
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/StorageTests/StorageConceptDiagnosticsTests.py
+            --source ${PROJECT_SOURCE_DIR} --build ${PROJECT_BINARY_DIR}
+            --compiler ${CMAKE_CXX_COMPILER})
+    set_tests_properties(flowui.storage.concept_diagnostics PROPERTIES
+        LABELS "flowui;storage;concepts" TIMEOUT 180)
+    add_test(NAME flowui.storage.selection_diagnostics
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/StorageTests/StorageSelectionDiagnosticsTests.py
+            --source ${PROJECT_SOURCE_DIR} --build ${PROJECT_BINARY_DIR}
+            --compiler ${CMAKE_CXX_COMPILER} --cmake ${CMAKE_COMMAND})
+    set_tests_properties(flowui.storage.selection_diagnostics PROPERTIES
+        LABELS "flowui;storage;configuration" TIMEOUT 120)
+endif()
+
 add_executable(flowui_default_value_tests Defaults/DefaultValueTests.cpp)
 target_include_directories(flowui_default_value_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(flowui_default_value_tests PRIVATE FlowUi::FlowUi)
-if(FLOWUI_INCLUDE_ICON_MANAGER)
+if(FLOWUI_NEEDS_DEFAULT_ICON)
     target_link_libraries(flowui_default_value_tests PRIVATE plutosvg::plutosvg)
 endif()
 add_test(NAME flowui.defaults.values COMMAND flowui_default_value_tests)
@@ -101,6 +116,7 @@ if(FLOWUI_ADDITIONAL_TRANSLATORS_TYPE STREQUAL "::FlowUi::examples::Deterministi
     set_tests_properties(flowui.input.translator_ui PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 90)
 endif()
 
+if(NOT FLOWUI_CONFIG_CUSTOM_FONT_MSDF_PROVIDER)
 add_executable(flowui_default_font_tests Defaults/DefaultFontTests.cpp)
 target_include_directories(flowui_default_font_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(flowui_default_font_tests PRIVATE FlowUi::FlowUi FlowUi::artery)
@@ -116,6 +132,8 @@ set_tests_properties(
     PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 60 RUN_SERIAL TRUE
 )
 
+endif()
+
 add_executable(flowui_internal_flags_tests InternalFlagsTests.cpp)
 target_compile_features(flowui_internal_flags_tests PRIVATE cxx_std_23)
 target_compile_definitions(flowui_internal_flags_tests PRIVATE FLOWUI_INTERNAL_VIEWPORT_MANAGER=1)
@@ -129,6 +147,7 @@ add_executable(flowui_storage_types_tests
 )
 
 target_compile_features(flowui_storage_types_tests PRIVATE cxx_std_23)
+target_link_libraries(flowui_storage_types_tests PRIVATE Vulkan::Vulkan)
 target_include_directories(flowui_storage_types_tests
     PRIVATE
 		${FLOWUI_GENERATED_INCLUDE_DIR}
@@ -142,6 +161,15 @@ set_tests_properties(flowui.storage.types PROPERTIES
     LABELS "flowui;storage;unit"
     TIMEOUT 30
 )
+
+add_executable(flowui_storage_configuration_tests StorageTests/StorageConfigurationTests.cpp)
+target_compile_features(flowui_storage_configuration_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_storage_configuration_tests PRIVATE
+    ${FLOWUI_GENERATED_INCLUDE_DIR} ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/external ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_storage_configuration_tests PRIVATE Vulkan::Vulkan)
+add_test(NAME flowui.storage.configuration COMMAND flowui_storage_configuration_tests)
+set_tests_properties(flowui.storage.configuration PROPERTIES LABELS "flowui;storage;unit")
 
 # Self-contained DEV tree tests deliberately compile the optional Clay bridge
 # independently of the top-level DEV setting.
@@ -383,6 +411,7 @@ if(FLOW_UI_DEV_MODE)
 	)
 endif()
 
+if(NOT FLOWUI_CONFIG_CUSTOM_TEXT_LAYOUT_PROVIDER)
 add_executable(flowui_text_layout_service_tests
 	TextTests/TextLayoutServiceTests.cpp
 )
@@ -399,6 +428,8 @@ set_tests_properties(flowui.text.layout_service PROPERTIES
 	LABELS "flowui;text;unit"
 	TIMEOUT 30
 )
+
+endif()
 
 add_executable(flowui_text_storage_viewport_tests
 	TextTests/TextStorageViewportTests.cpp
@@ -532,7 +563,7 @@ target_compile_definitions(flowui_phase5_manager_storage_tests PRIVATE
 	FLOWUI_FONT_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Public/managers/FontManager.cpp"
 	FLOWUI_VIEWPORT_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Public/managers/ViewPortManager.cpp"
 	FLOWUI_UI_RENDERER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Private/renderer/Vk_UiRenderer.cpp"
-	FLOWUI_STORAGE_INTERFACE_SOURCE="${PROJECT_SOURCE_DIR}/include/FlowUi/Private/storageSystem/IStorageSystem.hpp"
+	FLOWUI_STORAGE_INTERFACE_SOURCE="${PROJECT_SOURCE_DIR}/include/FlowUi/Private/storageSystem/StorageSystemConcept.hpp"
 	FLOWUI_STORAGE_TYPES_SOURCE="${PROJECT_SOURCE_DIR}/include/FlowUi/Private/storageSystem/StorageTypes.hpp"
 )
 target_link_libraries(flowui_phase5_manager_storage_tests PRIVATE FlowUi::FlowUi)
@@ -1317,6 +1348,8 @@ if(FLOW_UI_DEV_MODE)
 
     add_executable(flowui_dev_error_tests
         DevMonitoringTests/DevErrorMonitoringTests.cpp
+        DevSystemsTests/ErrorReportingStub.cpp
+        ${PROJECT_SOURCE_DIR}/src/FlowUi/Private/storageSystem/FlowStorageSystem.cpp
         DevSystemsTests/DevMemoryVulkanSupport.cpp
         ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/errors/DevError.cpp
         ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/errors/DevErrorRecorder.cpp
@@ -1353,16 +1386,7 @@ if(FLOW_UI_DEV_MODE)
         TIMEOUT 30
     )
 
-    add_executable(flowui_dev_memory_tests
-        DevSystemsTests/DevMemoryTests.cpp
-        DevSystemsTests/DevMemoryVulkanSupport.cpp
-        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/memory/DevMemory.cpp
-        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/memory/DevEnvironmentMemoryProbe.cpp
-        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/memory/DevExternalMemoryScope.cpp
-        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/memory/DevMemoryRecorder.cpp
-        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/memory/DevMemoryProbe.cpp
-        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.cpp
-    )
+    add_executable(flowui_dev_memory_tests DevSystemsTests/DevMemoryTests.cpp)
     target_compile_features(flowui_dev_memory_tests PRIVATE cxx_std_23)
     target_include_directories(flowui_dev_memory_tests PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
@@ -1370,7 +1394,7 @@ if(FLOW_UI_DEV_MODE)
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/external
     )
-    target_link_libraries(flowui_dev_memory_tests PRIVATE Vulkan::Vulkan)
+    target_link_libraries(flowui_dev_memory_tests PRIVATE FlowUi::FlowUi)
     if(WIN32)
         target_link_libraries(flowui_dev_memory_tests PRIVATE Psapi)
     endif()
@@ -1668,3 +1692,76 @@ if(AGENTIC_WORKFLOW)
         set_tests_properties(flowui.agentic.knowledge PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
     endif()
 endif()
+
+if(FLOWUI_NEEDS_DEFAULT_ICON)
+    add_executable(flowui_icon_raster_provider_tests ProviderTests/IconRasterProviderTests.cpp)
+    target_include_directories(flowui_icon_raster_provider_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(flowui_icon_raster_provider_tests PRIVATE FlowUi::FlowUi)
+    add_test(NAME flowui.providers.icon_raster COMMAND flowui_icon_raster_provider_tests)
+endif()
+
+add_executable(flowui_font_cpu_validation_tests ProviderTests/FontCpuAssetValidationTests.cpp)
+target_include_directories(flowui_font_cpu_validation_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${FLOWUI_GENERATED_INCLUDE_DIR} ${PROJECT_SOURCE_DIR}/include)
+target_link_libraries(flowui_font_cpu_validation_tests PRIVATE flowui_font_cpu)
+add_test(NAME flowui.providers.font_validation COMMAND flowui_font_cpu_validation_tests)
+if(NOT FLOWUI_CONFIG_CUSTOM_FONT_MSDF_PROVIDER)
+    add_executable(flowui_font_codec_tests ProviderTests/FontCodecTests.cpp)
+    target_include_directories(flowui_font_codec_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${FLOWUI_GENERATED_INCLUDE_DIR} ${PROJECT_SOURCE_DIR}/include)
+    target_compile_definitions(flowui_font_codec_tests PRIVATE FLOWUI_PROVIDER_ASSET_DIRECTORY="${PROJECT_SOURCE_DIR}/assets/fonts")
+    target_link_libraries(flowui_font_codec_tests PRIVATE flowui_font_cpu FlowUi::artery)
+    add_test(NAME flowui.providers.font_codec COMMAND flowui_font_codec_tests)
+endif()
+if(FLOWUI_CONFIG_CUSTOM_TEXT_LAYOUT_PROVIDER AND FLOWUI_TEXT_LAYOUT_PROVIDER_TYPE MATCHES "(DeterministicTextLayoutProvider|RegisteredTextProvider)$")
+    add_executable(flowui_custom_text_provider_tests ProviderTests/TextProviderSelectionTests.cpp)
+    target_include_directories(flowui_custom_text_provider_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/tests/ProviderTests/providers)
+    target_link_libraries(flowui_custom_text_provider_tests PRIVATE FlowUi::FlowUi)
+    add_test(NAME flowui.providers.text_selection COMMAND flowui_custom_text_provider_tests)
+endif()
+if(FLOWUI_INCLUDE_ICON_MANAGER)
+    add_executable(flowui_icon_manager_provider_tests ProviderTests/IconManagerProviderTests.cpp HeadlessVulkanFixture.cpp)
+    target_include_directories(flowui_icon_manager_provider_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(flowui_icon_manager_provider_tests PRIVATE FlowUi::FlowUi Vulkan::Vulkan)
+    if(FLOWUI_REQUIRE_VULKAN_TEST_DEVICE)
+        target_compile_definitions(flowui_icon_manager_provider_tests PRIVATE FLOWUI_TEST_REQUIRE_VULKAN_DEVICE=1)
+    endif()
+    set(FLOWUI_ICON_TEST_COMPUTE_SPV "${CMAKE_CURRENT_BINARY_DIR}/icon_atlas_sample.comp.spv")
+    add_custom_command(OUTPUT "${FLOWUI_ICON_TEST_COMPUTE_SPV}"
+        COMMAND "${FLOWUI_SHADER_COMPILER}" ${FLOWUI_SHADER_COMPILE_ARGS} "${CMAKE_CURRENT_SOURCE_DIR}/ProviderTests/icon_atlas_sample.comp" -o "${FLOWUI_ICON_TEST_COMPUTE_SPV}"
+        DEPENDS ProviderTests/icon_atlas_sample.comp VERBATIM)
+    add_custom_target(flowui_icon_provider_test_shader DEPENDS "${FLOWUI_ICON_TEST_COMPUTE_SPV}")
+    add_dependencies(flowui_icon_manager_provider_tests flowui_icon_provider_test_shader)
+    target_compile_definitions(flowui_icon_manager_provider_tests PRIVATE FLOWUI_ICON_TEST_COMPUTE_SPV="${FLOWUI_ICON_TEST_COMPUTE_SPV}")
+    add_test(NAME flowui.providers.icon_manager COMMAND flowui_icon_manager_provider_tests)
+endif()
+add_executable(flowui_font_custom_cpu_tests ProviderTests/FontCustomProviderTests.cpp)
+target_include_directories(flowui_font_custom_cpu_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${FLOWUI_GENERATED_INCLUDE_DIR} ${PROJECT_SOURCE_DIR}/include)
+target_link_libraries(flowui_font_custom_cpu_tests PRIVATE flowui_font_cpu)
+add_test(NAME flowui.providers.font_custom_cpu COMMAND flowui_font_custom_cpu_tests)
+if(Python3_Interpreter_FOUND AND NOT MSVC)
+    add_test(NAME flowui.providers.contracts COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/ProviderTests/ProviderContractTests.py
+        --source ${PROJECT_SOURCE_DIR} --build ${PROJECT_BINARY_DIR} --compiler ${CMAKE_CXX_COMPILER})
+    add_test(NAME flowui.providers.selection COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/ProviderTests/ProviderSelectionTests.py
+        --source ${PROJECT_SOURCE_DIR} --build ${PROJECT_BINARY_DIR} --compiler ${CMAKE_CXX_COMPILER} --cmake ${CMAKE_COMMAND})
+    set_tests_properties(flowui.providers.contracts flowui.providers.selection PROPERTIES TIMEOUT 240)
+endif()
+add_executable(flowui_font_manager_provider_tests ProviderTests/FontManagerProviderTests.cpp HeadlessVulkanFixture.cpp)
+target_include_directories(flowui_font_manager_provider_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_font_manager_provider_tests PRIVATE FlowUi::FlowUi Vulkan::Vulkan)
+target_compile_definitions(flowui_font_manager_provider_tests PRIVATE FLOWUI_PROVIDER_ASSET_DIRECTORY="${PROJECT_SOURCE_DIR}/assets/fonts")
+if(FLOWUI_REQUIRE_VULKAN_TEST_DEVICE)
+    target_compile_definitions(flowui_font_manager_provider_tests PRIVATE FLOWUI_TEST_REQUIRE_VULKAN_DEVICE=1)
+endif()
+add_test(NAME flowui.providers.font_manager COMMAND flowui_font_manager_provider_tests)
+# Private conformance consumers intentionally need the configured provider headers.
+get_property(flowui_test_targets DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
+foreach(domain IN ITEMS TEXT_LAYOUT FONT_MSDF ICON_RASTER)
+    if(FLOWUI_CONFIG_CUSTOM_${domain}_PROVIDER)
+        get_property(provider_targets GLOBAL PROPERTY FLOWUI_${domain}_PROVIDER_TARGETS)
+        foreach(test_target IN LISTS flowui_test_targets)
+            get_target_property(test_type ${test_target} TYPE)
+            if(test_type MATCHES "^(EXECUTABLE|STATIC_LIBRARY|OBJECT_LIBRARY|SHARED_LIBRARY)$")
+                target_link_libraries(${test_target} PRIVATE ${provider_targets})
+            endif()
+        endforeach()
+    endif()
+endforeach()

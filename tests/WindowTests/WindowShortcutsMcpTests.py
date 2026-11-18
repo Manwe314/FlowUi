@@ -45,7 +45,7 @@ class WindowShortcutsVerification(HELPER.CatalogueVerification):
         self.states: list[dict] = []
 
     def prepare(self) -> None:
-        with (self.output / "demo.log").open("wb") as log:
+        with (self.logs / "demo.log").open("wb") as log:
             self.process = subprocess.Popen(
                 [str(self.demo), "--agentic-store", str(self.store)], cwd=self.workspace,
                 stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT)

@@ -63,7 +63,7 @@
 #include "FlowUi/Private/renderer/vulkan/Vk_Frames.hpp"
 #include "FlowUi/Private/renderer/vulkan/Vk_Swapchain.hpp"
 #include "FlowUi/Private/resourceService/FontCatalogController.hpp"
-#include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
+#include "FlowUi/Private/storageSystem/StorageBinding.hpp"
 
 #include <algorithm>
 #include <array>
@@ -249,7 +249,7 @@ struct AppWindow {
 	AppWindow& operator=(AppWindow&&) = delete;
 
 	WindowId id = InvalidWindowId;
-	storage::IStorageSystem* storageSystem = nullptr;
+	storage::ActiveStorageSystem* storageSystem = nullptr;
 
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
 	uint64_t frameNumber = 0;
@@ -317,7 +317,8 @@ struct App::Impl {
 #endif
 	AppConfig config{};
 	VulkanContext vk;
-	std::unique_ptr<storage::IStorageSystem> storageSystem;
+	std::unique_ptr<storage::ActiveStorageSystem> storageSystem;
+	storage::StorageBinding storageBinding;
 	storage::StorageConfig storageConfig{};
 	SharedUiByteResources sharedUiByteResources;
 

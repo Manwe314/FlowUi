@@ -8,7 +8,9 @@
 
 #include "FlowUi/Public/identificationTypes/TextureHandle.hpp"
 
-namespace FlowUi::detail::storage { class IStorageSystem; }
+namespace FlowUi::detail::storage {
+class StorageBinding;
+}
 
 namespace FlowUi::devSystems::tooling {
 
@@ -33,11 +35,11 @@ public:
 
 private:
 	friend class DevCatalogues;
-	DevCatalogLease(::FlowUi::detail::storage::IStorageSystem* storage,
+	DevCatalogLease(::FlowUi::detail::storage::StorageBinding* storage,
 					std::vector<TextureHandle> textures) noexcept;
 	void release() noexcept;
 
-	::FlowUi::detail::storage::IStorageSystem* storage_ = nullptr;
+	::FlowUi::detail::storage::StorageBinding* storage_ = nullptr;
 	std::vector<TextureHandle> textures_{};
 };
 

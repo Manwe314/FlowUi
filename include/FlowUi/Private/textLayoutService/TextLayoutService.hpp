@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "FlowUi/Private/textLayoutService/CurrentTextShaper.hpp"
+#include "FlowUi/Private/textLayoutService/TextLayoutProviderSelection.hpp"
 
 namespace FlowUi::detail::text {
 
@@ -34,6 +34,11 @@ public:
 
 	/* Result references remain valid until a later call mutates this service. */
 	[[nodiscard]] const TextLayoutResult& layout(const TextLayoutRequest& request);
+	/** Lay out an already resolved face for uncached core/developer measurements.
+	 * The returned reference follows the same next-mutation lifetime as layout(request).
+	 */
+	[[nodiscard]] const TextLayoutResult& layout(const TextProviderInput& input,
+												 const Font::FontFaceData& fontFace);
 	/* Bind the application monitoring gate before use. */
 	void bind_memory_demand(const ::FlowUi::detail::MemoryDemandControl* control) noexcept {
 		capacity_demand_.bind(control);
@@ -79,7 +84,7 @@ private:
 	void evictFor(size_t incomingBytes);
 
 	::FlowUi::detail::MemoryDemandPeaks capacity_demand_{};
-	CurrentTextShaper shaper_{};
+	[[no_unique_address]] ActiveTextLayoutProvider provider_{};
 	std::vector<CacheEntry> cache_{};
 	TextLayoutResult uncachedResult_{};
 	uint64_t useSequence_ = 0;

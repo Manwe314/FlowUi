@@ -2,16 +2,19 @@
 
 #include <algorithm>
 #include <bit>
+#include <cmath>
 #include <limits>
 #include <utility>
 
 #include "FlowUi/Private/resourceService/FontCatalogController.hpp"
+#include "FlowUi/Private/textLayoutService/TextLayoutValidation.hpp"
+#include "FlowUi/Public/errorManagement/Error.hpp"
 
 namespace FlowUi::detail::text {
 
 namespace {
 
-uint64_t hashText(std::string_view text) noexcept {
+[[nodiscard]] constexpr uint64_t hashText(std::string_view text) noexcept {
 	uint64_t hash = 1469598103934665603ull;
 	for (const unsigned char value : text) {
 		hash ^= value;
@@ -19,6 +22,9 @@ uint64_t hashText(std::string_view text) noexcept {
 	}
 	return hash;
 }
+
+static_assert(hashText("") == 1469598103934665603ull);
+static_assert(hashText("A") == 4953232625885864614ull);
 
 } // namespace
 
@@ -51,12 +57,15 @@ TextLayoutCacheKey TextLayoutService::makeKey(const TextLayoutRequest& request) 
 size_t TextLayoutService::resultByteCost(
 	std::string_view text,
 	const TextLayoutResult& result) noexcept {
-	const auto addProduct = [](size_t current, size_t count, size_t width) {
+	const auto addProduct = [](size_t current, size_t count, size_t width) constexpr noexcept {
 		if (count > (std::numeric_limits<size_t>::max() - current) / width) {
 			return std::numeric_limits<size_t>::max();
 		}
 		return current + count * width;
 	};
+	static_assert(addProduct(10, 2, 3) == 16);
+	static_assert(addProduct(std::numeric_limits<size_t>::max(), 1, 1) ==
+				  std::numeric_limits<size_t>::max());
 	size_t total = text.size();
 	total = addProduct(total, result.glyphs.size(), sizeof(TextLayoutGlyph));
 	total = addProduct(total, result.clusters.size(), sizeof(TextLayoutCluster));
@@ -96,7 +105,21 @@ const TextLayoutResult& TextLayoutService::layout(const TextLayoutRequest& reque
 	}
 
 	const Font::FontFaceData* fontFace = resolveFontFace(request.fontView, request.fontId);
-	uncachedResult_ = fontFace ? shaper_.shape(request, *fontFace) : TextLayoutResult{};
+	uncachedResult_ = {};
+	if (!fontFace)
+		return uncachedResult_;
+	(void)layout(
+		TextProviderInput{
+			.text = request.text,
+			.pointsToPixelsScale = request.pointsToPixelsScale,
+			.fontSize = request.fontSize,
+			.letterSpacing = request.letterSpacing,
+			.tabWidth = request.tabWidth,
+			.includeGlyphGeometry = request.includeGlyphGeometry,
+		},
+		*fontFace);
+	if (!uncachedResult_.success)
+		return uncachedResult_;
 	if (request.text.size() > MaxCachedTextBytes) return uncachedResult_;
 	const size_t byteCost = resultByteCost(request.text, uncachedResult_);
 	if (byteCost > MaxCacheBytes) return uncachedResult_;
@@ -111,6 +134,37 @@ const TextLayoutResult& TextLayoutService::layout(const TextLayoutRequest& reque
 	});
 	cacheBytes_ += byteCost;
 	return cache_.back().result;
+}
+
+const TextLayoutResult& TextLayoutService::layout(const TextProviderInput& input,
+												  const Font::FontFaceData& fontFace) {
+	uncachedResult_ = {};
+	auto computed = provider_.layout(input, fontFace);
+	if (!computed) {
+		auto error = computed.error();
+		const auto* variant = fontFace.defaultVariant();
+		const bool unusableFace =
+			!variant || variant->glyphs.empty() || !std::isfinite(variant->emSize) ||
+			!std::isfinite(variant->ascender) || !std::isfinite(variant->lineHeight);
+		const float emPixels = variant ? textEmPixels(input, variant->fontSizePx) : 0.0f;
+		const bool unusableScale =
+			!std::isfinite(emPixels) || emPixels <= 0.0f ||
+			(input.fontSize > 0 &&
+			 (!std::isfinite(input.pointsToPixelsScale) || input.pointsToPixelsScale <= 0.0f));
+		if (error.site == ErrorSite::TextLayoutCompute &&
+			((error.code == ErrorCode::AssetPayloadInvalid && unusableFace) ||
+			 (error.code == ErrorCode::RendererConfigurationInvalid && unusableScale))) {
+			return uncachedResult_;
+		}
+		if (error.site == ErrorSite::TextLayoutCompute)
+			error.subject = fontFace.id;
+		throw FlowUiException(error);
+	}
+	const auto finalized = finalizeTextLayout(input, fontFace, *computed);
+	if (!finalized)
+		throw FlowUiException(finalized.error());
+	uncachedResult_ = std::move(*computed);
+	return uncachedResult_;
 }
 
 void TextLayoutService::clear() noexcept {

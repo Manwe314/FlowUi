@@ -28,7 +28,9 @@ class WindowPlatformServices;
 }
 namespace detail::input_field { struct InputFieldKey; }
 namespace detail::text { class TextLayoutService; }
-namespace detail::storage { class IStorageSystem; }
+namespace detail::storage {
+class StorageBinding;
+}
 namespace devSystems { class MemorySampleSink; }
 namespace detail::manager_storage {
 struct InputCaretState;
@@ -498,12 +500,9 @@ private:
 	using KeyRepeatState = detail::manager_storage::InputKeyRepeatState;
 	using PointerDragState = detail::manager_storage::InputPointerDragState;
 
-	void init(
-		detail::storage::IStorageSystem& storage,
-		WindowId window,
-		const InputManagerConfig& config,
-		float pointsToPixelsScale,
-		detail::text::TextLayoutService& textLayoutService);
+	void init(detail::storage::StorageBinding& storage, WindowId window,
+			  const InputManagerConfig& config, float pointsToPixelsScale,
+			  detail::text::TextLayoutService& textLayoutService);
 	void destroy() noexcept;
 	void setConfig(const InputManagerConfig& config);
 	void setFontFrameView(
@@ -585,7 +584,7 @@ private:
 	std::vector<SelectionRange> mergedSelectionRanges(const FieldState& field) const;
 
 private:
-	detail::storage::IStorageSystem* storage_ = nullptr;
+	detail::storage::StorageBinding* storage_ = nullptr;
 	WindowId window_ = InvalidWindowId;
 	uint64_t stateHandle_ = 0;
 	detail::manager_storage::InputFieldManagerState* state_ = nullptr;

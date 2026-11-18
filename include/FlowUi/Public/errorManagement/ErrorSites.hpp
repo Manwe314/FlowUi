@@ -18,273 +18,344 @@ enum class ErrorSite : std::uint16_t {
 
 	ColorParse = 0x0001, /**< Parse a runtime hexadecimal color; no subject identity. */
 
-	AppConstruct = 0x0101, /**< App Construct operation; subject kind App. */
-	AppInitialize = 0x0102, /**< App Initialize operation; subject kind App. */
-	AppPollEvents = 0x0103, /**< App Poll Events operation; subject kind App. */
-	AppCreateWindow = 0x0104, /**< App Create Window operation; subject kind Window. */
-	AppDestroyWindow = 0x0105, /**< App Destroy Window operation; subject kind Window. */
-	AppBeginFrame = 0x0106, /**< App Begin Frame operation; subject kind Window. */
-	AppEndFrame = 0x0107, /**< App End Frame operation; subject kind Window. */
-	AppDrawFrame = 0x0108, /**< App Draw Frame operation; subject kind Window. */
-	AppRecreateWindow = 0x0109, /**< App Recreate Window operation; subject kind Window. */
-	AppAcquireFrame = 0x010a, /**< App Acquire Frame operation; subject kind Frame. */
-	AppSubmitFrame = 0x010b, /**< App Submit Frame operation; subject kind Frame. */
-	AppPresent = 0x010c, /**< App Present operation; subject kind Window. */
-	AppShutdown = 0x010d, /**< App Shutdown operation; subject kind App. */
-	AppAccessFonts = 0x010e, /**< App Access Fonts operation; subject kind App. */
-	AppAccessImages = 0x010f, /**< App Access Images operation; subject kind App. */
-	AppAccessThemes = 0x0110, /**< App Access Themes operation; subject kind App. */
-	AppAccessElements = 0x0111, /**< App Access Elements operation; subject kind App. */
-	AppAccessActions = 0x0112, /**< App Access Actions operation; subject kind App. */
-	AppAccessIcons = 0x0113, /**< App Access Icons operation; subject kind App. */
-	AppAccessViewports = 0x0114, /**< App Access Viewports operation; subject kind Window. */
-	AppAccessUi = 0x0115, /**< App Access Ui operation; subject kind Window. */
-	AppAccessWindow = 0x0116, /**< App Access Window operation; subject kind Window. */
+	AppConstruct = 0x0101,			 /**< App Construct operation; subject kind App. */
+	AppInitialize = 0x0102,			 /**< App Initialize operation; subject kind App. */
+	AppPollEvents = 0x0103,			 /**< App Poll Events operation; subject kind App. */
+	AppCreateWindow = 0x0104,		 /**< App Create Window operation; subject kind Window. */
+	AppDestroyWindow = 0x0105,		 /**< App Destroy Window operation; subject kind Window. */
+	AppBeginFrame = 0x0106,			 /**< App Begin Frame operation; subject kind Window. */
+	AppEndFrame = 0x0107,			 /**< App End Frame operation; subject kind Window. */
+	AppDrawFrame = 0x0108,			 /**< App Draw Frame operation; subject kind Window. */
+	AppRecreateWindow = 0x0109,		 /**< App Recreate Window operation; subject kind Window. */
+	AppAcquireFrame = 0x010a,		 /**< App Acquire Frame operation; subject kind Frame. */
+	AppSubmitFrame = 0x010b,		 /**< App Submit Frame operation; subject kind Frame. */
+	AppPresent = 0x010c,			 /**< App Present operation; subject kind Window. */
+	AppShutdown = 0x010d,			 /**< App Shutdown operation; subject kind App. */
+	AppAccessFonts = 0x010e,		 /**< App Access Fonts operation; subject kind App. */
+	AppAccessImages = 0x010f,		 /**< App Access Images operation; subject kind App. */
+	AppAccessThemes = 0x0110,		 /**< App Access Themes operation; subject kind App. */
+	AppAccessElements = 0x0111,		 /**< App Access Elements operation; subject kind App. */
+	AppAccessActions = 0x0112,		 /**< App Access Actions operation; subject kind App. */
+	AppAccessIcons = 0x0113,		 /**< App Access Icons operation; subject kind App. */
+	AppAccessViewports = 0x0114,	 /**< App Access Viewports operation; subject kind Window. */
+	AppAccessUi = 0x0115,			 /**< App Access Ui operation; subject kind Window. */
+	AppAccessWindow = 0x0116,		 /**< App Access Window operation; subject kind Window. */
 	AppAccessDevMonitoring = 0x0117, /**< App Access Dev Monitoring operation; subject kind App. */
-	AppRequireQuiescent = 0x0118, /**< App Require Quiescent operation; subject kind Window. */
-	AppRequirePlatformThread = 0x0119, /**< App Require Platform Thread operation; subject kind App. */
+	AppRequireQuiescent = 0x0118,	 /**< App Require Quiescent operation; subject kind Window. */
+	AppRequirePlatformThread =
+		0x0119,				   /**< App Require Platform Thread operation; subject kind App. */
 	AppFrameDispatch = 0x011a, /**< App Frame Dispatch operation; subject kind Window. */
 
-	WindowBackendInitialize = 0x0201, /**< Window Backend Initialize operation; subject kind None. */
+	WindowBackendInitialize =
+		0x0201,					  /**< Window Backend Initialize operation; subject kind None. */
 	WindowMonitorSelect = 0x0202, /**< Window Monitor Select operation; subject kind None. */
-	WindowCreate = 0x0203, /**< Window Create operation; subject kind Window. */
-	WindowDestroy = 0x0204, /**< Window Destroy operation; subject kind Window. */
-	WindowRequiredExtensions = 0x0205, /**< Window Required Extensions operation; subject kind None. */
-	WindowSurfaceCreate = 0x0206, /**< Window Surface Create operation; subject kind Window. */
-	WindowPollInput = 0x0207, /**< Window Poll Input operation; subject kind Window. */
-	WindowSetTitle = 0x0208, /**< Window Set Title operation; subject kind Window. */
-	WindowSetCursor = 0x0209, /**< Window Set Cursor operation; subject kind Window. */
-	WindowReadClipboard = 0x020a, /**< Window Read Clipboard operation; subject kind Window. */
+	WindowCreate = 0x0203,		  /**< Window Create operation; subject kind Window. */
+	WindowDestroy = 0x0204,		  /**< Window Destroy operation; subject kind Window. */
+	WindowRequiredExtensions =
+		0x0205,					   /**< Window Required Extensions operation; subject kind None. */
+	WindowSurfaceCreate = 0x0206,  /**< Window Surface Create operation; subject kind Window. */
+	WindowPollInput = 0x0207,	   /**< Window Poll Input operation; subject kind Window. */
+	WindowSetTitle = 0x0208,	   /**< Window Set Title operation; subject kind Window. */
+	WindowSetCursor = 0x0209,	   /**< Window Set Cursor operation; subject kind Window. */
+	WindowReadClipboard = 0x020a,  /**< Window Read Clipboard operation; subject kind Window. */
 	WindowWriteClipboard = 0x020b, /**< Window Write Clipboard operation; subject kind Window. */
-	WindowBackendDiagnostic = 0x020c, /**< Window Backend Diagnostic operation; subject kind None. */
+	WindowBackendDiagnostic =
+		0x020c,				  /**< Window Backend Diagnostic operation; subject kind None. */
 	WindowOperation = 0x020d, /**< Runtime native-window operation; subject kind Window. */
 
 	VulkanContextInitialize = 0x0301, /**< Vulkan Context Initialize operation; subject kind App. */
-	VulkanInstanceCreate = 0x0302, /**< Vulkan Instance Create operation; subject kind App. */
-	VulkanSurfaceQuery = 0x0303, /**< Vulkan Surface Query operation; subject kind Window. */
-	VulkanPhysicalDeviceSelect = 0x0304, /**< Vulkan Physical Device Select operation; subject kind App. */
-	VulkanLogicalDeviceCreate = 0x0305, /**< Vulkan Logical Device Create operation; subject kind App. */
+	VulkanInstanceCreate = 0x0302,	  /**< Vulkan Instance Create operation; subject kind App. */
+	VulkanSurfaceQuery = 0x0303,	  /**< Vulkan Surface Query operation; subject kind Window. */
+	VulkanPhysicalDeviceSelect =
+		0x0304, /**< Vulkan Physical Device Select operation; subject kind App. */
+	VulkanLogicalDeviceCreate =
+		0x0305, /**< Vulkan Logical Device Create operation; subject kind App. */
 	VulkanAllocatorCreate = 0x0306, /**< Vulkan Allocator Create operation; subject kind App. */
-	VulkanFramesInitialize = 0x0307, /**< Vulkan Frames Initialize operation; subject kind Window. */
-	VulkanFrameAcquire = 0x0308, /**< Vulkan Frame Acquire operation; subject kind Frame. */
-	VulkanFrameSubmit = 0x0309, /**< Vulkan Frame Submit operation; subject kind Frame. */
+	VulkanFramesInitialize =
+		0x0307,						/**< Vulkan Frames Initialize operation; subject kind Window. */
+	VulkanFrameAcquire = 0x0308,	/**< Vulkan Frame Acquire operation; subject kind Frame. */
+	VulkanFrameSubmit = 0x0309,		/**< Vulkan Frame Submit operation; subject kind Frame. */
 	VulkanSwapchainCreate = 0x030a, /**< Vulkan Swapchain Create operation; subject kind Window. */
-	VulkanSwapchainAcquire = 0x030b, /**< Vulkan Swapchain Acquire operation; subject kind Window. */
-	VulkanSwapchainPresent = 0x030c, /**< Vulkan Swapchain Present operation; subject kind Window. */
-	VulkanSwapchainRecreate = 0x030d, /**< Vulkan Swapchain Recreate operation; subject kind Window. */
+	VulkanSwapchainAcquire =
+		0x030b, /**< Vulkan Swapchain Acquire operation; subject kind Window. */
+	VulkanSwapchainPresent =
+		0x030c, /**< Vulkan Swapchain Present operation; subject kind Window. */
+	VulkanSwapchainRecreate =
+		0x030d, /**< Vulkan Swapchain Recreate operation; subject kind Window. */
 	VulkanContextShutdown = 0x030e, /**< Vulkan Context Shutdown operation; subject kind App. */
 	VulkanDebugDiagnostic = 0x030f, /**< Vulkan Debug Diagnostic operation; subject kind App. */
 
 	RendererInitialize = 0x0401, /**< Renderer Initialize operation; subject kind None. */
 	RendererLoadShader = 0x0402, /**< Renderer Load Shader operation; subject kind None. */
-	RendererPublishLayout = 0x0403, /**< Renderer Publish Layout operation; subject kind Resource. */
-	RendererPublishPipeline = 0x0404, /**< Renderer Publish Pipeline operation; subject kind Resource. */
-	RendererCreateWindowResources = 0x0405, /**< Renderer Create Window Resources operation; subject kind Window. */
-	RendererConvertCommands = 0x0406, /**< Renderer Convert Commands operation; subject kind Frame. */
+	RendererPublishLayout =
+		0x0403, /**< Renderer Publish Layout operation; subject kind Resource. */
+	RendererPublishPipeline =
+		0x0404, /**< Renderer Publish Pipeline operation; subject kind Resource. */
+	RendererCreateWindowResources =
+		0x0405, /**< Renderer Create Window Resources operation; subject kind Window. */
+	RendererConvertCommands =
+		0x0406, /**< Renderer Convert Commands operation; subject kind Frame. */
 	RendererRecordCommands = 0x0407, /**< Renderer Record Commands operation; subject kind Frame. */
-	RendererPublishDescriptors = 0x0408, /**< Renderer Publish Descriptors operation; subject kind Window. */
+	RendererPublishDescriptors =
+		0x0408,			   /**< Renderer Publish Descriptors operation; subject kind Window. */
 	RendererDraw = 0x0409, /**< Renderer Draw operation; subject kind Frame. */
-	RendererDestroyWindowResources = 0x040a, /**< Renderer Destroy Window Resources operation; subject kind Window. */
+	RendererDestroyWindowResources =
+		0x040a, /**< Renderer Destroy Window Resources operation; subject kind Window. */
 	RendererShutdown = 0x040b, /**< Renderer Shutdown operation; subject kind None. */
 
-	StorageInitialize = 0x0501, /**< Storage Initialize operation; subject kind None. */
+	StorageInitialize = 0x0501,		/**< Storage Initialize operation; subject kind None. */
 	StorageRegisterWindow = 0x0502, /**< Storage Register Window operation; subject kind Window. */
-	StorageUnregisterWindow = 0x0503, /**< Storage Unregister Window operation; subject kind Window. */
-	StorageBeginFrame = 0x0504, /**< Storage Begin Frame operation; subject kind Frame. */
-	StorageSealFrame = 0x0505, /**< Storage Seal Frame operation; subject kind Frame. */
-	StorageCancelFrame = 0x0506, /**< Storage Cancel Frame operation; subject kind Frame. */
+	StorageUnregisterWindow =
+		0x0503,					   /**< Storage Unregister Window operation; subject kind Window. */
+	StorageBeginFrame = 0x0504,	   /**< Storage Begin Frame operation; subject kind Frame. */
+	StorageSealFrame = 0x0505,	   /**< Storage Seal Frame operation; subject kind Frame. */
+	StorageCancelFrame = 0x0506,   /**< Storage Cancel Frame operation; subject kind Frame. */
 	StorageValidateFrame = 0x0507, /**< Storage Validate Frame operation; subject kind Frame. */
-	StorageValidateSubmission = 0x0508, /**< Storage Validate Submission operation; subject kind Submission. */
-	StorageNoteSubmission = 0x0509, /**< Storage Note Submission operation; subject kind Submission. */
-	StorageNoteCompletion = 0x050a, /**< Storage Note Completion operation; subject kind Submission. */
-	StorageRetire = 0x050b, /**< Storage Retire operation; subject kind Resource. */
-	StorageCollect = 0x050c, /**< Storage Collect operation; subject kind Resource. */
-	StorageTrim = 0x050d, /**< Storage Trim operation; subject kind MemoryTarget. */
+	StorageValidateSubmission =
+		0x0508, /**< Storage Validate Submission operation; subject kind Submission. */
+	StorageNoteSubmission =
+		0x0509, /**< Storage Note Submission operation; subject kind Submission. */
+	StorageNoteCompletion =
+		0x050a,				   /**< Storage Note Completion operation; subject kind Submission. */
+	StorageRetire = 0x050b,	   /**< Storage Retire operation; subject kind Resource. */
+	StorageCollect = 0x050c,   /**< Storage Collect operation; subject kind Resource. */
+	StorageTrim = 0x050d,	   /**< Storage Trim operation; subject kind MemoryTarget. */
 	StorageSetBudget = 0x050e, /**< Storage Set Budget operation; subject kind MemoryTarget. */
-	StorageShutdown = 0x050f, /**< Storage Shutdown operation; subject kind None. */
-	StorageCalculateCapacity = 0x0510, /**< Storage Calculate Capacity operation; subject kind MemoryTarget. */
-	StorageRequireInitialized = 0x0511, /**< Storage Require Initialized operation; subject kind None. */
+	StorageShutdown = 0x050f,  /**< Storage Shutdown operation; subject kind None. */
+	StorageCalculateCapacity =
+		0x0510, /**< Storage Calculate Capacity operation; subject kind MemoryTarget. */
+	StorageRequireInitialized =
+		0x0511,					  /**< Storage Require Initialized operation; subject kind None. */
 	StorageLookupWindow = 0x0512, /**< Storage Lookup Window operation; subject kind Window. */
 
-	ResourceNormalizeKey = 0x0601, /**< Resource Normalize Key operation; subject kind ResourceKey. */
+	ResourceNormalizeKey =
+		0x0601,					/**< Resource Normalize Key operation; subject kind ResourceKey. */
 	ResourceInternKey = 0x0602, /**< Resource Intern Key operation; subject kind ResourceKey. */
-	ResourceAllocatePersistent = 0x0603, /**< Resource Allocate Persistent operation; subject kind MemoryTarget. */
-	ResourceCreateManagerRecord = 0x0604, /**< Resource Create Manager Record operation; subject kind ResourceKey. */
-	ResourceLookupManagerRecord = 0x0605, /**< Resource Lookup Manager Record operation; subject kind ResourceKey. */
-	ResourceRemoveManagerRecord = 0x0606, /**< Resource Remove Manager Record operation; subject kind ResourceKey. */
-	ResourceCreatePersistentRecord = 0x0607, /**< Resource Create Persistent Record operation; subject kind Resource. */
-	ResourceLookupPersistentRecord = 0x0608, /**< Resource Lookup Persistent Record operation; subject kind Resource. */
-	ResourceRemovePersistentRecord = 0x0609, /**< Resource Remove Persistent Record operation; subject kind Resource. */
-	ResourceCreateBlob = 0x060a, /**< Resource Create Blob operation; subject kind Resource. */
-	ResourceReadBlob = 0x060b, /**< Resource Read Blob operation; subject kind Resource. */
+	ResourceAllocatePersistent =
+		0x0603, /**< Resource Allocate Persistent operation; subject kind MemoryTarget. */
+	ResourceCreateManagerRecord =
+		0x0604, /**< Resource Create Manager Record operation; subject kind ResourceKey. */
+	ResourceLookupManagerRecord =
+		0x0605, /**< Resource Lookup Manager Record operation; subject kind ResourceKey. */
+	ResourceRemoveManagerRecord =
+		0x0606, /**< Resource Remove Manager Record operation; subject kind ResourceKey. */
+	ResourceCreatePersistentRecord =
+		0x0607, /**< Resource Create Persistent Record operation; subject kind Resource. */
+	ResourceLookupPersistentRecord =
+		0x0608, /**< Resource Lookup Persistent Record operation; subject kind Resource. */
+	ResourceRemovePersistentRecord =
+		0x0609, /**< Resource Remove Persistent Record operation; subject kind Resource. */
+	ResourceCreateBlob = 0x060a,   /**< Resource Create Blob operation; subject kind Resource. */
+	ResourceReadBlob = 0x060b,	   /**< Resource Read Blob operation; subject kind Resource. */
 	ResourceCreateBuffer = 0x060c, /**< Resource Create Buffer operation; subject kind Resource. */
-	ResourceWriteBuffer = 0x060d, /**< Resource Write Buffer operation; subject kind Resource. */
-	ResourceCreateImage = 0x060e, /**< Resource Create Image operation; subject kind Resource. */
-	ResourceCreateImageView = 0x060f, /**< Resource Create Image View operation; subject kind Resource. */
-	ResourceAcquireSampler = 0x0610, /**< Resource Acquire Sampler operation; subject kind Resource. */
-	ResourcePublishTexture = 0x0611, /**< Resource Publish Texture operation; subject kind ResourceKey. */
-	ResourceReplaceTexture = 0x0612, /**< Resource Replace Texture operation; subject kind ResourceKey. */
-	ResourceLookupTexture = 0x0613, /**< Resource Lookup Texture operation; subject kind ResourceKey. */
-	ResourceRemoveTexture = 0x0614, /**< Resource Remove Texture operation; subject kind ResourceKey. */
-	ResourcePrepareTextureBindings = 0x0615, /**< Resource Prepare Texture Bindings operation; subject kind Frame. */
-	ResourcePublishTextureBindings = 0x0616, /**< Resource Publish Texture Bindings operation; subject kind Frame. */
-	ResourceResolveTexture = 0x0617, /**< Resource Resolve Texture operation; subject kind Resource. */
-	ResourceEnqueueUpload = 0x0618, /**< Resource Enqueue Upload operation; subject kind Resource. */
+	ResourceWriteBuffer = 0x060d,  /**< Resource Write Buffer operation; subject kind Resource. */
+	ResourceCreateImage = 0x060e,  /**< Resource Create Image operation; subject kind Resource. */
+	ResourceCreateImageView =
+		0x060f, /**< Resource Create Image View operation; subject kind Resource. */
+	ResourceAcquireSampler =
+		0x0610, /**< Resource Acquire Sampler operation; subject kind Resource. */
+	ResourcePublishTexture =
+		0x0611, /**< Resource Publish Texture operation; subject kind ResourceKey. */
+	ResourceReplaceTexture =
+		0x0612, /**< Resource Replace Texture operation; subject kind ResourceKey. */
+	ResourceLookupTexture =
+		0x0613, /**< Resource Lookup Texture operation; subject kind ResourceKey. */
+	ResourceRemoveTexture =
+		0x0614, /**< Resource Remove Texture operation; subject kind ResourceKey. */
+	ResourcePrepareTextureBindings =
+		0x0615, /**< Resource Prepare Texture Bindings operation; subject kind Frame. */
+	ResourcePublishTextureBindings =
+		0x0616, /**< Resource Publish Texture Bindings operation; subject kind Frame. */
+	ResourceResolveTexture =
+		0x0617, /**< Resource Resolve Texture operation; subject kind Resource. */
+	ResourceEnqueueUpload =
+		0x0618,					   /**< Resource Enqueue Upload operation; subject kind Resource. */
 	ResourceFlushUploads = 0x0619, /**< Resource Flush Uploads operation; subject kind Resource. */
-	ResourceValidateHandle = 0x061a, /**< Resource Validate Handle operation; subject kind Resource. */
-	ResourcePublishNativeObject = 0x061b, /**< Resource Publish Native Object operation; subject kind Resource. */
-	ResourceAcquireNativeObject = 0x061c, /**< Resource Acquire Native Object operation; subject kind Resource. */
+	ResourceValidateHandle =
+		0x061a, /**< Resource Validate Handle operation; subject kind Resource. */
+	ResourcePublishNativeObject =
+		0x061b, /**< Resource Publish Native Object operation; subject kind Resource. */
+	ResourceAcquireNativeObject =
+		0x061c, /**< Resource Acquire Native Object operation; subject kind Resource. */
 
 	UiManagerInitialize = 0x0701, /**< Ui Manager Initialize operation; subject kind None. */
 	UiManagerBeginFrame = 0x0702, /**< Ui Manager Begin Frame operation; subject kind Window. */
-	UiManagerEndFrame = 0x0703, /**< Ui Manager End Frame operation; subject kind Window. */
-	UiManagerRender = 0x0704, /**< Ui Manager Render operation; subject kind Window. */
-	UiManagerReset = 0x0705, /**< Ui Manager Reset operation; subject kind Window. */
-	UiManagerDefineElement = 0x0706, /**< Ui Manager Define Element operation; subject kind ElementDefinition. */
-	UiManagerOpenElement = 0x0707, /**< Ui Manager Open Element operation; subject kind ElementInstance. */
-	UiManagerCloseElement = 0x0708, /**< Ui Manager Close Element operation; subject kind ElementInstance. */
-	UiManagerInvokeElement = 0x0709, /**< Ui Manager Invoke Element operation; subject kind ElementInstance. */
+	UiManagerEndFrame = 0x0703,	  /**< Ui Manager End Frame operation; subject kind Window. */
+	UiManagerRender = 0x0704,	  /**< Ui Manager Render operation; subject kind Window. */
+	UiManagerReset = 0x0705,	  /**< Ui Manager Reset operation; subject kind Window. */
+	UiManagerDefineElement =
+		0x0706, /**< Ui Manager Define Element operation; subject kind ElementDefinition. */
+	UiManagerOpenElement =
+		0x0707, /**< Ui Manager Open Element operation; subject kind ElementInstance. */
+	UiManagerCloseElement =
+		0x0708, /**< Ui Manager Close Element operation; subject kind ElementInstance. */
+	UiManagerInvokeElement =
+		0x0709, /**< Ui Manager Invoke Element operation; subject kind ElementInstance. */
 	UiManagerShutdown = 0x070a, /**< Ui Manager Shutdown operation; subject kind None. */
-	UiManagerAccessElements = 0x070b, /**< Ui Manager Access Elements operation; subject kind Window. */
-	UiManagerAccessActions = 0x070c, /**< Ui Manager Access Actions operation; subject kind Window. */
+	UiManagerAccessElements =
+		0x070b, /**< Ui Manager Access Elements operation; subject kind Window. */
+	UiManagerAccessActions =
+		0x070c,					   /**< Ui Manager Access Actions operation; subject kind Window. */
 	UiManagerAccessTheme = 0x070d, /**< Ui Manager Access Theme operation; subject kind Theme. */
 
-	ElementManagerInitialize = 0x0801, /**< Element Manager Initialize operation; subject kind None. */
-	ElementRegisterDefinition = 0x0802, /**< Element Register Definition operation; subject kind ElementDefinition. */
+	ElementManagerInitialize =
+		0x0801, /**< Element Manager Initialize operation; subject kind None. */
+	ElementRegisterDefinition =
+		0x0802, /**< Element Register Definition operation; subject kind ElementDefinition. */
 	ElementRegisterWindow = 0x0803, /**< Element Register Window operation; subject kind Window. */
-	ElementBeginFrame = 0x0804, /**< Element Begin Frame operation; subject kind Window. */
-	ElementResolveState = 0x0805, /**< Element Resolve State operation; subject kind ElementInstance. */
-	ElementConstructState = 0x0806, /**< Element Construct State operation; subject kind ElementInstance. */
+	ElementBeginFrame = 0x0804,		/**< Element Begin Frame operation; subject kind Window. */
+	ElementResolveState =
+		0x0805, /**< Element Resolve State operation; subject kind ElementInstance. */
+	ElementConstructState =
+		0x0806, /**< Element Construct State operation; subject kind ElementInstance. */
 	ElementEraseState = 0x0807, /**< Element Erase State operation; subject kind ElementInstance. */
-	ElementResolveResource = 0x0808, /**< Element Resolve Resource operation; subject kind ElementInstance. */
-	ElementConstructResource = 0x0809, /**< Element Construct Resource operation; subject kind ElementInstance. */
-	ElementDestroyResource = 0x080a, /**< Element Destroy Resource operation; subject kind ElementInstance. */
-	ElementCommitFrame = 0x080b, /**< Element Commit Frame operation; subject kind Window. */
-	ElementCancelFrame = 0x080c, /**< Element Cancel Frame operation; subject kind Window. */
-	ElementInvoke = 0x080d, /**< Element Invoke operation; subject kind ElementInstance. */
+	ElementResolveResource =
+		0x0808, /**< Element Resolve Resource operation; subject kind ElementInstance. */
+	ElementConstructResource =
+		0x0809, /**< Element Construct Resource operation; subject kind ElementInstance. */
+	ElementDestroyResource =
+		0x080a, /**< Element Destroy Resource operation; subject kind ElementInstance. */
+	ElementCommitFrame = 0x080b,	 /**< Element Commit Frame operation; subject kind Window. */
+	ElementCancelFrame = 0x080c,	 /**< Element Cancel Frame operation; subject kind Window. */
+	ElementInvoke = 0x080d,			 /**< Element Invoke operation; subject kind ElementInstance. */
 	ElementManagerShutdown = 0x080e, /**< Element Manager Shutdown operation; subject kind None. */
 
-	ActionManagerInitialize = 0x0901, /**< Action Manager Initialize operation; subject kind None. */
-	ActionBind = 0x0902, /**< Action Bind operation; subject kind Action. */
-	ActionRebind = 0x0903, /**< Action Rebind operation; subject kind Action. */
-	ActionUnbind = 0x0904, /**< Action Unbind operation; subject kind Action. */
+	ActionManagerInitialize =
+		0x0901,						/**< Action Manager Initialize operation; subject kind None. */
+	ActionBind = 0x0902,			/**< Action Bind operation; subject kind Action. */
+	ActionRebind = 0x0903,			/**< Action Rebind operation; subject kind Action. */
+	ActionUnbind = 0x0904,			/**< Action Unbind operation; subject kind Action. */
 	ActionSetAvailability = 0x0905, /**< Action Set Availability operation; subject kind Action. */
-	ActionPublish = 0x0906, /**< Action Publish operation; subject kind Action. */
-	ActionInvoke = 0x0907, /**< Action Invoke operation; subject kind Action. */
-	ActionCompleteInvocation = 0x0908, /**< Action Complete Invocation operation; subject kind Action. */
+	ActionPublish = 0x0906,			/**< Action Publish operation; subject kind Action. */
+	ActionInvoke = 0x0907,			/**< Action Invoke operation; subject kind Action. */
+	ActionCompleteInvocation =
+		0x0908, /**< Action Complete Invocation operation; subject kind Action. */
 	ActionManagerShutdown = 0x0909, /**< Action Manager Shutdown operation; subject kind None. */
 
 	ThemeManagerInitialize = 0x0a01, /**< Theme Manager Initialize operation; subject kind None. */
-	ThemeRegisterType = 0x0a02, /**< Theme Register Type operation; subject kind Theme. */
-	ThemeRegisterVariant = 0x0a03, /**< Theme Register Variant operation; subject kind Theme. */
-	ThemeSetActiveVariant = 0x0a04, /**< Theme Set Active Variant operation; subject kind Theme. */
-	ThemeLookupActiveVariant = 0x0a05, /**< Theme Lookup Active Variant operation; subject kind Theme. */
-	ThemeMutate = 0x0a06, /**< Theme Mutate operation; subject kind Theme. */
-	ThemeStageMutation = 0x0a07, /**< Theme Stage Mutation operation; subject kind Theme. */
+	ThemeRegisterType = 0x0a02,		 /**< Theme Register Type operation; subject kind Theme. */
+	ThemeRegisterVariant = 0x0a03,	 /**< Theme Register Variant operation; subject kind Theme. */
+	ThemeSetActiveVariant = 0x0a04,	 /**< Theme Set Active Variant operation; subject kind Theme. */
+	ThemeLookupActiveVariant =
+		0x0a05,					  /**< Theme Lookup Active Variant operation; subject kind Theme. */
+	ThemeMutate = 0x0a06,		  /**< Theme Mutate operation; subject kind Theme. */
+	ThemeStageMutation = 0x0a07,  /**< Theme Stage Mutation operation; subject kind Theme. */
 	ThemeCommitMutation = 0x0a08, /**< Theme Commit Mutation operation; subject kind Theme. */
 	ThemeRollbackMutation = 0x0a09, /**< Theme Rollback Mutation operation; subject kind Theme. */
-	ThemeManagerShutdown = 0x0a0a, /**< Theme Manager Shutdown operation; subject kind None. */
+	ThemeManagerShutdown = 0x0a0a,	/**< Theme Manager Shutdown operation; subject kind None. */
 
 	InputManagerInitialize = 0x0b01, /**< Input Manager Initialize operation; subject kind None. */
-	InputRegisterField = 0x0b02, /**< Input Register Field operation; subject kind ElementInstance. */
+	InputRegisterField =
+		0x0b02,				  /**< Input Register Field operation; subject kind ElementInstance. */
 	InputBeginFrame = 0x0b03, /**< Input Begin Frame operation; subject kind Window. */
-	InputEdit = 0x0b04, /**< Input Edit operation; subject kind ElementInstance. */
-	InputCopy = 0x0b05, /**< Input Copy operation; subject kind ElementInstance. */
-	InputCut = 0x0b06, /**< Input Cut operation; subject kind ElementInstance. */
-	InputPaste = 0x0b07, /**< Input Paste operation; subject kind ElementInstance. */
-	InputFocus = 0x0b08, /**< Input Focus operation; subject kind ElementInstance. */
-	InputBlur = 0x0b09, /**< Input Blur operation; subject kind ElementInstance. */
-	InputSubmit = 0x0b0a, /**< Input Submit operation; subject kind ElementInstance. */
+	InputEdit = 0x0b04,		  /**< Input Edit operation; subject kind ElementInstance. */
+	InputCopy = 0x0b05,		  /**< Input Copy operation; subject kind ElementInstance. */
+	InputCut = 0x0b06,		  /**< Input Cut operation; subject kind ElementInstance. */
+	InputPaste = 0x0b07,	  /**< Input Paste operation; subject kind ElementInstance. */
+	InputFocus = 0x0b08,	  /**< Input Focus operation; subject kind ElementInstance. */
+	InputBlur = 0x0b09,		  /**< Input Blur operation; subject kind ElementInstance. */
+	InputSubmit = 0x0b0a,	  /**< Input Submit operation; subject kind ElementInstance. */
 	InputQueueEvent = 0x0b0b, /**< Input Queue Event operation; subject kind Window. */
 	InputManagerShutdown = 0x0b0c, /**< Input Manager Shutdown operation; subject kind None. */
 
 	PopupManagerInitialize = 0x0c01, /**< Popup Manager Initialize operation; subject kind None. */
-	PopupBeginFrame = 0x0c02, /**< Popup Begin Frame operation; subject kind Window. */
-	PopupRequest = 0x0c03, /**< Popup Request operation; subject kind Popup. */
-	PopupResolveAnchor = 0x0c04, /**< Popup Resolve Anchor operation; subject kind Popup. */
-	PopupMeasure = 0x0c05, /**< Popup Measure operation; subject kind Popup. */
-	PopupLayout = 0x0c06, /**< Popup Layout operation; subject kind Popup. */
-	PopupDismiss = 0x0c07, /**< Popup Dismiss operation; subject kind Popup. */
-	PopupEndFrame = 0x0c08, /**< Popup End Frame operation; subject kind Window. */
-	PopupManagerShutdown = 0x0c09, /**< Popup Manager Shutdown operation; subject kind None. */
+	PopupBeginFrame = 0x0c02,		 /**< Popup Begin Frame operation; subject kind Window. */
+	PopupRequest = 0x0c03,			 /**< Popup Request operation; subject kind Popup. */
+	PopupResolveAnchor = 0x0c04,	 /**< Popup Resolve Anchor operation; subject kind Popup. */
+	PopupMeasure = 0x0c05,			 /**< Popup Measure operation; subject kind Popup. */
+	PopupLayout = 0x0c06,			 /**< Popup Layout operation; subject kind Popup. */
+	PopupDismiss = 0x0c07,			 /**< Popup Dismiss operation; subject kind Popup. */
+	PopupEndFrame = 0x0c08,			 /**< Popup End Frame operation; subject kind Window. */
+	PopupManagerShutdown = 0x0c09,	 /**< Popup Manager Shutdown operation; subject kind None. */
 
-	ShortcutManagerInitialize = 0x0d01, /**< Shortcut Manager Initialize operation; subject kind None. */
+	ShortcutManagerInitialize =
+		0x0d01,				   /**< Shortcut Manager Initialize operation; subject kind None. */
 	ShortcutRegister = 0x0d02, /**< Shortcut Register operation; subject kind Shortcut. */
-	ShortcutUpdate = 0x0d03, /**< Shortcut Update operation; subject kind Shortcut. */
-	ShortcutRemove = 0x0d04, /**< Shortcut Remove operation; subject kind Shortcut. */
-	ShortcutResolve = 0x0d05, /**< Shortcut Resolve operation; subject kind Shortcut. */
-	ShortcutManagerShutdown = 0x0d06, /**< Shortcut Manager Shutdown operation; subject kind None. */
+	ShortcutUpdate = 0x0d03,   /**< Shortcut Update operation; subject kind Shortcut. */
+	ShortcutRemove = 0x0d04,   /**< Shortcut Remove operation; subject kind Shortcut. */
+	ShortcutResolve = 0x0d05,  /**< Shortcut Resolve operation; subject kind Shortcut. */
+	ShortcutManagerShutdown =
+		0x0d06, /**< Shortcut Manager Shutdown operation; subject kind None. */
 
-	AssetOpen = 0x0e01, /**< Asset Open operation; subject kind None. */
-	AssetRead = 0x0e02, /**< Asset Read operation; subject kind None. */
+	AssetOpen = 0x0e01,			   /**< Asset Open operation; subject kind None. */
+	AssetRead = 0x0e02,			   /**< Asset Read operation; subject kind None. */
 	AssetValidatePayload = 0x0e03, /**< Asset Validate Payload operation; subject kind None. */
-	AssetDecode = 0x0e04, /**< Asset Decode operation; subject kind None. */
+	AssetDecode = 0x0e04,		   /**< Asset Decode operation; subject kind None. */
 
 	ImageManagerInitialize = 0x0f01, /**< Image Manager Initialize operation; subject kind None. */
-	ImageRegister = 0x0f02, /**< Image Register operation; subject kind Image. */
-	ImageLoad = 0x0f03, /**< Image Load operation; subject kind Image. */
-	ImageDecode = 0x0f04, /**< Image Decode operation; subject kind Image. */
-	ImageUpload = 0x0f05, /**< Image Upload operation; subject kind Image. */
-	ImagePublish = 0x0f06, /**< Image Publish operation; subject kind Image. */
-	ImageLookup = 0x0f07, /**< Image Lookup operation; subject kind Image. */
-	ImageRemove = 0x0f08, /**< Image Remove operation; subject kind Image. */
-	ImageManagerShutdown = 0x0f09, /**< Image Manager Shutdown operation; subject kind None. */
+	ImageRegister = 0x0f02,			 /**< Image Register operation; subject kind Image. */
+	ImageLoad = 0x0f03,				 /**< Image Load operation; subject kind Image. */
+	ImageDecode = 0x0f04,			 /**< Image Decode operation; subject kind Image. */
+	ImageUpload = 0x0f05,			 /**< Image Upload operation; subject kind Image. */
+	ImagePublish = 0x0f06,			 /**< Image Publish operation; subject kind Image. */
+	ImageLookup = 0x0f07,			 /**< Image Lookup operation; subject kind Image. */
+	ImageRemove = 0x0f08,			 /**< Image Remove operation; subject kind Image. */
+	ImageManagerShutdown = 0x0f09,	 /**< Image Manager Shutdown operation; subject kind None. */
 
 	FontManagerInitialize = 0x1001, /**< Font Manager Initialize operation; subject kind None. */
-	FontRegisterFamily = 0x1002, /**< Font Register Family operation; subject kind Font. */
-	FontLoad = 0x1003, /**< Font Load operation; subject kind Font. */
-	FontParse = 0x1004, /**< Font Parse operation; subject kind Font. */
-	FontBake = 0x1005, /**< Font Bake operation; subject kind Font. */
-	FontPublishAtlas = 0x1006, /**< Font Publish Atlas operation; subject kind Font. */
-	FontLookupFamily = 0x1007, /**< Font Lookup Family operation; subject kind Font. */
-	FontRemoveFamily = 0x1008, /**< Font Remove Family operation; subject kind Font. */
-	FontManagerShutdown = 0x1009, /**< Font Manager Shutdown operation; subject kind None. */
+	FontRegisterFamily = 0x1002,	/**< Font Register Family operation; subject kind Font. */
+	FontLoad = 0x1003,				/**< Font Load operation; subject kind Font. */
+	FontParse = 0x1004,				/**< Font Parse operation; subject kind Font. */
+	FontBake = 0x1005,				/**< Font Bake operation; subject kind Font. */
+	FontPublishAtlas = 0x1006,		/**< Font Publish Atlas operation; subject kind Font. */
+	FontLookupFamily = 0x1007,		/**< Font Lookup Family operation; subject kind Font. */
+	FontRemoveFamily = 0x1008,		/**< Font Remove Family operation; subject kind Font. */
+	FontManagerShutdown = 0x1009,	/**< Font Manager Shutdown operation; subject kind None. */
 
-	ResourceLocate = 0x1401, /**< Resource Locate operation; subject kind Resource. */
+	TextLayoutCompute = 0x1501, /**< Text layout computation; subject kind Font. */
+
+	ResourceLocate = 0x1401,   /**< Resource Locate operation; subject kind Resource. */
 	ResourceReadFile = 0x1402, /**< Resource Read File operation; subject kind Resource. */
 
 	IconManagerInitialize = 0x1101, /**< Icon Manager Initialize operation; subject kind None. */
-	IconRegisterSource = 0x1102, /**< Icon Register Source operation; subject kind Icon. */
-	IconParseSource = 0x1103, /**< Icon Parse Source operation; subject kind Icon. */
-	IconRegisterRaster = 0x1104, /**< Icon Register Raster operation; subject kind Icon. */
-	IconRasterize = 0x1105, /**< Icon Rasterize operation; subject kind Icon. */
-	IconPublishAtlas = 0x1106, /**< Icon Publish Atlas operation; subject kind Icon. */
-	IconLookup = 0x1107, /**< Icon Lookup operation; subject kind Icon. */
-	IconManagerShutdown = 0x1108, /**< Icon Manager Shutdown operation; subject kind None. */
-	IconRemove = 0x1109, /**< Icon Remove operation; subject kind Icon. */
+	IconRegisterSource = 0x1102,	/**< Icon Register Source operation; subject kind Icon. */
+	IconParseSource = 0x1103,		/**< Icon Parse Source operation; subject kind Icon. */
+	IconRegisterRaster = 0x1104,	/**< Icon Register Raster operation; subject kind Icon. */
+	IconRasterize = 0x1105,			/**< Icon Rasterize operation; subject kind Icon. */
+	IconPublishAtlas = 0x1106,		/**< Icon Publish Atlas operation; subject kind Icon. */
+	IconLookup = 0x1107,			/**< Icon Lookup operation; subject kind Icon. */
+	IconManagerShutdown = 0x1108,	/**< Icon Manager Shutdown operation; subject kind None. */
+	IconRemove = 0x1109,			/**< Icon Remove operation; subject kind Icon. */
 
-	ViewportManagerInitialize = 0x1201, /**< Viewport Manager Initialize operation; subject kind None. */
-	ViewportCreate = 0x1202, /**< Viewport Create operation; subject kind Viewport. */
-	ViewportResize = 0x1203, /**< Viewport Resize operation; subject kind Viewport. */
+	ViewportManagerInitialize =
+		0x1201,				  /**< Viewport Manager Initialize operation; subject kind None. */
+	ViewportCreate = 0x1202,  /**< Viewport Create operation; subject kind Viewport. */
+	ViewportResize = 0x1203,  /**< Viewport Resize operation; subject kind Viewport. */
 	ViewportPrepare = 0x1204, /**< Viewport Prepare operation; subject kind Viewport. */
-	ViewportRecord = 0x1205, /**< Viewport Record operation; subject kind Viewport. */
+	ViewportRecord = 0x1205,  /**< Viewport Record operation; subject kind Viewport. */
 	ViewportPublish = 0x1206, /**< Viewport Publish operation; subject kind Viewport. */
-	ViewportLookup = 0x1207, /**< Viewport Lookup operation; subject kind Viewport. */
+	ViewportLookup = 0x1207,  /**< Viewport Lookup operation; subject kind Viewport. */
 	ViewportDestroy = 0x1208, /**< Viewport Destroy operation; subject kind Viewport. */
-	ViewportManagerShutdown = 0x1209, /**< Viewport Manager Shutdown operation; subject kind None. */
+	ViewportManagerShutdown =
+		0x1209,					/**< Viewport Manager Shutdown operation; subject kind None. */
 	ViewportConfigure = 0x120a, /**< Viewport Configure operation; subject kind Viewport. */
 
 	CallbackAction = 0x1301, /**< Callback Action operation; subject kind Action. */
-	CallbackElementConstruct = 0x1302, /**< Callback Element Construct operation; subject kind ElementInstance. */
-	CallbackElementDestroy = 0x1303, /**< Callback Element Destroy operation; subject kind ElementInstance. */
-	CallbackElementInteraction = 0x1304, /**< Callback Element Interaction operation; subject kind ElementInstance. */
+	CallbackElementConstruct =
+		0x1302, /**< Callback Element Construct operation; subject kind ElementInstance. */
+	CallbackElementDestroy =
+		0x1303, /**< Callback Element Destroy operation; subject kind ElementInstance. */
+	CallbackElementInteraction =
+		0x1304, /**< Callback Element Interaction operation; subject kind ElementInstance. */
 	CallbackThemeMutation = 0x1305, /**< Callback Theme Mutation operation; subject kind Theme. */
-	CallbackWindow = 0x1306, /**< Callback Window operation; subject kind Window. */
-	CallbackViewportRender = 0x1307, /**< Callback Viewport Render operation; subject kind Viewport. */
+	CallbackWindow = 0x1306,		/**< Callback Window operation; subject kind Window. */
+	CallbackViewportRender =
+		0x1307, /**< Callback Viewport Render operation; subject kind Viewport. */
 	CleanupFrameRollback = 0x1308, /**< Cleanup Frame Rollback operation; subject kind Frame. */
-	CleanupResourceRollback = 0x1309, /**< Cleanup Resource Rollback operation; subject kind Resource. */
+	CleanupResourceRollback =
+		0x1309, /**< Cleanup Resource Rollback operation; subject kind Resource. */
 	CleanupManagerShutdown = 0x130a, /**< Cleanup Manager Shutdown operation; subject kind None. */
-	CleanupAppShutdown = 0x130b, /**< Cleanup App Shutdown operation; subject kind App. */
+	CleanupAppShutdown = 0x130b,	 /**< Cleanup App Shutdown operation; subject kind App. */
 
 	AgenticConfigure = 0x1601, /**< Agentic Configure operation; subject kind App. */
-	AgenticCapture = 0x1602, /**< Agentic Capture operation; subject kind App. */
-	AgenticSnapshot = 0x1603, /**< Agentic Snapshot operation; subject kind App. */
-	AgenticPublish = 0x1604, /**< Agentic Publish operation; subject kind Resource. */
-	AgenticCommand = 0x1605, /**< Agentic Command operation; subject kind App. */
+	AgenticCapture = 0x1602,   /**< Agentic Capture operation; subject kind App. */
+	AgenticSnapshot = 0x1603,  /**< Agentic Snapshot operation; subject kind App. */
+	AgenticPublish = 0x1604,   /**< Agentic Publish operation; subject kind Resource. */
+	AgenticCommand = 0x1605,   /**< Agentic Command operation; subject kind App. */
 	AgenticTransport = 0x1606, /**< Agentic Transport operation; subject kind App. */
-	AgenticScenario = 0x1607, /**< Agentic Scenario operation; subject kind App. */
-	AgenticImage = 0x1608, /**< Agentic Image operation; subject kind Window. */
-	AgenticCompare = 0x1609, /**< Agentic Compare operation; subject kind Resource. */
+	AgenticScenario = 0x1607,  /**< Agentic Scenario operation; subject kind App. */
+	AgenticImage = 0x1608,	   /**< Agentic Image operation; subject kind Window. */
+	AgenticCompare = 0x1609,   /**< Agentic Compare operation; subject kind Resource. */
 };
 
 /** Static catalog data associated with one ErrorSite. */
@@ -537,6 +608,7 @@ struct ErrorSiteDescriptor {
 		FLOWUI_ERROR_SITE_CASE(FontLookupFamily, Font);
 		FLOWUI_ERROR_SITE_CASE(FontRemoveFamily, Font);
 		FLOWUI_ERROR_SITE_CASE(FontManagerShutdown, None);
+		FLOWUI_ERROR_SITE_CASE(TextLayoutCompute, Font);
 		FLOWUI_ERROR_SITE_CASE(ResourceLocate, Resource);
 		FLOWUI_ERROR_SITE_CASE(ResourceReadFile, Resource);
 

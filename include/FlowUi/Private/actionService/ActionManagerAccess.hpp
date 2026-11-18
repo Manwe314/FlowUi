@@ -5,10 +5,7 @@
 namespace FlowUi::detail::action {
 
 struct ActionManagerAccess {
-	static void init(
-		ActionManager& manager,
-		App& app,
-		detail::storage::IStorageSystem& storage) {
+	static void init(ActionManager& manager, App& app, detail::storage::StorageBinding& storage) {
 		manager.init(app, storage);
 	}
 

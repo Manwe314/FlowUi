@@ -21,7 +21,9 @@
 namespace FlowUi {
 
 namespace detail {
-namespace storage { class IStorageSystem; }
+namespace storage {
+class StorageBinding;
+}
 } // namespace detail
 namespace devSystems { class DevMemoryRecorder; }
 
@@ -294,10 +296,10 @@ public:
 private:
 	friend class App;
 
-	void init(detail::storage::IStorageSystem& storageSystem, MissingVisualPolicy missingPolicy);
+	void init(detail::storage::StorageBinding& storageSystem, MissingVisualPolicy missingPolicy);
 	void destroy() noexcept;
 
-	detail::storage::IStorageSystem* storage_ = nullptr;
+	detail::storage::StorageBinding* storage_ = nullptr;
 	MissingVisualPolicy missingPolicy_ = MissingVisualPolicy::UseFallbackTexture;
 #if FLOW_UI_DEV_MODE
 	struct DevImageRecord {

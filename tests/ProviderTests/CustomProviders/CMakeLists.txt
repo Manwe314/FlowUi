@@ -1,0 +1,45 @@
+cmake_minimum_required(VERSION 3.25)
+project(FlowUiContentProviderConsumer LANGUAGES CXX)
+if(NOT FLOWUI_SOURCE_DIRECTORY)
+    get_filename_component(FLOWUI_SOURCE_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+endif()
+set(FLOWUI_TEST_CUSTOM_DOMAINS "TEXT_LAYOUT;FONT_MSDF;ICON_RASTER" CACHE STRING "Selected test domains")
+include("${FLOWUI_SOURCE_DIRECTORY}/cmake/FlowUiContentProviders.cmake")
+include(GNUInstallDirs)
+add_library(flowui_content_test_headers INTERFACE)
+add_library(FlowUiContentTest::headers ALIAS flowui_content_test_headers)
+target_include_directories(flowui_content_test_headers INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/..>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../providers>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/FlowUiContentTest>)
+set_target_properties(flowui_content_test_headers PROPERTIES EXPORT_NAME headers)
+foreach(domain IN LISTS FLOWUI_TEST_CUSTOM_DOMAINS)
+    if(domain STREQUAL "TEXT_LAYOUT")
+        set(provider_name RegisteredTextProvider)
+    elseif(domain STREQUAL "FONT_MSDF")
+        set(provider_name RegisteredFontProvider)
+    elseif(domain STREQUAL "ICON_RASTER")
+        set(provider_name RegisteredIconProvider)
+    else()
+        message(FATAL_ERROR "Unknown test domain ${domain}")
+    endif()
+    set(FLOWUI_${domain}_PROVIDER_HEADER "${provider_name}.hpp" CACHE STRING "" FORCE)
+    set(FLOWUI_${domain}_PROVIDER_TYPE "::FlowUi::test::${provider_name}" CACHE STRING "" FORCE)
+    flowui_register_content_provider(DOMAIN ${domain}
+        SOURCES "${CMAKE_CURRENT_LIST_DIR}/${provider_name}.cpp"
+        TARGETS FlowUiContentTest::headers PACKAGES FlowUiContentTest)
+endforeach()
+set(FLOW_UI_ENABLE_BAKED_CHANGES OFF CACHE BOOL "" FORCE)
+add_subdirectory("${FLOWUI_SOURCE_DIRECTORY}" flowui)
+add_executable(flowui_custom_providers_consumer main.cpp)
+target_link_libraries(flowui_custom_providers_consumer PRIVATE FlowUi::FlowUi FlowUiContentTest::headers)
+flowui_package_resources(flowui_custom_providers_consumer)
+enable_testing()
+add_test(NAME flowui.providers.custom_app COMMAND flowui_custom_providers_consumer)
+set_tests_properties(flowui.providers.custom_app PROPERTIES TIMEOUT 90)
+install(TARGETS flowui_content_test_headers EXPORT FlowUiContentTestTargets)
+install(EXPORT FlowUiContentTestTargets FILE FlowUiContentTestConfig.cmake NAMESPACE FlowUiContentTest:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FlowUiContentTest)
+install(FILES RegisteredTextProvider.hpp RegisteredFontProvider.hpp RegisteredIconProvider.hpp
+    ../DistinctFontMsdfProvider.hpp ../DistinctIconRasterProvider.hpp ../providers/DeterministicTextLayoutProvider.hpp
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/FlowUiContentTest)

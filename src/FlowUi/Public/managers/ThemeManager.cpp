@@ -1,4 +1,5 @@
 #include "FlowUi/Public/managers/ThemeManager.hpp"
+#include "FlowUi/Private/storageSystem/StorageBinding.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/memory/DevMemoryProbe.hpp"
 #endif
@@ -17,7 +18,7 @@ ThemeManager::~ThemeManager() {
 	destroy();
 }
 
-void ThemeManager::init(detail::storage::IStorageSystem& storage) {
+void ThemeManager::init(detail::storage::StorageBinding& storage) {
 	if (!controller_) controller_ = std::make_unique<detail::manager_storage::ThemeStorageController>();
 	storage_ = &storage;
 	if (controller_) {
@@ -104,7 +105,7 @@ Status ThemeManager::set_dev_active_variant(devSystems::tooling::DevTypeId type,
 }
 
 std::uint64_t ThemeManager::devRevision() const noexcept {
-	return storage_ ? storage_->managerSharedRevision() : 0;
+	return storage_ ? storage_->system().managerSharedRevision() : 0;
 }
 
 std::size_t ThemeManager::devThemeCount() const noexcept {
@@ -131,8 +132,8 @@ Result<std::string_view> ThemeManager::retain_dev_resource_key(std::string_view 
 	if (!storage_)
 		return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeRegisterVariant));
 	try {
-		const auto identity = storage_->intern(key);
-		const auto retained = storage_->string(identity);
+		const auto identity = storage_->system().intern(key);
+		const auto retained = storage_->system().string(identity);
 		if (retained != key)
 			return unexpectedError(makeError(ErrorCode::ThemeMutationFailed, ErrorSite::ThemeRegisterVariant));
 		return retained;

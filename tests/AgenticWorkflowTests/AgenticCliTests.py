@@ -16,7 +16,10 @@ def main() -> int:
     parser.add_argument("cli", type=Path)
     arguments = parser.parse_args()
     executable = arguments.cli.resolve(strict=True)
-    with tempfile.TemporaryDirectory(prefix="flowui-cli-test-") as temporary:
+    agentic_root = Path(__file__).resolve().parents[2] / ".flowui/agentic"
+    verification_root = agentic_root / "verification/cli"
+    verification_root.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="run-", dir=verification_root) as temporary:
         workspace = Path(temporary)
 
         def command(*argv, expected=0):
@@ -108,13 +111,14 @@ def main() -> int:
             if client == "vscode":
                 assert result["result"]["configuration"]["servers"]["flowui"]["type"] == "stdio"
 
-        build_log = workspace / "build.log"
+        build_log = agentic_root / "logs/cli" / workspace.name / "build.log"
+        build_log.parent.mkdir(parents=True, exist_ok=True)
         build_log.write_text("src/app.cpp:42:7: warning: unused input [-Wunused-variable]\n")
         result = command("ingest", "build", "--log", str(build_log), "--producer", "gcc")
         assert "diagnostics" in result["result"]
         assert not (workspace / ".flowui").exists()
 
-        report_store = workspace / "report-store"
+        report_store = workspace / ".flowui/agentic/v1"
         report_path = report_store / "runs/run_cli/verification/job_cli.json"
         report_path.parent.mkdir(parents=True)
         (report_path.parent.parent / "run.json").write_text(json.dumps({"run_id": "run_cli"}))
@@ -160,6 +164,9 @@ def main() -> int:
             literal = "$(touch escaped); `echo unexpected`"
             launched = command("launch", "--executable", str(child), "--argv", json.dumps([literal]), "--log-bytes", "1024")["result"]
             session_path = Path(launched["launch_session"])
+            assert session_path.is_relative_to(workspace / ".flowui/agentic/verification/launches")
+            for stream in ("stdout", "stderr"):
+                assert Path(launched[stream]).is_relative_to(workspace / ".flowui/agentic/logs")
             deadline = time.monotonic() + 5
             while time.monotonic() < deadline:
                 if session_path.exists():
@@ -170,6 +177,8 @@ def main() -> int:
             else:
                 raise AssertionError("Launch supervisor did not finish")
             assert session["exit_code"] == 0
+            for stream in ("stdout", "stderr"):
+                assert session[stream]["path"] == launched[stream]
             stdout = Path(launched["stdout"]).read_bytes()
             stderr = Path(launched["stderr"]).read_bytes()
             assert len(stdout) <= 1024 and len(stderr) <= 1024

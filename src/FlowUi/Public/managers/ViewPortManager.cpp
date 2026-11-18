@@ -1,3 +1,4 @@
+#include "FlowUi/Private/storageSystem/StorageBinding.hpp"
 #define FLOWUI_INTERNAL_VIEWPORT_MANAGER 1
 #include "FlowUi/Public/managers/ViewPortManager.hpp"
 #if FLOW_UI_DEV_MODE
@@ -107,7 +108,7 @@ Result<bool> ViewPortManager::visitDevViewports(void* target, DevViewportVisitor
 	for (const auto& [key, record] : controller_->records) {
 		const auto& pending = record.pending_capture;
 		const auto& capture =
-			pending.submission && pending.submission <= storage_->completedSerial()
+			pending.submission && pending.submission <= storage_->system().completedSerial()
 				? pending
 				: record.published_capture;
 		const bool available = capture.texture &&
@@ -130,8 +131,8 @@ Result<bool> ViewPortManager::visitDevViewports(void* target, DevViewportVisitor
 			.capture_supported = controller_->supports_dev_capture(record.state.colorFormat),
 			.capture_pending =
 				record.flags.has_flag(ViewportRecordFlag::capture_requested) ||
-				(pending.texture &&
-				 (!pending.submission || pending.submission > storage_->completedSerial())),
+				(pending.texture && (!pending.submission ||
+									 pending.submission > storage_->system().completedSerial())),
 			.capture_failed = record.flags.has_flag(ViewportRecordFlag::capture_failed)};
 		if (!visitor(target, view))
 			return false;
@@ -210,10 +211,10 @@ Result<TextureHandle> ViewPortManager::retain_dev_capture(std::string_view key,
 		const auto& capture =
 			pending.texture == expected_capture ? pending : record.published_capture;
 		if (!capture.texture || capture.texture != expected_capture || !capture.submission ||
-			capture.submission > storage_->completedSerial())
+			capture.submission > storage_->system().completedSerial())
 			return unexpectedError(
 				makeError(ErrorCode::ResourceHandleInvalid, ErrorSite::ViewportPublish));
-		return storage_->createAnonymousTexture(detail::storage::TextureViewDesc{
+		return storage_->system().createAnonymousTexture(detail::storage::TextureViewDesc{
 			.imageView = capture.image.view,
 			.sampler = controller_->sampler,
 			.sourceWidth = static_cast<int32_t>(capture.image.width),
@@ -241,7 +242,7 @@ void ViewPortManager::prepare_dev_captures(const detail::storage::FrameToken& fr
 			capture.source_frame = frame.frameNumber;
 			capture.frame_slot = frame.frameSlot;
 			try {
-				storage_->trackUse(frame, capture.image.image);
+				storage_->system().trackUse(frame, capture.image.image);
 			} catch (...) {
 				controller_->discard_dev_capture(capture);
 				throw;
@@ -307,14 +308,12 @@ namespace manager_storage = detail::manager_storage;
 namespace key_storage = detail::managerStorage;
 namespace storage = detail::storage;
 
-static void ensureRenderTargetSize(
-	manager_storage::ViewportStorageController& controller,
-	storage::IStorageSystem& storageSystem,
-	WindowId window,
-	manager_storage::ViewportRecord& record);
+static void ensureRenderTargetSize(manager_storage::ViewportStorageController& controller,
+								   storage::ActiveStorageSystem& storageSystem, WindowId window,
+								   manager_storage::ViewportRecord& record);
 
-static storage::ResourceKey viewportKey(
-	storage::IStorageSystem& storageSystem, ResourceKey key, WindowId window) {
+static storage::ResourceKey viewportKey(storage::ActiveStorageSystem& storageSystem,
+										ResourceKey key, WindowId window) {
 	return key_storage::normalizeResourceKey(
 		storageSystem, key, ResourceDomain::Viewport,
 		key_storage::ResourceScope::WindowLocal, window);
@@ -379,12 +378,10 @@ bool ViewPort::clearEveryFrame() const noexcept {
 	return !state_ || state_->clearEveryFrame;
 }
 
-void ViewPortManager::init(
-	storage::IStorageSystem& storageSystem,
-	VulkanContext& vk,
-	WindowId window,
-	uint32_t framesInFlight,
-	MissingVisualPolicy missingPolicy) {
+void ViewPortManager::init(storage::StorageBinding& storageBinding, VulkanContext& vk,
+						   WindowId window, uint32_t framesInFlight,
+						   MissingVisualPolicy missingPolicy) {
+	auto& storageSystem = storageBinding.system();
 	destroyDrained(vk);
 	if (!window || vk.device == VK_NULL_HANDLE || vk.graphicsQFamily == UINT32_MAX || vk.graphicsQ == VK_NULL_HANDLE) {
 		throw FlowUiException(makeError(
@@ -397,7 +394,7 @@ void ViewPortManager::init(
 	const storage::ManagerRecordHandle handle = manager_storage::createState<manager_storage::ViewportStorageController>(
 		storageSystem, key, storage::ResourceKind::Viewport, name,
 		std::ref(storageSystem), std::ref(vk), window, framesInFlight);
-	storage_ = &storageSystem;
+	storage_ = &storageBinding;
 	missingPolicy_ = missingPolicy;
 	windowId_ = window;
 	controllerHandle_ = handle.packed();
@@ -418,7 +415,7 @@ Result<bool> ViewPortManager::create(std::string_view key, const ViewPortCreateI
 Result<bool> ViewPortManager::create(ResourceKey key, const ViewPortCreateInfo& createInfo) noexcept try {
 	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ViewportCreate));
 	try {
-		(void)viewportKey(*storage_, key, windowId_);
+		(void)viewportKey(storage_->system(), key, windowId_);
 	} catch (const FlowUiException& exception) {
 		return unexpectedError(exception.error());
 	}
@@ -428,7 +425,7 @@ Result<bool> ViewPortManager::create(ResourceKey key, const ViewPortCreateInfo& 
 	}
 	const VkFormat format = createInfo.colorFormat == VK_FORMAT_UNDEFINED
 		? VK_FORMAT_R8G8B8A8_UNORM : createInfo.colorFormat;
-	storage_->noteManagerMutation(windowId_);
+	storage_->system().noteManagerMutation(windowId_);
 	manager_storage::ViewportTargetGeneration targets{};
 	try {
 		targets = controller_->buildTargets(1, 1, format);
@@ -449,9 +446,14 @@ Result<bool> ViewPortManager::create(ResourceKey key, const ViewPortCreateInfo& 
 		facadeInserted = true;
 		manager_storage::ViewportRecord record{};
 		record.state = manager_storage::ViewportFacadeState{
-			.storage = storage_, .window = windowId_, .key = keyString,
-			.width = 1, .height = 1, .colorFormat = format,
-			.clearColor = createInfo.clearColor, .clearEveryFrame = createInfo.clearEveryFrame,
+			.storage = &storage_->system(),
+			.window = windowId_,
+			.key = keyString,
+			.width = 1,
+			.height = 1,
+			.colorFormat = format,
+			.clearColor = createInfo.clearColor,
+			.clearEveryFrame = createInfo.clearEveryFrame,
 		};
 		record.resizeHysteresisPixels = createInfo.resizeHysteresisPixels;
 		record.active = std::move(targets);
@@ -466,7 +468,7 @@ Result<bool> ViewPortManager::create(ResourceKey key, const ViewPortCreateInfo& 
 				recordIt->second.active.textures[slot].packed(),
 				manager_storage::ViewportTextureOwner{keyString, slot});
 		}
-		storage_->clearDiagnosticMark(viewportKey(*storage_, key, windowId_), 1u);
+		storage_->system().clearDiagnosticMark(viewportKey(storage_->system(), key, windowId_), 1u);
 		return true;
 	} catch (const std::bad_alloc&) {
 		if (facadeInserted) controller_->facades.erase(keyString);
@@ -509,14 +511,14 @@ Result<bool> ViewPortManager::remove(std::string_view key) noexcept try { return
 Result<bool> ViewPortManager::remove(ResourceKey key) noexcept try {
 	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ViewportDestroy));
 	try {
-		(void)viewportKey(*storage_, key, windowId_);
+		(void)viewportKey(storage_->system(), key, windowId_);
 	} catch (const FlowUiException& exception) {
 		return unexpectedError(exception.error());
 	}
 	const std::string keyString(key.name);
 	const auto it = controller_->records.find(keyString);
 	if (it == controller_->records.end()) return false;
-	storage_->noteManagerMutation(windowId_);
+	storage_->system().noteManagerMutation(windowId_);
 #if FLOW_UI_DEV_MODE
 	if (it->second.pending_capture.texture && !it->second.pending_capture.submission)
 		return unexpectedError(
@@ -541,7 +543,7 @@ Result<bool> ViewPortManager::contains(std::string_view key) const noexcept try 
 }
 Result<bool> ViewPortManager::contains(ResourceKey key) const noexcept try {
 	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ViewportLookup));
-	(void)viewportKey(*storage_, key, windowId_);
+	(void)viewportKey(storage_->system(), key, windowId_);
 	return controller_->records.contains(std::string(key.name));
 } catch (...) {
 	return unexpectedError(detail::currentExceptionError(ErrorSite::ViewportLookup));
@@ -551,7 +553,7 @@ Result<ViewPort*> ViewPortManager::getViewPort(std::string_view key) noexcept tr
 }
 Result<ViewPort*> ViewPortManager::getViewPort(ResourceKey key) noexcept try {
 	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ViewportLookup));
-	(void)viewportKey(*storage_, key, windowId_);
+	(void)viewportKey(storage_->system(), key, windowId_);
 	const auto it = controller_->facades.find(std::string(key.name));
 	return it == controller_->facades.end() ? nullptr : &it->second;
 } catch (...) {
@@ -564,7 +566,7 @@ Result<const ViewPort*> ViewPortManager::getViewPort(std::string_view key) const
 }
 Result<const ViewPort*> ViewPortManager::getViewPort(ResourceKey key) const noexcept try {
 	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ViewportLookup));
-	(void)viewportKey(*storage_, key, windowId_);
+	(void)viewportKey(storage_->system(), key, windowId_);
 	const auto it = controller_->facades.find(std::string(key.name));
 	return it == controller_->facades.end() ? nullptr : &it->second;
 } catch (...) {
@@ -577,10 +579,10 @@ Result<TextureRef> ViewPortManager::getTexture(std::string_view key) const noexc
 }
 Result<TextureRef> ViewPortManager::getTexture(ResourceKey key) const noexcept try {
 	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ViewportLookup));
-	const storage::ResourceKey normalized = viewportKey(*storage_, key, windowId_);
+	const storage::ResourceKey normalized = viewportKey(storage_->system(), key, windowId_);
 	const auto it = controller_->records.find(std::string(key.name));
 	if (it == controller_->records.end()) {
-		if (storage_->markDiagnosticOnce(normalized, 1u)) {
+		if (storage_->system().markDiagnosticOnce(normalized, 1u)) {
 			detail::reportErrorEvent(ErrorEventView{
 				.error = makeError(
 					ErrorCode::ViewportNotFound, ErrorSite::ViewportLookup,
@@ -689,7 +691,7 @@ void ViewPortManager::prepareFrameTargets(
 			if (widthDiff <= hysteresis) record.desiredWidth = currentWidth;
 			if (heightDiff <= hysteresis) record.desiredHeight = currentHeight;
 		}
-		ensureRenderTargetSize(*controller_, *storage_, windowId_, record);
+		ensureRenderTargetSize(*controller_, storage_->system(), windowId_, record);
 	}
 
 	const uint32_t frameSlot = controller_->currentFrameIndex % controller_->framesInFlight;
@@ -732,11 +734,9 @@ bool ViewPortManager::resizeRequired() const {
 	return false;
 }
 
-static void ensureRenderTargetSize(
-	manager_storage::ViewportStorageController& controller,
-	storage::IStorageSystem& storageSystem,
-	WindowId window,
-	manager_storage::ViewportRecord& record) {
+static void ensureRenderTargetSize(manager_storage::ViewportStorageController& controller,
+								   storage::ActiveStorageSystem& storageSystem, WindowId window,
+								   manager_storage::ViewportRecord& record) {
 	const uint32_t width = std::max(1u, record.desiredWidth);
 	const uint32_t height = std::max(1u, record.desiredHeight);
 	if (!record.active.images.empty() && record.active.images.front().width == width &&
@@ -945,8 +945,8 @@ void ViewPortManager::recordFramePasses(
 void ViewPortManager::destroyDrained(VulkanContext&) {
 	if (storage_ && windowId_) {
 		try {
-			const storage::StringId name = storage_->intern("flowui.viewport.controller");
-			(void)storage_->removeManagerRecord(
+			const storage::StringId name = storage_->system().intern("flowui.viewport.controller");
+			(void)storage_->system().removeManagerRecord(
 				storage::ResourceKey{storage::ResourceDomain::Viewport, name, windowId_},
 				storage::ResourceKind::Viewport);
 		} catch (...) {}

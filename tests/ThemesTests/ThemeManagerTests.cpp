@@ -6,12 +6,12 @@
 #include <stdexcept>
 #include <string>
 
-#include "FlowUi/Public/FlowUiTheme.hpp"
-#include "clay.h"
-#include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
 #include "FlowUi/Private/resourceService/ThemeStorageController.hpp"
+#include "FlowUi/Private/storageSystem/StorageBinding.hpp"
+#include "FlowUi/Public/FlowUiTheme.hpp"
 #include "FlowUi/Public/managers/ThemeManager.hpp"
 #include "FlowUi/Public/managers/UiManager.hpp"
+#include "clay.h"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devTooling/DevTooling.hpp"
 #endif
@@ -42,10 +42,12 @@ struct alignas(64) TestOverAlignedTheme {
 
 void testFailedRegistrationLeavesNoThemeType(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	for (uint32_t checkpoint = 1; checkpoint <= 4; ++checkpoint) {
-		FlowUi::detail::storage::FlowStorageSystem storage(vulkan.context());
+		FlowUi::detail::storage::ActiveStorageSystem storage(vulkan.context());
 		storage.initialize(FlowUi::detail::storage::StorageConfig{});
+		FlowUi::detail::storage::StorageBinding storageBinding;
+		storageBinding.bind(storage);
 		FlowUi::detail::manager_storage::ThemeStorageController controller;
-		controller.init(storage);
+		controller.init(storageBinding);
 		const auto variant = controller.internString("failure-retry");
 		storage.setManagerFailureCountdown(checkpoint);
 		FLOWUI_CHECK_THROWS(controller.registerThemeVariant<TestAppTheme>(variant, TestAppTheme{}, true));
@@ -60,10 +62,12 @@ void testFailedRegistrationLeavesNoThemeType(FlowUi::test::HeadlessVulkanFixture
 }
 
 void testSealedFrameRejectsThemeMutationBeforeEffects(FlowUi::test::HeadlessVulkanFixture& vulkan) {
-	FlowUi::detail::storage::FlowStorageSystem storage(vulkan.context());
+	FlowUi::detail::storage::ActiveStorageSystem storage(vulkan.context());
 	storage.initialize(FlowUi::detail::storage::StorageConfig{});
+	FlowUi::detail::storage::StorageBinding storageBinding;
+	storageBinding.bind(storage);
 	FlowUi::ThemeManager themes;
-	themes.init(storage);
+	themes.init(storageBinding);
 	FLOWUI_CHECK(themes.registerTheme<TestEditorTheme>("first", TestEditorTheme{11}, true));
 	FLOWUI_CHECK(themes.registerTheme<TestEditorTheme>("second", TestEditorTheme{22}, false));
 	storage.registerWindow(7, FlowUi::detail::storage::WindowStorageDesc{});
@@ -84,14 +88,16 @@ void testSealedFrameRejectsThemeMutationBeforeEffects(FlowUi::test::HeadlessVulk
 
 void testStagedAndDevPhaseChecksPrecedeEffects(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	using namespace FlowUi;
-	detail::storage::FlowStorageSystem storage(vulkan.context());
+	detail::storage::ActiveStorageSystem storage(vulkan.context());
 	storage.initialize({});
+	FlowUi::detail::storage::StorageBinding storageBinding;
+	storageBinding.bind(storage);
 	detail::manager_storage::ThemeStorageController controller;
-	controller.init(storage);
+	controller.init(storageBinding);
 	const auto first = controller.internString("first");
 	const auto second = controller.internString("second");
-	(void)controller.registerThemeVariant<TestEditorTheme>(first, TestEditorTheme{11}, true);
-	(void)controller.registerThemeVariant<TestEditorTheme>(second, TestEditorTheme{22}, false);
+	const auto firstHandle = controller.registerThemeVariant<TestEditorTheme>(first, TestEditorTheme{11}, true);
+	const auto secondHandle = controller.registerThemeVariant<TestEditorTheme>(second, TestEditorTheme{22}, false);
 	bool invoked = false;
 	FLOWUI_CHECK(controller.queueActiveThemeMutation<TestEditorTheme>([&](TestEditorTheme& theme) {
 		invoked = true;
@@ -124,7 +130,11 @@ void testStagedAndDevPhaseChecksPrecedeEffects(FlowUi::test::HeadlessVulkanFixtu
 	controller.shutdown();
 	// Destructor cleanup contains the sealed-phase rejection. Storage still owns
 	// both payload records and will destroy them during final owner shutdown.
+	FLOWUI_CHECK(storage.managerRecordData(firstHandle, detail::storage::ResourceKind::UiTheme));
+	FLOWUI_CHECK(storage.managerRecordData(secondHandle, detail::storage::ResourceKind::UiTheme));
+#if FLOW_UI_DEV_MODE
 	FLOWUI_CHECK(storage.resourceStats(detail::storage::ResourceKind::UiTheme).live == 2);
+#endif
 	storage.cancelFrame(cleanupFrame);
 	storage.unregisterWindow(7, 0);
 	storage.shutdown();
@@ -145,10 +155,12 @@ struct ThrowingAssignmentTheme {
 
 void testArbitraryThemeFailureRequiresAbandonment(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	using namespace FlowUi;
-	detail::storage::FlowStorageSystem storage(vulkan.context());
+	detail::storage::ActiveStorageSystem storage(vulkan.context());
 	storage.initialize({});
+	FlowUi::detail::storage::StorageBinding storageBinding;
+	storageBinding.bind(storage);
 	ThemeManager themes;
-	themes.init(storage);
+	themes.init(storageBinding);
 	FLOWUI_CHECK(themes.registerTheme<ThrowingAssignmentTheme>("default", ThrowingAssignmentTheme{11}));
 	FLOWUI_CHECK(themes.updateActiveTheme<ThrowingAssignmentTheme>([](ThrowingAssignmentTheme& theme) {
 		theme.marker = 22;
@@ -166,12 +178,14 @@ void testArbitraryThemeFailureRequiresAbandonment(FlowUi::test::HeadlessVulkanFi
 }
 
 void testThemeRegistrationAndAccess(FlowUi::test::HeadlessVulkanFixture& vulkan) {
-	FlowUi::detail::storage::FlowStorageSystem storage(vulkan.context());
+	FlowUi::detail::storage::ActiveStorageSystem storage(vulkan.context());
 	FlowUi::detail::storage::StorageConfig config{};
 	storage.initialize(config);
 
+	FlowUi::detail::storage::StorageBinding storageBinding;
+	storageBinding.bind(storage);
 	FlowUi::ThemeManager themes;
-	themes.init(storage);
+	themes.init(storageBinding);
 
 	TestAppTheme defaultTheme{
 		.brandColor = { 0.1f, 0.2f, 0.3f, 1.0f },
@@ -191,12 +205,14 @@ void testThemeRegistrationAndAccess(FlowUi::test::HeadlessVulkanFixture& vulkan)
 }
 
 void testMultipleVariantsAndSwitching(FlowUi::test::HeadlessVulkanFixture& vulkan) {
-	FlowUi::detail::storage::FlowStorageSystem storage(vulkan.context());
+	FlowUi::detail::storage::ActiveStorageSystem storage(vulkan.context());
 	FlowUi::detail::storage::StorageConfig config{};
 	storage.initialize(config);
 
+	FlowUi::detail::storage::StorageBinding storageBinding;
+	storageBinding.bind(storage);
 	FlowUi::ThemeManager themes;
-	themes.init(storage);
+	themes.init(storageBinding);
 
 	TestAppTheme darkVariant{ .cornerRadius = 6.0f, .spacing = 10 };
 	TestAppTheme lightVariant{ .cornerRadius = 14.0f, .spacing = 20 };
@@ -218,12 +234,14 @@ void testMultipleVariantsAndSwitching(FlowUi::test::HeadlessVulkanFixture& vulka
 }
 
 void testDifferentThemeTypesCanShareVariantNames(FlowUi::test::HeadlessVulkanFixture& vulkan) {
-	FlowUi::detail::storage::FlowStorageSystem storage(vulkan.context());
+	FlowUi::detail::storage::ActiveStorageSystem storage(vulkan.context());
 	FlowUi::detail::storage::StorageConfig config{};
 	storage.initialize(config);
 
+	FlowUi::detail::storage::StorageBinding storageBinding;
+	storageBinding.bind(storage);
 	FlowUi::ThemeManager themes;
-	themes.init(storage);
+	themes.init(storageBinding);
 
 	FLOWUI_CHECK(themes.registerTheme<TestAppTheme>(
 		"default", TestAppTheme{.cornerRadius = 9.0f, .spacing = 18}, true));
@@ -243,12 +261,14 @@ void testDifferentThemeTypesCanShareVariantNames(FlowUi::test::HeadlessVulkanFix
 }
 
 void testOverAlignedThemePayload(FlowUi::test::HeadlessVulkanFixture& vulkan) {
-	FlowUi::detail::storage::FlowStorageSystem storage(vulkan.context());
+	FlowUi::detail::storage::ActiveStorageSystem storage(vulkan.context());
 	FlowUi::detail::storage::StorageConfig config{};
 	storage.initialize(config);
 
+	FlowUi::detail::storage::StorageBinding storageBinding;
+	storageBinding.bind(storage);
 	FlowUi::ThemeManager themes;
-	themes.init(storage);
+	themes.init(storageBinding);
 	FLOWUI_CHECK(themes.registerTheme<TestOverAlignedTheme>(
 		"default", TestOverAlignedTheme{.marker = 73}, true));
 
@@ -258,12 +278,14 @@ void testOverAlignedThemePayload(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 }
 
 void testStagedMutations(FlowUi::test::HeadlessVulkanFixture& vulkan) {
-	FlowUi::detail::storage::FlowStorageSystem storage(vulkan.context());
+	FlowUi::detail::storage::ActiveStorageSystem storage(vulkan.context());
 	FlowUi::detail::storage::StorageConfig config{};
 	storage.initialize(config);
 
+	FlowUi::detail::storage::StorageBinding storageBinding;
+	storageBinding.bind(storage);
 	FlowUi::ThemeManager themes;
-	themes.init(storage);
+	themes.init(storageBinding);
 
 	TestAppTheme initialTheme{ .cornerRadius = 5.0f, .spacing = 10 };
 	FLOWUI_CHECK(themes.registerTheme<TestAppTheme>("default", initialTheme, true));
@@ -290,12 +312,14 @@ void testStagedMutations(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 }
 
 void testFlowUiThemeDefaultRegistration(FlowUi::test::HeadlessVulkanFixture& vulkan) {
-	FlowUi::detail::storage::FlowStorageSystem storage(vulkan.context());
+	FlowUi::detail::storage::ActiveStorageSystem storage(vulkan.context());
 	FlowUi::detail::storage::StorageConfig config{};
 	storage.initialize(config);
 
+	FlowUi::detail::storage::StorageBinding storageBinding;
+	storageBinding.bind(storage);
 	FlowUi::ThemeManager themes;
-	themes.init(storage);
+	themes.init(storageBinding);
 
 	FLOWUI_CHECK(
 		themes.registerTheme<FlowUi::FlowUiTheme>("default", FlowUi::FlowUiTheme::dark(), true));
@@ -318,10 +342,12 @@ void testPreBakeBaselines(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 		std::string label;
 		float radius;
 	};
-	detail::storage::FlowStorageSystem storage(vulkan.context());
+	detail::storage::ActiveStorageSystem storage(vulkan.context());
 	storage.initialize({});
+	FlowUi::detail::storage::StorageBinding storageBinding;
+	storageBinding.bind(storage);
 	detail::manager_storage::ThemeStorageController controller;
-	controller.init(storage);
+	controller.init(storageBinding);
 	const OwnedTheme authored{"authored-owned-string", 4};
 	const OwnedTheme startup{"baked-owned-string", 12};
 	(void)controller.registerThemeVariant<OwnedTheme>(controller.internString("default"), startup,
@@ -354,12 +380,14 @@ void testPreBakeBaselines(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 void testDevThemeOverrideAndCapture(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	using namespace FlowUi;
 	using namespace FlowUi::devSystems::tooling;
-	detail::storage::FlowStorageSystem storage(vulkan.context());
+	detail::storage::ActiveStorageSystem storage(vulkan.context());
 	detail::storage::StorageConfig config{};
 	storage.initialize(config);
 
+	FlowUi::detail::storage::StorageBinding storageBinding;
+	storageBinding.bind(storage);
 	ThemeManager themes;
-	themes.init(storage);
+	themes.init(storageBinding);
 	FLOWUI_CHECK(themes.registerTheme<TestAppTheme>(
 		"default", TestAppTheme{.cornerRadius = 5.0f, .spacing = 12}, true));
 

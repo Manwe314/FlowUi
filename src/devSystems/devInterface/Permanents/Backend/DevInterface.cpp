@@ -9,21 +9,25 @@
 #include "devSystems/devMonitoringAndReporting/reporting/DevPerformanceCapture.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTiming.hpp"
 
+#include "FlowUi/Private/storageSystem/StorageBinding.hpp"
 #include "FlowUi/Public/AppElementWindows.hpp"
-#include "devSystems/devInterface/Permanents/Elements/DevInterface.hpp"
-#include "devSystems/devInterface/Permanents/Backend/DevInspectSelection.hpp"
 #include "FlowUi/Public/managers/ShortcutManager.hpp"
 #include "FlowUi/Public/managers/UiManager.hpp"
-#include "FlowUi/Private/storageSystem/IStorageSystem.hpp"
+#include "devSystems/devInterface/Permanents/Backend/DevInspectSelection.hpp"
+#include "devSystems/devInterface/Permanents/Elements/DevInterface.hpp"
 
 namespace FlowUi::devSystems {
 DevInterface::DevInterface() noexcept = default;
 DevInterface::~DevInterface() = default;
-void DevInterface::release_inspection_resources(::FlowUi::detail::storage::IStorageSystem* storage) noexcept {
+void DevInterface::release_inspection_resources(
+	::FlowUi::detail::storage::StorageBinding* storage) noexcept {
 	if (session_) {
 		if (storage) for (const auto& request : session_->catalogue.viewport_requests)
 			for (const auto texture : {request.observation.texture, request.retiring_texture})
-				try { if (texture) storage->releaseAnonymousTexture(texture); } catch (...) {}
+				try {
+					if (texture)
+						storage->system().releaseAnonymousTexture(texture);
+				} catch (...) {}
 		session_->catalogue.viewport_requests.clear();
 		session_->catalogue.frozen_viewport = {};
 		session_->catalogue.frozen_viewport_identity = 0;

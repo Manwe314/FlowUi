@@ -38,7 +38,7 @@ class DevInterfaceNotesVerification(HELPER.CatalogueVerification):
         HELPER.write_json(self.changes, {"manifestVersion": 2, "schemaFingerprint": "0x0000000000000000",
             "buildFingerprint": "", "createdTimestamp": "", "bakedChanges": [],
             "memoryCapacity": {"version": 1, "enabled": False, "targets": []}})
-        with (self.output / "demo.log").open("wb") as log:
+        with (self.logs / "demo.log").open("wb") as log:
             self.process = subprocess.Popen([str(self.demo), "--agentic-store", str(self.store)],
                 cwd=self.workspace, stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT)
 

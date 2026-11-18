@@ -13,7 +13,7 @@
 #include "FlowUi/Public/defaults/TextureDefaults.hpp"
 
 #if FLOWUI_INCLUDE_ICON_MANAGER
-#include <plutosvg.h>
+#include "FlowUi/Private/resourceService/iconRasterProvider/IconRasterProviderSelection.hpp"
 #endif
 
 namespace {
@@ -85,23 +85,16 @@ void test_default_fsel_svgs_rasterize() {
 	constexpr std::array<std::string_view, 4> icon_sources{
 		kIncrementSvg, kDecrementSvg, kComboBoxOpenSvg, kComboBoxClosedSvg};
 
+	FlowUi::detail::icon::ActiveIconRasterProvider provider;
 	for (const auto source : icon_sources) {
-		const std::unique_ptr<plutosvg_document_t, decltype(&plutosvg_document_destroy)> document(
-			plutosvg_document_load_from_data(source.data(), static_cast<int>(source.size()),
-											-1.0f, -1.0f, nullptr, nullptr),
-			&plutosvg_document_destroy);
-		FLOWUI_CHECK(document != nullptr);
-		const std::unique_ptr<plutovg_surface_t, decltype(&plutovg_surface_destroy)> surface(
-			plutosvg_document_render_to_surface(document.get(), nullptr, 16, 16, nullptr,
-											  nullptr, nullptr),
-			&plutovg_surface_destroy);
-		FLOWUI_CHECK(surface != nullptr);
-		FLOWUI_CHECK(plutovg_surface_get_width(surface.get()) == 16);
-		FLOWUI_CHECK(plutovg_surface_get_height(surface.get()) == 16);
-		const auto pixels = std::span(
-			plutovg_surface_get_data(surface.get()),
-			static_cast<size_t>(plutovg_surface_get_stride(surface.get()) * 16));
-		FLOWUI_CHECK(std::ranges::any_of(pixels, [](unsigned char channel) { return channel != 0; }));
+		auto document = provider.parse(std::as_bytes(std::span(source.data(), source.size())));
+		FLOWUI_CHECK(document);
+		auto image = provider.rasterize(*document, {.width = 16, .height = 16});
+		FLOWUI_CHECK(image);
+		FLOWUI_CHECK(image->width == 16 && image->height == 16);
+		FLOWUI_CHECK(image->pixels.size() == 16u * 16u * 4u);
+		FLOWUI_CHECK(std::ranges::any_of(image->pixels,
+										 [](std::byte channel) { return channel != std::byte{}; }));
 	}
 }
 #endif

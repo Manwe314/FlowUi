@@ -12,51 +12,23 @@
 #include <thread>
 #include <vector>
 
-#include <msdf-atlas-gen/msdf-atlas-gen.h>
+#include "FlowUi/Private/resourceService/fontMSDFProvider/FontBakeProfiles.hpp"
+#include "FlowUi/Private/resourceService/fontMSDFProvider/FontCpuAssetValidation.hpp"
+#include "FlowUi/Private/resourceService/fontMSDFProvider/FontMSDFProviderSelection.hpp"
+#include "FlowUi/Public/errorManagement/Exception.hpp"
+#include <cstring>
 
 namespace {
 
-constexpr double kDefaultPixelSize = 64.0;
-constexpr double kDefaultPxRange = 8.0;
-constexpr double kDefaultAngleThreshold = 3.0;
-constexpr double kDefaultMiterLimit = 1.0;
-constexpr int default_atlas_spacing = 2;
-constexpr unsigned long long kLcgMultiplier = 6364136223846793005ull;
-constexpr unsigned long long kLcgIncrement = 1442695040888963407ull;
-
-constexpr msdf_atlas::unicode_t default_extended_ui_codepoints[] = {
-    0x2013u, // EN DASH
-    0x2014u, // EM DASH
-    0x2018u, // LEFT SINGLE QUOTATION MARK
-    0x2019u, // RIGHT SINGLE QUOTATION MARK
-    0x201Cu, // LEFT DOUBLE QUOTATION MARK
-    0x201Du, // RIGHT DOUBLE QUOTATION MARK
-    0x2022u, // BULLET
-    0x2026u, // HORIZONTAL ELLIPSIS
-    0x20ACu, // EURO SIGN
-    0x2122u, // TRADE MARK SIGN
-    0x2190u, // LEFTWARDS ARROW
-    0x2191u, // UPWARDS ARROW
-    0x2192u, // RIGHTWARDS ARROW
-    0x2193u, // DOWNWARDS ARROW
-    0x2194u, // LEFT RIGHT ARROW
-    0x2195u, // UP DOWN ARROW
-    0x2212u, // MINUS SIGN
-    0x2260u, // NOT EQUAL TO
-    0x2264u, // LESS-THAN OR EQUAL TO
-    0x2265u, // GREATER-THAN OR EQUAL TO
-    0x25A1u, // WHITE SQUARE
-    0x25B2u, // BLACK UP-POINTING TRIANGLE
-    0x25B6u, // BLACK RIGHT-POINTING TRIANGLE
-    0x25BCu, // BLACK DOWN-POINTING TRIANGLE
-    0x25C0u, // BLACK LEFT-POINTING TRIANGLE
-    0x25C6u, // BLACK DIAMOND
-    0x25CBu, // WHITE CIRCLE
-    0x25CFu, // BLACK CIRCLE
-    0x2713u, // CHECK MARK
-    0x2717u, // BALLOT X
-    0xFFFDu, // REPLACEMENT CHARACTER
-};
+constexpr auto bakeProfile = FlowUi::detail::font::offlineFontBakeProfile;
+constexpr double kDefaultPixelSize = bakeProfile.pixelSize;
+constexpr double kDefaultPxRange = bakeProfile.pixelRange;
+constexpr double kDefaultAngleThreshold = bakeProfile.angleThreshold;
+constexpr double kDefaultMiterLimit = bakeProfile.miterLimit;
+static_assert(FlowUi::detail::font::ActiveFontMSDFProvider::supportsBaking,
+			  "Offline font baker requires a baking-capable FontMSDFProvider.");
+static_assert(FlowUi::detail::font::ActiveFontMSDFProvider::supportsEncoding,
+			  "Offline font baker requires an encoding-capable FontMSDFProvider.");
 
 struct Options {
     std::string inputPath;
@@ -69,24 +41,6 @@ struct Options {
     double miter_limit = kDefaultMiterLimit;
     int threadCount = 0; // 0 = auto
     bool showHelp = false;
-};
-
-struct FreetypeGuard {
-    msdfgen::FreetypeHandle *handle = nullptr;
-
-    ~FreetypeGuard() {
-        if (handle)
-            msdfgen::deinitializeFreetype(handle);
-    }
-};
-
-struct FontGuard {
-    msdfgen::FontHandle *handle = nullptr;
-
-    ~FontGuard() {
-        if (handle)
-            msdfgen::destroyFont(handle);
-    }
 };
 
 void printUsage(const char *argv0) {
@@ -256,56 +210,141 @@ bool prepareOutputPath(const std::string &outputPath, std::string &error) {
     return true;
 }
 
-void add_supported_codepoint(msdfgen::FontHandle *font_handle, msdf_atlas::Charset &charset, msdf_atlas::unicode_t codepoint) {
-    msdfgen::GlyphIndex glyph_index;
-    if (msdfgen::getGlyphIndex(glyph_index, font_handle, codepoint) && glyph_index.getIndex() != 0)
-        charset.add(codepoint);
+[[nodiscard]] bool readOwnedBytes(const std::string& path, std::vector<std::byte>& bytes,
+								  bool allowEmpty = false) {
+	std::ifstream input(flowui::tools::utf8_path(path), std::ios::binary | std::ios::ate);
+	if (!input)
+		return false;
+	const auto length = input.tellg();
+	if (length < 0 || (!allowEmpty && length == 0) ||
+		static_cast<uintmax_t>(length) > std::numeric_limits<size_t>::max())
+		return false;
+	bytes.resize(static_cast<size_t>(length));
+	input.seekg(0);
+	if (!bytes.empty())
+		input.read(reinterpret_cast<char*>(bytes.data()),
+				   static_cast<std::streamsize>(bytes.size()));
+	return static_cast<bool>(input);
 }
 
-void build_default_ui_charset(msdfgen::FontHandle *font_handle, msdf_atlas::Charset &charset) {
-    charset = msdf_atlas::Charset::ASCII;
-    for (msdf_atlas::unicode_t codepoint = 0x00A0u; codepoint <= 0x00FFu; ++codepoint)
-        add_supported_codepoint(font_handle, charset, codepoint);
-    for (msdf_atlas::unicode_t codepoint : default_extended_ui_codepoints)
-        add_supported_codepoint(font_handle, charset, codepoint);
-}
-
-[[nodiscard]] bool buildCharset(const Options &options, msdfgen::FontHandle *font_handle, msdf_atlas::Charset &charset, std::string &error) {
-    if (!options.charsetFilePath.empty()) {
-        if (!charset.load(options.charsetFilePath.c_str(), false)) {
-            error = "Failed to parse charset file: " + options.charsetFilePath;
-            return false;
-        }
-        return true;
-    }
-
-    if (!options.charsetSpec.empty()) {
-        if (!charset.parse(options.charsetSpec.c_str(), options.charsetSpec.size(), false)) {
-            // Fallback: treat the provided string as literal text and include every UTF-8 codepoint.
-            std::vector<msdf_atlas::unicode_t> decoded;
-            msdf_atlas::utf8Decode(decoded, options.charsetSpec.c_str());
-            if (decoded.empty()) {
-                error = "Failed to parse inline charset specification";
-                return false;
-            }
-            for (msdf_atlas::unicode_t codepoint : decoded) {
-                if (codepoint)
-                    charset.add(codepoint);
-            }
-        }
-        return true;
-    }
-
-    build_default_ui_charset(font_handle, charset);
-    return true;
+/** Resolve only explicit file inclusions; character/range grammar stays in the provider. */
+[[nodiscard]] bool expandCharsetFile(const std::filesystem::path& path, std::string& output,
+									 std::vector<std::filesystem::path>& activeFiles) {
+	std::error_code error;
+	const auto canonical = std::filesystem::weakly_canonical(path, error);
+	if (error || activeFiles.size() >= 64u ||
+		std::find(activeFiles.begin(), activeFiles.end(), canonical) != activeFiles.end())
+		return false;
+	std::vector<std::byte> bytes;
+	if (!readOwnedBytes(flowui::tools::utf8_text(path), bytes, true))
+		return false;
+	std::string text;
+	if (!bytes.empty())
+		text.assign(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+	if (text.starts_with("\xef\xbb\xbf"))
+		text.erase(0u, 3u);
+	activeFiles.emplace_back(canonical);
+	struct PopActiveFile {
+		std::vector<std::filesystem::path>& activeFiles;
+		~PopActiveFile() { activeFiles.pop_back(); }
+	} activeFile{activeFiles};
+	const auto separator = [](char character) {
+		return character == ' ' || character == '\t' || character == '\n' || character == '\r' ||
+			   character == ',' || character == ';';
+	};
+	char quote = 0;
+	bool escaped = false;
+	size_t bracketDepth = 0;
+	for (size_t index = 0; index < text.size(); ++index) {
+		const char character = text[index];
+		if (quote != 0) {
+			output += character;
+			if (escaped)
+				escaped = false;
+			else if (character == '\\')
+				escaped = true;
+			else if (character == quote)
+				quote = 0;
+		} else if (character == '\'' || character == '"') {
+			quote = character;
+			output += character;
+		} else if (character == '@' &&
+				   std::string_view(text).substr(index).starts_with("@include")) {
+			if (bracketDepth != 0u || (index != 0u && !separator(text[index - 1u])))
+				return false;
+			size_t position = index + 8u;
+			while (position < text.size() && (text[position] == ' ' || text[position] == '\t' ||
+											  text[position] == '\n' || text[position] == '\r'))
+				++position;
+			if (position == text.size() || text[position] != '"')
+				return false;
+			++position;
+			std::string includeName;
+			bool terminated = false;
+			for (; position < text.size(); ++position) {
+				char included = text[position];
+				if (included == '"') {
+					terminated = true;
+					break;
+				}
+				if (included == '\\') {
+					if (++position >= text.size())
+						return false;
+					included = text[position];
+					switch (included) {
+					case '0':
+						included = '\0';
+						break;
+					case 'n':
+					case 'N':
+						included = '\n';
+						break;
+					case 'r':
+					case 'R':
+						included = '\r';
+						break;
+					case 's':
+					case 'S':
+						included = ' ';
+						break;
+					case 't':
+					case 'T':
+						included = '\t';
+						break;
+					default:
+						break;
+					}
+				}
+				includeName += included;
+			}
+			if (!terminated || includeName.empty() || includeName.find('\0') != std::string::npos ||
+				(position + 1u < text.size() && !separator(text[position + 1u])))
+				return false;
+			auto includePath = flowui::tools::utf8_path(includeName);
+			if (includePath.is_relative())
+				includePath = path.parent_path() / includePath;
+			output += ' ';
+			if (!expandCharsetFile(includePath, output, activeFiles))
+				return false;
+			output += ' ';
+			index = position;
+		} else {
+			if (character == '[')
+				++bracketDepth;
+			else if (character == ']' && bracketDepth != 0u)
+				--bracketDepth;
+			output += character;
+		}
+	}
+	return quote == 0;
 }
 
 } // namespace
 
-int main(int argc, char **argv) {
-    Options options;
-    std::string error;
-    if (!parseArgs(argc, argv, options, error)) {
+int main(int argc, char** argv) try {
+	Options options;
+	std::string error;
+	if (!parseArgs(argc, argv, options, error)) {
         std::cerr << "Error: " << error << '\n';
         printUsage(argv[0]);
         return 1;
@@ -319,134 +358,89 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    FreetypeGuard freetype;
-    freetype.handle = msdfgen::initializeFreetype();
-    if (!freetype.handle) {
-        std::cerr << "Error: Failed to initialize FreeType\n";
-        return 1;
-    }
-
-    std::ifstream input(flowui::tools::utf8_path(options.inputPath), std::ios::binary);
-    std::vector<unsigned char> font_bytes{std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>()};
-    if (font_bytes.empty() || font_bytes.size() > static_cast<size_t>(std::numeric_limits<int>::max())) {
-        std::cerr << "Error: Could not read font input\n";
-        return 1;
-    }
-    FontGuard font;
-    font.handle = msdfgen::loadFontData(freetype.handle, font_bytes.data(), static_cast<int>(font_bytes.size()));
-    if (!font.handle) {
-        std::cerr << "Error: Failed to load font file: " << options.inputPath << '\n';
-        return 1;
-    }
-
-    msdf_atlas::Charset charset;
-    if (!buildCharset(options, font.handle, charset, error)) {
-        std::cerr << "Error: " << error << '\n';
-        return 1;
-    }
-
-    std::vector<msdf_atlas::GlyphGeometry> glyphs;
-    msdf_atlas::FontGeometry fontGeometry(&glyphs);
-    const std::string font_name = flowui::tools::utf8_text(flowui::tools::utf8_path(options.outputPath).stem());
-    if (!font_name.empty())
-        fontGeometry.setName(font_name.c_str());
-
-    const int glyphsLoaded = fontGeometry.loadCharset(
-        font.handle,
-        1.0,
-        charset,
-        false,
-        true
-    );
-
-    if (glyphsLoaded < 0) {
-        std::cerr << "Error: Failed to load glyph geometry from font\n";
-        return 1;
-    }
-    if (glyphsLoaded == 0 || glyphs.empty()) {
-        std::cerr << "Error: No glyphs were loaded for the selected charset\n";
-        return 1;
-    }
-    if (glyphsLoaded < static_cast<int>(charset.size())) {
-        std::cerr << "Warning: " << (charset.size() - static_cast<size_t>(glyphsLoaded))
-                  << " charset entries were not found in the font\n";
-    }
-
-    unsigned long long glyphSeed = 0;
-    for (msdf_atlas::GlyphGeometry &glyph : glyphs) {
-        glyphSeed = glyphSeed * kLcgMultiplier + kLcgIncrement;
-        glyph.edgeColoring(&msdfgen::edgeColoringInkTrap, options.angle_threshold, glyphSeed);
-    }
-
-    msdf_atlas::TightAtlasPacker packer;
-    packer.setDimensionsConstraint(msdf_atlas::DimensionsConstraint::MULTIPLE_OF_FOUR_SQUARE);
-    packer.setSpacing(default_atlas_spacing);
-    packer.setScale(options.pixelSize);
-    packer.setPixelRange(options.pxRange);
-    packer.setMiterLimit(options.miter_limit);
-    packer.setOriginPixelAlignment(false, true);
-
-    const int remaining = packer.pack(glyphs.data(), glyphs.size());
-    if (remaining < 0) {
-        std::cerr << "Error: Failed to pack glyphs into an atlas\n";
-        return 1;
-    }
-    if (remaining > 0) {
-        std::cerr << "Error: Could not fit " << remaining << " glyphs into the atlas\n";
-        return 1;
-    }
-
-    int atlasWidth = 0;
-    int atlasHeight = 0;
-    packer.getDimensions(atlasWidth, atlasHeight);
-    if (atlasWidth <= 0 || atlasHeight <= 0) {
-        std::cerr << "Error: Invalid atlas dimensions produced by packer\n";
-        return 1;
-    }
-
-    msdf_atlas::GeneratorAttributes attributes;
-    attributes.config.overlapSupport = true;
-    attributes.scanlinePass = true;
-
-    using MtsdfGenerator = msdf_atlas::ImmediateAtlasGenerator<
-        float,
-        4,
-        msdf_atlas::mtsdfGenerator,
-        msdf_atlas::BitmapAtlasStorage<msdf_atlas::byte, 4>
-    >;
-
-    MtsdfGenerator generator(atlasWidth, atlasHeight);
-    generator.setAttributes(attributes);
-    if (options.threadCount > 0)
-        generator.setThreadCount(options.threadCount);
-    else
-        generator.setThreadCount(static_cast<int>(std::max(1u, std::thread::hardware_concurrency())));
-    generator.generate(glyphs.data(), glyphs.size());
-
-    const msdfgen::BitmapConstSection<msdf_atlas::byte, 4> atlasBitmap =
-        static_cast<msdfgen::BitmapConstSection<msdf_atlas::byte, 4>>(generator.atlasStorage());
-
-    const msdfgen::Range finalPxRange = packer.getPixelRange();
-
-    msdf_atlas::ArteryFontExportProperties exportProperties = {};
-    exportProperties.fontSize = packer.getScale();
-    exportProperties.pxRange = finalPxRange;
-    exportProperties.imageType = msdf_atlas::ImageType::MTSDF;
-#ifdef MSDFGEN_DISABLE_PNG
-    exportProperties.imageFormat = msdf_atlas::ImageFormat::BINARY;
-#else
-    exportProperties.imageFormat = msdf_atlas::ImageFormat::PNG;
-#endif
-
-    if (!msdf_atlas::exportArteryFont<float>(&fontGeometry, 1, atlasBitmap, options.outputPath.c_str(), exportProperties)) {
-        std::cerr << "Error: Failed to write .arfont output: " << options.outputPath << '\n';
-        return 1;
-    }
-
-    std::cout << "Generated .arfont atlas: " << options.outputPath << '\n'
-              << "  glyphs: " << glyphsLoaded << '\n'
-              << "  atlas: " << atlasWidth << "x" << atlasHeight << '\n'
-              << "  pixel size: " << packer.getScale() << '\n'
-              << "  px range: [" << finalPxRange.lower << ", " << finalPxRange.upper << "]\n";
-    return 0;
+	std::vector<std::byte> sourceBytes;
+	if (!readOwnedBytes(options.inputPath, sourceBytes)) {
+		std::cerr << "Error: Could not read font input\n";
+		return 1;
+	}
+	std::string charsetSpecification = options.charsetSpec;
+	auto charsetMode = FlowUi::detail::font::FontCharsetMode::OfflineUi;
+	if (!options.charsetFilePath.empty()) {
+		std::vector<std::filesystem::path> activeFiles;
+		charsetSpecification.clear();
+		if (!expandCharsetFile(flowui::tools::utf8_path(options.charsetFilePath),
+							   charsetSpecification, activeFiles)) {
+			std::cerr << "Error: Failed to read or expand charset file: " << options.charsetFilePath
+					  << '\n';
+			return 1;
+		}
+		charsetMode = FlowUi::detail::font::FontCharsetMode::FileSpecification;
+	} else if (!options.charsetSpec.empty()) {
+		charsetMode = FlowUi::detail::font::FontCharsetMode::InlineSpecification;
+	}
+	const std::string faceName =
+		flowui::tools::utf8_text(flowui::tools::utf8_path(options.outputPath).stem());
+	FlowUi::detail::font::ActiveFontMSDFProvider provider;
+	auto output = provider.bake(FlowUi::detail::font::FontBakeRequest{
+		.sourceBytes = sourceBytes,
+		.faceName = faceName,
+		.charsetSpecification = charsetSpecification,
+		.pixelSize = options.pixelSize,
+		.pixelRange = options.pxRange,
+		.angleThreshold = options.angle_threshold,
+		.miterLimit = options.miter_limit,
+		.workerThreadCount = options.threadCount > 0
+								 ? static_cast<uint32_t>(options.threadCount)
+								 : std::max(1u, std::thread::hardware_concurrency()),
+		.weight = 0u,
+		.charsetMode = charsetMode});
+	if (!output) {
+		std::cerr << "Error: Font bake failed: " << FlowUi::errorMessage(output.error().code)
+				  << '\n';
+		return 1;
+	}
+	const auto valid = FlowUi::detail::font::validateFontCpuAsset(output->asset);
+	if (!valid) {
+		std::cerr << "Error: Invalid baked font output: "
+				  << FlowUi::errorMessage(valid.error().code) << '\n';
+		return 1;
+	}
+	if (output->requestedCodepointCount > output->loadedGlyphCount) {
+		std::cerr << "Warning: " << output->requestedCodepointCount - output->loadedGlyphCount
+				  << " charset entries were not found in the font\n";
+	}
+	const auto encoded = provider.encodeBaked(output->asset);
+	if (!encoded) {
+		std::cerr << "Error: Font encoding failed: " << FlowUi::errorMessage(encoded.error().code)
+				  << '\n';
+		return 1;
+	}
+	std::ofstream destination(flowui::tools::utf8_path(options.outputPath), std::ios::binary);
+	if (encoded->size() > static_cast<size_t>(std::numeric_limits<std::streamsize>::max()) ||
+		!destination) {
+		std::cerr << "Error: Failed to write .arfont output: " << options.outputPath << '\n';
+		return 1;
+	}
+	destination.write(reinterpret_cast<const char*>(encoded->data()),
+					  static_cast<std::streamsize>(encoded->size()));
+	destination.close();
+	if (!destination) {
+		std::cerr << "Error: Failed to write .arfont output: " << options.outputPath << '\n';
+		return 1;
+	}
+	const auto& variant = output->asset.variants.front();
+	std::cout << "Generated .arfont atlas: " << options.outputPath << '\n'
+			  << "  glyphs: " << output->loadedGlyphCount << '\n'
+			  << "  atlas: " << output->asset.atlas.width << "x" << output->asset.atlas.height
+			  << '\n'
+			  << "  pixel size: " << options.pixelSize << '\n'
+			  << "  px range: [" << variant.distanceRangeMiddle - 0.5f * variant.distanceRange
+			  << ", " << variant.distanceRangeMiddle + 0.5f * variant.distanceRange << "]\n";
+	return 0;
+} catch (const std::exception& exception) {
+	std::cerr << "Error: " << exception.what() << '\n';
+	return 1;
+} catch (...) {
+	std::cerr << "Error: Unexpected font baker failure\n";
+	return 1;
 }

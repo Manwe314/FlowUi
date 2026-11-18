@@ -38,11 +38,9 @@ storage::PixelFormat storageFormat(VkFormat format) {
 
 } // namespace
 
-ViewportStorageController::ViewportStorageController(
-	storage::IStorageSystem& storageSystem,
-	VulkanContext& context,
-	WindowId owningWindow,
-	uint32_t frameCount)
+ViewportStorageController::ViewportStorageController(storage::ActiveStorageSystem& storageSystem,
+													 VulkanContext& context, WindowId owningWindow,
+													 uint32_t frameCount)
 	: storage(&storageSystem), vk(&context), window(owningWindow),
 	  framesInFlight(std::max(1u, frameCount)) {
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2

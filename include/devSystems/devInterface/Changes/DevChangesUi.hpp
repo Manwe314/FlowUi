@@ -5,12 +5,12 @@
 #include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/RadioChoice.hpp"
+#include "FlowUi/Private/textLayoutService/TextLayoutService.hpp"
+#include "FlowUi/Public/managers/FontManager.hpp"
 #include "devSystems/devInterface/Changes/DevChangesModel.hpp"
 #include "devSystems/devInterface/Changes/DevChangesViewportState.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevSelectorStyle.hpp"
-#include "FlowUi/Private/textLayoutService/CurrentTextShaper.hpp"
-#include "FlowUi/Public/managers/FontManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements::changes_ui {
 using diagnostics_ui::card;
@@ -364,8 +364,9 @@ template <class Context>
 			   : limit > 3			 ? std::string(label.substr(0, limit - 3)) + "..."
 									 : std::string{};
 	}
-	const ::FlowUi::detail::text::CurrentTextShaper shaper{};
-	auto layout = shaper.shape({.text = label, .pointsToPixelsScale = 1, .fontSize = size}, *face);
+	::FlowUi::detail::text::TextLayoutService textLayout{};
+	auto layout =
+		textLayout.layout({.text = label, .pointsToPixelsScale = 1, .fontSize = size}, *face);
 	Clay_TextElementConfig config{};
 	config.fontSize = size;
 	const float height =
@@ -374,7 +375,7 @@ template <class Context>
 	if (layout.measuredWidth * scale <= width - 2)
 		return std::string(label);
 	const auto suffix =
-		shaper.shape({.text = "...", .pointsToPixelsScale = 1, .fontSize = size}, *face);
+		textLayout.layout({.text = "...", .pointsToPixelsScale = 1, .fontSize = size}, *face);
 	const float available = width - suffix.measuredWidth * scale - 3;
 	std::size_t prefix = 0;
 	for (const auto& cluster : layout.clusters) {
@@ -399,11 +400,11 @@ void text(Context& context, std::string_view label,
 	const float resolved_height =
 		context.uiManager.inputContentElement(config).layout.sizing.height.size.minMax.min;
 	const auto* face = text_face(context);
-	const ::FlowUi::detail::text::CurrentTextShaper shaper{};
+	::FlowUi::detail::text::TextLayoutService textLayout{};
 	float scale = 1;
 	if (face) {
 		const auto metrics =
-			shaper.shape({.text = "M", .pointsToPixelsScale = 1, .fontSize = size}, *face);
+			textLayout.layout({.text = "M", .pointsToPixelsScale = 1, .fontSize = size}, *face);
 		if (metrics.lineHeight > 0)
 			scale = resolved_height / metrics.lineHeight;
 	}
@@ -419,9 +420,9 @@ void text(Context& context, std::string_view label,
 		const auto word_end = label.find_first_of(" \n\t\r", offset);
 		const auto end = word_end == std::string_view::npos ? label.size() : word_end;
 		const auto word = label.substr(offset, end - offset);
-		auto layout =
-			face ? shaper.shape({.text = word, .pointsToPixelsScale = 1, .fontSize = size}, *face)
-				 : ::FlowUi::detail::text::TextLayoutResult{};
+		auto layout = face ? textLayout.layout(
+								 {.text = word, .pointsToPixelsScale = 1, .fontSize = size}, *face)
+						   : ::FlowUi::detail::text::TextLayoutResult{};
 		if (face && layout.success && !layout.clusters.empty()) {
 			if (layout.measuredWidth * scale <= available)
 				display += word;
@@ -437,7 +438,7 @@ void text(Context& context, std::string_view label,
 					auto segment = word.substr(
 						first_byte, layout.clusters[after_cluster - 1].endByte - first_byte);
 					while (after_cluster > first_cluster + 1) {
-						const auto measured = shaper.shape(
+						const auto measured = textLayout.layout(
 							{.text = segment, .pointsToPixelsScale = 1, .fontSize = size}, *face);
 						if (measured.measuredWidth * scale <= available)
 							break;

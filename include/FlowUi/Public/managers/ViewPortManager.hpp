@@ -37,7 +37,10 @@ struct VulkanContext;
 
 namespace FlowUi {
 
-namespace detail::storage { class IStorageSystem; struct FrameToken; }
+namespace detail::storage {
+class StorageBinding;
+struct FrameToken;
+} // namespace detail::storage
 namespace detail::manager_storage {
 struct ViewportFacadeState; struct ViewportImageResource; struct ViewportFrameCommands;
 struct ViewportTargetGeneration; struct ViewportRecord; class ViewportStorageController;
@@ -683,12 +686,8 @@ public:
 private:
 	friend class App;
 
-	void init(
-		detail::storage::IStorageSystem& storage,
-		VulkanContext& vk,
-		WindowId window,
-		uint32_t framesInFlight,
-		MissingVisualPolicy missingPolicy);
+	void init(detail::storage::StorageBinding& storage, VulkanContext& vk, WindowId window,
+			  uint32_t framesInFlight, MissingVisualPolicy missingPolicy);
 	void onFrameStart(VulkanContext& vk, uint32_t frameIndex);
 #if FLOW_UI_DEV_MODE
 	void prepare_dev_captures(const detail::storage::FrameToken& frame) noexcept;
@@ -721,7 +720,7 @@ private:
 
 	void resetFrameTracking();
 	bool resizeRequired() const;
-	detail::storage::IStorageSystem* storage_ = nullptr;
+	detail::storage::StorageBinding* storage_ = nullptr;
 	MissingVisualPolicy missingPolicy_ = MissingVisualPolicy::UseFallbackTexture;
 	WindowId windowId_ = InvalidWindowId;
 	uint64_t controllerHandle_ = 0;

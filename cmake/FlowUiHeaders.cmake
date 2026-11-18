@@ -105,7 +105,16 @@ set(FLOWUI_PRIVATE_SUPPORT_HEADERS
     FlowUi/Private/renderer/UiRenderTypes.hpp
     FlowUi/Private/resourceService/ThemeStorageController.hpp
     FlowUi/Private/storageSystem/AlignedRecord.hpp
-    FlowUi/Private/storageSystem/IStorageSystem.hpp
+    FlowUi/Private/storageSystem/FlowStorageSystem.hpp
+    FlowUi/Private/storageSystem/StorageContractMetadata.hpp
+    FlowUi/Private/storageSystem/StorageSystemConcept.hpp
+    FlowUi/Private/storageSystem/StorageSystemValidation.hpp
+    FlowUi/Private/storageSystem/StorageSystemSelection.hpp
+    FlowUi/Private/storageSystem/StorageConfigurationValidation.hpp
+    FlowUi/Private/storageSystem/StorageCalculations.hpp
+    FlowUi/Private/storageSystem/StorageBinding.hpp
+    FlowUi/Private/storageSystem/StorageRecordAccess.hpp
+    FlowUi/Private/storageSystem/vulkan/StorageFormatConversions.hpp
     FlowUi/Private/storageSystem/PersistentRecord.hpp
     FlowUi/Private/storageSystem/StorageTypes.hpp
     FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp
@@ -113,7 +122,25 @@ set(FLOWUI_PRIVATE_SUPPORT_HEADERS
     FlowUi/Private/storageSystem/capacity/MemoryCapacityProfile.hpp
     FlowUi/Private/storageSystem/capacity/MemoryCapacityTargets.hpp
     FlowUi/Private/storageSystem/capacity/MemoryDemandPeaks.hpp
-    FlowUi/Private/textLayoutService/CurrentTextShaper.hpp
+    FlowUi/Private/textLayoutService/TextProviderTypes.hpp
+    FlowUi/Private/textLayoutService/TextLayoutServiceConcept.hpp
+    FlowUi/Private/textLayoutService/TextLayoutProviderSelection.hpp
+    FlowUi/Private/textLayoutService/TextLayoutValidation.hpp
+    FlowUi/Private/textLayoutService/providers/basic/BasicTextLayoutProvider.hpp
+    FlowUi/Private/resourceService/providerTypes/Rgba8Image.hpp
+    FlowUi/Private/resourceService/fontMSDFProvider/FontProviderTypes.hpp
+    FlowUi/Private/resourceService/fontMSDFProvider/FontMSDFProvider.hpp
+    FlowUi/Private/resourceService/fontMSDFProvider/FontMSDFProviderSelection.hpp
+    FlowUi/Private/resourceService/fontMSDFProvider/FontCpuAssetValidation.hpp
+    FlowUi/Private/resourceService/fontMSDFProvider/FontCpuBoundary.hpp
+    FlowUi/Private/resourceService/fontMSDFProvider/FontBakeProfiles.hpp
+    FlowUi/Private/resourceService/fontMSDFProvider/providers/msdfAtlas/MsdfAtlasFontProvider.hpp
+    FlowUi/Private/resourceService/iconRasterProvider/IconProviderTypes.hpp
+    FlowUi/Private/resourceService/iconRasterProvider/IconRasterCalculations.hpp
+    FlowUi/Private/resourceService/iconRasterProvider/IconRasterProvider.hpp
+    FlowUi/Private/resourceService/iconRasterProvider/IconRasterProviderSelection.hpp
+    FlowUi/Private/resourceService/iconRasterProvider/providers/plutoSvg/PlutoSvgIconRasterProvider.hpp
+    FlowUi/Private/resourceService/iconRasterProvider/providers/plutoSvg/PlutoSvgPixelConversions.hpp
     FlowUi/Private/textLayoutService/TextLayoutRecords.hpp
     FlowUi/Private/textLayoutService/TextLayoutService.hpp
     FlowUi/Private/windowService/ElementWindowRoot.hpp
@@ -159,7 +186,6 @@ set(FLOWUI_RUNTIME_ONLY_HEADERS
     FlowUi/Private/resourceService/FontCatalogController.hpp
     FlowUi/Private/resourceService/IconCacheController.hpp
     FlowUi/Private/resourceService/ResourceDiscovery.hpp
-    FlowUi/Private/storageSystem/FlowStorageSystem.hpp
     FlowUi/Private/storageSystem/ManagerStateAccess.hpp
     FlowUi/Private/storageSystem/ResourceKeyNormalization.hpp
     FlowUi/Private/storageSystem/vulkan/Vma.hpp
@@ -167,4 +193,7 @@ set(FLOWUI_RUNTIME_ONLY_HEADERS
     FlowUi/Private/textLayoutService/TextLineBreaker.hpp
     FlowUi/Private/textLayoutService/TextStorage.hpp
 )
+
+
+list(APPEND FLOWUI_RUNTIME_ONLY_HEADERS FlowUi/Private/resourceService/IconManagerAccess.hpp)
 

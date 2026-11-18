@@ -13,15 +13,15 @@
 #include <unordered_map>
 #include <vector>
 
+#include "FlowUi/Private/TypeOperations.hpp"
+#include "FlowUi/Private/storageSystem/AlignedRecord.hpp"
+#include "FlowUi/Private/storageSystem/StorageRecordAccess.hpp"
+#include "FlowUi/Private/storageSystem/StorageTypes.hpp"
 #include "FlowUi/Public/errorManagement/ErrorCodeTypes.hpp"
 #include "FlowUi/Public/errorManagement/ErrorSites.hpp"
 #include "FlowUi/Public/errorManagement/ErrorValue.hpp"
 #include "FlowUi/Public/errorManagement/Exception.hpp"
 #include "FlowUi/Public/identificationTypes/ResourceKey.hpp"
-#include "FlowUi/Private/storageSystem/AlignedRecord.hpp"
-#include "FlowUi/Private/storageSystem/IStorageSystem.hpp"
-#include "FlowUi/Private/storageSystem/StorageTypes.hpp"
-#include "FlowUi/Private/TypeOperations.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devTooling/schema/DevSchemaTypes.hpp"
 #endif
@@ -79,7 +79,7 @@ public:
 	ThemeStorageController(const ThemeStorageController&) = delete;
 	ThemeStorageController& operator=(const ThemeStorageController&) = delete;
 
-	void init(storage::IStorageSystem& storage);
+	void init(storage::StorageBinding& storage);
 	void shutdown() noexcept;
 
 	template <typename T>
@@ -96,7 +96,8 @@ public:
 		}
 
 		const uint64_t typeHash = detail::typeHash<T>();
-		const storage::StringId typeNameId = storage_->intern(detail::typeToken<T>());
+		const storage::StringId typeNameId =
+			storage::StorageRecordAccess{*storage_}.intern(detail::typeToken<T>());
 		const storage::ResourceKey key = makeThemeResourceKey(typeHash, variantNameId);
 
 		auto [type_iterator, new_type] = typeRegistry_.try_emplace(typeHash);
@@ -111,8 +112,9 @@ public:
 		TypeRegistrationRecord& typeRecord = type_iterator->second;
 		if (new_type)
 			::FlowUi::detail::reserve_initial_capacity(
-				typeRecord.variants, storage_->initial_memory_capacity(
-										 FlowUi::detail::InitialCapacityTarget::themes_variants));
+				typeRecord.variants,
+				storage::StorageRecordAccess{*storage_}.initial_memory_capacity(
+					FlowUi::detail::InitialCapacityTarget::themes_variants));
 		typeRecord.typeHash = typeHash;
 		typeRecord.typeNameId = typeNameId;
 #if FLOW_UI_DEV_MODE
@@ -132,12 +134,13 @@ public:
 #endif
 		auto existingIt = typeRecord.variants.find(variantNameId);
 		if (existingIt != typeRecord.variants.end()) {
-			void* rawRecord = storage_->managerRecordData(existingIt->second.handle, storage::ResourceKind::UiTheme);
+			void* rawRecord = storage::StorageRecordAccess{*storage_}.managerRecordData(
+				existingIt->second.handle, storage::ResourceKind::UiTheme);
 			auto* header = reinterpret_cast<storage::ThemeRecordHeader*>(rawRecord);
 			auto* payload = reinterpret_cast<T*>(header->payload());
 			// Validate phase/revision before user assignment can change the live payload.
 			// A throwing assignment may partially mutate it, so invalidate readers first.
-			storage_->noteManagerMutation(InvalidWindowId);
+			storage::StorageRecordAccess{*storage_}.noteManagerMutation(InvalidWindowId);
 			header->revision++;
 			*payload = std::move(themeData);
 #if FLOW_UI_DEV_MODE
@@ -152,15 +155,13 @@ public:
 			return existingIt->second.handle;
 		}
 
-		const storage::AlignedRecordLayout layout =
-			storage::makeAlignedRecordLayout<storage::ThemeRecordHeader, T>();
+		constexpr auto layout = storage::typedRecordLayout<storage::ThemeRecordHeader, T>;
 
 		struct ContextPayload {
 			T data;
 			storage::StringId typeName;
 			storage::StringId variantName;
 			uint64_t typeHash;
-			storage::AlignedRecordLayout layout;
 		};
 
 		auto contextData = std::make_unique<ContextPayload>(ContextPayload{
@@ -168,7 +169,6 @@ public:
 			.typeName = typeNameId,
 			.variantName = variantNameId,
 			.typeHash = typeHash,
-			.layout = layout,
 		});
 
 		storage::ManagerRecordDesc desc{};
@@ -182,13 +182,15 @@ public:
 		desc.construct = [](void* destination, void* userData) {
 			auto* ctx = reinterpret_cast<ContextPayload*>(userData);
 			auto* header = storage::constructAlignedRecord<storage::ThemeRecordHeader, T>(
-				destination, ctx->layout, std::move(ctx->data));
+				destination, storage::typedRecordLayout<storage::ThemeRecordHeader, T>,
+				std::move(ctx->data));
 			header->typeHash = ctx->typeHash;
 			header->typeNameId = ctx->typeName;
 			header->variantNameId = ctx->variantName;
 			header->dataSize = sizeof(T);
 			header->alignment = alignof(T);
-			header->payloadOffset = ctx->layout.payloadOffset;
+			header->payloadOffset =
+				storage::typedRecordLayout<storage::ThemeRecordHeader, T>.payloadOffset;
 			header->revision = 1;
 
 			header->copyConstruct = [](void* dest, const void* src) {
@@ -200,11 +202,8 @@ public:
 		};
 
 		desc.destroy = [](void* object) noexcept {
-			auto* header = reinterpret_cast<storage::ThemeRecordHeader*>(object);
-			if (header && header->destroy) {
-				header->destroy(header->payload());
-			}
-			header->~ThemeRecordHeader();
+			storage::destroyAlignedRecord<storage::ThemeRecordHeader, T>(
+				object, storage::typedRecordLayout<storage::ThemeRecordHeader, T>);
 		};
 
 		// Allocate the registry node before acquiring a storage-owned payload.
@@ -212,7 +211,7 @@ public:
 		auto variantIterator = typeRecord.variants.try_emplace(variantNameId).first;
 		storage::ManagerRecordHandle handle{};
 		try {
-			handle = storage_->createManagerRecord(desc);
+			handle = storage::StorageRecordAccess{*storage_}.createManagerRecord(desc);
 		} catch (...) {
 			typeRecord.variants.erase(variantIterator);
 			throw;
@@ -251,7 +250,7 @@ public:
 		auto varIt = it->second.variants.find(variantNameId);
 		if (varIt == it->second.variants.end()) return false;
 
-		storage_->noteManagerMutation(InvalidWindowId);
+		storage::StorageRecordAccess{*storage_}.noteManagerMutation(InvalidWindowId);
 		it->second.activeVariantNameId = variantNameId;
 		return true;
 	}
@@ -267,7 +266,9 @@ public:
 		auto varIt = it->second.variants.find(it->second.activeVariantNameId);
 		if (varIt == it->second.variants.end()) return nullptr;
 
-		void* rawRecord = storage_->managerRecordData(varIt->second.handle, storage::ResourceKind::UiTheme);
+		const storage::StorageRecordAccess recordStorage{*storage_};
+		const void* rawRecord =
+			recordStorage.managerRecordData(varIt->second.handle, storage::ResourceKind::UiTheme);
 		if (!rawRecord) return nullptr;
 
 		const auto* header = reinterpret_cast<const storage::ThemeRecordHeader*>(rawRecord);
@@ -285,7 +286,9 @@ public:
 		auto varIt = it->second.variants.find(variantNameId);
 		if (varIt == it->second.variants.end()) return nullptr;
 
-		void* rawRecord = storage_->managerRecordData(varIt->second.handle, storage::ResourceKind::UiTheme);
+		const storage::StorageRecordAccess recordStorage{*storage_};
+		const void* rawRecord =
+			recordStorage.managerRecordData(varIt->second.handle, storage::ResourceKind::UiTheme);
 		if (!rawRecord) return nullptr;
 
 		const auto* header = reinterpret_cast<const storage::ThemeRecordHeader*>(rawRecord);
@@ -366,7 +369,7 @@ private:
 	storage::ResourceKey makeThemeResourceKey(uint64_t typeHash, storage::StringId variantNameId) const;
 
 private:
-	storage::IStorageSystem* storage_ = nullptr;
+	storage::StorageBinding* storage_ = nullptr;
 	mutable std::mutex mutex_{};
 	std::unordered_map<uint64_t, TypeRegistrationRecord> typeRegistry_{};
 	std::vector<StagedThemeMutation> stagedMutations_{};

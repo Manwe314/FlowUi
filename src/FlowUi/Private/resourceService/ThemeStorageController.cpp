@@ -1,4 +1,5 @@
 #include "FlowUi/Private/resourceService/ThemeStorageController.hpp"
+#include "FlowUi/Private/storageSystem/StorageBinding.hpp"
 #include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
@@ -39,12 +40,12 @@ void ThemeStorageController::appendDevMemorySamples(
 }
 #endif
 
-void ThemeStorageController::init(storage::IStorageSystem& storage) {
+void ThemeStorageController::init(storage::StorageBinding& storage) {
 	std::lock_guard<std::mutex> lock(mutex_);
 	storage_ = &storage;
 	::FlowUi::detail::reserve_initial_capacity(
-		typeRegistry_,
-		storage.initial_memory_capacity(FlowUi::detail::InitialCapacityTarget::themes_types));
+		typeRegistry_, storage.system().initial_memory_capacity(
+						   FlowUi::detail::InitialCapacityTarget::themes_types));
 	typeRegistry_.clear();
 	stagedMutations_.clear();
 }
@@ -57,7 +58,8 @@ void ThemeStorageController::shutdown() noexcept {
 		for (auto& [typeHash, record] : typeRegistry_) {
 			for (auto& [variantId, variant] : record.variants) {
 				try {
-					storage_->removeManagerRecord(variant.resourceKey, storage::ResourceKind::UiTheme);
+					storage_->system().removeManagerRecord(variant.resourceKey,
+														   storage::ResourceKind::UiTheme);
 				} catch (...) {
 					// Storage retains the record when admission/revision validation fails.
 					incomplete = true;
@@ -78,7 +80,7 @@ storage::StringId ThemeStorageController::internString(std::string_view str) {
 	if (!storage_) {
 		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeRegisterVariant));
 	}
-	return storage_->intern(str);
+	return storage_->system().intern(str);
 }
 
 storage::ResourceKey ThemeStorageController::makeThemeResourceKey(
@@ -88,17 +90,15 @@ storage::ResourceKey ThemeStorageController::makeThemeResourceKey(
 		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeLookupActiveVariant));
 	}
 
-	const std::string_view variantName = storage_->string(variantNameId);
+	const std::string_view variantName = storage_->system().string(variantNameId);
 	std::string resourceName = "flowui/theme/";
 	resourceName += std::to_string(typeHash);
 	resourceName += '/';
 	resourceName.append(variantName.data(), variantName.size());
 
-	return storage::ResourceKey{
-		.domain = storage::ResourceDomain::Internal,
-		.name = storage_->intern(resourceName),
-		.window = 0
-	};
+	return storage::ResourceKey{.domain = storage::ResourceDomain::Internal,
+								.name = storage_->system().intern(resourceName),
+								.window = 0};
 }
 
 void ThemeStorageController::applyStagedMutations() {
@@ -106,7 +106,7 @@ void ThemeStorageController::applyStagedMutations() {
 	{
 		std::lock_guard<std::mutex> lock(mutex_);
 		if (stagedMutations_.empty()) return;
-		storage_->noteManagerMutation(InvalidWindowId);
+		storage_->system().noteManagerMutation(InvalidWindowId);
 		pending.swap(stagedMutations_);
 	}
 
@@ -121,7 +121,8 @@ void ThemeStorageController::applyStagedMutations() {
 			handle = varIt->second.handle;
 		}
 
-		void* rawRecord = storage_->managerRecordData(handle, storage::ResourceKind::UiTheme);
+		void* rawRecord =
+			storage_->system().managerRecordData(handle, storage::ResourceKind::UiTheme);
 		if (!rawRecord) continue;
 		auto* header = reinterpret_cast<storage::ThemeRecordHeader*>(rawRecord);
 		++header->revision;
@@ -162,9 +163,9 @@ bool ThemeStorageController::set_dev_active_variant(std::uint64_t type,
 		if (found == typeRegistry_.end())
 			return false;
 		for (const auto& [variant_id, registration] : found->second.variants) {
-			if (storage_->string(variant_id) != variant)
+			if (storage_->system().string(variant_id) != variant)
 				continue;
-			storage_->noteManagerMutation(InvalidWindowId);
+			storage_->system().noteManagerMutation(InvalidWindowId);
 			found->second.activeVariantNameId = variant_id;
 			return true;
 		}
@@ -183,7 +184,7 @@ bool ThemeStorageController::visitDevPayloads(
 		if (!storage_) return false;
 		for (const auto& [typeHash, type] : typeRegistry_) {
 			for (const auto& [variantId, variant] : type.variants) {
-				void* rawRecord = storage_->managerRecordData(
+				void* rawRecord = storage_->system().managerRecordData(
 					variant.handle, storage::ResourceKind::UiTheme);
 				if (!rawRecord) continue;
 				const auto* header =
@@ -192,8 +193,8 @@ bool ThemeStorageController::visitDevPayloads(
 						userData,
 						DevPayloadView{
 							.type = typeHash,
-							.typeName = storage_->string(type.typeNameId),
-							.variant = storage_->string(variantId),
+							.typeName = storage_->system().string(type.typeNameId),
+							.variant = storage_->system().string(variantId),
 							.payload = header->payload(),
 							.authored = variant.authored ? variant.authored->payload() : nullptr,
 							.startup = variant.startup ? variant.startup->payload() : nullptr,
@@ -235,10 +236,10 @@ devSystems::tooling::DevValueOperationStatus ThemeStorageController::assignDevFi
 		if (typeIt == typeRegistry_.end()) return devSystems::tooling::DevValueOperationStatus::Unsupported;
 		bool assigned = false;
 		for (const auto& [variantId, registration] : typeIt->second.variants) {
-			if (variant != "*" && storage_->string(variantId) != variant)
+			if (variant != "*" && storage_->system().string(variantId) != variant)
 				continue;
-			void* rawRecord = storage_->managerRecordData(
-				registration.handle, storage::ResourceKind::UiTheme);
+			void* rawRecord = storage_->system().managerRecordData(registration.handle,
+																   storage::ResourceKind::UiTheme);
 			if (!rawRecord) return devSystems::tooling::DevValueOperationStatus::NullDestination;
 			auto* header = reinterpret_cast<storage::ThemeRecordHeader*>(rawRecord);
 			void* owner = header->payload();
@@ -246,7 +247,7 @@ devSystems::tooling::DevValueOperationStatus ThemeStorageController::assignDevFi
 				owner = path && path->mutableAddress ? path->mutableAddress(owner) : nullptr;
 				if (!owner) return devSystems::tooling::DevValueOperationStatus::NullDestination;
 			}
-			storage_->noteManagerMutation(InvalidWindowId);
+			storage_->system().noteManagerMutation(InvalidWindowId);
 			++header->revision;
 			const devSystems::tooling::DevValueOperationStatus status =
 				field.assignMemberFromCopy(owner, source);

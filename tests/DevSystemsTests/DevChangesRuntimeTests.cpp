@@ -2,12 +2,12 @@
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
-#include "HeadlessVulkanFixture.hpp"
-#include "devSystems/devTooling/bake/DevChangesRuntime.hpp"
-#include "devSystems/devTooling/bake/DevBakePipeline.hpp"
-#include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
+#include "FlowUi/Private/storageSystem/StorageBinding.hpp"
 #include "FlowUi/Public/managers/ActionManager.hpp"
 #include "FlowUi/Public/managers/ThemeManager.hpp"
+#include "HeadlessVulkanFixture.hpp"
+#include "devSystems/devTooling/bake/DevBakePipeline.hpp"
+#include "devSystems/devTooling/bake/DevChangesRuntime.hpp"
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -30,7 +30,8 @@ FLOWUI_DEV_SCHEMA(TexturePair, FLOWUI_DEV_FIELD(TexturePair, first),
 				  FLOWUI_DEV_FIELD(TexturePair, second))
 
 struct Fixture {
-	detail::storage::FlowStorageSystem storage;
+	detail::storage::ActiveStorageSystem storage;
+	detail::storage::StorageBinding storageBinding;
 	devSystems::tooling::DevSchemaRegistry registry{};
 	DevOverrideEngine engine{registry};
 	ThemeManager themes{};
@@ -39,7 +40,8 @@ struct Fixture {
 
 	explicit Fixture(VulkanContext& context) : storage(context) {
 		storage.initialize({});
-		themes.init(storage);
+		storageBinding.bind(storage);
+		themes.init(storageBinding);
 		assert(themes.registerTheme<Theme>("dark", Theme{}));
 		assert(themes.registerTheme<Theme>("light", Theme{.radius = 8}, false));
 		registry.ensureTheme<Theme>();

@@ -7,7 +7,7 @@
 #include <mutex>
 #include <unordered_map>
 
-#include "FlowUi/Private/storageSystem/IStorageSystem.hpp"
+#include "FlowUi/Private/storageSystem/StorageBinding.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
 #if FLOWUI_DEV_MEMORY_LEVEL >= 1
 #include "devSystems/devMonitoringAndReporting/memory/DevEnvironmentMemoryProbe.hpp"
@@ -43,7 +43,7 @@ struct DevMemory::Impl {
 	std::unordered_map<MemorySourceId, MemorySourceDescriptor> descriptors{};
 	std::unordered_map<MemoryTuningTargetId, MemoryTuningTargetDescriptor> tuningTargets{};
 	std::vector<RegisteredMemoryProbe> probes{};
-	::FlowUi::detail::storage::IStorageSystem* storage = nullptr;
+	::FlowUi::detail::storage::StorageBinding* storage = nullptr;
 #if FLOWUI_DEV_MEMORY_LEVEL >= 1
 	DevEnvironmentMemoryProbe environment{};
 #endif
@@ -218,7 +218,7 @@ MemoryQualitySnapshot DevMemory::qualitySnapshot() const noexcept {
 	return result;
 }
 
-void DevMemory::setStorageSystem(::FlowUi::detail::storage::IStorageSystem* storage) noexcept {
+void DevMemory::setStorageSystem(::FlowUi::detail::storage::StorageBinding* storage) noexcept {
 	std::scoped_lock lock(impl_->mutex);
 	impl_->storage = storage;
 }
@@ -227,13 +227,13 @@ bool DevMemory::appendStorageSnapshot(
 	const ::FlowUi::detail::storage::StorageMemorySnapshotRequest& request,
 	::FlowUi::detail::storage::StorageMemorySnapshot& destination) const noexcept {
 	try {
-		::FlowUi::detail::storage::IStorageSystem* storage = nullptr;
+		::FlowUi::detail::storage::StorageBinding* storage = nullptr;
 		{
 			std::scoped_lock lock(impl_->mutex);
 			storage = impl_->storage;
 		}
 		if (!storage) return false;
-		storage->appendMemorySnapshot(request, destination);
+		storage->system().appendMemorySnapshot(request, destination);
 		return true;
 	} catch (...) {
 		return false;

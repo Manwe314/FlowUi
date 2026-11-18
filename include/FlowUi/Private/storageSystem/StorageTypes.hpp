@@ -306,7 +306,7 @@ struct ResourceKey {
 };
 
 struct ResourceKeyHash {
-	size_t operator()(const ResourceKey& key) const noexcept {
+	[[nodiscard]] constexpr size_t operator()(const ResourceKey& key) const noexcept {
 		uint64_t value = static_cast<uint64_t>(key.name);
 		value ^= static_cast<uint64_t>(key.domain) << 32u;
 		value ^= key.window + 0x9e3779b97f4a7c15ull + (value << 6u) + (value >> 2u);
@@ -353,7 +353,7 @@ struct PersistentRecordView {
 	ResourceKind kind = ResourceKind::Invalid;
 	WindowId window = InvalidWindowId;
 
-	[[nodiscard]] explicit operator bool() const noexcept {
+	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return header != nullptr && payload != nullptr;
 	}
 };
@@ -367,7 +367,7 @@ struct ConstPersistentRecordView {
 	ResourceKind kind = ResourceKind::Invalid;
 	WindowId window = InvalidWindowId;
 
-	[[nodiscard]] explicit operator bool() const noexcept {
+	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return header != nullptr && payload != nullptr;
 	}
 };
@@ -378,7 +378,7 @@ struct ManagerFrameView {
 	WindowId window = 0;
 	FrameEpoch epoch = 0;
 
-	[[nodiscard]] explicit operator bool() const noexcept {
+	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return window != 0 && epoch != 0;
 	}
 };
@@ -397,7 +397,7 @@ struct MemoryBlock {
 	AllocationId id = 0;
 	AllocationTag tag{};
 
-	[[nodiscard]] explicit operator bool() const noexcept { return data != nullptr; }
+	[[nodiscard]] constexpr explicit operator bool() const noexcept { return data != nullptr; }
 };
 
 #if FLOW_UI_DEV_MODE
@@ -444,7 +444,9 @@ struct FrameToken {
 	uint64_t managerSharedRevision = 0;
 	uint64_t managerWindowRevision = 0;
 
-	[[nodiscard]] explicit operator bool() const noexcept { return window != 0 && epoch != 0; }
+	[[nodiscard]] constexpr explicit operator bool() const noexcept {
+		return window != 0 && epoch != 0;
+	}
 };
 
 #if FLOW_UI_DEV_MODE
@@ -460,7 +462,7 @@ struct FrameReadLease {
 	std::shared_ptr<const ReadLeaseState> validation{};
 #endif
 
-	[[nodiscard]] explicit operator bool() const noexcept {
+	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return static_cast<bool>(frame) && leaseId != 0;
 	}
 
@@ -476,14 +478,14 @@ struct FrameReadLease {
 
 struct UploadTicket {
 	UploadId value = 0;
-	[[nodiscard]] explicit operator bool() const noexcept { return value != 0; }
+	[[nodiscard]] constexpr explicit operator bool() const noexcept { return value != 0; }
 };
 
 struct SubmissionToken {
 	WindowId window = 0;
 	SubmissionSerial serial = 0;
 	uint32_t frameSlot = 0;
-	[[nodiscard]] explicit operator bool() const noexcept { return serial != 0; }
+	[[nodiscard]] constexpr explicit operator bool() const noexcept { return serial != 0; }
 };
 
 enum class BufferWriteMode : uint8_t {
@@ -804,7 +806,7 @@ struct BufferWriteView {
 	uint64_t writeId = 0;
 	BufferWriteMode mode = BufferWriteMode::Default;
 
-	[[nodiscard]] explicit operator bool() const noexcept {
+	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return static_cast<bool>(buffer) && data != nullptr && writeId != 0;
 	}
 };
@@ -1148,7 +1150,7 @@ struct RendererLayoutKey {
 };
 
 struct RendererLayoutKeyHash {
-	size_t operator()(const RendererLayoutKey& key) const noexcept {
+	[[nodiscard]] constexpr size_t operator()(const RendererLayoutKey& key) const noexcept {
 		uint64_t value = key.textureDescriptorCapacity;
 		value ^= static_cast<uint64_t>(key.shaderInterfaceRevision) << 16u;
 		value ^= static_cast<uint64_t>(key.pushConstantBytes) << 32u;
@@ -1173,7 +1175,7 @@ struct RendererPipelineKey {
 };
 
 struct RendererPipelineKeyHash {
-	size_t operator()(const RendererPipelineKey& key) const noexcept {
+	[[nodiscard]] constexpr size_t operator()(const RendererPipelineKey& key) const noexcept {
 		uint64_t value = key.layout.packed();
 		value ^= static_cast<uint64_t>(key.nativeColorFormat) << 7u;
 		value ^= static_cast<uint64_t>(key.sampleCount) << 23u;

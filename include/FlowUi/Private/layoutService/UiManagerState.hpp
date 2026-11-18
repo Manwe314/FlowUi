@@ -15,17 +15,17 @@
 
 #include <clay.h>
 
-#include "FlowUi/Public/identificationTypes/ElementID.hpp"
-#include "FlowUi/Public/configurationStructs/AppConfig.hpp"
-#include "FlowUi/Public/configurationStructs/DevToolsConfig.hpp"
-#include "FlowUi/Public/configurationStructs/InputConfig.hpp"
-#include "FlowUi/Public/identificationTypes/WindowId.hpp"
 #include "FlowUi/Private/elementSystem/ElementInstanceKey.hpp"
 #include "FlowUi/Private/layoutService/FlowScopeStack.hpp"
 #include "FlowUi/Private/resourceService/FontCatalogController.hpp"
-#include "FlowUi/Private/storageSystem/IStorageSystem.hpp"
+#include "FlowUi/Private/storageSystem/StorageSystemSelection.hpp"
 #include "FlowUi/Private/textLayoutService/TextLayoutService.hpp"
+#include "FlowUi/Public/configurationStructs/AppConfig.hpp"
+#include "FlowUi/Public/configurationStructs/DevToolsConfig.hpp"
+#include "FlowUi/Public/configurationStructs/InputConfig.hpp"
 #include "FlowUi/Public/elementAuthoring/ElementContexts.hpp"
+#include "FlowUi/Public/identificationTypes/ElementID.hpp"
+#include "FlowUi/Public/identificationTypes/WindowId.hpp"
 #include "FlowUi/Public/managerStructs/InputTypes.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devTooling/tree/DevTreeCapture.hpp"
@@ -213,9 +213,10 @@ struct UiManagerState {
 	Clay_Arena clayArena{};
 	FlowScopeStack flowScopes{};
 	std::vector<ConstructedElementFrame> constructedElementStack{};
-	explicit UiManagerState(storage::IStorageSystem& storageSystem, WindowId window, const AppConfig& config);
+	explicit UiManagerState(storage::ActiveStorageSystem& storageSystem, WindowId window,
+							const AppConfig& config);
 
-	storage::IStorageSystem* storage = nullptr;
+	storage::ActiveStorageSystem* storage = nullptr;
 	Clay_Context* clayContext = nullptr;
 	InputManagerConfig inputManagerConfig{};
 	CursorType cursor = CursorType::Arrow;

@@ -20,9 +20,13 @@ def main() -> int:
     if os.name != "nt" and not os.environ.get("DISPLAY") and not os.environ.get("WAYLAND_DISPLAY"):
         return 77
     cli, demo, plan = arguments.cli.resolve(strict=True), arguments.demo.resolve(strict=True), arguments.plan.resolve(strict=True)
-    with tempfile.TemporaryDirectory(prefix="flowui-live-interaction-") as directory:
-        store = Path(directory) / "store"
-        log_path = Path(directory) / "demo.log"
+    agentic_root = Path(__file__).resolve().parents[2] / ".flowui/agentic"
+    verification_root = agentic_root / "verification/live-cli"
+    verification_root.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="run-", dir=verification_root) as directory:
+        store = Path(directory) / ".flowui/agentic/v1"
+        log_path = agentic_root / "logs/live-cli" / Path(directory).name / "demo.log"
+        log_path.parent.mkdir(parents=True, exist_ok=True)
         run_id = None
         with log_path.open("wb") as log:
             process = subprocess.Popen([str(demo), "--agentic-store", str(store), "--agentic-input", "--agentic-actions"], stdout=log, stderr=subprocess.STDOUT)

@@ -14,12 +14,12 @@
 #include <unordered_set>
 #include <vector>
 
-#include "FlowUi/Public/App.hpp"
-#include "FlowUi/Public/identificationTypes/WindowId.hpp"
 #include "FlowUi/Private/elementSystem/ElementInstanceKey.hpp"
 #include "FlowUi/Private/elementSystem/ElementRegistration.hpp"
-#include "FlowUi/Private/storageSystem/IStorageSystem.hpp"
+#include "FlowUi/Private/storageSystem/StorageSystemSelection.hpp"
+#include "FlowUi/Public/App.hpp"
 #include "FlowUi/Public/elementAuthoring/ElementStatePolicy.hpp"
+#include "FlowUi/Public/identificationTypes/WindowId.hpp"
 
 namespace FlowUi::devSystems { class MemorySampleSink; }
 namespace FlowUi::detail::manager_storage {
@@ -150,7 +150,7 @@ struct WindowElementStateRegistry {
 
 class ElementStorageController {
 public:
-	explicit ElementStorageController(storage::IStorageSystem& storage);
+	explicit ElementStorageController(storage::ActiveStorageSystem& storage);
 	~ElementStorageController();
 
 	ElementStorageController(const ElementStorageController&) = delete;
@@ -194,7 +194,7 @@ public:
 #endif
 
 private:
-	storage::IStorageSystem* storage_ = nullptr;
+	storage::ActiveStorageSystem* storage_ = nullptr;
 	mutable std::mutex windowsMutex_{};
 	std::unordered_map<WindowId, std::shared_ptr<WindowElementStateRegistry>> windows_{};
 	ElementDefinitionRegistry definitions_{};

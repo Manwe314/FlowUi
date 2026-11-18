@@ -17,7 +17,9 @@
 namespace FlowUi {
 
 class UiManager;
-namespace detail::storage { class IStorageSystem; }
+namespace detail::storage {
+class StorageBinding;
+}
 namespace detail::manager_storage { struct ShortcutManagerState; }
 namespace devSystems { class MemorySampleSink; }
 
@@ -241,7 +243,7 @@ public:
 private:
 	friend class UiManager;
 
-	void init(detail::storage::IStorageSystem& storage, WindowId window);
+	void init(detail::storage::StorageBinding& storage, WindowId window);
 	[[nodiscard]] Status installDefaultTextShortcuts(const DefaultTextShortcutConfig& config);
 	void destroy() noexcept;
 	// Dispatch shortcuts for the current frame.
@@ -250,7 +252,7 @@ private:
 	detail::manager_storage::ShortcutManagerState& state();
 	const detail::manager_storage::ShortcutManagerState& state() const;
 
-	detail::storage::IStorageSystem* storage_ = nullptr;
+	detail::storage::StorageBinding* storage_ = nullptr;
 	WindowId window_ = InvalidWindowId;
 	uint64_t stateHandle_ = 0;
 };

@@ -1,4 +1,5 @@
 #include "FlowUi/Public/managers/ElementManager.hpp"
+#include "FlowUi/Private/storageSystem/StorageBinding.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/memory/DevMemoryProbe.hpp"
 #endif
@@ -30,7 +31,8 @@ ElementManager::~ElementManager() {
 	destroy();
 }
 
-void ElementManager::init(App& app, storage::IStorageSystem& storageSystem) {
+void ElementManager::init(App& app, storage::StorageBinding& storageBinding) {
+	auto& storageSystem = storageBinding.system();
 	destroy();
 
 	const storage::StringId name = storageSystem.intern("flowui.elements.root");
@@ -55,7 +57,7 @@ void ElementManager::init(App& app, storage::IStorageSystem& storageSystem) {
 	}
 
 	app_ = &app;
-	storage_ = &storageSystem;
+	storage_ = &storageBinding;
 	controller_ = controller;
 	controllerHandle_ = handle.packed();
 	controllerName_ = name;
@@ -65,7 +67,7 @@ void ElementManager::destroy() noexcept {
 	if (controller_) controller_->shutdown();
 	if (storage_ && controllerName_ != 0) {
 		try {
-			(void)storage_->removeManagerRecord(
+			(void)storage_->system().removeManagerRecord(
 				storage::ResourceKey{
 					storage::ResourceDomain::Internal,
 					controllerName_,

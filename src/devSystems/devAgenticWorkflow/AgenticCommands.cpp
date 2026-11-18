@@ -473,6 +473,12 @@ validate_verification_arguments(const AgenticCommandRequest& request) noexcept {
 	return result;
 }
 
+[[nodiscard]] std::filesystem::path
+launch_log_directory(const std::filesystem::path& launch_directory) {
+	return launch_directory.parent_path().parent_path().parent_path() / "logs" /
+		launch_directory.filename();
+}
+
 #ifndef _WIN32
 struct LaunchHandshake {
 	std::int64_t process_id = 0;
@@ -573,8 +579,8 @@ struct LaunchHandshake {
 		}
 		std::array<int, 2> descriptors{stdout_pipe[0], stderr_pipe[0]};
 		std::array<std::ofstream, 2> logs{
-			std::ofstream(launch_directory / "stdout.log", std::ios::binary),
-			std::ofstream(launch_directory / "stderr.log", std::ios::binary)};
+			std::ofstream(launch_log_directory(launch_directory) / "stdout.log", std::ios::binary),
+			std::ofstream(launch_log_directory(launch_directory) / "stderr.log", std::ios::binary)};
 		std::array<std::uint64_t, 2> observed_bytes{};
 		std::array<std::uint64_t, 2> retained_bytes{};
 		for (const auto descriptor : descriptors)
@@ -637,12 +643,14 @@ struct LaunchHandshake {
 		state.set("exit_code",
 				  Json::number(WIFEXITED(process_status) ? WEXITSTATUS(process_status)
 														 : 128 + WTERMSIG(process_status)));
-		state.set("stdout", Json::make_object({{"path", "stdout.log"},
+		state.set("stdout", Json::make_object({{"path",
+											 (launch_log_directory(launch_directory) / "stdout.log").generic_string()},
 											   {"observed_bytes", decimal(observed_bytes[0])},
 											   {"retained_bytes", decimal(retained_bytes[0])},
 											   {"truncated", observed_bytes[0] > retained_bytes[0]},
 											   {"write_failed", logs[0].fail()}}));
-		state.set("stderr", Json::make_object({{"path", "stderr.log"},
+		state.set("stderr", Json::make_object({{"path",
+											 (launch_log_directory(launch_directory) / "stderr.log").generic_string()},
 											   {"observed_bytes", decimal(observed_bytes[1])},
 											   {"retained_bytes", decimal(retained_bytes[1])},
 											   {"truncated", observed_bytes[1] > retained_bytes[1]},
@@ -746,11 +754,14 @@ private:
 	auto initialized = store.initialize();
 	if (!initialized)
 		return unexpectedError(initialized.error());
-	const auto launch_root = context.store_root / "runtime/launches";
+	const auto launch_root = context.workspace / ".flowui/agentic/verification/launches";
 	std::filesystem::create_directories(launch_root);
 	const auto launch_directory = launch_root / *run_id;
 	if (!std::filesystem::create_directory(launch_directory))
 		return command_error(ErrorCode::AgenticPublicationFailed);
+	std::filesystem::create_directories(launch_log_directory(launch_directory));
+	std::filesystem::permissions(launch_log_directory(launch_directory),
+		std::filesystem::perms::owner_all);
 	Json configuration = Json::make_object(
 		{{"schema", "FlowUi.Agentic.LaunchConfig"},
 		 {"schema_version", "1.0"},
@@ -804,8 +815,8 @@ private:
 				 {"pid", argument(*decoded, "pid")},
 				 {"supervisor_pid", decimal(supervisor.dwProcessId)},
 				 {"launch_session", wire_path(launch_directory / "session.json")},
-				 {"stdout", wire_path(launch_directory / "stdout.log")},
-				 {"stderr", wire_path(launch_directory / "stderr.log")},
+				 {"stdout", wire_path(launch_log_directory(launch_directory) / "stdout.log")},
+				 {"stderr", wire_path(launch_log_directory(launch_directory) / "stderr.log")},
 				 {"lifetime_policy", "leave_running"},
 				 {"next", "Select this run with --instance after the application publishes its "
 						  "endpoint."}});
@@ -919,8 +930,8 @@ private:
 		return saved;
 	std::array<HANDLE, 2> streams{stdout_read.get(), stderr_read.get()};
 	std::array<std::ofstream, 2> logs{
-		std::ofstream(launch_directory / "stdout.log", std::ios::binary),
-		std::ofstream(launch_directory / "stderr.log", std::ios::binary)};
+		std::ofstream(launch_log_directory(launch_directory) / "stdout.log", std::ios::binary),
+		std::ofstream(launch_log_directory(launch_directory) / "stderr.log", std::ios::binary)};
 	std::array<std::uint64_t, 2> observed{}, retained{};
 	const auto maximum_log_bytes = unsigned_argument(*decoded, "log_bytes", 1024u * 1024u);
 	std::array<char, 8192> buffer{};
@@ -966,12 +977,14 @@ private:
 	state.set("status", "exited");
 	state.set("exit_code", Json::number(exit_code));
 	state.set("finished_at_utc", utc_timestamp());
-	state.set("stdout", Json::make_object({{"path", "stdout.log"},
+	state.set("stdout", Json::make_object({{"path",
+											 (launch_log_directory(launch_directory) / "stdout.log").generic_string()},
 										   {"observed_bytes", decimal(observed[0])},
 										   {"retained_bytes", decimal(retained[0])},
 										   {"truncated", observed[0] > retained[0]},
 										   {"write_failed", logs[0].fail()}}));
-	state.set("stderr", Json::make_object({{"path", "stderr.log"},
+	state.set("stderr", Json::make_object({{"path",
+											 (launch_log_directory(launch_directory) / "stderr.log").generic_string()},
 										   {"observed_bytes", decimal(observed[1])},
 										   {"retained_bytes", decimal(retained[1])},
 										   {"truncated", observed[1] > retained[1]},
@@ -1021,11 +1034,14 @@ private:
 	auto initialized = store.initialize();
 	if (!initialized)
 		return unexpectedError(initialized.error());
-	const auto launch_root = context.store_root / "runtime/launches";
+	const auto launch_root = context.workspace / ".flowui/agentic/verification/launches";
 	std::filesystem::create_directories(launch_root);
 	const auto launch_directory = launch_root / *run_id;
 	if (!std::filesystem::create_directory(launch_directory))
 		return command_error(ErrorCode::AgenticPublicationFailed);
+	std::filesystem::create_directories(launch_log_directory(launch_directory));
+	std::filesystem::permissions(launch_log_directory(launch_directory),
+		std::filesystem::perms::owner_all);
 	std::filesystem::permissions(launch_directory, std::filesystem::perms::owner_all);
 	std::array<int, 2> handshake_pipe{-1, -1};
 	if (::pipe(handshake_pipe.data()) != 0)
@@ -1057,8 +1073,8 @@ private:
 		 {"pid", decimal(handshake.process_id)},
 		 {"supervisor_pid", decimal(supervisor)},
 		 {"launch_session", (launch_directory / "session.json").generic_string()},
-		 {"stdout", (launch_directory / "stdout.log").generic_string()},
-		 {"stderr", (launch_directory / "stderr.log").generic_string()},
+		 {"stdout", (launch_log_directory(launch_directory) / "stdout.log").generic_string()},
+		 {"stderr", (launch_log_directory(launch_directory) / "stderr.log").generic_string()},
 		 {"lifetime_policy", "leave_running"},
 		 {"next",
 		  "Select this run with --instance after the application publishes its endpoint."}});
@@ -1349,7 +1365,7 @@ private:
 									   write_json(*issues));
 		if (!added)
 			return unexpectedError(added.error());
-		added = add_text_artifact(snapshot, "build_log", "diagnostics/build.log", "text/plain",
+		added = add_text_artifact(snapshot, "build_log", "diagnostics/build.txt", "text/plain",
 								  "FlowUi.Agentic.BuildLog", std::move(*text));
 		if (!added)
 			return unexpectedError(added.error());

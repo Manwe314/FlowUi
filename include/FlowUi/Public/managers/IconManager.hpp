@@ -32,9 +32,15 @@ namespace devSystems { class MemorySampleSink; class DevMemoryRecorder; }
 class App;
 struct IconManagerConfig;
 
-namespace detail::storage { class IStorageSystem; }
+namespace detail::icon {
+struct IconManagerAccess;
+}
+namespace detail::storage {
+class StorageBinding;
+}
 namespace detail::manager_storage {
-struct IconDocumentRecord; struct IconSurfaceOwner; struct IconTransientRasterResult;
+struct IconDocumentRecord;
+struct IconTransientRasterResult;
 struct IconAtlasRect; struct IconAtlasAllocation; struct IconVariantKey; struct IconVariantKeyHash;
 struct IconVariantEntry; struct IconAtlasPage; struct IconRetiredRegion; class IconCacheController;
 }
@@ -429,12 +435,10 @@ struct IconManager {
 
 private:
 	friend class App;
+	friend struct detail::icon::IconManagerAccess;
 
-	void init(
-		detail::storage::IStorageSystem& storage,
-		const IconManagerConfig& config,
-		IconGenerationFailurePolicy generationPolicy,
-		CacheCapacityPolicy capacityPolicy);
+	void init(detail::storage::StorageBinding& storage, const IconManagerConfig& config,
+			  IconGenerationFailurePolicy generationPolicy, CacheCapacityPolicy capacityPolicy);
 	void beginAppTick();
 	void prepareFrameTextures(
 		Clay_RenderCommandArray& renderCommands,
@@ -443,7 +447,6 @@ private:
 	void destroy() noexcept;
 
 	using DocumentRecord = detail::manager_storage::IconDocumentRecord;
-	using SurfaceOwner = detail::manager_storage::IconSurfaceOwner;
 	using TransientRasterResult = detail::manager_storage::IconTransientRasterResult;
 	using AtlasRect = detail::manager_storage::IconAtlasRect;
 	using AtlasAllocation = detail::manager_storage::IconAtlasAllocation;
@@ -489,7 +492,7 @@ private:
 		uint32_t requestedHeight,
 		bool exactSize = false);
 	const std::string* findRequestedKeyByTextureHandle(TextureHandle texture) const;
-	detail::storage::IStorageSystem* storage_ = nullptr;
+	detail::storage::StorageBinding* storage_ = nullptr;
 	IconGenerationFailurePolicy generationPolicy_ = IconGenerationFailurePolicy::UseFallbackTexture;
 	CacheCapacityPolicy capacityPolicy_ = CacheCapacityPolicy::RejectOperation;
 	uint64_t controllerHandle_ = 0;
@@ -504,7 +507,9 @@ private:
 class App;
 struct IconManagerConfig;
 
-namespace detail::storage { class IStorageSystem; }
+namespace detail::storage {
+class StorageBinding;
+}
 
 /** @addtogroup flowui_icon_manager
  * @{
@@ -916,7 +921,7 @@ struct IconManager {
 private:
 	friend class App;
 
-	void init(detail::storage::IStorageSystem&, const IconManagerConfig&) {
+	void init(detail::storage::StorageBinding&, const IconManagerConfig&) {
 		throw FlowUiException(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconManagerInitialize));
 	}
 

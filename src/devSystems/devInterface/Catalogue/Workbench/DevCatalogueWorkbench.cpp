@@ -3,12 +3,12 @@
 #include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/TextInput.hpp"
+#include "FlowUi/Private/textLayoutService/TextAnalysis.hpp"
+#include "FlowUi/Private/textLayoutService/TextLayoutService.hpp"
+#include "FlowUi/Public/managers/FontManager.hpp"
 #include "devSystems/devInterface/Catalogue/DevCatalogueFocus.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
-#include "FlowUi/Private/textLayoutService/CurrentTextShaper.hpp"
-#include "FlowUi/Private/textLayoutService/TextAnalysis.hpp"
-#include "FlowUi/Public/managers/FontManager.hpp"
 #include <algorithm>
 #include <array>
 #include <cctype>
@@ -677,9 +677,9 @@ void thumbnail(Context& context, const DevCatalogueAsset& asset, float width) {
 	const auto* face = FlowUi::ValueOrThrow(context.params.app->fonts()).get().getFontById(0);
 	if (!face)
 		return std::string(label);
-	const ::FlowUi::detail::text::CurrentTextShaper shaper;
+	::FlowUi::detail::text::TextLayoutService textLayout;
 	const auto layout =
-		shaper.shape({.text = label, .pointsToPixelsScale = 1, .fontSize = 13}, *face);
+		textLayout.layout({.text = label, .pointsToPixelsScale = 1, .fontSize = 13}, *face);
 	Clay_TextElementConfig configuration{};
 	configuration.fontSize = 13;
 	const float height =
@@ -688,7 +688,7 @@ void thumbnail(Context& context, const DevCatalogueAsset& asset, float width) {
 	if (layout.measuredWidth * scale <= width)
 		return std::string(label);
 	const auto suffix =
-		shaper.shape({.text = "...", .pointsToPixelsScale = 1, .fontSize = 13}, *face);
+		textLayout.layout({.text = "...", .pointsToPixelsScale = 1, .fontSize = 13}, *face);
 	const float available = width - suffix.measuredWidth * scale;
 	size_t prefix = 0;
 	for (const auto& cluster : layout.clusters) {

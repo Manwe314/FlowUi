@@ -55,12 +55,14 @@ class LiveMcpSuite:
         self.repository = arguments.workspace.resolve(strict=True)
         output = (arguments.output_directory or
             self.repository / ".flowui/agentic/verification/live-mcp").resolve()
-        if output.is_relative_to(self.repository / "docs"):
-            raise ValueError("Verification outputs belong under .flowui/agentic, outside docs")
+        if not output.is_relative_to((self.repository / ".flowui/agentic/verification").resolve()):
+            raise ValueError("Verification outputs must stay under .flowui/agentic/verification")
         output.mkdir(parents=True, exist_ok=True)
         identifier = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ_") + uuid.uuid4().hex[:8]
         self.output = output / ("run_" + identifier)
         self.output.mkdir(mode=0o700)
+        self.logs = self.repository / ".flowui/agentic/logs" / self.output.parent.name / self.output.name
+        self.logs.mkdir(parents=True, exist_ok=True)
         self.workspace = self.output / "workspace"
         self.workspace.mkdir()
         self.store = self.workspace / ".flowui/agentic/v1"
@@ -114,7 +116,7 @@ class LiveMcpSuite:
         write_json(self.output / "changes-before.json", seed)
 
     async def start_demo(self) -> None:
-        log = (self.output / "demo.log").open("wb")
+        log = (self.logs / "demo.log").open("wb")
         try:
             self.process = subprocess.Popen([str(self.demo), "--agentic-store", str(self.store),
                 "--agentic-visual", "--agentic-input", "--agentic-actions",
@@ -144,7 +146,7 @@ class LiveMcpSuite:
 
     def ensure_demo(self) -> None:
         if self.process is not None and self.process.poll() is not None:
-            tail = (self.output / "demo.log").read_text(errors="replace")[-4000:]
+            tail = (self.logs / "demo.log").read_text(errors="replace")[-4000:]
             raise AssertionError(f"Demo exited {self.process.returncode}: {tail}")
 
     async def discover(self) -> None:
@@ -701,7 +703,7 @@ class LiveMcpSuite:
             parameters = StdioServerParameters(command=sys.executable,
                 args=["-m", "flowui_agent_mcp.server", "--workspace", str(self.workspace),
                     "--cli", str(self.cli), "--timeout", "30"], cwd=str(self.workspace), env=environment)
-            with (self.output / "adapter.log").open("w") as adapter_log:
+            with (self.logs / "adapter.log").open("w") as adapter_log:
                 async with Client(stdio_client(parameters, errlog=adapter_log), read_timeout_seconds=45) as client:
                     self.client = client
                     await self.discover()

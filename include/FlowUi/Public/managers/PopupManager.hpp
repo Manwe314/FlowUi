@@ -17,7 +17,9 @@ namespace FlowUi {
 
 class UiManager;
 struct FrameInput;
-namespace detail::storage { class IStorageSystem; }
+namespace detail::storage {
+class StorageBinding;
+}
 namespace detail::manager_storage { struct PopupManagerState; }
 namespace devSystems { class MemorySampleSink; }
 
@@ -201,7 +203,7 @@ private:
 	mutable FlowUiError frameError_{};
 	friend class UiManager;
 
-	void init(detail::storage::IStorageSystem& storage, WindowId window, const ErrorPolicy& policy);
+	void init(detail::storage::StorageBinding& storage, WindowId window, const ErrorPolicy& policy);
 	void destroy() noexcept;
 	void beginFrame(
 		const FrameInput& currentInput,
@@ -220,7 +222,7 @@ private:
 	[[nodiscard]] detail::manager_storage::PopupManagerState& state();
 	[[nodiscard]] const detail::manager_storage::PopupManagerState& state() const;
 
-	detail::storage::IStorageSystem* storage_ = nullptr;
+	detail::storage::StorageBinding* storage_ = nullptr;
 	WindowId window_ = InvalidWindowId;
 	uint64_t stateHandle_ = 0;
 	PopupDuplicatePolicy duplicatePolicy_ = PopupDuplicatePolicy::FirstSubmissionWins;

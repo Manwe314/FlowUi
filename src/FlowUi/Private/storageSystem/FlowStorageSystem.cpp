@@ -1,6 +1,8 @@
 #include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
+#include "FlowUi/Private/storageSystem/StorageCalculations.hpp"
 #include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
 #include "FlowUi/Private/storageSystem/capacity/MemoryDemandPeaks.hpp"
+#include "FlowUi/Private/storageSystem/vulkan/StorageFormatConversions.hpp"
 
 #include <algorithm>
 #include <bit>
@@ -29,28 +31,6 @@
 namespace FlowUi::detail::storage {
 namespace {
 
-constexpr uint64_t kCapabilityMask =
-	static_cast<uint64_t>(StorageCapability::RuntimeGrowth) |
-	static_cast<uint64_t>(StorageCapability::WindowScopes) |
-	static_cast<uint64_t>(StorageCapability::WorkerArenas) |
-	static_cast<uint64_t>(StorageCapability::GenerationalHandles) |
-	static_cast<uint64_t>(StorageCapability::BatchedBindingResolution) |
-	static_cast<uint64_t>(StorageCapability::SynchronousUploads) |
-	static_cast<uint64_t>(StorageCapability::DeferredRetirement) |
-	static_cast<uint64_t>(StorageCapability::VulkanInterop) |
-	static_cast<uint64_t>(StorageCapability::DirectMappedWrites) |
-	static_cast<uint64_t>(StorageCapability::HostScratchBufferWrites) |
-	static_cast<uint64_t>(StorageCapability::BindingWriteBatches) |
-	static_cast<uint64_t>(StorageCapability::FrameReadLeases) |
-	static_cast<uint64_t>(StorageCapability::RendererResourceBundles) |
-	static_cast<uint64_t>(StorageCapability::ManagerRecords) |
-	static_cast<uint64_t>(StorageCapability::ManagerFrameSnapshots) |
-	static_cast<uint64_t>(StorageCapability::PersistentRecords)
-#if FLOW_UI_DEV_MODE
-	| static_cast<uint64_t>(StorageCapability::DevelopmentTelemetry)
-#endif
-	;
-
 [[noreturn]] void storageError(
 	ErrorCode code,
 	ErrorSite site) {
@@ -74,36 +54,6 @@ void checkVk(VkResult result, ErrorSite site) {
 	}
 }
 
-size_t alignUp(size_t value, size_t alignment) {
-	if (alignment == 0 || !std::has_single_bit(alignment)) {
-		storageError(ErrorCode::StorageConfigurationInvalid, ErrorSite::StorageCalculateCapacity);
-	}
-	if (value > std::numeric_limits<size_t>::max() - (alignment - 1u)) {
-		storageError(ErrorCode::ArithmeticOverflow, ErrorSite::StorageCalculateCapacity);
-	}
-	return (value + alignment - 1u) & ~(alignment - 1u);
-}
-
-size_t checkedSize(uint64_t value) {
-	if (value > std::numeric_limits<size_t>::max()) storageError(ErrorCode::ArithmeticOverflow, ErrorSite::StorageCalculateCapacity);
-	return static_cast<size_t>(value);
-}
-
-uint64_t checkedMultiply(uint64_t lhs, uint64_t rhs) {
-	if (lhs != 0 && rhs > std::numeric_limits<uint64_t>::max() / lhs) storageError(ErrorCode::ArithmeticOverflow, ErrorSite::StorageCalculateCapacity);
-	return lhs * rhs;
-}
-
-uint64_t checkedAdd(uint64_t lhs, uint64_t rhs) {
-	if (rhs > std::numeric_limits<uint64_t>::max() - lhs) storageError(ErrorCode::ArithmeticOverflow, ErrorSite::StorageCalculateCapacity);
-	return lhs + rhs;
-}
-
-uint32_t nextGeneration(uint32_t generation) noexcept {
-	++generation;
-	return generation == InvalidGeneration ? 1u : generation;
-}
-
 uint64_t nextCapacity(uint64_t current, uint64_t required, float factor) {
 	uint64_t capacity = std::max<uint64_t>(current, 1u);
 	const double clampedFactor = std::max(1.1, static_cast<double>(factor));
@@ -119,43 +69,7 @@ uint64_t nextCapacity(uint64_t current, uint64_t required, float factor) {
 	return capacity;
 }
 
-VkFormat toVkFormat(PixelFormat format) {
-	switch (format) {
-	case PixelFormat::R8Unorm: return VK_FORMAT_R8_UNORM;
-	case PixelFormat::Rgba8Unorm: return VK_FORMAT_R8G8B8A8_UNORM;
-	case PixelFormat::Rgba8Srgb: return VK_FORMAT_R8G8B8A8_SRGB;
-	case PixelFormat::Bgra8Unorm: return VK_FORMAT_B8G8R8A8_UNORM;
-	case PixelFormat::Bgra8Srgb: return VK_FORMAT_B8G8R8A8_SRGB;
-	case PixelFormat::Rgba16Float: return VK_FORMAT_R16G16B16A16_SFLOAT;
-	case PixelFormat::D32Float: return VK_FORMAT_D32_SFLOAT;
-	default: return VK_FORMAT_UNDEFINED;
-	}
-}
-
-VkImageUsageFlags toVkImageUsage(ImageUsage usage) {
-	VkImageUsageFlags flags = 0;
-	if (hasFlag(usage, ImageUsage::Sampled)) flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
-	if (hasFlag(usage, ImageUsage::TransferSource)) flags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-	if (hasFlag(usage, ImageUsage::TransferDestination)) flags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-	if (hasFlag(usage, ImageUsage::ColorAttachment)) flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-	if (hasFlag(usage, ImageUsage::DepthAttachment)) flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-	if (hasFlag(usage, ImageUsage::Storage)) flags |= VK_IMAGE_USAGE_STORAGE_BIT;
-	return flags;
-}
-
-VkBufferUsageFlags toVkBufferUsage(BufferUsage usage) {
-	VkBufferUsageFlags flags = 0;
-	if (hasFlag(usage, BufferUsage::TransferSource)) flags |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-	if (hasFlag(usage, BufferUsage::TransferDestination)) flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-	if (hasFlag(usage, BufferUsage::Vertex)) flags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	if (hasFlag(usage, BufferUsage::Index)) flags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-	if (hasFlag(usage, BufferUsage::Uniform)) flags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-	if (hasFlag(usage, BufferUsage::Storage)) flags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-	if (hasFlag(usage, BufferUsage::Indirect)) flags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
-	return flags;
-}
-
-VmaMemoryUsage toVmaMemoryUsage(MemoryPreference preference) {
+[[nodiscard]] constexpr VmaMemoryUsage toVmaMemoryUsage(MemoryPreference preference) noexcept {
 	switch (preference) {
 	case MemoryPreference::DeviceLocal: return VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 	case MemoryPreference::HostVisible: return VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
@@ -164,49 +78,11 @@ VmaMemoryUsage toVmaMemoryUsage(MemoryPreference preference) {
 	}
 }
 
-VkFilter toVkFilter(FilterMode mode) {
-	return mode == FilterMode::Nearest ? VK_FILTER_NEAREST : VK_FILTER_LINEAR;
-}
-
-VkSamplerAddressMode toVkAddressMode(AddressMode mode) {
-	switch (mode) {
-	case AddressMode::Repeat: return VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	case AddressMode::MirroredRepeat: return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
-	case AddressMode::ClampToBorder: return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-	default: return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	}
-}
-
-uint32_t bytesPerPixel(PixelFormat format) {
-	switch (format) {
-	case PixelFormat::R8Unorm: return 1u;
-	case PixelFormat::Rgba16Float: return 8u;
-	case PixelFormat::D32Float: return 4u;
-	case PixelFormat::Rgba8Unorm:
-	case PixelFormat::Rgba8Srgb:
-	case PixelFormat::Bgra8Unorm:
-	case PixelFormat::Bgra8Srgb: return 4u;
-	default: return 0u;
-	}
-}
-
-uint64_t estimateImageBytes(const ImageDesc& desc) {
-	uint64_t bytes = 0;
-	uint64_t width = desc.width;
-	uint64_t height = desc.height;
-	uint64_t depth = desc.depth;
-	for (uint32_t mip = 0; mip < desc.mipLevels; ++mip) {
-		uint64_t mipBytes = checkedMultiply(width, height);
-		mipBytes = checkedMultiply(mipBytes, depth);
-		mipBytes = checkedMultiply(mipBytes, desc.layers);
-		mipBytes = checkedMultiply(mipBytes, bytesPerPixel(desc.format));
-		bytes = checkedAdd(bytes, mipBytes);
-		width = std::max<uint64_t>(1, width / 2u);
-		height = std::max<uint64_t>(1, height / 2u);
-		depth = std::max<uint64_t>(1, depth / 2u);
-	}
-	return bytes;
-}
+static_assert(toVmaMemoryUsage(MemoryPreference::Automatic) == VMA_MEMORY_USAGE_AUTO);
+static_assert(toVmaMemoryUsage(MemoryPreference::DeviceLocal) ==
+			  VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE);
+static_assert(toVmaMemoryUsage(MemoryPreference::HostVisible) == VMA_MEMORY_USAGE_AUTO_PREFER_HOST);
+static_assert(toVmaMemoryUsage(MemoryPreference::HostCached) == VMA_MEMORY_USAGE_AUTO_PREFER_HOST);
 
 template <typename Pointer>
 uint64_t nativeHandle(Pointer pointer) noexcept {
@@ -261,7 +137,7 @@ struct SamplerKey {
 };
 
 struct SamplerKeyHash {
-	size_t operator()(const SamplerKey& key) const noexcept {
+	[[nodiscard]] constexpr size_t operator()(const SamplerKey& key) const noexcept {
 		uint64_t hash = static_cast<uint64_t>(key.minFilter) | (static_cast<uint64_t>(key.magFilter) << 8u);
 		hash ^= static_cast<uint64_t>(key.addressU) << 16u;
 		hash ^= static_cast<uint64_t>(key.addressV) << 24u;
@@ -274,7 +150,7 @@ struct SamplerKeyHash {
 	}
 };
 
-SamplerKey makeSamplerKey(const SamplerDesc& desc) noexcept {
+[[nodiscard]] constexpr SamplerKey makeSamplerKey(const SamplerDesc& desc) noexcept {
 	return SamplerKey{
 		.minFilter = desc.minFilter,
 		.magFilter = desc.magFilter,
@@ -287,6 +163,11 @@ SamplerKey makeSamplerKey(const SamplerDesc& desc) noexcept {
 		.anisotropy = desc.anisotropy,
 	};
 }
+
+static_assert(makeSamplerKey(SamplerDesc{}).anisotropyBits == std::bit_cast<uint32_t>(1.0f));
+static_assert(makeSamplerKey(SamplerDesc{.minLod = -0.0f}).minLodBits == 0x80000000u);
+static_assert(makeSamplerKey(SamplerDesc{.minLod = -0.0f}) != makeSamplerKey(SamplerDesc{}));
+static_assert(SamplerKeyHash{}(SamplerKey{}) == 0);
 
 class LinearArena {
 public:
@@ -2328,7 +2209,7 @@ struct FlowStorageSystem::Impl {
 FlowStorageSystem::FlowStorageSystem(VulkanContext& vulkanContext)
 	: impl_(std::make_unique<Impl>(vulkanContext)) {}
 
-FlowStorageSystem::~FlowStorageSystem() {
+FlowStorageSystem::~FlowStorageSystem() noexcept {
 	shutdown();
 }
 
@@ -2598,8 +2479,12 @@ uint64_t FlowStorageSystem::initial_memory_capacity(
 	return impl_->config.initial_capacities.get(target);
 }
 
-uint32_t FlowStorageSystem::interfaceVersion() const noexcept { return CurrentInterfaceVersion; }
-uint64_t FlowStorageSystem::capabilities() const noexcept { return kCapabilityMask; }
+uint32_t FlowStorageSystem::interfaceVersion() const noexcept {
+	return interfaceVersionValue;
+}
+uint64_t FlowStorageSystem::capabilities() const noexcept {
+	return supportedCapabilities;
+}
 
 void FlowStorageSystem::registerWindow(WindowId id, const WindowStorageDesc& desc) {
 	std::scoped_lock lock(impl_->mutex);
@@ -3174,16 +3059,15 @@ ManagerRecordHandle FlowStorageSystem::findManagerRecord(
 	return it->second;
 }
 
-void* FlowStorageSystem::managerRecordData(
-	ManagerRecordHandle handle, ResourceKind kind) {
+void* FlowStorageSystem::managerRecordData(ManagerRecordHandle handle, ResourceKind kind) noexcept {
 	std::scoped_lock lock(impl_->mutex);
 	return impl_->usableManagerRecord(handle, kind)
 		? impl_->managerRecords[handle.index].memory.data
 		: nullptr;
 }
 
-const void* FlowStorageSystem::managerRecordData(
-	ManagerRecordHandle handle, ResourceKind kind) const {
+const void* FlowStorageSystem::managerRecordData(ManagerRecordHandle handle,
+												 ResourceKind kind) const noexcept {
 	std::scoped_lock lock(impl_->mutex);
 	return impl_->usableManagerRecord(handle, kind)
 		? impl_->managerRecords[handle.index].memory.data

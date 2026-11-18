@@ -1392,9 +1392,8 @@ uint64_t FlowUi::detail::growUiInstanceCapacity(uint64_t currentBytes, uint64_t 
 	return result;
 }
 
-void destroySharedUiByteResources(
-	storage::IStorageSystem& storageSystem,
-	SharedUiByteResources& resources) noexcept {
+void destroySharedUiByteResources(storage::ActiveStorageSystem& storageSystem,
+								  SharedUiByteResources& resources) noexcept {
 	try { if (resources.placeholderFontView) storageSystem.releaseImageView(resources.placeholderFontView); } catch (...) {}
 	try { if (resources.placeholderUiView) storageSystem.releaseImageView(resources.placeholderUiView); } catch (...) {}
 	try { if (resources.placeholderFontImage) storageSystem.releaseImage(resources.placeholderFontImage); } catch (...) {}
@@ -1405,9 +1404,8 @@ void destroySharedUiByteResources(
 	resources = {};
 }
 
-void initSharedUiByteResources(
-	storage::IStorageSystem& storageSystem,
-	SharedUiByteResources& resources) {
+void initSharedUiByteResources(storage::ActiveStorageSystem& storageSystem,
+							   SharedUiByteResources& resources) {
 	destroySharedUiByteResources(storageSystem, resources);
 	std::array<storage::BlobHandle, 3> uploadBlobs{};
 	try {
@@ -1513,17 +1511,12 @@ void initSharedUiByteResources(
 	}
 }
 
-void VulkanUiRenderer::init(
-	const FlowUi::VulkanConfig& vulkanConfig,
-	const FlowUi::UiConfig& uiConfig,
-	VulkanContext& vk,
-	VkFormat swapFormat,
-	storage::IStorageSystem& storageSystem,
-	FlowUi::WindowId windowId,
-	const SharedUiByteResources& sharedResources,
-	uint64_t initialInstanceBytes,
-	uint32_t textureDescriptorCapacity,
-	bool allowInstanceGrowth, const FlowUi::ResourceConfig& resources) {
+void VulkanUiRenderer::init(const FlowUi::VulkanConfig& vulkanConfig,
+							const FlowUi::UiConfig& uiConfig, VulkanContext& vk,
+							VkFormat swapFormat, storage::ActiveStorageSystem& storageSystem,
+							FlowUi::WindowId windowId, const SharedUiByteResources& sharedResources,
+							uint64_t initialInstanceBytes, uint32_t textureDescriptorCapacity,
+							bool allowInstanceGrowth, const FlowUi::ResourceConfig& resources) {
 	const auto coverage_width_scale =
 		FlowUi::detail::resolve_primitive_coverage_width_scale(uiConfig.primitive_antialiasing);
 	if (!coverage_width_scale) {
@@ -1727,11 +1720,8 @@ void VulkanUiRenderer::init(
 	}
 }
 
-void VulkanUiRenderer::destroy(
-	VulkanContext& vk,
-	storage::IStorageSystem& storageSystem,
-	storage::SubmissionSerial lastUse)
-{
+void VulkanUiRenderer::destroy(VulkanContext& vk, storage::ActiveStorageSystem& storageSystem,
+							   storage::SubmissionSerial lastUse) {
 	boundFontAtlasRevisionByFrame_.clear();
 	textLayoutService_.clear();
 	frameResourceCount_ = 1u;
@@ -1882,23 +1872,18 @@ void VulkanUiRenderer::applyTextureBindings(
 }
 
 PreparedUiFrame VulkanUiRenderer::prepareFrame(
-	VulkanContext& vk,
-	storage::IStorageSystem& storageSystem,
-	const storage::FrameToken& frame,
-	const storage::PreparedTextureBindings& textureBindings,
+	VulkanContext& vk, storage::ActiveStorageSystem& storageSystem,
+	const storage::FrameToken& frame, const storage::PreparedTextureBindings& textureBindings,
 	const Clay_RenderCommandArray& renderCommands,
 	const FlowUi::detail::InputFieldFrameOverrides& inputFieldOverrides,
-	const FlowUi::detail::manager_storage::FontFrameView& fontView,
-	VkExtent2D extent,
-	float uiToFramebufferScaleX,
-	float uiToFramebufferScaleY
+	const FlowUi::detail::manager_storage::FontFrameView& fontView, VkExtent2D extent,
+	float uiToFramebufferScaleX, float uiToFramebufferScaleY
 #if FLOW_UI_DEV_MODE
 	,
 	const FlowUi::devSystems::tooling::DevOverlayCommandBuffer* devOverlay,
 	FlowUi::devSystems::DevTimingRecorder* timingRecorder
 #endif
-	)
-{
+) {
 #if FLOW_UI_DEV_MODE
 	FLOWUI_DEV_TIMING_ZONE_IF(
 		timingRecorder, FlowUi::devSystems::TimingCategory::RendererCpu,

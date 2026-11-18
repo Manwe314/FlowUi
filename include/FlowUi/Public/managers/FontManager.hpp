@@ -23,8 +23,12 @@ class App;
 namespace Font {
 struct AtlasArrayResource;
 }
+namespace detail::font {
+struct FontCpuAsset;
+struct FontManagerAccess;
+} // namespace detail::font
 namespace detail::storage {
-class IStorageSystem;
+class StorageBinding;
 struct FrameToken;
 } // namespace detail::storage
 namespace devSystems {
@@ -395,8 +399,9 @@ struct FontManager {
 
 private:
 	friend class App;
+	friend struct detail::font::FontManagerAccess;
 
-	void init(detail::storage::IStorageSystem& storage, uint32_t atlasSize);
+	void init(detail::storage::StorageBinding& storage, uint32_t atlasSize);
 	void destroy() noexcept;
 	[[nodiscard]] detail::manager_storage::FontFrameView frameView(
 		const detail::storage::FrameToken& frame) const;
@@ -407,8 +412,11 @@ private:
 							std::string_view requestedName = {},
 							std::span<const std::byte> baked_data = {});
 	FontId registerRuntimeFont(const FontFaceCreateInfo& createInfo);
+	FontId registerCpuFont(detail::font::FontCpuAsset asset,
+						   const std::filesystem::path& sourcePath, std::string_view requestedName,
+						   ErrorSite operationSite);
 
-	detail::storage::IStorageSystem* storage_ = nullptr;
+	detail::storage::StorageBinding* storage_ = nullptr;
 	uint64_t controllerHandle_ = 0;
 	detail::manager_storage::FontCatalogController* controller_ = nullptr;
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2

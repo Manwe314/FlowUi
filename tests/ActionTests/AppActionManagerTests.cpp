@@ -4,9 +4,9 @@
 #include <iostream>
 #include <stdexcept>
 
-#include <FlowUi/Public/Flow.hpp>
 #include "FlowUi/Private/actionService/ActionManagerAccess.hpp"
-#include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
+#include "FlowUi/Private/storageSystem/StorageBinding.hpp"
+#include <FlowUi/Public/Flow.hpp>
 
 namespace {
 
@@ -24,7 +24,8 @@ public:
 		config.initialPersistentCpuBytes = 4096;
 		config.expectedPersistentRecords = 32;
 		storage_.initialize(config);
-		FlowUi::detail::action::ActionManagerAccess::init(manager_, app_, storage_);
+		storageBinding_.bind(storage_);
+		FlowUi::detail::action::ActionManagerAccess::init(manager_, app_, storageBinding_);
 	}
 
 	~ActionStore() {
@@ -33,11 +34,12 @@ public:
 	}
 
 	FlowUi::ActionManager& manager() noexcept { return manager_; }
-	FlowUi::detail::storage::FlowStorageSystem& storage() noexcept { return storage_; }
+	FlowUi::detail::storage::ActiveStorageSystem& storage() noexcept { return storage_; }
 
 private:
 	FlowUi::App app_;
-	FlowUi::detail::storage::FlowStorageSystem storage_;
+	FlowUi::detail::storage::ActiveStorageSystem storage_;
+	FlowUi::detail::storage::StorageBinding storageBinding_;
 	FlowUi::ActionManager manager_;
 };
 

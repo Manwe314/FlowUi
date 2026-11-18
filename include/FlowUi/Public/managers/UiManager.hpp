@@ -71,7 +71,10 @@ struct FontManager;
 namespace detail::platform {
 class WindowPlatformServices;
 }
-namespace detail::storage { class IStorageSystem; struct FrameToken; }
+namespace detail::storage {
+class StorageBinding;
+struct FrameToken;
+} // namespace detail::storage
 namespace detail::manager_storage { struct UiManagerState; struct FontFrameView; }
 
 /** @addtogroup flowui_ui_manager
@@ -1017,7 +1020,8 @@ private:
 #endif
 
 	UiManager() = default;
-	void initStorage(detail::storage::IStorageSystem& storage, WindowId window, const AppConfig& config);
+	void initStorage(detail::storage::StorageBinding& storage, WindowId window,
+					 const AppConfig& config);
 	void destroyStorage() noexcept;
 	void setThemeManager(const ThemeManager* themeManager) noexcept { themeManager_ = themeManager; }
 	void setElementManager(ElementManager* elementManager) noexcept { elementManager_ = elementManager; }
@@ -1109,7 +1113,7 @@ private:
 	PopupManager popupManager_{};
 	ShortcutManager shortcutManager_{};
 	detail::platform::WindowPlatformServices* platformServices_ = nullptr;
-	detail::storage::IStorageSystem* storage_ = nullptr;
+	detail::storage::StorageBinding* storage_ = nullptr;
 	const ThemeManager* themeManager_ = nullptr;
 	ElementManager* elementManager_ = nullptr;
 	ActionManager* actionManager_ = nullptr;

@@ -11,17 +11,17 @@
 #include <clay.h>
 #include <vulkan/vulkan.h>
 
-#include "FlowUi/Public/BuildConfig.hpp"
-#include "FlowUi/Public/identificationTypes/WindowId.hpp"
+#include "FlowUi/Private/inputService/InputFieldRenderOverrides.hpp"
 #include "FlowUi/Private/renderer/vulkan/Vk_Context.hpp"
+#include "FlowUi/Private/resourceService/FontCatalogController.hpp"
+#include "FlowUi/Private/storageSystem/StorageSystemSelection.hpp"
+#include "FlowUi/Private/textLayoutService/TextLayoutService.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #include "FlowUi/Public/configurationStructs/ResourceConfig.hpp"
 #include "FlowUi/Public/configurationStructs/UiConfig.hpp"
 #include "FlowUi/Public/configurationStructs/VulkanConfig.hpp"
 #include "FlowUi/Public/errorManagement/Result.hpp"
-#include "FlowUi/Private/inputService/InputFieldRenderOverrides.hpp"
-#include "FlowUi/Private/resourceService/FontCatalogController.hpp"
-#include "FlowUi/Private/storageSystem/IStorageSystem.hpp"
-#include "FlowUi/Private/textLayoutService/TextLayoutService.hpp"
+#include "FlowUi/Public/identificationTypes/WindowId.hpp"
 
 namespace FlowUi {
 #if FLOW_UI_DEV_MODE
@@ -94,12 +94,10 @@ struct UiConversionResult {
 
 } // namespace FlowUi::detail
 
-void initSharedUiByteResources(
-	FlowUi::detail::storage::IStorageSystem& storage,
-	SharedUiByteResources& resources);
-void destroySharedUiByteResources(
-	FlowUi::detail::storage::IStorageSystem& storage,
-	SharedUiByteResources& resources) noexcept;
+void initSharedUiByteResources(FlowUi::detail::storage::ActiveStorageSystem& storage,
+							   SharedUiByteResources& resources);
+void destroySharedUiByteResources(FlowUi::detail::storage::ActiveStorageSystem& storage,
+								  SharedUiByteResources& resources) noexcept;
 
 struct VulkanUiRenderer {
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
@@ -140,7 +138,7 @@ struct VulkanUiRenderer {
 
 	std::vector<UiFrameResources> frameResources_{};
 	const SharedUiByteResources* sharedByteResources_ = nullptr;
-	FlowUi::detail::storage::IStorageSystem* storage_ = nullptr;
+	FlowUi::detail::storage::ActiveStorageSystem* storage_ = nullptr;
 	FlowUi::WindowId windowId_ = FlowUi::InvalidWindowId;
 	uint64_t initialInstanceBytes_ = 1024u * 1024u;
 	bool allowInstanceGrowth_ = true;
@@ -154,22 +152,14 @@ struct VulkanUiRenderer {
 	std::vector<uint32_t> boundFontAtlasRevisionByFrame_{};
 	FlowUi::detail::text::TextLayoutService textLayoutService_{};
 
-	void init(
-		const FlowUi::VulkanConfig& vulkanConfig,
-		const FlowUi::UiConfig& uiConfig,
-		VulkanContext& vk,
-		VkFormat swapFormat,
-		FlowUi::detail::storage::IStorageSystem& storage,
-		FlowUi::WindowId windowId,
-		const SharedUiByteResources& sharedResources,
-		uint64_t initialInstanceBytes,
-		uint32_t textureDescriptorCapacity,
-		bool allowInstanceGrowth,
-		const FlowUi::ResourceConfig& resources = {});
-	void destroy(
-		VulkanContext& vk,
-		FlowUi::detail::storage::IStorageSystem& storage,
-		FlowUi::detail::storage::SubmissionSerial lastUse = 0);
+	void init(const FlowUi::VulkanConfig& vulkanConfig, const FlowUi::UiConfig& uiConfig,
+			  VulkanContext& vk, VkFormat swapFormat,
+			  FlowUi::detail::storage::ActiveStorageSystem& storage, FlowUi::WindowId windowId,
+			  const SharedUiByteResources& sharedResources, uint64_t initialInstanceBytes,
+			  uint32_t textureDescriptorCapacity, bool allowInstanceGrowth,
+			  const FlowUi::ResourceConfig& resources = {});
+	void destroy(VulkanContext& vk, FlowUi::detail::storage::ActiveStorageSystem& storage,
+				 FlowUi::detail::storage::SubmissionSerial lastUse = 0);
 	void onSwapchainFormatChanged(
 		VulkanContext& vk,
 		VkFormat newFormat,
@@ -178,23 +168,20 @@ struct VulkanUiRenderer {
 		VkDevice device,
 		uint32_t frameSlot,
 		const FlowUi::detail::storage::PreparedTextureBindings& prepared);
-	[[nodiscard]] PreparedUiFrame prepareFrame(
-		VulkanContext& vk,
-		FlowUi::detail::storage::IStorageSystem& storage,
-		const FlowUi::detail::storage::FrameToken& frame,
-		const FlowUi::detail::storage::PreparedTextureBindings& textureBindings,
-		const Clay_RenderCommandArray& renderCommands,
-		const FlowUi::detail::InputFieldFrameOverrides& inputFieldOverrides,
-		const FlowUi::detail::manager_storage::FontFrameView& fontView,
-		VkExtent2D extent,
-		float uiToFramebufferScaleX,
-		float uiToFramebufferScaleY
+	[[nodiscard]] PreparedUiFrame
+	prepareFrame(VulkanContext& vk, FlowUi::detail::storage::ActiveStorageSystem& storage,
+				 const FlowUi::detail::storage::FrameToken& frame,
+				 const FlowUi::detail::storage::PreparedTextureBindings& textureBindings,
+				 const Clay_RenderCommandArray& renderCommands,
+				 const FlowUi::detail::InputFieldFrameOverrides& inputFieldOverrides,
+				 const FlowUi::detail::manager_storage::FontFrameView& fontView, VkExtent2D extent,
+				 float uiToFramebufferScaleX, float uiToFramebufferScaleY
 #if FLOW_UI_DEV_MODE
-		,
-		const FlowUi::devSystems::tooling::DevOverlayCommandBuffer* devOverlay = nullptr,
-		FlowUi::devSystems::DevTimingRecorder* timingRecorder = nullptr
+				 ,
+				 const FlowUi::devSystems::tooling::DevOverlayCommandBuffer* devOverlay = nullptr,
+				 FlowUi::devSystems::DevTimingRecorder* timingRecorder = nullptr
 #endif
-		);
+	);
 	void recordPreparedFrame(
 		VulkanContext& vk,
 		VkCommandBuffer cmd,

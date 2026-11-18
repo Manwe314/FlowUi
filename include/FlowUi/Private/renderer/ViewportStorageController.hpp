@@ -12,7 +12,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "FlowUi/Private/storageSystem/IStorageSystem.hpp"
+#include "FlowUi/Private/storageSystem/StorageSystemSelection.hpp"
 #include "FlowUi/Public/managers/ViewPortManager.hpp"
 
 struct VulkanContext;
@@ -20,7 +20,7 @@ struct VulkanContext;
 namespace FlowUi::detail::manager_storage {
 
 struct ViewportFacadeState {
-	storage::IStorageSystem* storage = nullptr;
+	storage::ActiveStorageSystem* storage = nullptr;
 	WindowId window = InvalidWindowId;
 	std::string key{};
 	TextureHandle texture{};
@@ -109,7 +109,7 @@ struct ViewportTextureOwner {
 
 class ViewportStorageController {
 public:
-	ViewportStorageController(storage::IStorageSystem& storageSystem, VulkanContext& context,
+	ViewportStorageController(storage::ActiveStorageSystem& storageSystem, VulkanContext& context,
 							  WindowId owningWindow, uint32_t frameCount);
 	~ViewportStorageController() noexcept;
 
@@ -132,7 +132,7 @@ public:
 #endif
 
 	::FlowUi::detail::MemoryDemandPeaks capacity_demand{};
-	storage::IStorageSystem* storage = nullptr;
+	storage::ActiveStorageSystem* storage = nullptr;
 	VulkanContext* vk = nullptr;
 	WindowId window = InvalidWindowId;
 	uint32_t framesInFlight = 1;

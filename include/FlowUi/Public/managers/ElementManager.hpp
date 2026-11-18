@@ -27,7 +27,7 @@ class ElementInvocation;
 }
 
 namespace detail::storage {
-class IStorageSystem;
+class StorageBinding;
 }
 
 namespace detail::manager_storage {
@@ -453,7 +453,7 @@ private:
 	template <typename Element>
 	friend class detail::element::ElementInvocation;
 
-	void init(App& app, detail::storage::IStorageSystem& storage);
+	void init(App& app, detail::storage::StorageBinding& storage);
 	void destroy() noexcept;
 	void rebindOwner(App& app) noexcept;
 	void registerWindow(WindowId window);
@@ -501,7 +501,7 @@ private:
 	// Kept private so element resource construction can receive the owning App&
 	// without exposing an App mutation backdoor on the public manager surface.
 	App* app_ = nullptr;
-	detail::storage::IStorageSystem* storage_ = nullptr;
+	detail::storage::StorageBinding* storage_ = nullptr;
 	detail::manager_storage::ElementStorageController* controller_ = nullptr;
 	uint64_t controllerHandle_ = 0;
 	uint32_t controllerName_ = 0;

@@ -1,5 +1,6 @@
-#include "FlowUi/Private/ApiBoundary.hpp"
 #include "FlowUi/Public/managers/PopupManager.hpp"
+#include "FlowUi/Private/ApiBoundary.hpp"
+#include "FlowUi/Private/storageSystem/StorageBinding.hpp"
 #include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
@@ -13,9 +14,9 @@
 #include <limits>
 #include <stdexcept>
 
-#include "FlowUi/Private/storageSystem/ManagerStateAccess.hpp"
 #include "FlowUi/Private/layoutService/PopupManagerState.hpp"
-#include "FlowUi/Private/storageSystem/IStorageSystem.hpp"
+#include "FlowUi/Private/storageSystem/ManagerStateAccess.hpp"
+#include "FlowUi/Private/storageSystem/StorageSystemSelection.hpp"
 #include "FlowUi/Public/managerStructs/InputTypes.hpp"
 
 namespace {
@@ -377,16 +378,15 @@ void PopupManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) co
 namespace manager_storage = detail::manager_storage;
 namespace storage = detail::storage;
 
-void PopupManager::init(
-	storage::IStorageSystem& storageSystem,
-	WindowId window,
-	const ErrorPolicy& policy) {
+void PopupManager::init(storage::StorageBinding& storageBinding, WindowId window,
+						const ErrorPolicy& policy) {
+	auto& storageSystem = storageBinding.system();
 	if (storage_) throw FlowUiException(makeError(ErrorCode::ObjectAlreadyInitialized, ErrorSite::PopupManagerInitialize));
 	const storage::StringId name = storageSystem.intern("flowui.popup.root");
 	const storage::ResourceKey key{storage::ResourceDomain::Layout, name, window};
 	const storage::ManagerRecordHandle handle = manager_storage::createState<PopupManagerState>(
 		storageSystem, key, storage::ResourceKind::PopupManager, name);
-	storage_ = &storageSystem;
+	storage_ = &storageBinding;
 	window_ = window;
 	stateHandle_ = handle.packed();
 	duplicatePolicy_ = policy.duplicatePopup;
@@ -420,8 +420,8 @@ void PopupManager::init(
 void PopupManager::destroy() noexcept {
 	if (!storage_) return;
 	try {
-		const storage::StringId name = storage_->intern("flowui.popup.root");
-		(void)storage_->removeManagerRecord(
+		const storage::StringId name = storage_->system().intern("flowui.popup.root");
+		(void)storage_->system().removeManagerRecord(
 			storage::ResourceKey{storage::ResourceDomain::Layout, name, window_},
 			storage::ResourceKind::PopupManager);
 	} catch (...) {
@@ -755,7 +755,7 @@ void PopupManager::dismissImpl(uint64_t popupKey) {
 	PopupRecord replacement = found == records.end() ? PopupRecord{} : found->second;
 	if (!markDismissed(replacement)) return;
 	if (!current.flags.has_flag(PopupManagerFlag::frame_active))
-		storage_->noteManagerMutation(window_);
+		storage_->system().noteManagerMutation(window_);
 	records.insert_or_assign(popupKey, replacement);
 
 	if (current.flags.has_flag(PopupManagerFlag::frame_active)) {
@@ -802,7 +802,7 @@ bool PopupManager::consumeDismissedImpl(uint64_t popupKey) {
 		!record->second.flags.has_flag(PopupRecordFlag::dismissal_pending))
 		return false;
 	if (!current.flags.has_flag(PopupManagerFlag::frame_active))
-		storage_->noteManagerMutation(window_);
+		storage_->system().noteManagerMutation(window_);
 	record->second.flags.set_flag(PopupRecordFlag::dismissal_pending, false);
 	return true;
 }
@@ -859,7 +859,7 @@ void PopupManager::endFrame() {
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
 								FlowUi::detail::InitialCapacityTarget::popups_stack,
 								std::max(current.committedStack.size(), nextStack.size()));
-	storage_->noteManagerMutation(window_);
+	storage_->system().noteManagerMutation(window_);
 	current.committedRecords.swap(current.workingRecords);
 	current.committedStack.swap(nextStack);
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,

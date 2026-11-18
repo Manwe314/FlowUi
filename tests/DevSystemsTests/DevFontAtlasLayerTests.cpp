@@ -1,14 +1,14 @@
 #include "HeadlessVulkanFixture.hpp"
 #include "TestHarness.hpp"
 
+#include "FlowUi/Private/resourceService/FontCatalogController.hpp"
+#include "FlowUi/Private/storageSystem/StorageSystemSelection.hpp"
+#include "FlowUi/Private/storageSystem/vulkan/Vma.hpp"
 #include "FlowUi/Public/Flow.hpp"
+#include "FlowUi/Public/managers/FontManager.hpp"
 #include "devSystems/devInterface/Catalogue/DevCatalogueModel.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
-#include "FlowUi/Private/resourceService/FontCatalogController.hpp"
-#include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
-#include "FlowUi/Private/storageSystem/vulkan/Vma.hpp"
-#include "FlowUi/Public/managers/FontManager.hpp"
 #include <algorithm>
 #include <array>
 #include <cstring>
@@ -149,7 +149,7 @@ public:
 	AtlasSampler(const AtlasSampler&) = delete;
 	AtlasSampler& operator=(const AtlasSampler&) = delete;
 
-	[[nodiscard]] std::array<uint32_t, 3> sample(storage::FlowStorageSystem& resources,
+	[[nodiscard]] std::array<uint32_t, 3> sample(storage::ActiveStorageSystem& resources,
 												 storage::ImageViewHandle preview_view,
 												 const Controller& controller) {
 		const auto sampler = reinterpret_cast<VkSampler>(
@@ -260,7 +260,7 @@ private:
 	config.gpuSoftBudgetBytes = 4 * 1024 * 1024;
 	return config;
 }
-[[nodiscard]] FlowUi::TextureHandle create_fallback(storage::FlowStorageSystem& resources) {
+[[nodiscard]] FlowUi::TextureHandle create_fallback(storage::ActiveStorageSystem& resources) {
 	const auto image = resources.createImage(
 		storage::ImageDesc{.width = 1, .height = 1, .format = storage::PixelFormat::Rgba8Unorm});
 	const auto view = resources.createImageView(image, storage::ImageViewDesc{});
@@ -283,7 +283,7 @@ private:
 	resources.setFallbackTexture(texture);
 	return texture;
 }
-void check_layer_bindings(storage::FlowStorageSystem& resources, const storage::FrameToken& frame,
+void check_layer_bindings(storage::ActiveStorageSystem& resources, const storage::FrameToken& frame,
 						  std::span<const Layer> layers) {
 	const std::array textures{layers[0].texture, layers[1].texture};
 	const auto bindings = resources.prepareTextureBindings(frame, textures);
@@ -299,7 +299,7 @@ void check_layer_bindings(storage::FlowStorageSystem& resources, const storage::
 	resources.acknowledgeTextureBindings(frame, bindings.dirtyBindings);
 }
 void check_layers_and_growth(FlowUi::test::HeadlessVulkanFixture& vulkan) {
-	storage::FlowStorageSystem resources(vulkan.context());
+	storage::ActiveStorageSystem resources(vulkan.context());
 	resources.initialize(test_config());
 	const auto fallback = create_fallback(resources);
 	constexpr FlowUi::WindowId window = 97;
@@ -406,7 +406,7 @@ void check_layers_and_growth(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 }
 
 void check_budget_and_partial_publication_rollback(FlowUi::test::HeadlessVulkanFixture& vulkan) {
-	storage::FlowStorageSystem resources(vulkan.context());
+	storage::ActiveStorageSystem resources(vulkan.context());
 	resources.initialize(test_config());
 	{
 		Controller controller(resources, atlas_extent);
@@ -441,7 +441,7 @@ void check_budget_and_partial_publication_rollback(FlowUi::test::HeadlessVulkanF
 	resources.collect();
 	FLOWUI_CHECK(resources.resourceStats(storage::ResourceKind::TextureView).live == 0);
 
-	storage::FlowStorageSystem limited(vulkan.context());
+	storage::ActiveStorageSystem limited(vulkan.context());
 	auto config = test_config();
 	limited.initialize(config);
 	{

@@ -11,8 +11,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "FlowUi/Private/resourceService/fontMSDFProvider/FontMSDFProviderSelection.hpp"
+#include "FlowUi/Private/storageSystem/StorageSystemSelection.hpp"
 #include "FlowUi/Public/managerStructs/FontTypes.hpp"
-#include "FlowUi/Private/storageSystem/IStorageSystem.hpp"
 #include "FlowUi/Public/managers/FontManager.hpp"
 
 namespace FlowUi::devSystems { class DevMemoryRecorder; }
@@ -74,7 +75,7 @@ struct FontFrameView {
 
 class FontCatalogController {
 public:
-	FontCatalogController(storage::IStorageSystem& storageSystem, uint32_t atlasSize);
+	FontCatalogController(storage::ActiveStorageSystem& storageSystem, uint32_t atlasSize);
 	~FontCatalogController() noexcept;
 
 	FontCatalogController(const FontCatalogController&) = delete;
@@ -90,8 +91,9 @@ public:
 	/* Roll back unpublished font layers and their diagnostic bindings together. */
 	void discard_atlas_layers(size_t layer_count) noexcept;
 
+	[[no_unique_address]] font::ActiveFontMSDFProvider provider{};
 	::FlowUi::detail::MemoryDemandPeaks capacity_demand{};
-	storage::IStorageSystem* storage = nullptr;
+	storage::ActiveStorageSystem* storage = nullptr;
 	uint64_t catalogRevision = 1;
 	uint32_t atlasSizeHint = 0;
 	FontId nextFontId = 0;

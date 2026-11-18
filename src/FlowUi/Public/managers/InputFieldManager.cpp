@@ -1,6 +1,7 @@
-#include "FlowUi/Private/ApiBoundary.hpp"
 #include "FlowUi/Public/managers/InputFieldManager.hpp"
+#include "FlowUi/Private/ApiBoundary.hpp"
 #include "FlowUi/Private/platformProviderService/WindowPlatformServices.hpp"
+#include "FlowUi/Private/storageSystem/StorageBinding.hpp"
 #include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
 #include "FlowUi/Public/defaults/InputDefaults.hpp"
 #if FLOW_UI_DEV_MODE
@@ -337,18 +338,16 @@ namespace storage = detail::storage;
 namespace field_key = detail::input_field;
 namespace text_storage = detail::text;
 
-void InputFieldManager::init(
-	storage::IStorageSystem& storageSystem,
-	WindowId window,
-	const InputManagerConfig& config,
-	float pointsToPixelsScale,
-	detail::text::TextLayoutService& textLayoutService) {
+void InputFieldManager::init(storage::StorageBinding& storageBinding, WindowId window,
+							 const InputManagerConfig& config, float pointsToPixelsScale,
+							 detail::text::TextLayoutService& textLayoutService) {
+	auto& storageSystem = storageBinding.system();
 	if (storage_) throw FlowUiException(makeError(ErrorCode::ObjectAlreadyInitialized, ErrorSite::InputManagerInitialize));
 	const storage::StringId name = storageSystem.intern("flowui.input.root");
 	const storage::ResourceKey key{storage::ResourceDomain::Input, name, window};
 	const storage::ManagerRecordHandle handle = manager_storage::createState<manager_storage::InputFieldManagerState>(
 		storageSystem, key, storage::ResourceKind::InputField, name);
-	storage_ = &storageSystem;
+	storage_ = &storageBinding;
 	window_ = window;
 	stateHandle_ = handle.packed();
 	state_ = manager_storage::state<manager_storage::InputFieldManagerState>(
@@ -391,8 +390,8 @@ void InputFieldManager::init(
 void InputFieldManager::destroy() noexcept {
 	if (storage_) {
 		try {
-			const storage::StringId name = storage_->intern("flowui.input.root");
-			(void)storage_->removeManagerRecord(
+			const storage::StringId name = storage_->system().intern("flowui.input.root");
+			(void)storage_->system().removeManagerRecord(
 				storage::ResourceKey{storage::ResourceDomain::Input, name, window_},
 				storage::ResourceKind::InputField);
 		} catch (...) {
@@ -547,7 +546,7 @@ void InputFieldManager::setPlatformServices(
 Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArray& renderCommands) {
 	const auto publishMutation = [this] {
 		if (!state_->flags.has_flag(InputFieldManagerFlag::dirty)) return;
-		storage_->noteManagerMutation(window_);
+		storage_->system().noteManagerMutation(window_);
 		state_->flags.set_flag(InputFieldManagerFlag::dirty, false);
 	};
 	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
@@ -1345,9 +1344,9 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 }
 
 field_key::InputFieldKey InputFieldManager::normalizeFieldKey(ResourceKey key) const {
-	const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
-		*storage_, key, ResourceDomain::InputField,
-		key_storage::ResourceScope::WindowLocal, window_);
+	const storage::ResourceKey normalized =
+		key_storage::normalizeResourceKey(storage_->system(), key, ResourceDomain::InputField,
+										  key_storage::ResourceScope::WindowLocal, window_);
 	return field_key::resourceInputFieldKey(normalized.name);
 }
 
@@ -1408,39 +1407,39 @@ FieldQueryResult InputFieldManager::requestFieldByKey(
 	record_field_demand(state_->capacity_demand, field);
 #endif
 	if (inserted) {
-		detail::reserve_initial_capacity(
-			field.carets,
-			storage_->initial_memory_capacity(FlowUi::detail::InitialCapacityTarget::field_carets));
+		detail::reserve_initial_capacity(field.carets,
+										 storage_->system().initial_memory_capacity(
+											 FlowUi::detail::InitialCapacityTarget::field_carets));
 		detail::reserve_initial_capacity(
 			field.focusRetentionElementIds,
-			storage_->initial_memory_capacity(
+			storage_->system().initial_memory_capacity(
 				FlowUi::detail::InitialCapacityTarget::field_focus_retention_element_ids));
 		detail::reserve_initial_capacity(
 			field.visibleLineStrings,
-			storage_->initial_memory_capacity(
+			storage_->system().initial_memory_capacity(
 				FlowUi::detail::InitialCapacityTarget::field_visible_line_strings));
 		detail::reserve_initial_capacity(
-			field.visibleLines, storage_->initial_memory_capacity(
+			field.visibleLines, storage_->system().initial_memory_capacity(
 									FlowUi::detail::InitialCapacityTarget::field_visible_lines));
 		detail::reserve_initial_capacity(
 			field.submittedTextSpans,
-			storage_->initial_memory_capacity(
+			storage_->system().initial_memory_capacity(
 				FlowUi::detail::InitialCapacityTarget::field_submitted_text_spans));
 		detail::reserve_initial_capacity(
 			field.frameTransactions,
-			storage_->initial_memory_capacity(
+			storage_->system().initial_memory_capacity(
 				FlowUi::detail::InitialCapacityTarget::field_frame_transactions));
 		detail::reserve_initial_capacity(
 			field.frameTransactionViews,
-			storage_->initial_memory_capacity(
+			storage_->system().initial_memory_capacity(
 				FlowUi::detail::InitialCapacityTarget::field_frame_transaction_views));
 		detail::reserve_initial_capacity(
 			field.frameCommandRequests,
-			storage_->initial_memory_capacity(
+			storage_->system().initial_memory_capacity(
 				FlowUi::detail::InitialCapacityTarget::field_frame_command_requests));
 		detail::reserve_initial_capacity(
 			field.wrapCacheByHardLine,
-			storage_->initial_memory_capacity(
+			storage_->system().initial_memory_capacity(
 				FlowUi::detail::InitialCapacityTarget::field_wrap_cache_by_hard_line));
 	}
 	FieldConfig normalizedConfig = request.config;

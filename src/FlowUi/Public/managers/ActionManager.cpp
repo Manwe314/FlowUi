@@ -1,5 +1,6 @@
-#include "FlowUi/Private/ApiBoundary.hpp"
 #include "FlowUi/Public/managers/ActionManager.hpp"
+#include "FlowUi/Private/ApiBoundary.hpp"
+#include "FlowUi/Private/storageSystem/StorageBinding.hpp"
 #include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/errors/DevError.hpp"
@@ -10,10 +11,10 @@
 #include <algorithm>
 #include <stdexcept>
 
-#include "FlowUi/Public/App.hpp"
 #include "FlowUi/Private/actionService/ActionManagerState.hpp"
 #include "FlowUi/Private/storageSystem/ManagerStateAccess.hpp"
-#include "FlowUi/Private/storageSystem/IStorageSystem.hpp"
+#include "FlowUi/Private/storageSystem/StorageSystemSelection.hpp"
+#include "FlowUi/Public/App.hpp"
 #include "FlowUi/Public/managers/UiManager.hpp"
 
 namespace FlowUi {
@@ -55,14 +56,14 @@ Result<bool> ActionManager::visitDevActions(void* userData, DevActionVisitor vis
 	if (!storage_ || !stateHandle_ || !visitor) return false;
 	for (const auto& [id, handle] : state().bindings) {
 		const storage::ConstPersistentRecordView record =
-			std::as_const(*storage_).persistentRecord(
-				handle, storage::ResourceKind::AppActionBinding);
+			std::as_const(storage_->system())
+				.persistentRecord(handle, storage::ResourceKind::AppActionBinding);
 		if (!record || record.headerBytes < sizeof(action::AppActionBindingHeader)) continue;
 		const auto& header = *static_cast<const action::AppActionBindingHeader*>(record.header);
 		ActionDebugInfo debug{};
 		debug.kind = ActionCallKind::App;
 		debug.appId = id;
-		debug.debugName = storage_->string(header.debugName);
+		debug.debugName = storage_->system().string(header.debugName);
 		debug.availability.enabled = header.availability.enabled;
 		debug.bound = !header.tombstoned;
 		debug.invocationCount = header.invocationCount;
@@ -117,8 +118,9 @@ std::optional<ActionCall> ActionManager::makeDevActionCall(
 		const auto found = std::ranges::find_if(state().bindings,
 			[stableId](const auto& binding) { return binding.first.value == stableId; });
 		if (found == state().bindings.end()) return std::nullopt;
-		const storage::ConstPersistentRecordView record = std::as_const(*storage_).persistentRecord(
-			found->second, storage::ResourceKind::AppActionBinding);
+		const storage::ConstPersistentRecordView record =
+			std::as_const(storage_->system())
+				.persistentRecord(found->second, storage::ResourceKind::AppActionBinding);
 		if (!record || record.headerBytes < sizeof(action::AppActionBindingHeader)) return std::nullopt;
 		const auto& header = *static_cast<const action::AppActionBindingHeader*>(record.header);
 		if (header.tombstoned ||
@@ -173,7 +175,8 @@ ActionManager::~ActionManager() {
 	destroy();
 }
 
-void ActionManager::init(App& app, storage::IStorageSystem& storageSystem) {
+void ActionManager::init(App& app, storage::StorageBinding& storageBinding) {
+	auto& storageSystem = storageBinding.system();
 	destroy();
 	const storage::StringId name = storageSystem.intern("flowui.actions.root");
 	const storage::ResourceKey key{
@@ -193,7 +196,7 @@ void ActionManager::init(App& app, storage::IStorageSystem& storageSystem) {
 		throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed, ErrorSite::ActionManagerInitialize));
 	}
 	app_ = &app;
-	storage_ = &storageSystem;
+	storage_ = &storageBinding;
 	stateHandle_ = handle.packed();
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	state().capacity_demand.bind(storageSystem.memory_demand_control());
@@ -223,15 +226,17 @@ void ActionManager::destroy() noexcept {
 					storage::ManagerRecordHandle::fromPacked(stateHandle_),
 					storage::ResourceKind::ActionManager)) {
 				for (const auto& [_, handle] : current->bindings) {
-					(void)storage_->removePersistentRecord(handle, storage::ResourceKind::AppActionBinding);
+					(void)storage_->system().removePersistentRecord(
+						handle, storage::ResourceKind::AppActionBinding);
 				}
 				for (const auto handle : current->deferredRemovals) {
-					(void)storage_->removePersistentRecord(handle, storage::ResourceKind::AppActionBinding);
+					(void)storage_->system().removePersistentRecord(
+						handle, storage::ResourceKind::AppActionBinding);
 				}
 				current->bindings.clear();
 				current->deferredRemovals.clear();
 			}
-			(void)storage_->removeManagerRecord(
+			(void)storage_->system().removeManagerRecord(
 				storage::ResourceKey{
 					storage::ResourceDomain::Action,
 					stateName_,
@@ -291,7 +296,7 @@ void ActionManager::publishBinding(
 	storage::PersistentRecordHandle handle,
 	bool replacement) {
 	auto& current = state();
-	storage_->noteManagerMutation(InvalidWindowId);
+	storage_->system().noteManagerMutation(InvalidWindowId);
 	if (!replacement) {
 		const auto [_, inserted] = current.bindings.emplace(id, handle);
 		if (!inserted) {
@@ -315,13 +320,14 @@ void ActionManager::publishBinding(
 
 void ActionManager::retireBinding(storage::PersistentRecordHandle handle) noexcept {
 	if (!storage_ || !handle) return;
-	const storage::PersistentRecordView view = storage_->persistentRecord(
-		handle, storage::ResourceKind::AppActionBinding);
+	const storage::PersistentRecordView view =
+		storage_->system().persistentRecord(handle, storage::ResourceKind::AppActionBinding);
 	if (!view || view.headerBytes < sizeof(action::AppActionBindingHeader)) return;
 	auto& header = *static_cast<action::AppActionBindingHeader*>(view.header);
 	header.tombstoned = true;
 	if (header.activeInvocations == 0) {
-		(void)storage_->removePersistentRecord(handle, storage::ResourceKind::AppActionBinding);
+		(void)storage_->system().removePersistentRecord(handle,
+														storage::ResourceKind::AppActionBinding);
 		return;
 	}
 	try {
@@ -387,7 +393,8 @@ void ActionManager::releaseInvocation(
 	action::AppActionBindingHeader& header) noexcept {
 	if (header.activeInvocations > 0) --header.activeInvocations;
 	if (!header.tombstoned || header.activeInvocations != 0 || !storage_) return;
-	(void)storage_->removePersistentRecord(handle, storage::ResourceKind::AppActionBinding);
+	(void)storage_->system().removePersistentRecord(handle,
+													storage::ResourceKind::AppActionBinding);
 	if (!stateHandle_) return;
 	try {
 		auto& deferred = state().deferredRemovals;
@@ -423,8 +430,8 @@ ActionManager::InvocationLease ActionManager::beginInvocation(
 		return {};
 	}
 	const storage::PersistentRecordHandle handle = found->second;
-	const storage::PersistentRecordView view = storage_->persistentRecord(
-		handle, storage::ResourceKind::AppActionBinding);
+	const storage::PersistentRecordView view =
+		storage_->system().persistentRecord(handle, storage::ResourceKind::AppActionBinding);
 	if (!view || view.headerBytes < sizeof(action::AppActionBindingHeader)) {
 		error = ActionInvokeError::Unbound;
 #if FLOW_UI_DEV_MODE
@@ -479,14 +486,15 @@ void ActionManager::reportInvocationError(
 		const std::string_view name = call.id.debugName.empty()
 			? std::string_view{"flowui.app_action.unnamed"}
 			: call.id.debugName;
-		const storage::StringId nameId = storage_->intern(name);
+		const storage::StringId nameId = storage_->system().intern(name);
 		const storage::ResourceKey key{
 			storage::ResourceDomain::Action,
 			nameId,
 			InvalidWindowId,
 		};
 		const uint32_t diagnosticCode = 0xA000u + static_cast<uint32_t>(error);
-		if (!storage_->markDiagnosticOnce(key, diagnosticCode)) return;
+		if (!storage_->system().markDiagnosticOnce(key, diagnosticCode))
+			return;
 		ErrorCode code = ErrorCode::ActionNotBound;
 		switch (error) {
 		case ActionInvokeError::Unbound: code = ErrorCode::ActionNotBound; break;
@@ -621,12 +629,12 @@ std::optional<ActionDebugInfo> ActionManager::debugInfo(ActionCall call) const n
 		const auto found = state().bindings.find(call.payload_.app.id);
 		if (found == state().bindings.end()) return info;
 		const storage::ConstPersistentRecordView view =
-			std::as_const(*storage_).persistentRecord(
-				found->second, storage::ResourceKind::AppActionBinding);
+			std::as_const(storage_->system())
+				.persistentRecord(found->second, storage::ResourceKind::AppActionBinding);
 		if (!view || view.headerBytes < sizeof(action::AppActionBindingHeader)) return info;
 		const auto& header = *static_cast<const action::AppActionBindingHeader*>(view.header);
 		info.bound = !header.tombstoned;
-		info.debugName = storage_->string(header.debugName);
+		info.debugName = storage_->system().string(header.debugName);
 		info.invocationCount = header.invocationCount;
 		info.discardedResultCount = header.discardedResultCount;
 		info.lastStatus = header.lastStatus;
@@ -661,7 +669,7 @@ Result<bool> AppActions::unbind(AppActionID id) noexcept try {
 	const auto found = current.bindings.find(id);
 	if (found == current.bindings.end()) return false;
 	const storage::PersistentRecordHandle handle = found->second;
-	owner_->storage_->noteManagerMutation(InvalidWindowId);
+	owner_->storage_->system().noteManagerMutation(InvalidWindowId);
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
 								FlowUi::detail::InitialCapacityTarget::actions_bindings,
 								current.bindings.size());
@@ -685,8 +693,9 @@ AppActionAvailability AppActions::availability(AppActionCall call) const noexcep
 		const auto found = owner_->state().bindings.find(call.id);
 		if (found == owner_->state().bindings.end()) return {.enabled = false};
 		const storage::ConstPersistentRecordView view =
-			std::as_const(*owner_->storage_).persistentRecord(
-				found->second, storage::ResourceKind::AppActionBinding);
+			std::as_const(*owner_->storage_)
+				.system()
+				.persistentRecord(found->second, storage::ResourceKind::AppActionBinding);
 		if (!view || view.headerBytes < sizeof(action::AppActionBindingHeader)) {
 			return {.enabled = false};
 		}
@@ -704,13 +713,13 @@ Result<bool> AppActions::setAvailability(
 	auto& current = owner_->state();
 	const auto found = current.bindings.find(id);
 	if (found == current.bindings.end()) return false;
-	const storage::PersistentRecordView view = owner_->storage_->persistentRecord(
+	const storage::PersistentRecordView view = owner_->storage_->system().persistentRecord(
 		found->second, storage::ResourceKind::AppActionBinding);
 	if (!view || view.headerBytes < sizeof(action::AppActionBindingHeader)) return false;
 	auto& header = *static_cast<action::AppActionBindingHeader*>(view.header);
 	if (header.tombstoned) return false;
 	if (header.availability.enabled == availabilityValue.enabled) return true;
-	owner_->storage_->noteManagerMutation(InvalidWindowId);
+	owner_->storage_->system().noteManagerMutation(InvalidWindowId);
 	header.availability = availabilityValue;
 #if FLOW_UI_DEV_MODE
 	++owner_->devRevision_;

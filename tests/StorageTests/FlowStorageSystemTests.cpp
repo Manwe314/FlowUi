@@ -31,28 +31,29 @@ using FlowUi::detail::storage::BlobHandle;
 using FlowUi::detail::storage::BufferDesc;
 using FlowUi::detail::storage::BufferHandle;
 using FlowUi::detail::storage::BufferUsage;
-using FlowUi::detail::storage::BufferWriteView;
 using FlowUi::detail::storage::BufferWriteMode;
+using FlowUi::detail::storage::BufferWriteView;
+using FlowUi::detail::storage::createTypedPersistentRecord;
+using FlowUi::detail::storage::currentStorageInterfaceVersion;
 using FlowUi::detail::storage::DescriptorWriteRecord;
 using FlowUi::detail::storage::FlowStorageSystem;
 using FlowUi::detail::storage::FrameStorageDesc;
-using FlowUi::detail::storage::IStorageSystem;
 using FlowUi::detail::storage::ImageDesc;
 using FlowUi::detail::storage::ImageHandle;
 using FlowUi::detail::storage::ImageUsage;
 using FlowUi::detail::storage::ImageViewDesc;
 using FlowUi::detail::storage::ImageViewHandle;
+using FlowUi::detail::storage::ManagerRecordDesc;
+using FlowUi::detail::storage::ManagerRecordHandle;
+using FlowUi::detail::storage::MemoryClass;
+using FlowUi::detail::storage::MemoryPreference;
 using FlowUi::detail::storage::NativeImageViewInfo;
 using FlowUi::detail::storage::NativeRendererLayout;
 using FlowUi::detail::storage::NativeRendererPipelineBundle;
 using FlowUi::detail::storage::NativeWindowDescriptorBundle;
-using FlowUi::detail::storage::MemoryClass;
-using FlowUi::detail::storage::MemoryPreference;
-using FlowUi::detail::storage::ManagerRecordDesc;
-using FlowUi::detail::storage::ManagerRecordHandle;
-using FlowUi::detail::storage::PixelFormat;
 using FlowUi::detail::storage::PersistentRecordCreateInfo;
 using FlowUi::detail::storage::PersistentRecordHandle;
+using FlowUi::detail::storage::PixelFormat;
 using FlowUi::detail::storage::RendererLayoutHandle;
 using FlowUi::detail::storage::RendererLayoutKey;
 using FlowUi::detail::storage::RendererPipelineBundleHandle;
@@ -60,8 +61,8 @@ using FlowUi::detail::storage::RendererPipelineKey;
 using FlowUi::detail::storage::ResourceDomain;
 using FlowUi::detail::storage::ResourceKey;
 using FlowUi::detail::storage::ResourceKind;
-using FlowUi::detail::storage::ResourceState;
 using FlowUi::detail::storage::ResourceSharing;
+using FlowUi::detail::storage::ResourceState;
 using FlowUi::detail::storage::ResourceUse;
 using FlowUi::detail::storage::SamplerDesc;
 using FlowUi::detail::storage::SamplerHandle;
@@ -69,11 +70,10 @@ using FlowUi::detail::storage::StorageCapability;
 using FlowUi::detail::storage::StorageConfig;
 using FlowUi::detail::storage::TextureHandle;
 using FlowUi::detail::storage::TextureViewDesc;
+using FlowUi::detail::storage::typedPersistentRecord;
 using FlowUi::detail::storage::WindowDescriptorBundleDesc;
 using FlowUi::detail::storage::WindowDescriptorBundleHandle;
 using FlowUi::detail::storage::WindowStorageDesc;
-using FlowUi::detail::storage::createTypedPersistentRecord;
-using FlowUi::detail::storage::typedPersistentRecord;
 
 struct ManagerRecordTestState {
 	int value = 0;
@@ -466,7 +466,7 @@ WindowStorageDesc windowDesc(uint32_t framesInFlight = 2, uint32_t workers = 2) 
 	return desc;
 }
 
-bool hasCapability(const IStorageSystem& storage, StorageCapability capability) {
+bool hasCapability(const FlowStorageSystem& storage, StorageCapability capability) {
 	return (storage.capabilities() & static_cast<uint64_t>(capability)) != 0;
 }
 
@@ -481,7 +481,9 @@ void testInitialization(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	FlowStorageSystem storage(vulkan.context());
 	const StorageConfig config = testConfig();
 	storage.initialize(config);
-	FLOWUI_CHECK(storage.interfaceVersion() == IStorageSystem::CurrentInterfaceVersion);
+	FLOWUI_CHECK(storage.interfaceVersion() == currentStorageInterfaceVersion);
+	FLOWUI_CHECK(storage.interfaceVersion() == FlowStorageSystem::interfaceVersionValue);
+	FLOWUI_CHECK(storage.capabilities() == FlowStorageSystem::supportedCapabilities);
 	FLOWUI_CHECK(hasCapability(storage, StorageCapability::WindowScopes));
 	FLOWUI_CHECK(hasCapability(storage, StorageCapability::WorkerArenas));
 	FLOWUI_CHECK(hasCapability(storage, StorageCapability::GenerationalHandles));

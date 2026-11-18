@@ -53,8 +53,9 @@ class VerificationSuite:
         self.cli = arguments.cli.resolve(strict=True)
         self.demo = arguments.demo.resolve(strict=True)
         self.workspace = workspace
-        self.store = workspace / "store"
-        self.log_path = workspace / "demo.log"
+        self.store = workspace / ".flowui/agentic/v1"
+        self.log_path = Path(__file__).resolve().parents[2] / ".flowui/agentic/logs/verification-suites" / workspace.name / "demo.log"
+        self.log_path.parent.mkdir(parents=True, exist_ok=True)
         self.process: subprocess.Popen | None = None
         self.run_id = ""
         self.results: dict = {"checks": [], "measurements": {}}
@@ -328,9 +329,9 @@ def main() -> int:
         default=Path(__file__).resolve().parents[2] / ".flowui/agentic/verification/suites")
     parser.add_argument("--soak-count", type=int, default=4)
     arguments = parser.parse_args()
-    if arguments.output_directory.resolve().is_relative_to(
-            Path(__file__).resolve().parents[2] / "docs"):
-        parser.error("Verification outputs belong under .flowui/agentic, outside docs")
+    if not arguments.output_directory.resolve().is_relative_to(
+            (Path(__file__).resolve().parents[2] / ".flowui/agentic/verification").resolve()):
+        parser.error("Verification outputs must stay under .flowui/agentic/verification")
     if os.name != "nt" and not os.environ.get("DISPLAY") and not os.environ.get("WAYLAND_DISPLAY"):
         return 77
     if arguments.soak_count < 0:

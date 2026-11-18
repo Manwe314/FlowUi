@@ -38,10 +38,12 @@ class CatalogueVerification:
         self.demo = arguments.demo.resolve(strict=True)
         output_directory = arguments.output_directory or self.repository / ".flowui/agentic/verification/catalogue"
         output_directory = output_directory.resolve()
-        if output_directory.is_relative_to(self.repository / "docs"):
-            raise ValueError("Verification outputs belong under .flowui/agentic, outside docs")
+        if not output_directory.is_relative_to((self.repository / ".flowui/agentic/verification").resolve()):
+            raise ValueError("Verification outputs must stay under .flowui/agentic/verification")
         self.output = output_directory / ("run_" + uuid.uuid4().hex[:12])
         self.output.mkdir(parents=True)
+        self.logs = self.repository / ".flowui/agentic/logs" / self.output.parent.name / self.output.name
+        self.logs.mkdir(parents=True, exist_ok=True)
         self.workspace = self.output / "workspace"
         self.workspace.mkdir()
         self.store = self.workspace / ".flowui/agentic/v1"
@@ -69,7 +71,7 @@ class CatalogueVerification:
         write_json(self.changes, {"manifestVersion": 2, "schemaFingerprint": "0x0000000000000000",
             "buildFingerprint": "", "createdTimestamp": "", "bakedChanges": [],
             "memoryCapacity": {"version": 1, "enabled": False, "targets": []}})
-        with (self.output / "demo.log").open("wb") as log:
+        with (self.logs / "demo.log").open("wb") as log:
             self.process = subprocess.Popen([str(self.demo), "--agentic-store", str(self.store),
                 "--agentic-input", "--agentic-actions", "--agentic-visual", "--agentic-dev-interface",
                 "--agentic-changes", str(self.changes)], cwd=self.workspace,
@@ -79,7 +81,7 @@ class CatalogueVerification:
         deadline = time.monotonic() + 30
         while time.monotonic() < deadline:
             if self.process.poll() is not None:
-                raise RuntimeError((self.output / "demo.log").read_text(errors="replace")[-4000:])
+                raise RuntimeError((self.logs / "demo.log").read_text(errors="replace")[-4000:])
             descriptors = list((self.store / "runtime/instances").glob("*.json"))
             if descriptors:
                 descriptor = json.loads(descriptors[0].read_text())
@@ -503,7 +505,7 @@ class CatalogueVerification:
             parameters = StdioServerParameters(command=sys.executable,
                 args=["-m", "flowui_agent_mcp.server", "--workspace", str(self.workspace),
                     "--cli", str(self.cli), "--timeout", "30"], cwd=str(self.workspace), env=environment)
-            with (self.output / "adapter.log").open("w") as log:
+            with (self.logs / "adapter.log").open("w") as log:
                 async with Client(stdio_client(parameters, errlog=log), read_timeout_seconds=45) as client:
                     self.client = client
                     await self.discover()
